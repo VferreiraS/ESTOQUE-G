@@ -48,6 +48,22 @@ Em **Notas fiscais → Bipar NF**, use o leitor USB, a câmera ou cole a chave d
 - Se a chave já estiver salva, abre a NF com os dados salvos.
 - O código de barras não traz volumes. Eles vêm do XML, da NF já cadastrada ou da contagem na chegada.
 
+## Rupturas (fotos para abastecer)
+
+Na aba **Rupturas** (barra de baixo no celular, menu lateral no computador), toque em **📷 Nova ruptura**:
+
+1. Tire a foto da prateleira vazia (**Câmera**) ou escolha da **Galeria**. São até 6 fotos por ruptura.
+2. Toque em **🤖 Robô identificar produtos** para o robô olhar a foto e sugerir os produtos em falta. Confira e ajuste o texto.
+3. Escolha o **corredor**; o responsável do corredor é preenchido sozinho, e você pode trocar.
+4. Toque em **Salvar**.
+
+- As abas **Em falta**, **Abastecidas** e **Todas** mostram quantas há em cada uma. Toque na foto para ver em tela cheia.
+- Quando abastecer, toque em **Abastecido** no cartão.
+- As fotos ficam **só neste aparelho**, criptografadas. Elas não entram em Exportar backup nem em Exportar conta protegida. Trocar a senha não apaga as fotos.
+- **Excluir** uma ruptura apaga as fotos dela.
+- O robô que lê a foto usa o **Google Gemini**: configure a chave na página do Robô (**IA → Serviço: Google Gemini**). A foto é enviada ao Google.
+- Na página do Robô dá para perguntar "O que falta abastecer?". As rupturas em aberto entram no resumo, só em texto, sem fotos.
+
 ## Status das notas fiscais
 
 Cada NF tem um de quatro status: **Pendente**, **Em conferência**, **Conferido** e **Em divergência**.

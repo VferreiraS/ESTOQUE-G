@@ -310,7 +310,7 @@ function validate(s){
  s.nfs.forEach(nfValidateExtras);
  const owners=new Set(['','todos',...s.team.map(x=>x.id)]),corridors=new Set(['',...s.corridors.map(x=>x.id)]);
  if(s.corridors.some(x=>!owners.has(x.owner))||s.tasks.some(x=>!owners.has(x.owner)||!corridors.has(x.corridor))||s.nfs.some(x=>!owners.has(x.owner)))throw Error('Backup inválido');
- return {version:1,plans:validatePlans(s.plans),team:s.team,corridors:s.corridors,tasks:s.tasks,nfs:s.nfs,updated:s.updated||null,alertSettings:normalizeAlertSettings(s.alertSettings),alertSnoozes:normalizeSnoozes(s.alertSnoozes)};
+ return {version:1,plans:validatePlans(s.plans),team:s.team,corridors:s.corridors,tasks:s.tasks,nfs:s.nfs,ruptures:validateRuptures(s.ruptures,s),photoKey:validPhotoKey(s.photoKey),updated:s.updated||null,alertSettings:normalizeAlertSettings(s.alertSettings),alertSnoozes:normalizeSnoozes(s.alertSnoozes)};
 }
 function notify(s){$('toast').textContent=s;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').textContent='',4000)}
 async function save(){if(!authSession)return;state.updated=new Date().toISOString();dirty=true;const snapshot=JSON.stringify(state);try{await authPersist(snapshot);storageOK=true;dirty=JSON.stringify(state)!==snapshot}catch(e){storageOK=false;notify(e.message||'Falha ao salvar. Exporte uma cópia protegida.')}renderStorage();if(fileHandle)await writeFile();}
@@ -325,7 +325,7 @@ const date=s=>s?s.split('-').reverse().join('/'):'Sem prazo';
 const icons={home:'◫',tasks:'✓',team:'♙',corridors:'▦',nfs:'▤',data:'⇅'},labels={home:'Visão geral',tasks:'Tarefas',team:'Equipe',corridors:'Corredores',nfs:'NFs pendentes',data:'Dados e ajuda'};
 
 function mobileTableLabels(){if(!document.querySelectorAll)return;document.querySelectorAll('#view table').forEach(table=>{const heads=Array.from(table.querySelectorAll('thead th')).map(h=>h.textContent.trim());table.classList.add('mobile-cards');table.querySelectorAll('tbody tr').forEach(row=>Array.from(row.children).forEach((cell,i)=>cell.setAttribute('data-label',heads[i]||'')))})}
-function mobileEnhance(){mobileTableLabels();const nav=$('mobile-bottom');if(!nav)return;const tabs=[['home','⌂','Início'],['tasks','✓','Tarefas'],['nfs','▤','Notas'],['plans','▣','Planos'],['mobile-menu','☰','Mais']];const selected=tabs.some(t=>t[0]===page)?page:'mobile-menu';nav.innerHTML=tabs.map(([p,icon,title])=>`<button class="${selected===p?'active':''}" aria-current="${selected===p?'page':'false'}" onclick="go('${p}')"><span aria-hidden="true">${icon}</span>${title}</button>`).join('')}
+function mobileEnhance(){mobileTableLabels();const nav=$('mobile-bottom');if(!nav)return;const tabs=[['home','⌂','Início'],['tasks','✓','Tarefas'],['nfs','▤','Notas'],['ruptures','◍','Rupturas'],['plans','▣','Planos'],['mobile-menu','☰','Mais']];const selected=tabs.some(t=>t[0]===page)?page:'mobile-menu';nav.innerHTML=tabs.map(([p,icon,title])=>`<button class="${selected===p?'active':''}" aria-current="${selected===p?'page':'false'}" onclick="go('${p}')"><span aria-hidden="true">${icon}</span>${title}</button>`).join('')}
 function renderMobileMenu(){return hero('Seu estoque na palma da mão.','Acesse todas as funções e personalize a aparência.')+`<div class="panel help mobile-options">${Object.keys(labels).map(p=>`<button onclick="go('${p}')">${labels[p]} →</button>`).join('')}<button onclick="toggleSiteTheme()">☾ / ☀ Alternar tema claro e escuro</button><button onclick="if(window.toggleVisualEffects)window.toggleVisualEffects()">Alternar efeitos visuais</button><button onclick="authLogout()">Sair da conta</button></div><div class="panel help mobile-guide"><h2>Levar os dados do computador</h2><ol><li>No computador, acesse Minha conta e exporte a conta protegida.</li><li>Transfira esse arquivo para o celular.</li><li>Na tela de login do celular, escolha Importar conta protegida e informe a senha dessa conta.</li></ol><p>Não há sincronização automática. Se a conta já existir neste aparelho, entre nela e use Dados e ajuda → Restaurar backup para atualizar os cadastros. A restauração substitui os dados atuais após confirmação.</p><p>Para enviar um plano com fotos, use Compartilhar. Se o navegador não oferecer esse recurso, baixe as fotos e copie o texto. O envio pelo WhatsApp ou Outlook precisa de conexão.</p><p>Use sempre o mesmo navegador e faça backups. A prévia de um arquivo HTML pode não executar o sistema; o navegador precisa permitir JavaScript, armazenamento local e criptografia.</p><p><strong>Usar como app:</strong> no iPhone/iPad, abra o endereço do site no Safari, toque em Compartilhar e em “Adicionar à Tela de Início”. No Android, abra no Chrome e toque em ⋮ → “Instalar app”. No computador, use o ícone de instalar na barra de endereço do Chrome ou Edge.</p></div>`}
 if(window.visualViewport&&window.visualViewport.addEventListener){window.visualViewport.addEventListener('resize',()=>{const typing=document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);document.body.classList.toggle('keyboard-open',!!typing&&window.innerHeight-window.visualViewport.height>140)})}
 
@@ -367,12 +367,12 @@ function render(){if(!authSession){renderAuth();return}if(page==='assistant'||pa
  if(page==='nfs'){html=hero('Recebeu? Conferiu? Registrou.','Acompanhe as notas fiscais da chegada à conclusão.',`<div class="toolbar"><button class="primary" onclick="openNFScanner()">▥ Bipar NF</button><button onclick="openNFImport()">Importar XML</button>${newButton('nf','Nova NF')}</div>`)+`<div class="panel"><div class="panelhead"><h2>Notas fiscais</h2><button onclick="window.print()">Imprimir</button></div>${state.nfs.length?`<div class="tablewrap"><table><thead><tr><th>NF / Fornecedor</th><th>Recebimento</th><th>Volumes</th><th>Responsável</th><th>Status</th><th>Ações</th></tr></thead><tbody>${state.nfs.map(n=>`<tr><td><b>${esc(n.number)}</b>${n.series?`<div class="small">Série ${esc(n.series)}</div>`:''}<div class="small">${esc(n.supplier)}</div>${n.items?`<div class="small">${n.items.length} itens importados</div>`:''}${n.notes?`<div class="small">${n.status==='Em divergência'?'Divergência: ':''}${esc(n.notes)}</div>`:''}</td><td>${date(n.date)}${n.arrivalTime?`<div class="small">${esc(n.arrivalTime)}</div>`:''}</td><td>${esc((n.volumes==null?0:n.volumes))}</td><td>${esc(owner(n.owner))}</td><td>${badge(n.status)}</td><td><button onclick="openEditor('nf','${esc(n.id)}')">Editar</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhuma NF cadastrada.</div>'}</div>`}
  if(page==='data'){html=hero('Seus dados, no seu controle.','Os cadastros ficam locais. Consultas opcionais enviam somente CEP ou CNPJ ao serviço escolhido. Use cópias de segurança.')+`<div class="grid2"><div class="panel help"><h2>Backup e restauração</h2><div class="toolbar"><button class="primary" onclick="backup()">Exportar backup</button><button onclick="$('restore').click()">Restaurar backup</button></div><p>Última alteração: ${state.updated?esc(new Date(state.updated).toLocaleString('pt-BR')):'Ainda sem alterações'}</p></div><div class="panel help"><h2>Salvar direto em arquivo</h2><button onclick="connectFile()">Conectar arquivo local</button><p id="filehelp">Em navegadores sem esse recurso, use Exportar backup. Não há sincronização entre PCs.</p></div></div>`}
  if(page==='mobile-menu')html=renderMobileMenu();
- if(page==='plans')html=renderPlans();
+ if(page==='plans')html=renderPlans();  if(page==='ruptures')html=typeof renderRuptures==='function'?renderRuptures():'';
  if(page==='account')html=renderAccount();
  if(page==='admin')html=renderAdmin();
  if(page==='alerts')html=renderAlertsPage();
  if(page==='assistant')html=renderAssistantPage();
- if(!['assistant','account','admin','plans','mobile-menu'].includes(page)&&showDesktopPanel())html=desktopPanel()+html;
+ if(!['assistant','account','admin','plans','ruptures','mobile-menu'].includes(page)&&showDesktopPanel())html=desktopPanel()+html;
  $('view').innerHTML=html;if(page==='tasks')refreshTasks();mobileEnhance();checkAlerts();if(typeof window.refreshVisualEffects==='function')window.refreshVisualEffects();
 }
 function refreshTasks(){const rows=fuzzyRows(state.tasks.filter(t=>!filter||t.status===filter),search,t=>recordSearchFields('task',t));$('tasklist').innerHTML=(search?`<p class="search-info" role="status">${rows.length} resultado(s). A busca também considera nomes próximos e pequenos erros de digitação.</p>`:'')+(search&&!rows.length?'<div class="empty">Nenhuma tarefa encontrada. Tente outra palavra ou ajuste o filtro.</div>':taskTable(rows));mobileTableLabels()}
@@ -686,6 +686,12 @@ function showFeatureCredits(){notify('Busca: Fuse.js 7.1.0. Calendários: Flatpi
 
 // Local encrypted accounts. No network identity, no shared-store administration.
 let planDraft=null,planDraftDirty=false,planPhotoBusy=false,planFilter='';
+/* Rupturas: corrige em vez de recusar, para a conta sempre abrir. Fotos ficam no IndexedDB (só ids aqui). */
+function validPhotoKey(k){return typeof k==='string'&&/^[A-Za-z0-9+/]{43}=$/.test(k)?k:''}
+function validateRuptures(list,st){if(!Array.isArray(list))return [];const okId=x=>typeof x==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(x);const people=new Set(['','todos',...((st&&st.team)||[]).map(x=>x&&x.id)]),cors=new Set(['',...((st&&st.corridors)||[]).map(x=>x&&x.id)]);const ids=new Set(),out=[];
+ for(const r of list.slice(0,2000)){if(!r||!okId(r.id)||ids.has(r.id))continue;ids.add(r.id);const str=(v,n)=>typeof v==='string'?v.slice(0,n):'';const t=Date.parse(r.createdAt);
+  out.push({id:r.id,createdAt:isNaN(t)?new Date().toISOString():new Date(t).toISOString(),product:str(r.product,1000),corridor:cors.has(r.corridor)?r.corridor:'',owner:people.has(r.owner)?r.owner:'',status:r.status==='Abastecido'?'Abastecido':'Falta',notes:str(r.notes,2000),photos:Array.isArray(r.photos)?[...new Set(r.photos.filter(okId))].slice(0,6):[],doneAt:r.status==='Abastecido'&&!isNaN(Date.parse(r.doneAt))?new Date(Date.parse(r.doneAt)).toISOString():''})}
+ return out}
 function validatePlans(plans){if(plans===undefined)return [];if(!Array.isArray(plans)||plans.length>500)throw Error('Planos inválidos');const ids=new Set();let photoSize=0;for(const p of plans){if(!p||!safePlanId(p.id)||ids.has(p.id)||!validDate(p.date)||typeof p.title!=='string'||!p.title.trim()||p.title.length>200||!Array.isArray(p.activities)||p.activities.length>100)throw Error('Plano inválido');ids.add(p.id);const items=new Set();for(const a of p.activities){if(!a||!safePlanId(a.id)||items.has(a.id)||typeof a.title!=='string'||!a.title.trim()||a.title.length>500||typeof a.owner!=='string'||a.owner.length>200||typeof a.notes!=='string'||a.notes.length>3000||!Array.isArray(a.photos)||a.photos.length>5)throw Error('Atividade do plano inválida');items.add(a.id);for(const ph of a.photos){if(!ph||!safePlanId(ph.id)||typeof ph.data!=='string'||ph.data.length>200000||!/^data:image\/jpeg;base64,\/9j\/[A-Za-z0-9+/=\r\n]+$/.test(ph.data))throw Error('Foto inválida');photoSize+=ph.data.length;}}}if(photoSize>2400000)throw Error('Fotos excedem o limite local. Exporte planos antigos e remova fotos antes de importar.');return plans}
 function safePlanId(id){return typeof id==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(id)}
 function planById(id){return (state.plans||[]).find(p=>p.id===id)}
@@ -2495,6 +2501,166 @@ var admBefore=renderAdmin;renderAdmin=function(){var h=admBefore.apply(this,argu
 /* Aviso na tela de criar conta. */
 var renderBefore=renderAuth;renderAuth=function(){renderBefore.apply(this,arguments);if(!enabled()||authMode!=='signup'||authPending||authRecoveryShow)return;var form=document.getElementById('auth-form');if(!form||form.querySelector('.signup-notice'))return;var p=document.createElement('p');p.className='signup-notice';p.textContent='Ao criar a conta, o nome do estoque, o login e o tipo de aparelho são enviados ao responsável pelo site. A senha e os cadastros não saem deste aparelho.';form.querySelector('.fields').appendChild(p)};
 window.addEventListener('online',flush);setTimeout(flush,4000);
+})();
+</script>
+<style id="ruptures-css">
+/* Rupturas: fotos de prateleira vazia para abastecer. As fotos aparecem coloridas (conteúdo); a interface segue preto e branco. */
+.rup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:6px}
+.rup-card{display:flex;flex-direction:column;border:1px solid var(--ds-line);border-radius:16px;overflow:hidden;background:var(--ds-surface)}
+.rup-card.done{opacity:.72}
+.rup-photo{position:relative;display:block;width:100%;aspect-ratio:4/3;padding:0;border:0;border-radius:0;background:var(--ds-accent-soft);cursor:zoom-in;overflow:hidden;min-height:0}
+.rup-photo:disabled{cursor:default}
+.rup-photo img{width:100%;height:100%;object-fit:cover;display:block;filter:none!important}
+.rup-photo .rup-none{display:grid;place-items:center;height:100%;color:var(--ds-muted);font-size:14px}
+.rup-more{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.72);color:#fff;font-size:12px;font-weight:650;padding:3px 9px;border-radius:999px}
+.rup-body{display:grid;gap:6px;padding:12px 14px 14px}
+.rup-body b{font-size:15.5px;line-height:1.3;white-space:pre-line}
+.rup-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.rup-actions button{min-height:40px}
+.badge.Falta{background:var(--ds-ink)!important;color:var(--ds-bg)!important}
+.badge.Abastecido{background:var(--ds-surface)!important;border:1px solid var(--ds-line)!important;color:var(--ds-ink)!important}
+#rup-dialog,#rup-viewer{border:0;padding:0;background:var(--ds-surface);color:var(--ds-ink);border-radius:20px;width:min(560px,100%);max-height:94dvh;overflow:auto}
+#rup-dialog::backdrop,#rup-viewer::backdrop{background:rgba(0,0,0,.55)}
+#rup-form{padding:18px;display:grid;gap:14px}
+.rup-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.rup-head h2{margin:0;font-size:19px}
+.rup-head button{min-width:44px;min-height:44px;padding:0;font-size:22px}
+.rup-thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.rup-thumb{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:var(--ds-accent-soft)}
+.rup-thumb img{width:100%;height:100%;object-fit:cover;display:block;filter:none!important}
+.rup-thumb button{position:absolute;top:4px;right:4px;min-height:30px;height:30px;width:30px;padding:0;border-radius:50%;background:rgba(0,0,0,.72)!important;color:#fff!important;border:0!important;font-size:16px;line-height:1}
+.rup-pick{display:flex;gap:8px;flex-wrap:wrap}
+.rup-pick label{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border:1px solid var(--ds-line);border-radius:12px;font-weight:650;cursor:pointer;background:var(--ds-surface)}
+.rup-pick label.primary{background:var(--ds-ink);color:var(--ds-bg);border-color:var(--ds-ink)}
+#rup-form textarea,#rup-form select{width:100%}
+#rup-form .pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#rup-viewer{width:min(960px,100%);background:#000}
+#rup-viewer .rup-view{position:relative;display:grid;place-items:center;min-height:50vh}
+#rup-viewer img{max-width:100%;max-height:82dvh;display:block;filter:none!important}
+#rup-viewer .rup-nav{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px;background:#000;color:#fff}
+#rup-viewer .rup-nav button{background:#1c1c1c!important;color:#fff!important;border-color:#333!important;min-width:44px}
+.mobile-bottom{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+@media (max-width:900px){.mobile-bottom button{font-size:11px!important;padding-left:0!important;padding-right:0!important;letter-spacing:-.01em}#rup-form .pair{grid-template-columns:1fr}#rup-dialog{border-radius:20px 20px 0 0;margin:auto 0 0}}
+</style>
+<script id="ruptures-js">
+(function(){
+'use strict';
+var PDB='estoque99-photos',PST='photos',MAX=6;
+var view='Falta',urlCache={},draft=null,busy=false;
+/* ---------- fotos: IndexedDB, criptografadas com a chave de fotos da conta ---------- */
+function pdb(){return new Promise(function(res,rej){try{var r=indexedDB.open(PDB,1);r.onupgradeneeded=function(){r.result.createObjectStore(PST)};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}}catch(e){rej(e)}})}
+function pop(mode,fn){return pdb().then(function(db){return new Promise(function(res,rej){var tx=db.transaction(PST,mode),req=fn(tx.objectStore(PST));tx.oncomplete=function(){db.close();res(req&&req.result)};tx.onerror=function(){db.close();rej(tx.error)};tx.onabort=function(){db.close();rej(tx.error||Error('Gravação cancelada'))}})})}
+async function photoKey(create){var k=state.photoKey;if(!k){if(!create)return null;k=authB64(crypto.getRandomValues(new Uint8Array(32)));state.photoKey=k;await save()}return crypto.subtle.importKey('raw',authUn64(k),{name:'AES-GCM'},false,['encrypt','decrypt'])}
+function dataToBytes(d){return Uint8Array.from(atob(String(d).split(',')[1]||''),function(c){return c.charCodeAt(0)})}
+async function putPhoto(id,dataUrl){var key=await photoKey(true),iv=crypto.getRandomValues(new Uint8Array(12));var cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:authBytes('photo|'+id)},key,dataToBytes(dataUrl));return pop('readwrite',function(st){return st.put({account:authSession.storeKey,iv:iv,data:cipher,at:Date.now()},id)})}
+async function photoBytes(id){var rec=await pop('readonly',function(st){return st.get(id)});if(!rec)return null;var key=await photoKey(false);if(!key)return null;return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:rec.iv,additionalData:authBytes('photo|'+id)},key,rec.data))}
+async function photoURL(id){if(urlCache[id])return urlCache[id];try{var b=await photoBytes(id);if(!b)return null;urlCache[id]=URL.createObjectURL(new Blob([b],{type:'image/jpeg'}));return urlCache[id]}catch(e){return null}}
+window.rupturePhotoDataURL=async function(id){var b=await photoBytes(id);if(!b)return null;var s='';for(var i=0;i<b.length;i+=0x8000)s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return 'data:image/jpeg;base64,'+btoa(s)};
+function delPhotos(ids){if(!ids.length)return Promise.resolve();ids.forEach(function(id){if(urlCache[id]){URL.revokeObjectURL(urlCache[id]);delete urlCache[id]}});return pop('readwrite',function(st){ids.forEach(function(id){st.delete(id)});return null}).catch(function(){})}
+/* ---------- lista ---------- */
+function list(){return state.ruptures||(state.ruptures=[])}
+function byId(id){return list().find(function(r){return r.id===id})}
+function ago(iso){var m=Math.max(0,Math.round((Date.now()-Date.parse(iso))/60000));if(m<1)return 'agora';if(m<60)return 'há '+m+' min';var h=Math.round(m/60);if(h<24)return 'há '+h+' h';var d=Math.round(h/24);return 'há '+d+(d===1?' dia':' dias')}
+function corridorName(id){var c=state.corridors.find(function(x){return x.id===id});return c?'Corredor '+c.number+' · '+c.sector:'Sem corredor'}
+function card(r){var lines=String(r.product||'').split(/\n+/).filter(Boolean);var title=lines[0]||'Produto não informado';var rest=lines.length>1?'+ '+(lines.length-1)+' produto(s)':'';
+  return '<article class="rup-card'+(r.status==='Abastecido'?' done':'')+'"><button type="button" class="rup-photo" onclick="ruptureViewer(\''+esc(r.id)+'\',0)" '+(r.photos.length?'aria-label="Ver fotos"':'disabled')+'>'+(r.photos.length?'<img data-photo="'+esc(r.photos[0])+'" alt="Foto da ruptura">':'<span class="rup-none">Sem foto</span>')+(r.photos.length>1?'<span class="rup-more">'+r.photos.length+' fotos</span>':'')+'</button>'
+   +'<div class="rup-body"><b>'+esc(title)+'</b>'+(rest?'<div class="small">'+esc(rest)+'</div>':'')+'<div class="small">'+esc(corridorName(r.corridor))+' · '+esc(owner(r.owner))+'</div><div class="small">'+badge(r.status)+' '+esc(r.status==='Abastecido'&&r.doneAt?'abastecido '+ago(r.doneAt):ago(r.createdAt))+'</div>'
+   +'<div class="rup-actions">'+(r.status==='Falta'?'<button type="button" class="primary" onclick="ruptureDone(\''+esc(r.id)+'\')">Abastecido</button>':'')+'<button type="button" onclick="ruptureOpen(\''+esc(r.id)+'\')">Abrir</button></div></div></article>'}
+function fillThumbs(){document.querySelectorAll('#view img[data-photo]').forEach(function(img){if(img.src)return;photoURL(img.getAttribute('data-photo')).then(function(u){if(u)img.src=u;else img.replaceWith(Object.assign(document.createElement('span'),{className:'rup-none',textContent:'Foto só no aparelho onde foi tirada'}))})})}
+window.renderRuptures=function(){var all=list(),open=all.filter(function(r){return r.status==='Falta'}),done=all.filter(function(r){return r.status==='Abastecido'});
+  var shown=(view==='Falta'?open:view==='Abastecido'?done:all).slice().sort(function(a,b){return String(b.createdAt).localeCompare(String(a.createdAt))});
+  var tabs=[['Falta','Em falta',open.length],['Abastecido','Abastecidas',done.length],['','Todas',all.length]];
+  setTimeout(fillThumbs,0);
+  return hero('Rupturas para abastecer','','<button class="primary" onclick="ruptureOpen()">📷 Nova ruptura</button>')
+   +'<div class="panel"><div class="nf-tabs" role="tablist" aria-label="Status das rupturas">'+tabs.map(function(t){return '<button type="button" role="tab" aria-selected="'+(view===t[0])+'" onclick="ruptureTab(\''+t[0]+'\')">'+t[1]+' <span class="nf-count">'+t[2]+'</span></button>'}).join('')+'</div>'
+   +(shown.length?'<div class="rup-grid">'+shown.map(card).join('')+'</div>':'<div class="empty">'+(view==='Falta'?'Nenhuma ruptura em aberto. Tudo abastecido.':'Nada por aqui.')+'</div>')+'</div>'};
+window.ruptureTab=function(v){view=v;render()};
+window.ruptureDone=async function(id){var r=byId(id);if(!r)return;r.status='Abastecido';r.doneAt=new Date().toISOString();await save();render();notify('Ruptura marcada como abastecida.')};
+/* ---------- janela de cadastro ---------- */
+function ensureDialogs(){if(document.getElementById('rup-dialog'))return;
+  var d=document.createElement('dialog');d.id='rup-dialog';d.setAttribute('aria-labelledby','rup-title');
+  d.innerHTML='<form id="rup-form" novalidate><div class="rup-head"><h2 id="rup-title">Nova ruptura</h2><button type="button" onclick="ruptureClose()" aria-label="Fechar">×</button></div>'
+   +'<div><div class="rup-thumbs" id="rup-thumbs"></div><div class="rup-pick" style="margin-top:10px"><label class="primary">📷 Câmera<input type="file" accept="image/*" capture="environment" hidden onchange="ruptureFiles(this)"></label><label>🖼 Galeria<input type="file" accept="image/*" multiple hidden onchange="ruptureFiles(this)"></label></div></div>'
+   +'<div class="rup-pick"><button type="button" id="rup-ai" onclick="ruptureAI()">🤖 Robô identificar produtos</button></div><p class="small" id="rup-ai-status" style="margin:-6px 0 0">O robô olha as fotos e sugere os produtos em falta (a foto é enviada ao Google).</p>'
+   +'<label>Produto(s) em falta<textarea name="product" rows="3" maxlength="1000" placeholder="Ex.: Arroz 5 kg&#10;Feijão carioca 1 kg"></textarea></label>'
+   +'<div class="pair"><label>Corredor<select name="corridor"></select></label><label>Responsável<select name="owner"></select></label></div>'
+   +'<label>Status<select name="status"><option value="Falta">Falta</option><option value="Abastecido">Abastecido</option></select></label>'
+   +'<label>Observação<textarea name="notes" rows="2" maxlength="2000"></textarea></label>'
+   +'<p class="small" id="rup-msg" role="status" style="margin:0"></p>'
+   +'<div class="toolbar"><button type="submit" class="primary" id="rup-save">Salvar</button><button type="button" id="rup-del" onclick="ruptureDelete()">Excluir</button><button type="button" onclick="ruptureClose()">Cancelar</button></div></form>';
+  document.body.appendChild(d);
+  d.querySelector('#rup-form').addEventListener('submit',function(e){e.preventDefault();ruptureSave()});
+  d.addEventListener('cancel',function(e){if(busy)e.preventDefault()});
+  var v=document.createElement('dialog');v.id='rup-viewer';v.innerHTML='<div class="rup-view"><img id="rup-big" alt="Foto da ruptura"></div><div class="rup-nav"><button type="button" onclick="ruptureStep(-1)" aria-label="Foto anterior">‹</button><span id="rup-count"></span><button type="button" onclick="ruptureStep(1)" aria-label="Próxima foto">›</button><button type="button" onclick="document.getElementById(\'rup-viewer\').close()">Fechar</button></div>';
+  document.body.appendChild(v)}
+function msg(t){var m=document.getElementById('rup-msg');if(m)m.textContent=t||''}
+function setBusy(b){busy=b;['rup-save','rup-del','rup-ai'].forEach(function(id){var e=document.getElementById(id);if(e)e.disabled=b});document.querySelectorAll('#rup-dialog .rup-pick input').forEach(function(i){i.disabled=b})}
+function paintThumbs(){var box=document.getElementById('rup-thumbs');box.innerHTML='';draft.photos.forEach(function(p,i){var f=document.createElement('div');f.className='rup-thumb';var img=document.createElement('img');img.alt='Foto '+(i+1);if(p.data)img.src=p.data;else photoURL(p.id).then(function(u){if(u)img.src=u});var x=document.createElement('button');x.type='button';x.textContent='×';x.setAttribute('aria-label','Remover foto '+(i+1));x.onclick=function(){if(busy)return;var gone=draft.photos.splice(i,1)[0];if(!gone.data)draft.removed.push(gone.id);paintThumbs()};f.appendChild(img);f.appendChild(x);box.appendChild(f)});
+  var left=MAX-draft.photos.length;document.querySelectorAll('#rup-dialog .rup-pick label').forEach(function(l){l.style.display=left>0?'':'none'});if(!draft.photos.length)box.innerHTML='<p class="small" style="margin:0">Nenhuma foto ainda. Até '+MAX+' por ruptura.</p>'}
+window.ruptureOpen=function(id){if(!authSession)return;ensureDialogs();var r=id?byId(id):null;
+  draft={id:r?r.id:uid(),isNew:!r,photos:(r?r.photos:[]).map(function(pid){return {id:pid}}),removed:[]};
+  var f=document.getElementById('rup-form');document.getElementById('rup-title').textContent=r?'Ruptura':'Nova ruptura';
+  f.elements.product.value=r?r.product:'';f.elements.notes.value=r?r.notes:'';f.elements.status.value=r?r.status:'Falta';
+  f.elements.corridor.innerHTML=options([['','Sem corredor']].concat(state.corridors.map(function(c){return [c.id,c.number+' · '+c.sector]})),r?r.corridor:'');
+  f.elements.owner.innerHTML=owners(r?r.owner:'');
+  f.elements.corridor.onchange=function(){var c=state.corridors.find(function(x){return x.id===f.elements.corridor.value});if(c&&c.owner&&!f.elements.owner.value)f.elements.owner.value=c.owner};
+  document.getElementById('rup-del').hidden=!r;msg('');var st=document.getElementById('rup-ai-status');if(st)st.textContent='O robô olha as fotos e sugere os produtos em falta (a foto é enviada ao Google).';
+  paintThumbs();setBusy(false);var dlg=document.getElementById('rup-dialog');if(!dlg.open)dlg.showModal()};
+window.ruptureClose=function(){if(busy)return;var d=document.getElementById('rup-dialog');if(d&&d.open)d.close();draft=null};
+window.ruptureFiles=async function(input){var files=Array.from(input.files||[]);input.value='';if(!files.length||!draft)return;var room=MAX-draft.photos.length;if(files.length>room)notify('Até '+MAX+' fotos por ruptura. As demais foram ignoradas.');files=files.slice(0,Math.max(0,room));
+  setBusy(true);msg('Preparando fotos…');try{for(var i=0;i<files.length;i++){var p=await compressPlanPhoto(files[i]);draft.photos.push({id:p.id,data:p.data});paintThumbs()}msg('')}catch(e){msg(e.message||'Não foi possível ler a foto.')}finally{setBusy(false)}};
+window.ruptureSave=async function(){if(!draft||busy)return;var f=document.getElementById('rup-form'),v=readForm(f);var product=String(v.product||'').trim();
+  if(!product&&!draft.photos.length){msg('Tire uma foto ou escreva o produto em falta.');return}
+  setBusy(true);msg('Salvando…');
+  try{for(var i=0;i<draft.photos.length;i++){var p=draft.photos[i];if(p.data){await putPhoto(p.id,p.data);delete p.data}}
+    var r=byId(draft.id);var wasDone=r&&r.status==='Abastecido';var status=v.status==='Abastecido'?'Abastecido':'Falta';
+    var rec={id:draft.id,createdAt:r?r.createdAt:new Date().toISOString(),product:product.slice(0,1000),corridor:v.corridor||'',owner:v.owner||'',status:status,notes:String(v.notes||'').trim().slice(0,2000),photos:draft.photos.map(function(p){return p.id}),doneAt:status==='Abastecido'?(wasDone&&r.doneAt?r.doneAt:new Date().toISOString()):''};
+    if(r)Object.assign(r,rec);else list().push(rec);
+    await save();await delPhotos(draft.removed);busy=false;document.getElementById('rup-dialog').close();draft=null;if(!r)view='Falta';if(page!=='ruptures')go('ruptures');else render();notify('Ruptura salva.')}
+  catch(e){msg('Não foi possível salvar as fotos neste aparelho ('+(e&&e.message||'erro')+'). Libere espaço e tente de novo.')}finally{setBusy(false)}};
+window.ruptureDelete=async function(){if(!draft||busy)return;var r=byId(draft.id);if(!r)return;if(!confirm('Excluir esta ruptura e as fotos dela?'))return;
+  setBusy(true);try{state.ruptures=list().filter(function(x){return x.id!==r.id});await save();await delPhotos(r.photos.concat(draft.removed));busy=false;document.getElementById('rup-dialog').close();draft=null;render();notify('Ruptura excluída.')}finally{setBusy(false)}};
+/* ---------- ver fotos ---------- */
+var viewing=null;
+window.ruptureViewer=function(id,i){var r=byId(id);if(!r||!r.photos.length)return;ensureDialogs();viewing={r:r,i:i||0};showPhoto();var v=document.getElementById('rup-viewer');if(!v.open)v.showModal()};
+function showPhoto(){var r=viewing.r,i=viewing.i,img=document.getElementById('rup-big');img.removeAttribute('src');document.getElementById('rup-count').textContent=(i+1)+' de '+r.photos.length;photoURL(r.photos[i]).then(function(u){if(u&&viewing&&viewing.r===r&&viewing.i===i)img.src=u})}
+window.ruptureStep=function(d){if(!viewing)return;var n=viewing.r.photos.length;viewing.i=(viewing.i+d+n)%n;showPhoto()};
+/* ---------- menu ---------- */
+if(typeof labels==='object'&&!labels.ruptures){labels.ruptures='Rupturas';if(typeof icons==='object')icons.ruptures='◍'}
+window.ruptureDraftPhotos=function(){return draft?draft.photos.slice():[]};
+window.ruptureSetProduct=function(text){var f=document.getElementById('rup-form');if(!f)return;var cur=f.elements.product.value.trim();f.elements.product.value=cur?cur+'\n'+text:text};
+window.ruptureAIStatus=function(t){var s=document.getElementById('rup-ai-status');if(s)s.textContent=t};
+window.ruptureBusy=function(b){setBusy(b)};
+if(typeof authSession!=='undefined'&&authSession&&page==='ruptures')render();
+})();
+</script>
+<script id="ruptures-ai-js">
+(function(){
+'use strict';
+/* Robô lê a foto da ruptura com o Google Gemini (mesma chave salva na página do Robô). */
+var GEMINI='https://generativelanguage.googleapis.com/v1beta/openai',MODELS=['gemini-flash-latest','gemini-flash-lite-latest','gemini-2.5-flash'];
+var PROMPT='Esta é uma foto de gôndola/prateleira de uma loja (supermercado ou varejo). Liste, em português do Brasil, os produtos que parecem estar em falta (espaço vazio, ruptura) ou acabando. Uma linha por produto, curta, com marca e tamanho quando der para ler na etiqueta ou nos produtos vizinhos. Sem introdução e sem numeração. Se não der para identificar, responda apenas: não identificado.';
+async function robotCfg(){var raw=localStorage.getItem('lojasg.estoque99.robot-groq:'+authSession.storeKey);if(!raw)return null;try{var o=JSON.parse(raw);var p=await crypto.subtle.decrypt({name:'AES-GCM',iv:authUn64(o.iv),additionalData:authBytes('robot|'+authLoginName(authSession.record.login))},authSession.key,authUn64(o.cipher));return JSON.parse(new TextDecoder().decode(p))}catch(e){return null}}
+function clean(t){return String(t||'').replace(/\*\*/g,'').split(/\n+/).map(function(l){return l.replace(/^\s*(?:[-•*]|\d+[.)])\s*/,'').trim()}).filter(Boolean).join('\n').slice(0,1000)}
+async function ask(key,images){var last='';for(var i=0;i<MODELS.length;i++){var res;
+  try{res=await fetch(GEMINI+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:MODELS[i],max_tokens:2048,temperature:0.2,messages:[{role:'user',content:[{type:'text',text:PROMPT}].concat(images.map(function(u){return {type:'image_url',image_url:{url:u}}}))}]})})}
+  catch(e){throw Error('Não conectou ao Google Gemini. Confira a internet; se o computador da empresa bloquear, use o celular.')}
+  if(res.ok){var j=await res.json();var t=j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;return clean(Array.isArray(t)?t.map(function(x){return x.text||''}).join('\n'):t)}
+  var body='';try{body=await res.text()}catch(e){}
+  if(res.status===401||res.status===403||(res.status===400&&/api key/i.test(body)))throw Error('A chave do Google Gemini foi recusada. Atualize na página do Robô.');
+  if(res.status===404||res.status===429||res.status>=500){last=res.status;continue}
+  throw Error('O Gemini respondeu com erro '+res.status+'.')}
+  throw Error(last===429?'Limite gratuito do Gemini atingido. Tente em alguns minutos.':'O Gemini está sobrecarregado agora. Tente de novo em instantes.')}
+window.ruptureAI=async function(){if(!authSession)return;var photos=(window.ruptureDraftPhotos&&window.ruptureDraftPhotos())||[];
+  if(!photos.length){window.ruptureAIStatus('Tire ou anexe uma foto primeiro.');return}
+  var cfg=await robotCfg();var key=cfg&&cfg.keys&&cfg.keys.gemini;
+  if(!key){window.ruptureAIStatus('Para o robô ler fotos, configure o Google Gemini na página do Robô (menu Robô → IA).');return}
+  window.ruptureBusy(true);window.ruptureAIStatus('🤖 Olhando as fotos…');
+  try{var urls=[];for(var i=0;i<Math.min(3,photos.length);i++){var p=photos[i];urls.push(p.data||await window.rupturePhotoDataURL(p.id))}
+    var text=await ask(key,urls.filter(Boolean));
+    if(!text||/^não identificado\.?$/i.test(text)){window.ruptureAIStatus('O robô não conseguiu identificar. Escreva o produto.')}
+    else{window.ruptureSetProduct(text);window.ruptureAIStatus('Sugestão do robô colocada abaixo. Confira antes de salvar.')}}
+  catch(e){window.ruptureAIStatus(e.message||'Não foi possível ler a foto.')}finally{window.ruptureBusy(false)}};
 })();
 </script>
 <script>

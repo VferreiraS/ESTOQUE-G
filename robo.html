@@ -112,6 +112,7 @@ body.still .bot,body.still .msg.bot.typing::after{animation:none!important}
         <div id="suggest">
           <button type="button" data-q="O que está pendente hoje?">O que está pendente hoje?</button>
           <button type="button" data-q="Quais NFs estão em divergência?">NFs em divergência</button>
+          <button type="button" data-q="O que falta abastecer (rupturas em aberto) e com quem?">O que falta abastecer?</button>
           <button type="button" data-q="Quais tarefas estão atrasadas e com quem?">Tarefas atrasadas</button>
           <button type="button" data-q="Quais NFs chegaram há mais tempo e ainda não foram conferidas?">NFs mais antigas</button>
         </div>
@@ -217,6 +218,9 @@ function buildContext(){
   L.push('','TAREFAS ABERTAS ('+open.length+'):');
   open.forEach(function(t){var late=t.due&&t.due<today;L.push('- '+t.title+' | responsável: '+who(t.owner)+' | prazo: '+(t.due?br(t.due):'sem prazo')+' | '+t.status+(late?' | ATRASADA':t.due===today?' | vence hoje':''))});
   L.push('Tarefas concluídas: '+(st.tasks||[]).filter(function(t){return t.status==='Concluído'}).length+'.');
+  var rup=(st.ruptures||[]).filter(function(r){return r.status!=='Abastecido'});
+  L.push('','RUPTURAS EM FALTA PARA ABASTECER ('+rup.length+'):');
+  rup.forEach(function(r){var c=(st.corridors||[]).find(function(x){return x.id===r.corridor});var h=Math.max(0,Math.round((Date.now()-Date.parse(r.createdAt))/3600000));L.push('- '+(String(r.product||'produto não informado').replace(/\n+/g,'; '))+' | '+(c?'corredor '+c.number+' '+c.sector:'sem corredor')+' | responsável: '+who(r.owner)+' | registrada há '+(h<1?'menos de 1 hora':h+' h')+' | '+(r.photos||[]).length+' foto(s)'+(r.notes?' | obs: '+String(r.notes).slice(0,150):''))});
   if(team.length){L.push('','EQUIPE ('+team.length+'): '+team.map(function(p){return p.name+(p.role?' ('+p.role+')':'')}).join('; '))}
   var cor=st.corridors||[];if(cor.length){L.push('','CORREDORES ('+cor.length+'): '+cor.map(function(c){return c.number+' '+c.sector+' – '+who(c.owner)}).join('; '))}
   var plans=(st.plans||[]).filter(function(p){return p.date===today});
