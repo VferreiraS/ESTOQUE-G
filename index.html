@@ -310,7 +310,7 @@ function validate(s){
  s.nfs.forEach(nfValidateExtras);
  const owners=new Set(['','todos',...s.team.map(x=>x.id)]),corridors=new Set(['',...s.corridors.map(x=>x.id)]);
  if(s.corridors.some(x=>!owners.has(x.owner))||s.tasks.some(x=>!owners.has(x.owner)||!corridors.has(x.corridor))||s.nfs.some(x=>!owners.has(x.owner)))throw Error('Backup inválido');
- return {version:1,plans:validatePlans(s.plans),team:s.team,corridors:s.corridors,tasks:s.tasks,nfs:s.nfs,ruptures:validateRuptures(s.ruptures,s),expiries:validateExpiries(s.expiries,s),photoKey:validPhotoKey(s.photoKey),updated:s.updated||null,alertSettings:normalizeAlertSettings(s.alertSettings),alertSnoozes:normalizeSnoozes(s.alertSnoozes)};
+ return {version:1,plans:validatePlans(s.plans),team:s.team,corridors:s.corridors,tasks:s.tasks,nfs:s.nfs,ruptures:validateRuptures(s.ruptures,s),expiries:validateExpiries(s.expiries,s),sync:validateSync(s.sync),photoKey:validPhotoKey(s.photoKey),updated:s.updated||null,alertSettings:normalizeAlertSettings(s.alertSettings),alertSnoozes:normalizeSnoozes(s.alertSnoozes)};
 }
 function notify(s){$('toast').textContent=s;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').textContent='',4000)}
 async function save(){if(!authSession)return;state.updated=new Date().toISOString();dirty=true;const snapshot=JSON.stringify(state);try{await authPersist(snapshot);storageOK=true;dirty=JSON.stringify(state)!==snapshot}catch(e){storageOK=false;notify(e.message||'Falha ao salvar. Exporte uma cópia protegida.')}renderStorage();if(fileHandle)await writeFile();}
@@ -326,7 +326,7 @@ const icons={home:'◫',tasks:'✓',team:'♙',corridors:'▦',nfs:'▤',data:'�
 
 function mobileTableLabels(){if(!document.querySelectorAll)return;document.querySelectorAll('#view table').forEach(table=>{const heads=Array.from(table.querySelectorAll('thead th')).map(h=>h.textContent.trim());table.classList.add('mobile-cards');table.querySelectorAll('tbody tr').forEach(row=>Array.from(row.children).forEach((cell,i)=>cell.setAttribute('data-label',heads[i]||'')))})}
 function mobileEnhance(){mobileTableLabels();const nav=$('mobile-bottom');if(!nav)return;const tabs=[['home','⌂','Início'],['tasks','✓','Tarefas'],['nfs','▤','Notas'],['ruptures','◍','Rupturas'],['chat','✉','Chat'],['mobile-menu','☰','Mais']];const selected=tabs.some(t=>t[0]===page)?page:'mobile-menu';nav.innerHTML=tabs.map(([p,icon,title])=>`<button class="${selected===p?'active':''}" aria-current="${selected===p?'page':'false'}" onclick="go('${p}')"><span aria-hidden="true">${icon}</span>${title}</button>`).join('')}
-function renderMobileMenu(){return hero('Seu estoque na palma da mão.','Acesse todas as funções e personalize a aparência.')+`<div class="panel help mobile-options">${Object.keys(labels).map(p=>`<button onclick="go('${p}')">${labels[p]} →</button>`).join('')}<button onclick="toggleSiteTheme()">☾ / ☀ Alternar tema claro e escuro</button><button onclick="if(window.toggleVisualEffects)window.toggleVisualEffects()">Alternar efeitos visuais</button><button onclick="authLogout()">Sair da conta</button></div><div class="panel help mobile-guide"><h2>Levar os dados do computador</h2><ol><li>No computador, acesse Minha conta e exporte a conta protegida.</li><li>Transfira esse arquivo para o celular.</li><li>Na tela de login do celular, escolha Importar conta protegida e informe a senha dessa conta.</li></ol><p>Não há sincronização automática. Se a conta já existir neste aparelho, entre nela e use Dados e ajuda → Restaurar backup para atualizar os cadastros. A restauração substitui os dados atuais após confirmação.</p><p>Para enviar um plano com fotos, use Compartilhar. Se o navegador não oferecer esse recurso, baixe as fotos e copie o texto. O envio pelo WhatsApp ou Outlook precisa de conexão.</p><p>Use sempre o mesmo navegador e faça backups. A prévia de um arquivo HTML pode não executar o sistema; o navegador precisa permitir JavaScript, armazenamento local e criptografia.</p><p><strong>Usar como app:</strong> no iPhone/iPad, abra o endereço do site no Safari, toque em Compartilhar e em “Adicionar à Tela de Início”. No Android, abra no Chrome e toque em ⋮ → “Instalar app”. No computador, use o ícone de instalar na barra de endereço do Chrome ou Edge.</p></div>`}
+function renderMobileMenu(){return hero('Seu estoque na palma da mão.','Acesse todas as funções e personalize a aparência.')+`<div class="panel help mobile-options">${Object.keys(labels).map(p=>`<button onclick="go('${p}')">${labels[p]} →</button>`).join('')}<button onclick="toggleSiteTheme()">☾ / ☀ Alternar tema claro e escuro</button><button onclick="if(window.toggleVisualEffects)window.toggleVisualEffects()">Alternar efeitos visuais</button><button onclick="authLogout()">Sair da conta</button></div><div class="panel help mobile-guide"><h2>Levar os dados do computador</h2><ol><li>No computador, acesse Minha conta e exporte a conta protegida.</li><li>Transfira esse arquivo para o celular.</li><li>Na tela de login do celular, escolha Importar conta protegida e informe a senha dessa conta.</li></ol><p>Para a equipe toda ver os mesmos dados em vários aparelhos, use <b>Chat → Equipe sincronizada</b>. Sem isso, cada aparelho guarda só os próprios dados. Se a conta já existir neste aparelho, entre nela e use Dados e ajuda → Restaurar backup para atualizar os cadastros. A restauração substitui os dados atuais após confirmação.</p><p>Para enviar um plano com fotos, use Compartilhar. Se o navegador não oferecer esse recurso, baixe as fotos e copie o texto. O envio pelo WhatsApp ou Outlook precisa de conexão.</p><p>Use sempre o mesmo navegador e faça backups. A prévia de um arquivo HTML pode não executar o sistema; o navegador precisa permitir JavaScript, armazenamento local e criptografia.</p><p><strong>Usar como app:</strong> no iPhone/iPad, abra o endereço do site no Safari, toque em Compartilhar e em “Adicionar à Tela de Início”. No Android, abra no Chrome e toque em ⋮ → “Instalar app”. No computador, use o ícone de instalar na barra de endereço do Chrome ou Edge.</p></div>`}
 if(window.visualViewport&&window.visualViewport.addEventListener){window.visualViewport.addEventListener('resize',()=>{const typing=document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);document.body.classList.toggle('keyboard-open',!!typing&&window.innerHeight-window.visualViewport.height>140)})}
 
 function go(p){page=p;search='';filter='';document.body.classList.remove('menu');render()}
@@ -365,7 +365,7 @@ function render(){if(!authSession){renderAuth();return}if(page==='assistant'||pa
  if(page==='team'){html=hero('Gente que faz acontecer.','As tarefas de TODOS contam para cada integrante da equipe.',newButton('person','Colaborador')+shareReportButton('team'))+`<div class="cards">${[...state.team,{id:'todos',name:'TODOS',role:'Atividade em conjunto'}].map(p=>{const tasks=state.tasks.filter(t=>t.owner===p.id||(p.id!=='todos'&&t.owner==='todos')),done=tasks.filter(t=>t.status==='Concluído').length;return `<div class="card"><div class="cardtop"><div class="avatar">${esc(p.name.slice(0,1))}</div>${p.id==='todos'?'<span class="pill">Coletivo</span>':`<button onclick="openEditor('person','${esc(p.id)}')">Editar</button>`}</div><h3>${esc(p.name)}</h3><div class="small">${esc(p.role)}</div><p>${tasks.length-done} pendentes · ${done} concluídas</p><div class="progress"><i style="width:${tasks.length?done/tasks.length*100:0}%"></i></div></div>`}).join('')}</div>`}
  if(page==='corridors'){html=hero('Cada corredor, um endereço.','Cores e símbolos para identificar cada setor de relance.',newButton('corridor','Corredor')+shareReportButton('corridors'))+`<div class="cards">${state.corridors.map(c=>{const tasks=state.tasks.filter(t=>t.corridor===c.id),done=tasks.filter(t=>t.status==='Concluído').length,theme=corridorTheme(c);return `<div class="card corridor-card" style="--sector-color:${theme.color};--sector-soft:${theme.soft};--sector-border:${theme.border}"><div class="cardtop"><div class="eyebrow">CORREDOR ${esc(c.number)}</div><button onclick="openEditor('corridor','${esc(c.id)}')">Editar</button></div><div class="sector-heading"><span class="sector-symbol" aria-hidden="true">${sectorSymbol(c.sector)}</span><h3>${esc(c.sector)}</h3></div><div class="small">Responsável: <b>${esc(owner(c.owner))}</b></div><p>${tasks.length-done} tarefas abertas · ${done} concluídas</p><div class="progress"><i style="width:${tasks.length?done/tasks.length*100:0}%"></i></div></div>`}).join('')}</div>`}
  if(page==='nfs'){html=hero('Recebeu? Conferiu? Registrou.','Acompanhe as notas fiscais da chegada à conclusão.',`<div class="toolbar"><button class="primary" onclick="openNFScanner()">▥ Bipar NF</button><button onclick="openNFImport()">Importar XML</button>${newButton('nf','Nova NF')}</div>`)+`<div class="panel"><div class="panelhead"><h2>Notas fiscais</h2><button onclick="window.print()">Imprimir</button></div>${state.nfs.length?`<div class="tablewrap"><table><thead><tr><th>NF / Fornecedor</th><th>Recebimento</th><th>Volumes</th><th>Responsável</th><th>Status</th><th>Ações</th></tr></thead><tbody>${state.nfs.map(n=>`<tr><td><b>${esc(n.number)}</b>${n.series?`<div class="small">Série ${esc(n.series)}</div>`:''}<div class="small">${esc(n.supplier)}</div>${n.items?`<div class="small">${n.items.length} itens importados</div>`:''}${n.notes?`<div class="small">${n.status==='Em divergência'?'Divergência: ':''}${esc(n.notes)}</div>`:''}</td><td>${date(n.date)}${n.arrivalTime?`<div class="small">${esc(n.arrivalTime)}</div>`:''}</td><td>${esc((n.volumes==null?0:n.volumes))}</td><td>${esc(owner(n.owner))}</td><td>${badge(n.status)}</td><td><button onclick="openEditor('nf','${esc(n.id)}')">Editar</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhuma NF cadastrada.</div>'}</div>`}
- if(page==='data'){html=hero('Seus dados, no seu controle.','Os cadastros ficam locais. Consultas opcionais enviam somente CEP ou CNPJ ao serviço escolhido. Use cópias de segurança.')+`<div class="grid2"><div class="panel help"><h2>Backup e restauração</h2><div class="toolbar"><button class="primary" onclick="backup()">Exportar backup</button><button onclick="$('restore').click()">Restaurar backup</button></div><p>Última alteração: ${state.updated?esc(new Date(state.updated).toLocaleString('pt-BR')):'Ainda sem alterações'}</p></div><div class="panel help"><h2>Salvar direto em arquivo</h2><button onclick="connectFile()">Conectar arquivo local</button><p id="filehelp">Em navegadores sem esse recurso, use Exportar backup. Não há sincronização entre PCs.</p></div></div>`}
+ if(page==='data'){html=hero('Seus dados, no seu controle.','Os cadastros ficam locais. Consultas opcionais enviam somente CEP ou CNPJ ao serviço escolhido. Use cópias de segurança.')+`<div class="grid2"><div class="panel help"><h2>Backup e restauração</h2><div class="toolbar"><button class="primary" onclick="backup()">Exportar backup</button><button onclick="$('restore').click()">Restaurar backup</button></div><p>Última alteração: ${state.updated?esc(new Date(state.updated).toLocaleString('pt-BR')):'Ainda sem alterações'}</p></div><div class="panel help"><h2>Salvar direto em arquivo</h2><button onclick="connectFile()">Conectar arquivo local</button><p id="filehelp">Em navegadores sem esse recurso, use Exportar backup. Para dividir os dados com outros aparelhos da equipe, use Chat → Equipe sincronizada.</p></div></div>`}
  if(page==='mobile-menu')html=renderMobileMenu();
  if(page==='plans')html=renderPlans();  if(page==='ruptures')html=typeof renderRuptures==='function'?renderRuptures():'';  if(page==='chat')html=typeof renderChat==='function'?renderChat():'';  if(window.extraPages&&typeof window.extraPages[page]==='function')html=window.extraPages[page]();
  if(page==='account')html=renderAccount();
@@ -692,6 +692,9 @@ function validateExpiries(list,st){if(!Array.isArray(list))return [];const okId=
  for(const x of list.slice(0,5000)){if(!x||!okId(x.id)||ids.has(x.id))continue;const d=day(x.date);const product=str(x.product,200).trim();if(!d||!product)continue;ids.add(x.id);const t=Date.parse(x.createdAt),q=Number(x.qty);
   out.push({id:x.id,product,ean:typeof x.ean==='string'&&/^\d{0,20}$/.test(x.ean)?x.ean:'',qty:Number.isInteger(q)&&q>=0&&q<=999999?q:1,date:d,corridor:cors.has(x.corridor)?x.corridor:'',owner:people.has(x.owner)?x.owner:'',status:x.status==='Retirado'?'Retirado':'Ativo',notes:str(x.notes,1000),createdAt:isNaN(t)?new Date().toISOString():new Date(t).toISOString(),doneAt:x.status==='Retirado'&&!isNaN(Date.parse(x.doneAt))?new Date(Date.parse(x.doneAt)).toISOString():''})}
  return out}
+function validateSync(x){const C=['team','corridors','tasks','nfs','ruptures','expiries'],out={meta:{},ready:false,replace:false,pending:[],topic:''};C.forEach(c=>out.meta[c]={});if(!x||typeof x!=='object')return out;out.ready=x.ready===true;out.replace=x.replace===true;out.topic=typeof x.topic==='string'&&/^e99s-[0-9a-f]{24}$/.test(x.topic)?x.topic:'';let n=0;const okId=id=>/^[a-zA-Z0-9_-]{1,100}$/.test(id);
+ if(x.meta&&typeof x.meta==='object')for(const c of C){const m=x.meta[c];if(!m||typeof m!=='object')continue;for(const id of Object.keys(m)){if(n>=80000)break;const v=m[id];if(okId(id)&&Array.isArray(v)&&Number.isFinite(v[0])&&typeof v[1]==='string'){out.meta[c][id]=[Math.floor(v[0]),v[1].slice(0,40),v[2]?1:0,typeof v[3]==='string'?v[3].slice(0,16):''];n++}}}
+ if(Array.isArray(x.pending))out.pending=[...new Set(x.pending.filter(k=>typeof k==='string'&&/^(team|corridors|tasks|nfs|ruptures|expiries)\|[a-zA-Z0-9_-]{1,100}$/.test(k)))].slice(0,80000);return out}
 function validPhotoKey(k){return typeof k==='string'&&/^[A-Za-z0-9+/]{43}=$/.test(k)?k:''}
 function validateRuptures(list,st){if(!Array.isArray(list))return [];const okId=x=>typeof x==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(x);const people=new Set(['','todos',...((st&&st.team)||[]).map(x=>x&&x.id)]),cors=new Set(['',...((st&&st.corridors)||[]).map(x=>x&&x.id)]);const ids=new Set(),out=[];
  for(const r of list.slice(0,2000)){if(!r||!okId(r.id)||ids.has(r.id))continue;ids.add(r.id);const str=(v,n)=>typeof v==='string'?v.slice(0,n):'';const t=Date.parse(r.createdAt);
@@ -2562,6 +2565,9 @@ function dataToBytes(d){return Uint8Array.from(atob(String(d).split(',')[1]||'')
 async function putPhoto(id,dataUrl){var key=await photoKey(true),iv=crypto.getRandomValues(new Uint8Array(12));var cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:authBytes('photo|'+id)},key,dataToBytes(dataUrl));return pop('readwrite',function(st){return st.put({account:authSession.storeKey,iv:iv,data:cipher,at:Date.now()},id)})}
 async function photoBytes(id){var rec=await pop('readonly',function(st){return st.get(id)});if(!rec)return null;var key=await photoKey(false);if(!key)return null;return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:rec.iv,additionalData:authBytes('photo|'+id)},key,rec.data))}
 async function photoURL(id){if(urlCache[id])return urlCache[id];try{var b=await photoBytes(id);if(!b)return null;urlCache[id]=URL.createObjectURL(new Blob([b],{type:'image/jpeg'}));return urlCache[id]}catch(e){return null}}
+window.rupturePutPhoto=async function(id,dataUrl){await putPhoto(id,dataUrl);if(urlCache[id]){URL.revokeObjectURL(urlCache[id]);delete urlCache[id]}};
+window.ruptureHasPhoto=async function(id){try{return !!(await pop('readonly',function(st){return st.get(id)}))}catch(e){return false}};
+window.ruptureDelPhotos=function(ids){return delPhotos(ids||[])};
 window.rupturePhotoDataURL=async function(id){var b=await photoBytes(id);if(!b)return null;var s='';for(var i=0;i<b.length;i+=0x8000)s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return 'data:image/jpeg;base64,'+btoa(s)};
 function delPhotos(ids){if(!ids.length)return Promise.resolve();ids.forEach(function(id){if(urlCache[id]){URL.revokeObjectURL(urlCache[id]);delete urlCache[id]}});return pop('readwrite',function(st){ids.forEach(function(id){st.delete(id)});return null}).catch(function(){})}
 /* ---------- lista ---------- */
@@ -2695,6 +2701,8 @@ window.ruptureAI=async function(){if(!authSession)return;var photos=(window.rupt
 .chat-btns button.primary{background:var(--ds-ink);color:var(--ds-bg);border-color:var(--ds-ink)}
 .chat-setup{display:grid;gap:16px}
 .chat-setup form{display:grid;gap:12px}
+.chat-check{display:flex!important;gap:10px;align-items:flex-start;font-weight:500!important}
+.chat-check input{width:22px;height:22px;flex:none;margin:0}
 .chat-code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:20px;letter-spacing:.12em;font-weight:700}
 .nav-unread{display:inline-block;min-width:18px;padding:0 6px;margin-left:6px;border-radius:999px;background:var(--ds-ink);color:var(--ds-bg);font-size:11px;font-weight:750;line-height:18px;text-align:center}
 .mobile-bottom button{position:relative}
@@ -2827,7 +2835,7 @@ async function paint(scroll){var box=document.getElementById('chat-list');if(!bo
 function viewImg(u){var d=document.getElementById('chat-img-view');if(!d){d=document.createElement('dialog');d.id='chat-img-view';d.innerHTML='<img alt="Foto do chat"><button type="button" onclick="this.closest(\'dialog\').close()">Fechar</button>';document.body.appendChild(d)}d.querySelector('img').src=u;d.showModal()}
 window.renderChat=function(){if(!cfg){return hero('Chat da equipe','')+'<div class="panel chat-setup">'
    +'<div><h2>Criar equipe</h2><form onsubmit="chatCreate(event)"><label>Seu nome no chat<input name="name" required maxlength="40" value="'+esc2(authSession.payload.store==='Estoque 99'?'Gestor':authSession.record.login)+'"></label><button class="primary">Criar equipe e gerar código</button></form></div>'
-   +'<div><h2>Entrar com código</h2><form onsubmit="chatJoin(event)"><label>Código da equipe<input name="code" required maxlength="20" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX" value="'+esc2(pendingInvite?fmt(pendingInvite):'')+'"></label><label>Seu nome no chat<input name="name" required maxlength="40" value="'+esc2(authSession.record.login)+'"></label><button class="primary">Entrar no chat</button></form></div>'
+   +'<div><h2>Entrar com código</h2><form onsubmit="chatJoin(event)"><label>Código da equipe<input name="code" required maxlength="20" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX" value="'+esc2(pendingInvite?fmt(pendingInvite):'')+'"></label><label>Seu nome no chat<input name="name" required maxlength="40" value="'+esc2(authSession.record.login)+'"></label><label class="chat-check"><input type="checkbox" name="sync" checked> Compartilhar tarefas, NFs, rupturas e validades com a equipe</label><label class="chat-check"><input type="checkbox" name="replace" checked> Usar só os dados da equipe neste aparelho <span class="small">(desmarque para juntar o que já existe aqui)</span></label><button class="primary">Entrar no chat</button></form></div>'
    +'<p class="small">As mensagens e fotos são criptografadas com o código da equipe e entregues pelo serviço gratuito ntfy.sh. Limites: 250 mensagens por dia por internet; fotos ficam no servidor por 3 horas e mensagens por 12 horas (o histórico fica salvo em cada aparelho).</p></div>'}
   setTimeout(function(){paint(true);markRead();setStatus(connected);recBar()},0);
   return '<div class="panel chat-wrap"><div class="chat-head"><div><h2>Chat · '+esc2(cfg.team||'Equipe')+'</h2><span class="chat-status" id="chat-status">Conectando…</span> <span class="small" id="chat-people"></span></div><div class="row toolbar"><button type="button" onclick="chatInvite()">Convidar</button><button type="button" onclick="chatLeave()">Sair da equipe</button></div></div>'
@@ -2836,9 +2844,12 @@ window.renderChat=function(){if(!cfg){return hero('Chat da equipe','')+'<div cla
    +'<form id="chat-form" onsubmit="chatSubmit(event)"><textarea id="chat-text" rows="1" maxlength="1000" placeholder="Mensagem para a equipe…" aria-label="Mensagem" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey&&!event.isComposing){event.preventDefault();chatSubmit(event)}"></textarea><div class="chat-btns"><label title="Câmera" aria-label="Tirar foto">📷<input type="file" accept="image/*" capture="environment" hidden onchange="chatPhoto(this)"></label><label title="Galeria" aria-label="Enviar foto da galeria">🖼<input type="file" accept="image/*" hidden onchange="chatPhoto(this)"></label><button type="button" id="chat-mic" aria-label="Gravar áudio" title="Gravar áudio" aria-pressed="false" onclick="chatMic()"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg></button><button type="submit" class="primary" id="chat-send">Enviar</button></div></form></div>'};
 window.chatSubmit=async function(e){if(e)e.preventDefault();var t=document.getElementById('chat-text');if(!t||!t.value.trim())return;var v=t.value;t.value='';var ok=await window.chatSend(v);if(!ok)t.value=v;t.focus()};
 window.chatPhoto=async function(input){var f=input.files&&input.files[0];input.value='';if(!f)return;try{notify('Preparando foto…');var p=await compressPlanPhoto(f);var t=document.getElementById('chat-text');var cap=t?t.value:'';if(await window.chatSend(cap,p.data)&&t)t.value=''}catch(e){notify(e.message||'Não foi possível ler a foto.')}};
-async function start(c){cancelRec();cfg=c;team=c?await makeTeam(c.code):null;mem={};Object.keys(audioURL).forEach(function(k){URL.revokeObjectURL(audioURL[k])});audioURL={};if(team)connect();else disconnect();badges()}
-window.chatCreate=async function(e){e.preventDefault();var v=readForm(e.target);var name=String(v.name||'').trim().slice(0,40);if(!name)return;var code=newCode();var c={code:code,name:name,team:authSession.payload.store||'Equipe',owner:true};await saveCfg(c);await start(c);render();notify('Equipe criada. Toque em Convidar para chamar os auxiliares.')};
-window.chatJoin=async function(e){e.preventDefault();var v=readForm(e.target);var code=norm(v.code);var name=String(v.name||'').trim().slice(0,40);if(code.length!==12){notify('O código tem 12 letras e números.');return}if(!name)return;var c={code:code,name:name,team:'Equipe',owner:false};await saveCfg(c);pendingInvite='';await start(c);render();notify('Você entrou no chat da equipe.')};
+async function start(c){cancelRec();cfg=c;team=c?await makeTeam(c.code):null;mem={};Object.keys(audioURL).forEach(function(k){URL.revokeObjectURL(audioURL[k])});audioURL={};if(team)connect();else disconnect();badges();listeners.forEach(function(fn){try{fn()}catch(e){}})}
+var listeners=[];
+window.e99Team={get:function(){return cfg&&team?{code:cfg.code,name:cfg.name,owner:!!cfg.owner,team:cfg.team,sync:cfg.sync===true,replace:cfg.replace===true,topic:team.topic}:null},onChange:function(fn){listeners.push(fn)},ntfy:function(){return NTFY},
+  setSync:async function(on,extra){if(!cfg)return;cfg.sync=!!on;if(extra)Object.assign(cfg,extra);await saveCfg(cfg);listeners.forEach(function(fn){try{fn()}catch(e){}})}};
+window.chatCreate=async function(e){e.preventDefault();var v=readForm(e.target);var name=String(v.name||'').trim().slice(0,40);if(!name)return;var code=newCode();var c={code:code,name:name,team:authSession.payload.store||'Equipe',owner:true,sync:true,replace:false};await saveCfg(c);await start(c);render();notify('Equipe criada. Toque em Convidar para chamar os auxiliares.')};
+window.chatJoin=async function(e){e.preventDefault();var v=readForm(e.target);var code=norm(v.code);var name=String(v.name||'').trim().slice(0,40);if(code.length!==12){notify('O código tem 12 letras e números.');return}if(!name)return;var c={code:code,name:name,team:'Equipe',owner:false,sync:!!(e.target.elements.sync&&e.target.elements.sync.checked),replace:!!(e.target.elements.replace&&e.target.elements.replace.checked)};await saveCfg(c);pendingInvite='';await start(c);render();notify('Você entrou no chat da equipe.')};
 window.chatInvite=function(){if(!cfg)return;var link=location.origin+location.pathname.replace(/robo\.html$/,'')+'#equipe='+fmt(cfg.code);var text='Entre no chat da equipe do Estoque 99: '+link+' (código '+fmt(cfg.code)+')';
   if(navigator.share){navigator.share({title:'Chat da equipe',text:text}).catch(function(){})}else{try{navigator.clipboard.writeText(text);notify('Convite copiado. Cole no WhatsApp dos auxiliares.')}catch(e){prompt('Copie o convite:',text)}window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener')}};
 window.chatLeave=async function(){if(!cfg||!confirm('Sair do chat desta equipe neste aparelho? Para voltar, use o código.'))return;await saveCfg(null);await start(null);render()};
@@ -3112,6 +3123,185 @@ if(typeof labels==='object'&&!labels.expiry){labels.expiry='Validade';icons.expi
 /* aviso no início */
 var before=render;render=function(){var r=before.apply(this,arguments);if(authSession&&page==='home'){var g=groups();var lim=g.all.filter(function(x){var d=rem(x);return d>=0&&d<=7}).length;if((lim||g.late.length)&&!document.querySelector('#view .exp-home')){var st=document.querySelector('#view .pn-homelink')||document.querySelector('#view .stats');if(st){var b=document.createElement('div');b.className='exp-home';b.innerHTML='<div><b>'+(lim?lim+' produto(s) vencem em até 7 dias':'Validade')+'</b><div class="small">'+(g.late.length?g.late.length+' já vencido(s) na gôndola':'Confira e retire antes de vencer.')+'</div></div><button type="button" onclick="go(\'expiry\');expiryTab(\''+(g.late.length?'late':'soon')+'\')">◷ Ver validade →</button>';st.after(b)}}}return r};
 document.addEventListener('visibilitychange',function(){if(document.hidden)stopScan('')});
+})();
+</script>
+<style id="sync-css">
+/* Equipe sincronizada: status e opções dentro do Chat. */
+.sync-box{border:1px solid var(--ds-line);border-radius:14px;background:var(--ds-surface)}
+.sync-box.on{border:2px solid var(--ds-ink)}
+.sync-box summary{cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:13.5px;font-weight:650;list-style:none}
+.sync-box summary::-webkit-details-marker{display:none}
+.sync-box summary::after{content:'▾';margin-left:auto;color:var(--ds-muted)}
+.sync-box[open] summary::after{content:'▴'}
+.sync-ico{width:16px;height:16px;flex:none}
+.sync-body{display:grid;gap:10px;padding:0 12px 12px}
+.sync-body h3{margin:4px 0 0;font-size:14px}
+.sync-feed{display:grid;gap:6px;max-height:220px;overflow:auto}
+.sync-feed div{display:grid;grid-template-columns:3.2em minmax(0,1fr);gap:8px;font-size:13px;border-top:1px solid var(--ds-line);padding-top:6px}
+.sync-feed span{color:var(--ds-muted);font-size:12px}
+.sync-wait{font-size:13px;border:1px dashed var(--ds-ink);border-radius:10px;padding:8px 10px}
+</style>
+<script id="sync-js">
+(function(){
+'use strict';
+/* Sincroniza tarefas, NFs, rupturas (com fotos), validades, equipe e corredores entre os aparelhos da equipe do chat.
+   Canal próprio no ntfy.sh, tudo cifrado com o código da equipe. Cada item tem [quando, quem, apagado, hash]; ganha a última mudança. */
+var C=['team','corridors','tasks','nfs','ruptures','expiries'];
+var DEV=(function(){var k='lojasg.estoque99.device',v='';try{v=localStorage.getItem(k)||''}catch(e){}if(!/^[a-z0-9]{12}$/.test(v)){v=Array.from(crypto.getRandomValues(new Uint8Array(12)),function(b){return 'abcdefghijklmnopqrstuvwxyz0123456789'[b%36]}).join('');try{localStorage.setItem(k,v)}catch(e){}}return v})();
+var info=null,chan=null,es=null,connected=false,pubTimer=0,publishing=false,queue=Promise.resolve(),snapTimer=0,helloTimer=0,mergeTimer=0,renderTimer=0,lastSync=0,lastErr='',deferred=[],gen=0;
+function NTFY(){return window.e99Team?window.e99Team.ntfy():'https://ntfy.sh'}
+function h32(str){var h=0x811c9dc5;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
+function hashItem(x){return h32(JSON.stringify(x))}
+function okId(id){return typeof id==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(id)}
+function sy(){var s=state.sync;if(!s||typeof s!=='object'){s=state.sync={meta:{},ready:false,replace:false,pending:[],topic:''}}if(!s.meta)s.meta={};C.forEach(function(c){if(!s.meta[c])s.meta[c]={}});if(!Array.isArray(s.pending))s.pending=[];return s}
+function arr(c){if(!Array.isArray(state[c]))state[c]=[];return state[c]}
+function active(){return !!(authSession&&info&&info.sync&&chan)}
+function rid(){return Date.now().toString(36)+'-'+Array.from(crypto.getRandomValues(new Uint8Array(5)),function(b){return (b%36).toString(36)}).join('')}
+/* ---------- canal e cifra ---------- */
+async function channel(code){var n=authNormalizeCode(code);var h=new Uint8Array(await crypto.subtle.digest('SHA-256',authBytes('sync|'+n)));var hex=Array.from(h,function(x){return ('0'+x.toString(16)).slice(-2)}).join('');var topic='e99s-'+hex.slice(0,24);
+  var base=await crypto.subtle.importKey('raw',authBytes(n),'PBKDF2',false,['deriveKey']);var key=await crypto.subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt:authBytes('estoque99-sync|'+topic),iterations:200000},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);return {topic:topic,key:key}}
+async function enc(ch,bytes){var iv=crypto.getRandomValues(new Uint8Array(12));var ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},ch.key,bytes));var out=new Uint8Array(12+ct.length);out.set(iv);out.set(ct,12);return out}
+async function dec(ch,bytes){bytes=new Uint8Array(bytes);return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes.slice(0,12)},ch.key,bytes.slice(12)))}
+async function encStr(ch,o){return 'S99:'+authB64(await enc(ch,authBytes(JSON.stringify(o))))}
+async function decStr(ch,str){if(typeof str!=='string'||str.indexOf('S99:')!==0)return null;try{return JSON.parse(new TextDecoder().decode(await dec(ch,authUn64(str.slice(4)))))}catch(e){return null}}
+/* ---------- marcar mudanças locais (roda antes de cada gravação) ---------- */
+function stamp(){if(!active())return false;var s=sy();if(!s.ready||s.topic!==chan.topic)return false;var now=Date.now(),by=info.name,touched=false,pend=new Set(s.pending);
+  C.forEach(function(c){var meta=s.meta[c],seen={};arr(c).forEach(function(x){if(!x||!okId(x.id))return;seen[x.id]=1;var h=hashItem(x),m=meta[x.id];if(!m||m[2]||m[3]!==h){meta[x.id]=[Math.max(now,m?m[0]+1:0),by,0,h];pend.add(c+'|'+x.id);touched=true}});
+    Object.keys(meta).forEach(function(id){var m=meta[id];if(!seen[id]&&!m[2]){meta[id]=[Math.max(now,m[0]+1),by,1,''];pend.add(c+'|'+id);touched=true}else if(m[2]&&now-m[0]>30*864e5&&!pend.has(c+'|'+id))delete meta[id]})});
+  s.pending=Array.from(pend);return touched}
+var baseSave=save;
+save=async function(){var t=false;try{t=stamp()}catch(e){}var r=await baseSave.apply(this,arguments);if(t||(active()&&state.sync&&state.sync.pending&&state.sync.pending.length))schedulePublish();return r};
+function persist(){return baseSave()}
+/* ---------- enviar ---------- */
+function schedulePublish(ms){if(!active())return;clearTimeout(pubTimer);pubTimer=setTimeout(publish,ms==null?3000:ms)}
+async function post(ch,obj,bodyObj,fileBytes,fileName){var r;
+  if(fileBytes){r=await fetch(NTFY()+'/'+ch.topic,{method:'PUT',headers:{'X-Message':await encStr(ch,obj),'X-Filename':fileName||'dados.bin'},body:await enc(ch,fileBytes)})}
+  else if(bodyObj){r=await fetch(NTFY()+'/'+ch.topic,{method:'PUT',headers:{'X-Message':await encStr(ch,obj),'X-Filename':'dados.bin'},body:await enc(ch,authBytes(JSON.stringify(bodyObj)))})}
+  else r=await fetch(NTFY()+'/'+ch.topic,{method:'POST',body:await encStr(ch,obj)});
+  lastErr=r.ok?'':r.status===429?'Limite grátis do ntfy.sh atingido nesta internet (250 envios por dia). Tente pelos dados móveis ou amanhã.':'Falha ao enviar ('+r.status+').';paintStatus();return r.ok}
+function me(){return DEV+h32(authSession?authSession.storeKey:'')}
+function head(k){return {v:1,k:k,id:rid(),dev:me(),by:info.name,at:Date.now()}}
+async function sendOps(ch,k,ops){if(!ops.length&&k==='ops')return true;var o=head(k);o.ops=ops;var js=JSON.stringify(o);if(js.length<=3000)return post(ch,o);
+  var bytes=authBytes(JSON.stringify({ops:ops}));if(bytes.length>1800000&&ops.length>1){var half=Math.ceil(ops.length/2);return (await sendOps(ch,k,ops.slice(0,half)))&&(await sendOps(ch,k,ops.slice(half)))}
+  var h=head(k);h.att=1;return post(ch,h,{ops:ops})}
+function opFor(s,c,id){var m=s.meta[c]&&s.meta[c][id];if(!m)return null;var op={c:c,i:id,t:m[0],b:m[1]};if(m[2])op.d=1;else{var x=arr(c).find(function(y){return y&&y.id===id});if(!x)return null;op.x=x}return op}
+async function publish(){if(!active()||publishing)return;var s=sy();if(!s.ready||!s.pending.length)return;publishing=true;var ch=chan;var again=false;
+  try{var keys=s.pending.slice(),ops=[],photos=[];keys.forEach(function(k){var p=k.indexOf('|'),op=opFor(s,k.slice(0,p),k.slice(p+1));if(op){ops.push(op);if(op.c==='ruptures'&&op.x)(op.x.photos||[]).forEach(function(pid){photos.push(pid)})}});
+    var ok=await sendOps(ch,'ops',ops);
+    if(ok&&ch===chan){var sent={};ops.forEach(function(op){sent[op.c+'|'+op.i]=op.t});var asked=new Set(keys);s.pending=s.pending.filter(function(k){var p=k.indexOf('|'),m=s.meta[k.slice(0,p)]&&s.meta[k.slice(0,p)][k.slice(p+1)];if(!m)return false;if(k in sent)return m[0]!==sent[k];return !asked.has(k)});
+      lastSync=Date.now();await persist();await sendPhotos(ch,photos)}
+    else again=true}
+  catch(e){lastErr='Sem internet para sincronizar. Tenta de novo sozinho.';again=true}
+  finally{publishing=false;paintStatus()}
+  if(again)schedulePublish(60000);else if(sy().pending.length)schedulePublish(1000)}
+function photoSent(ch){var k='lojasg.estoque99.sync-photos:'+ch.topic,o={};try{o=JSON.parse(localStorage.getItem(k)||'{}')||{}}catch(e){}return {has:function(id){return !!o[id]},add:function(id){o[id]=Date.now();var ks=Object.keys(o);if(ks.length>3000)ks.sort(function(a,b){return o[a]-o[b]}).slice(0,ks.length-3000).forEach(function(x){delete o[x]});try{localStorage.setItem(k,JSON.stringify(o))}catch(e){}}}}
+async function sendPhotos(ch,ids){if(typeof window.rupturePhotoDataURL!=='function')return;var reg=photoSent(ch);ids=Array.from(new Set(ids));
+  for(var i=0;i<ids.length;i++){var pid=ids[i];if(!okId(pid)||reg.has(pid))continue;var data=await window.rupturePhotoDataURL(pid).catch(function(){return null});if(!data)continue;
+    var bytes=Uint8Array.from(atob(data.split(',')[1]),function(c){return c.charCodeAt(0)});var o=head('photo');o.pid=pid;
+    var ok=false;try{ok=await post(ch,o,null,bytes,'foto.bin')}catch(e){}if(!ok)break;reg.add(pid)}}
+async function sendSnap(){if(!active())return;var s=sy();if(!s.ready)return;if(stamp())await persist();var ops=[];C.forEach(function(c){Object.keys(s.meta[c]).forEach(function(id){var op=opFor(s,c,id);if(op)ops.push(op)})});
+  try{if(await sendOps(chan,'snap',ops)){lastSync=Date.now();s.pending=[];await persist();var photos=[];arr('ruptures').forEach(function(r){(r.photos||[]).forEach(function(p){photos.push(p)})});await sendPhotos(chan,photos.slice(-30))}}catch(e){}paintStatus()}
+var helloAt=0,needHello=false,lostCount=0,lostSince=0;
+async function sendHello(force){if(!active())return;var now=Date.now();if(!force&&now-helloAt<30000){needHello=true;clearTimeout(helloTimer);helloTimer=setTimeout(function(){sendHello()},30000-(now-helloAt)+100);return}
+  helloAt=now;needHello=false;if(force){lostCount=0}try{if(!(await post(chan,head('hello'))))needHello=true}catch(e){needHello=true;lastErr='Sem internet para sincronizar.'}paintStatus()}
+/* anexo sumiu (expira em 3 h) ou não baixou: pede uma cópia completa, no máximo 3 vezes seguidas */
+var lostPending=false;
+function lost(){if(lostPending)return;var now=Date.now();if(now-lostSince>30*60000){lostSince=now;lostCount=0}if(lostCount>=3){lastErr='Não foi possível baixar os dados da equipe. Toque em Sincronizar agora.';paintStatus();return}lostPending=true;clearTimeout(helloTimer);helloTimer=setTimeout(function(){lostPending=false;lostCount++;sendHello()},4000)}
+/* ---------- receber ---------- */
+function sinceKey(ch){return 'lojasg.estoque99.sync-since:'+ch.topic}
+function connect(){disconnect();if(!active()||typeof EventSource!=='function')return;var ch=chan,since=localStorage.getItem(sinceKey(ch))||'12h';
+  es=new EventSource(NTFY()+'/'+ch.topic+'/sse?since='+encodeURIComponent(since));
+  es.onopen=function(){connected=true;paintStatus();clearTimeout(helloTimer);helloTimer=setTimeout(maybeHello,2500)};
+  es.onerror=function(){connected=false;paintStatus()};
+  es.onmessage=function(ev){var d;try{d=JSON.parse(ev.data)}catch(e){return}if(!d||d.event!=='message')return;queue=queue.then(function(){return handle(d,ch)}).catch(function(){})}}
+function disconnect(){if(es){es.close();es=null}connected=false}
+function maybeHello(){if(!active())return;var s=sy();var since=+localStorage.getItem(sinceKey(chan))||0;if(!s.ready||!since||Date.now()/1000-since>10*3600)sendHello()}
+async function handle(d,ch){if(ch!==chan||!authSession)return;var o=await decStr(ch,d.message);
+  if(d.time){var prev=+localStorage.getItem(sinceKey(ch))||0;if(d.time>prev)try{localStorage.setItem(sinceKey(ch),String(d.time))}catch(e){}}
+  if(!o||o.v!==1||typeof o.k!=='string'||o.dev===me())return;lastSync=Date.now();var who=String(o.by||'Alguém').slice(0,40);
+  if(o.k==='hello'){if(sy().ready&&!snapTimer)snapTimer=setTimeout(function(){snapTimer=0;sendSnap()},1000+Math.random()*3000);return}
+  if(o.k==='snap'&&snapTimer){clearTimeout(snapTimer);snapTimer=0}
+  if(o.k==='photo'){await onPhoto(ch,o,d);return}
+  if(o.k!=='ops'&&o.k!=='snap')return;var ops=o.ops;
+  if(o.att){if(!d.attachment||!d.attachment.url){lost();return}try{var r=await fetch(d.attachment.url);if(!r.ok){lost();return}ops=JSON.parse(new TextDecoder().decode(await dec(ch,await r.arrayBuffer()))).ops;lostCount=0;if(/baixar os dados/.test(lastErr))lastErr=''}catch(e){lost();return}}
+  if(!Array.isArray(ops)||ch!==chan)return;await applyOps(ops,o.k==='snap',who);paintStatus()}
+async function onPhoto(ch,o,d){if(!okId(o.pid)||!d.attachment||!d.attachment.url||typeof window.rupturePutPhoto!=='function')return;
+  if(!arr('ruptures').some(function(r){return (r.photos||[]).indexOf(o.pid)>=0}))return;if(await window.ruptureHasPhoto(o.pid)){photoSent(ch).add(o.pid);return}
+  try{var r=await fetch(d.attachment.url);if(!r.ok)return;var b=await dec(ch,await r.arrayBuffer());if(b[0]!==0xFF||b[1]!==0xD8)return;var s='';for(var i=0;i<b.length;i+=0x8000)s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));
+    await window.rupturePutPhoto(o.pid,'data:image/jpeg;base64,'+btoa(s));photoSent(ch).add(o.pid);scheduleRender(['ruptures'])}catch(e){}}
+function okOp(op){return op&&typeof op==='object'&&C.indexOf(op.c)>=0&&okId(op.i)&&Number.isFinite(op.t)&&op.t>0&&typeof op.b==='string'&&(op.d||(op.x&&typeof op.x==='object'&&op.x.id===op.i))}
+function newer(m,op){return !m||op.t>m[0]||(op.t===m[0]&&String(op.b)>String(m[1]))}
+/* aplica numa cópia, valida com as mesmas regras do site e só então grava */
+function commit(cand){var test={};Object.keys(state).forEach(function(k){test[k]=state[k]});C.forEach(function(c){test[c]=cand[c]});var v;try{v=validate(JSON.parse(JSON.stringify(test)))}catch(e){return null}return v}
+async function applyOps(ops,isSnap,who){var s=sy();ops=ops.filter(okOp).slice(0,20000);
+  if(isSnap&&s.replace&&!s.ready){var cand={},meta={};C.forEach(function(c){cand[c]=[];meta[c]={}});ops.forEach(function(op){meta[op.c][op.i]=[op.t,op.b.slice(0,40),op.d?1:0,''];if(!op.d)cand[op.c].push(op.x)});
+    var v=commit(cand);if(!v){lastErr='Os dados recebidos da equipe são inválidos.';return}
+        C.forEach(function(c){state[c]=v[c];state[c].forEach(function(x){if(meta[c][x.id])meta[c][x.id][3]=hashItem(x)});Object.keys(meta[c]).forEach(function(id){if(!meta[c][id][2]&&!state[c].some(function(x){return x.id===id}))meta[c][id]=[meta[c][id][0],meta[c][id][1],1,'']})});
+    s.meta=meta;s.pending=[];s.replace=false;s.ready=true;await persist();feedAdd(who,'enviou os dados da equipe para este aparelho');notify('Dados da equipe recebidos.');scheduleRender(C);return}
+  var wasReady=s.ready,cand={},changes=[];C.forEach(function(c){cand[c]=arr(c).slice()});
+  ops.forEach(function(op){if(!newer(s.meta[op.c][op.i],op))return;var list=cand[op.c],idx=list.findIndex(function(x){return x&&x.id===op.i}),prev=idx>=0?list[idx]:null;if(op.d){if(idx<0){s.meta[op.c][op.i]=[op.t,op.b.slice(0,40),1,''];return}list.splice(idx,1)}else if(idx>=0)list[idx]=op.x;else list.push(op.x);changes.push({op:op,prev:prev})});
+  var applied=[];if(changes.length){var v=commit(cand);if(v){finish(v,changes);applied=changes}else{/* uma a uma: guarda para depois as que dependem de algo que ainda não chegou */
+      for(var i=0;i<changes.length;i++){var ch1=changes[i],c1={};C.forEach(function(c){c1[c]=arr(c).slice()});var l=c1[ch1.op.c],ix=l.findIndex(function(x){return x&&x.id===ch1.op.i});if(ch1.op.d){if(ix>=0)l.splice(ix,1)}else if(ix>=0)l[ix]=ch1.op.x;else l.push(ch1.op.x);var v1=commit(c1);if(v1){finish(v1,[ch1]);applied.push(ch1)}else defer(ch1.op)}}}
+  if(applied.length&&deferred.length){var d=deferred.splice(0);d.forEach(function(x){x.tries=(x.tries||0)+1});var again=d.filter(function(x){return x.tries<=3});if(again.length){await applyOps(again,false,who);return}}
+  if(isSnap&&!s.ready){s.ready=true;s.replace=false;dropDefaults();if(stamp())schedulePublish(500)}
+  if(applied.length||isSnap)await persist();
+  if(applied.length){if(wasReady)applied.forEach(function(x){var t=describe(x.op,x.prev);if(t)feedAdd(x.op.b||who,t)});scheduleRender(applied.map(function(x){return x.op.c}))}}
+/* ao juntar: não espalha para a equipe as pessoas e corredores de exemplo da conta nova, se ninguém mexeu neles */
+function dropDefaults(){if(typeof initial!=='function')return;var ini=initial(),s=sy();
+  var used=function(kind,id){return ['tasks','nfs','ruptures','expiries'].some(function(c){return arr(c).some(function(x){return kind==='team'?x.owner===id:x.corridor===id})})||(kind==='team'&&arr('corridors').some(function(c){return c.owner===id}))};
+  ['corridors','team'].forEach(function(c){var defs={};(ini[c]||[]).forEach(function(x){defs[x.id]=JSON.stringify(x)});state[c]=arr(c).filter(function(x){return s.meta[c][x.id]||defs[x.id]!==JSON.stringify(x)||used(c,x.id)})})}
+function defer(op){if(deferred.length<200&&!deferred.some(function(x){return x.c===op.c&&x.i===op.i&&x.t===op.t}))deferred.push(op)}
+function finish(v,changes){var s=sy();var gonePhotos=[];changes.forEach(function(x){var op=x.op;if(op.c==='ruptures'&&x.prev){var now=op.d?[]:((op.x&&op.x.photos)||[]);(x.prev.photos||[]).forEach(function(p){if(now.indexOf(p)<0)gonePhotos.push(p)})}});
+  C.forEach(function(c){state[c]=v[c]});
+  changes.forEach(function(x){var op=x.op,it=op.d?null:state[op.c].find(function(y){return y.id===op.i});s.meta[op.c][op.i]=[op.t,op.b.slice(0,40),it?0:1,it?hashItem(it):'']});
+  if(gonePhotos.length&&window.ruptureDelPhotos)window.ruptureDelPhotos(gonePhotos)}
+function first(t){return String(t||'').split('\n')[0].slice(0,60)}
+function describe(op,prev){var x=op.x||{},p=prev||{};
+  switch(op.c){
+   case 'tasks':return op.d?'apagou a tarefa “'+first(p.title)+'”':!prev?'criou a tarefa “'+first(x.title)+'”':x.status==='Concluído'&&p.status!=='Concluído'?'concluiu a tarefa “'+first(x.title)+'”':'atualizou a tarefa “'+first(x.title)+'”';
+   case 'nfs':return op.d?'apagou a NF '+first(p.number):!prev?'cadastrou a NF '+first(x.number):x.status!==p.status?'mudou a NF '+first(x.number)+' para '+x.status:'atualizou a NF '+first(x.number);
+   case 'ruptures':return op.d?'apagou a ruptura “'+first(p.product)+'”':!prev?'registrou a ruptura “'+first(x.product||'sem nome')+'”':x.status==='Abastecido'&&p.status!=='Abastecido'?'abasteceu “'+first(x.product)+'”':'atualizou a ruptura “'+first(x.product)+'”';
+   case 'expiries':return op.d?'apagou a validade de “'+first(p.product)+'”':!prev?'cadastrou a validade de “'+first(x.product)+'”':x.status==='Retirado'&&p.status!=='Retirado'?'retirou “'+first(x.product)+'” da gôndola':'atualizou a validade de “'+first(x.product)+'”';
+   case 'team':return op.d?'tirou '+first(p.name)+' da equipe':!prev?'adicionou '+first(x.name)+' à equipe':'atualizou '+first(x.name)+' na equipe';
+   case 'corridors':return op.d?'apagou o corredor '+first(p.number):!prev?'criou o corredor '+first(x.number):'atualizou o corredor '+first(x.number)}return ''}
+/* ---------- últimas mudanças ---------- */
+function feedKey(){return chan?'lojasg.estoque99.sync-feed:'+authSession.storeKey+':'+chan.topic:''}
+function feedGet(){try{var l=JSON.parse(localStorage.getItem(feedKey())||'[]');return Array.isArray(l)?l:[]}catch(e){return []}}
+function feedAdd(who,text){if(!chan)return;var l=feedGet();l.unshift({at:Date.now(),who:String(who||'').slice(0,40),text:String(text).slice(0,160)});try{localStorage.setItem(feedKey(),JSON.stringify(l.slice(0,40)))}catch(e){}var f=document.getElementById('sync-feed');if(f)f.innerHTML=feedHTML()}
+function hhmm(t){var d=new Date(t);return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)}
+function feedHTML(){var l=feedGet();return l.length?l.map(function(x){return '<div><span>'+hhmm(x.at)+'</span><p style="margin:0"><b>'+esc(x.who)+'</b> '+esc(x.text)+'</p></div>'}).join(''):'<p class="small" style="margin:0">Nenhuma mudança recebida ainda.</p>'}
+/* ---------- tela ---------- */
+var VIEWS={home:1,reports:1,tasks:1,team:1,corridors:1,nfs:1,ruptures:1,expiry:1,agenda:1,alerts:1};
+function scheduleRender(){clearTimeout(renderTimer);renderTimer=setTimeout(function(){if(!authSession||!VIEWS[page])return;var a=document.activeElement;if(a&&a.closest&&a.closest('#view')&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)){document.addEventListener('focusout',function(){scheduleRender()},{once:true});return}render()},300)}
+function ago(t){if(!t)return '';var m=Math.round((Date.now()-t)/60000);return m<1?'agora':m<60?'há '+m+' min':'há '+Math.round(m/60)+' h'}
+function statusText(){if(!info||!info.sync)return '';var s=state&&state.sync;if(lastErr)return lastErr;if(!chan)return 'Preparando a sincronização…';if(s&&!s.ready)return 'Aguardando os dados da equipe… (alguém da equipe precisa estar com o site aberto)';if(!connected)return 'Sincronização reconectando…';if(publishing||(s&&s.pending&&s.pending.length))return 'Equipe sincronizada · enviando mudanças…';return 'Equipe sincronizada'+(lastSync?' · '+ago(lastSync):'')}
+var foot=null;function footEl(){if(foot&&document.contains(foot))return foot;foot=Array.from(document.querySelectorAll('footer span, span')).find(function(x){return /Sem sincronização entre aparelhos|Equipe sincronizada|Sincroniza|Aguardando os dados/.test(x.textContent)&&!x.closest('#view')})||null;return foot}
+function paintStatus(){var t=statusText();var f=footEl();if(f)f.textContent=t?t:'Local · Sem sincronização entre aparelhos';var el=document.getElementById('sync-status');if(el)el.textContent=t||'Dados só neste aparelho (sincronização desligada)';var box=document.getElementById('sync-box');if(box)box.classList.toggle('on',!!(info&&info.sync))}
+var ICON='<svg class="sync-ico" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7a8 8 0 0 0-14-2L4 7M4 3v4h4M4 17a8 8 0 0 0 14 2l2-2M20 21v-4h-4"></path></svg>';
+function boxHTML(){var t=window.e99Team&&window.e99Team.get();if(!t)return '';var on=!!t.sync,s=state.sync||{};
+  return '<details class="sync-box'+(on?' on':'')+'" id="sync-box"><summary>'+ICON+'<span id="sync-status">'+esc(statusText()||'Dados só neste aparelho (sincronização desligada)')+'</span></summary><div class="sync-body">'
+   +'<label class="chat-check"><input type="checkbox" id="sync-on" '+(on?'checked':'')+' onchange="syncToggle(this.checked)"> Compartilhar tarefas, NFs, rupturas, validades, equipe e corredores com a equipe</label>'
+   +'<p class="small" style="margin:0">Não vão para a equipe: alertas, planos, senha e chaves do robô. Todos da equipe podem editar e apagar. Cada mudança conta no limite grátis de cerca de 250 envios por dia por internet.</p>'
+   +(on&&!s.ready?'<p class="sync-wait">Aguardando os dados da equipe. Peça para alguém da equipe abrir o site; os dados chegam sozinhos.</p>':'')
+   +(on?'<div class="row toolbar"><button type="button" onclick="syncNow()">Sincronizar agora</button></div>':'')
+   +'<h3>Últimas mudanças da equipe</h3><div class="sync-feed" id="sync-feed">'+feedHTML()+'</div></div></details>'}
+var rcBefore=window.renderChat;if(typeof rcBefore==='function')window.renderChat=function(){var h=rcBefore.apply(this,arguments);if(h.indexOf('<div id="chat-list"')<0)return h;return h.replace('<div id="chat-list"',boxHTML()+'<div id="chat-list"')};
+window.syncToggle=async function(on){if(!window.e99Team)return;await window.e99Team.setSync(on,on?{replace:false}:null);if(page==='chat')render();notify(on?'Compartilhando os dados com a equipe.':'Sincronização desligada neste aparelho.')};
+window.syncNow=async function(){if(!active())return;notify('Sincronizando…');lastErr='';if(stamp())await persist();await publish();await sendHello(true)};
+window.syncStatus=function(){return {active:active(),ready:!!(state&&state.sync&&state.sync.ready),pending:(state&&state.sync&&state.sync.pending||[]).length,connected:connected,topic:chan&&chan.topic,dev:DEV,text:statusText()}};
+/* ---------- ligar/desligar conforme a equipe do chat ---------- */
+function stop(){needHello=false;lostCount=0;lostPending=false;clearTimeout(pubTimer);clearTimeout(snapTimer);snapTimer=0;clearTimeout(helloTimer);clearTimeout(mergeTimer);disconnect();chan=null;info=null;lastErr='';deferred=[]}
+async function refresh(){var my=++gen;stop();var t=window.e99Team&&window.e99Team.get();info=t;if(!authSession||!t||!t.sync){paintStatus();return}
+  var ch=await channel(t.code);if(my!==gen)return;chan=ch;var s=sy();
+  if(s.topic!==ch.topic){var m={};C.forEach(function(c){m[c]={}});s.meta=m;s.pending=[];s.topic=ch.topic;s.ready=!!t.owner;s.replace=!t.owner&&!!t.replace;await persist();if(my!==gen)return}
+  if(s.ready&&stamp()){await persist();schedulePublish(800)}else if(s.ready&&s.pending.length)schedulePublish(800);
+  if(!s.ready&&!s.replace)mergeTimer=setTimeout(async function(){if(my!==gen||!active())return;var ss=sy();if(!ss.ready){ss.ready=true;dropDefaults();if(stamp())schedulePublish(500);await persist();paintStatus()}},20000);
+  connect();paintStatus()}
+if(window.e99Team)window.e99Team.onChange(function(){refresh()});
+var logoutBefore=authLogout;authLogout=async function(){var r=await logoutBefore.apply(this,arguments);if(!authSession){gen++;stop();paintStatus()}return r};
+setInterval(paintStatus,30000);
+window.addEventListener('online',function(){if(active()){lastErr='';schedulePublish(500);if(!es||es.readyState===2)connect();if(needHello)setTimeout(function(){sendHello()},1500)}});
+if(authSession&&window.e99Team&&window.e99Team.get())refresh();
 })();
 </script>
 <script>

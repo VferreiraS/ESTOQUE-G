@@ -100,6 +100,27 @@ Como funciona:
 - **Histórico:** as últimas 500 mensagens ficam salvas em cada aparelho.
 - **Limite grátis:** cerca de **250 mensagens por dia por internet** (o Wi-Fi da loja conta como uma só). Se aparecer o aviso de limite, use os dados móveis ou espere o dia seguinte.
 
+## Equipe sincronizada (dados em todos os aparelhos)
+Usa a mesma equipe do **Chat**. Com ela ligada, **tarefas, notas fiscais, rupturas (com fotos), validades, equipe e corredores** ficam iguais em todos os aparelhos: quando a auxiliar marca "Abastecido" no celular, você vê no computador em segundos.
+- **Quem cria a equipe** já começa compartilhando os dados do aparelho dele.
+- **Quem entra** escolhe:
+  - **Usar só os dados da equipe neste aparelho** (marcado por padrão): os cadastros do aparelho são trocados pelos da equipe;
+  - ou desmarca para **juntar** o que já tem com os da equipe.
+- Na tela do **Chat**, toque na linha **Equipe sincronizada** para:
+  - ligar ou desligar o compartilhamento neste aparelho;
+  - tocar em **Sincronizar agora**;
+  - ver as **últimas mudanças da equipe** ("Ana abasteceu…", "Leo concluiu a tarefa…").
+- O rodapé do site mostra "Equipe sincronizada · há 1 min".
+
+Como funciona:
+- **Envio:** cada mudança vai cifrada com o código da equipe pelo ntfy.sh. Várias gravações em sequência viram uma mensagem só.
+- **Edições ao mesmo tempo:** se duas pessoas editarem o mesmo item, vale a última edição.
+- **Validação:** mudanças inválidas são recusadas.
+- **Quem ficou fora:** se ficou mais de 10 horas fora (ou é novo na equipe), o aparelho pede uma cópia completa a quem estiver com o site aberto. As fotos ficam no servidor por 3 horas.
+- **O que não vai para a equipe:** alertas, planos, senha e chaves do robô.
+- **Permissões:** todos da equipe podem editar e apagar. Para tirar alguém, crie uma equipe nova.
+- **Limite:** chat e dados somados contam no limite grátis de cerca de 250 envios por dia por internet.
+
 ## Status das notas fiscais
 
 Cada NF tem um de quatro status: **Pendente**, **Em conferência**, **Conferido** e **Em divergência**.
