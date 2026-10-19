@@ -325,7 +325,7 @@ const date=s=>s?s.split('-').reverse().join('/'):'Sem prazo';
 const icons={home:'◫',tasks:'✓',team:'♙',corridors:'▦',nfs:'▤',data:'⇅'},labels={home:'Visão geral',tasks:'Tarefas',team:'Equipe',corridors:'Corredores',nfs:'NFs pendentes',data:'Dados e ajuda'};
 
 function mobileTableLabels(){if(!document.querySelectorAll)return;document.querySelectorAll('#view table').forEach(table=>{const heads=Array.from(table.querySelectorAll('thead th')).map(h=>h.textContent.trim());table.classList.add('mobile-cards');table.querySelectorAll('tbody tr').forEach(row=>Array.from(row.children).forEach((cell,i)=>cell.setAttribute('data-label',heads[i]||'')))})}
-function mobileEnhance(){mobileTableLabels();const nav=$('mobile-bottom');if(!nav)return;const tabs=[['home','⌂','Início'],['tasks','✓','Tarefas'],['nfs','▤','Notas'],['ruptures','◍','Rupturas'],['plans','▣','Planos'],['mobile-menu','☰','Mais']];const selected=tabs.some(t=>t[0]===page)?page:'mobile-menu';nav.innerHTML=tabs.map(([p,icon,title])=>`<button class="${selected===p?'active':''}" aria-current="${selected===p?'page':'false'}" onclick="go('${p}')"><span aria-hidden="true">${icon}</span>${title}</button>`).join('')}
+function mobileEnhance(){mobileTableLabels();const nav=$('mobile-bottom');if(!nav)return;const tabs=[['home','⌂','Início'],['tasks','✓','Tarefas'],['nfs','▤','Notas'],['ruptures','◍','Rupturas'],['chat','✉','Chat'],['mobile-menu','☰','Mais']];const selected=tabs.some(t=>t[0]===page)?page:'mobile-menu';nav.innerHTML=tabs.map(([p,icon,title])=>`<button class="${selected===p?'active':''}" aria-current="${selected===p?'page':'false'}" onclick="go('${p}')"><span aria-hidden="true">${icon}</span>${title}</button>`).join('')}
 function renderMobileMenu(){return hero('Seu estoque na palma da mão.','Acesse todas as funções e personalize a aparência.')+`<div class="panel help mobile-options">${Object.keys(labels).map(p=>`<button onclick="go('${p}')">${labels[p]} →</button>`).join('')}<button onclick="toggleSiteTheme()">☾ / ☀ Alternar tema claro e escuro</button><button onclick="if(window.toggleVisualEffects)window.toggleVisualEffects()">Alternar efeitos visuais</button><button onclick="authLogout()">Sair da conta</button></div><div class="panel help mobile-guide"><h2>Levar os dados do computador</h2><ol><li>No computador, acesse Minha conta e exporte a conta protegida.</li><li>Transfira esse arquivo para o celular.</li><li>Na tela de login do celular, escolha Importar conta protegida e informe a senha dessa conta.</li></ol><p>Não há sincronização automática. Se a conta já existir neste aparelho, entre nela e use Dados e ajuda → Restaurar backup para atualizar os cadastros. A restauração substitui os dados atuais após confirmação.</p><p>Para enviar um plano com fotos, use Compartilhar. Se o navegador não oferecer esse recurso, baixe as fotos e copie o texto. O envio pelo WhatsApp ou Outlook precisa de conexão.</p><p>Use sempre o mesmo navegador e faça backups. A prévia de um arquivo HTML pode não executar o sistema; o navegador precisa permitir JavaScript, armazenamento local e criptografia.</p><p><strong>Usar como app:</strong> no iPhone/iPad, abra o endereço do site no Safari, toque em Compartilhar e em “Adicionar à Tela de Início”. No Android, abra no Chrome e toque em ⋮ → “Instalar app”. No computador, use o ícone de instalar na barra de endereço do Chrome ou Edge.</p></div>`}
 if(window.visualViewport&&window.visualViewport.addEventListener){window.visualViewport.addEventListener('resize',()=>{const typing=document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);document.body.classList.toggle('keyboard-open',!!typing&&window.innerHeight-window.visualViewport.height>140)})}
 
@@ -367,12 +367,12 @@ function render(){if(!authSession){renderAuth();return}if(page==='assistant'||pa
  if(page==='nfs'){html=hero('Recebeu? Conferiu? Registrou.','Acompanhe as notas fiscais da chegada à conclusão.',`<div class="toolbar"><button class="primary" onclick="openNFScanner()">▥ Bipar NF</button><button onclick="openNFImport()">Importar XML</button>${newButton('nf','Nova NF')}</div>`)+`<div class="panel"><div class="panelhead"><h2>Notas fiscais</h2><button onclick="window.print()">Imprimir</button></div>${state.nfs.length?`<div class="tablewrap"><table><thead><tr><th>NF / Fornecedor</th><th>Recebimento</th><th>Volumes</th><th>Responsável</th><th>Status</th><th>Ações</th></tr></thead><tbody>${state.nfs.map(n=>`<tr><td><b>${esc(n.number)}</b>${n.series?`<div class="small">Série ${esc(n.series)}</div>`:''}<div class="small">${esc(n.supplier)}</div>${n.items?`<div class="small">${n.items.length} itens importados</div>`:''}${n.notes?`<div class="small">${n.status==='Em divergência'?'Divergência: ':''}${esc(n.notes)}</div>`:''}</td><td>${date(n.date)}${n.arrivalTime?`<div class="small">${esc(n.arrivalTime)}</div>`:''}</td><td>${esc((n.volumes==null?0:n.volumes))}</td><td>${esc(owner(n.owner))}</td><td>${badge(n.status)}</td><td><button onclick="openEditor('nf','${esc(n.id)}')">Editar</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhuma NF cadastrada.</div>'}</div>`}
  if(page==='data'){html=hero('Seus dados, no seu controle.','Os cadastros ficam locais. Consultas opcionais enviam somente CEP ou CNPJ ao serviço escolhido. Use cópias de segurança.')+`<div class="grid2"><div class="panel help"><h2>Backup e restauração</h2><div class="toolbar"><button class="primary" onclick="backup()">Exportar backup</button><button onclick="$('restore').click()">Restaurar backup</button></div><p>Última alteração: ${state.updated?esc(new Date(state.updated).toLocaleString('pt-BR')):'Ainda sem alterações'}</p></div><div class="panel help"><h2>Salvar direto em arquivo</h2><button onclick="connectFile()">Conectar arquivo local</button><p id="filehelp">Em navegadores sem esse recurso, use Exportar backup. Não há sincronização entre PCs.</p></div></div>`}
  if(page==='mobile-menu')html=renderMobileMenu();
- if(page==='plans')html=renderPlans();  if(page==='ruptures')html=typeof renderRuptures==='function'?renderRuptures():'';
+ if(page==='plans')html=renderPlans();  if(page==='ruptures')html=typeof renderRuptures==='function'?renderRuptures():'';  if(page==='chat')html=typeof renderChat==='function'?renderChat():'';
  if(page==='account')html=renderAccount();
  if(page==='admin')html=renderAdmin();
  if(page==='alerts')html=renderAlertsPage();
  if(page==='assistant')html=renderAssistantPage();
- if(!['assistant','account','admin','plans','ruptures','mobile-menu'].includes(page)&&showDesktopPanel())html=desktopPanel()+html;
+ if(!['assistant','account','admin','plans','ruptures','chat','mobile-menu'].includes(page)&&showDesktopPanel())html=desktopPanel()+html;
  $('view').innerHTML=html;if(page==='tasks')refreshTasks();mobileEnhance();checkAlerts();if(typeof window.refreshVisualEffects==='function')window.refreshVisualEffects();
 }
 function refreshTasks(){const rows=fuzzyRows(state.tasks.filter(t=>!filter||t.status===filter),search,t=>recordSearchFields('task',t));$('tasklist').innerHTML=(search?`<p class="search-info" role="status">${rows.length} resultado(s). A busca também considera nomes próximos e pequenos erros de digitação.</p>`:'')+(search&&!rows.length?'<div class="empty">Nenhuma tarefa encontrada. Tente outra palavra ou ajuste o filtro.</div>':taskTable(rows));mobileTableLabels()}
@@ -2661,6 +2661,143 @@ window.ruptureAI=async function(){if(!authSession)return;var photos=(window.rupt
     if(!text||/^não identificado\.?$/i.test(text)){window.ruptureAIStatus('O robô não conseguiu identificar. Escreva o produto.')}
     else{window.ruptureSetProduct(text);window.ruptureAIStatus('Sugestão do robô colocada abaixo. Confira antes de salvar.')}}
   catch(e){window.ruptureAIStatus(e.message||'Não foi possível ler a foto.')}finally{window.ruptureBusy(false)}};
+})();
+</script>
+<style id="chat-css">
+/* Chat da equipe: mensagens criptografadas com o código da equipe, entregues pelo ntfy.sh. */
+.chat-wrap{display:grid;gap:12px}
+.chat-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.chat-head h2{margin:0;font-size:17px}
+.chat-status{font-size:12.5px;color:var(--ds-muted)}
+.chat-status::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ds-muted);margin-right:6px;vertical-align:1px}
+.chat-status.on::before{background:var(--ds-ink)}
+#chat-list{display:flex;flex-direction:column;gap:8px;min-height:240px;max-height:calc(100dvh - 360px);overflow-y:auto;padding:4px 2px;overscroll-behavior:contain}
+.chat-msg{width:fit-content;max-width:82%;padding:8px 12px;border-radius:16px;background:var(--ds-accent-soft);white-space:pre-wrap;overflow-wrap:break-word}
+.chat-msg.mine{align-self:flex-end;background:var(--ds-ink);color:var(--ds-bg);border-bottom-right-radius:6px}
+.chat-msg:not(.mine){border-bottom-left-radius:6px}
+.chat-msg .who{display:block;font-size:12px;font-weight:700;margin-bottom:2px}
+.chat-msg .when{display:block;font-size:11px;opacity:.7;margin-top:3px;text-align:right}
+.chat-msg img{display:block;width:260px;max-width:100%;height:auto;border-radius:10px;margin:4px 0;cursor:zoom-in;filter:none!important}
+.chat-msg .img-wait{font-size:12.5px;opacity:.75}
+.chat-day{align-self:center;font-size:12px;color:var(--ds-muted);margin:6px 0}
+#chat-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}
+#chat-form textarea{min-height:46px;max-height:140px;resize:none;width:100%}
+.chat-btns{display:flex;gap:6px}
+.chat-btns label,.chat-btns button{min-height:46px;min-width:46px;display:inline-flex;align-items:center;justify-content:center;padding:0 12px;border:1px solid var(--ds-line);border-radius:12px;background:var(--ds-surface);cursor:pointer;font-weight:650}
+.chat-btns button.primary{background:var(--ds-ink);color:var(--ds-bg);border-color:var(--ds-ink)}
+.chat-setup{display:grid;gap:16px}
+.chat-setup form{display:grid;gap:12px}
+.chat-code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:20px;letter-spacing:.12em;font-weight:700}
+.nav-unread{display:inline-block;min-width:18px;padding:0 6px;margin-left:6px;border-radius:999px;background:var(--ds-ink);color:var(--ds-bg);font-size:11px;font-weight:750;line-height:18px;text-align:center}
+.mobile-bottom button{position:relative}
+.mobile-bottom .nav-unread{position:absolute;top:2px;right:calc(50% - 22px);margin:0}
+#chat-img-view{border:0;padding:0;background:#000;border-radius:16px;max-width:96vw}
+#chat-img-view img{display:block;max-width:96vw;max-height:86dvh;filter:none!important}
+#chat-img-view button{position:absolute;top:8px;right:8px;background:#1c1c1c!important;color:#fff!important}
+@media (max-width:900px){#chat-list{max-height:calc(100dvh - 330px)}}
+</style>
+<script id="chat-js">
+(function(){
+'use strict';
+var NTFY='https://ntfy.sh';
+try{var o=new URLSearchParams(location.search).get('ntfy');if(o&&(location.hostname==='localhost'||location.hostname==='127.0.0.1'))NTFY=o.replace(/\/+$/,'')}catch(e){}
+var cfg=null,team=null,es=null,connected=false,mem={},sending=false,pendingInvite='',own={};
+/* convite: #equipe=CODIGO */
+try{var m=String(location.hash||'').match(/equipe=([A-Za-z0-9-]{8,20})/);if(m){pendingInvite=m[1];history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
+function b64(b){return authB64(b)}function un64(s){return authUn64(s)}
+function cfgKey(){return 'lojasg.estoque99.chat:'+authSession.storeKey}
+async function loadCfg(){var raw=localStorage.getItem(cfgKey());if(!raw)return null;try{var o=JSON.parse(raw);var p=await crypto.subtle.decrypt({name:'AES-GCM',iv:un64(o.iv),additionalData:authBytes('chat|'+authLoginName(authSession.record.login))},authSession.key,un64(o.cipher));return JSON.parse(new TextDecoder().decode(p))}catch(e){return null}}
+async function saveCfg(c){if(!c){localStorage.removeItem(cfgKey());return}var iv=crypto.getRandomValues(new Uint8Array(12));var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:authBytes('chat|'+authLoginName(authSession.record.login))},authSession.key,authBytes(JSON.stringify(c)));localStorage.setItem(cfgKey(),JSON.stringify({iv:b64(iv),cipher:b64(ct)}))}
+function norm(code){return authNormalizeCode(code)}
+function fmt(code){return norm(code).match(/.{1,4}/g).join('-')}
+function newCode(){var b=crypto.getRandomValues(new Uint8Array(12)),s='';for(var i=0;i<12;i++)s+=AUTH_CODE_CHARS[b[i]%32];return s}
+async function makeTeam(code){var n=norm(code);var h=new Uint8Array(await crypto.subtle.digest('SHA-256',authBytes('canal|'+n)));var hex=Array.from(h).map(function(x){return ('0'+x.toString(16)).slice(-2)}).join('');var topic='e99-'+hex.slice(0,24);
+  var base=await crypto.subtle.importKey('raw',authBytes(n),'PBKDF2',false,['deriveKey']);var key=await crypto.subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt:authBytes('estoque99-chat|'+topic),iterations:200000},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);return {topic:topic,key:key}}
+async function enc(bytes){var iv=crypto.getRandomValues(new Uint8Array(12));var ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},team.key,bytes));var out=new Uint8Array(12+ct.length);out.set(iv);out.set(ct,12);return out}
+async function dec(bytes){bytes=new Uint8Array(bytes);return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes.slice(0,12)},team.key,bytes.slice(12)))}
+async function encMsg(obj){return 'E99:'+b64(await enc(authBytes(JSON.stringify(obj))))}
+async function decMsg(str){if(typeof str!=='string'||str.indexOf('E99:')!==0)return null;try{var o=JSON.parse(new TextDecoder().decode(await dec(un64(str.slice(4)))));if(!o||o.v!==1||typeof o.id!=='string'||!/^[a-zA-Z0-9_-]{1,60}$/.test(o.id))return null;return {id:o.id,from:String(o.from||'?').slice(0,60),at:String(o.at||''),text:String(o.text||'').slice(0,1000),img:!!o.img}}catch(e){return null}}
+/* ---------- histórico local (IndexedDB, guardado ainda criptografado com o código da equipe) ---------- */
+function cdb(){return new Promise(function(res,rej){try{var r=indexedDB.open('estoque99-chat',1);r.onupgradeneeded=function(){r.result.createObjectStore('msgs');r.result.createObjectStore('imgs')};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}}catch(e){rej(e)}})}
+function cop(store,mode,fn){return cdb().then(function(db){return new Promise(function(res,rej){var tx=db.transaction(store,mode),req=fn(tx.objectStore(store));tx.oncomplete=function(){db.close();res(req&&req.result)};tx.onerror=function(){db.close();rej(tx.error)}})})}
+function putMsg(rec){return cop('msgs','readwrite',function(st){return st.put(rec,rec.topic+'|'+rec.id)})}
+function allMsgs(){return cop('msgs','readonly',function(st){return st.getAll()}).then(function(l){return (l||[]).filter(function(r){return team&&r.topic===team.topic})}).catch(function(){return []})}
+function putImg(id,bytes){return cop('imgs','readwrite',function(st){return st.put(bytes,team.topic+'|'+id)})}
+function getImg(id){return cop('imgs','readonly',function(st){return st.get(team.topic+'|'+id)})}
+async function trim(){var l=await allMsgs();if(l.length<=500)return;l.sort(function(a,b){return String(a.at).localeCompare(String(b.at))});var gone=l.slice(0,l.length-500);await cop('msgs','readwrite',function(st){gone.forEach(function(r){st.delete(r.topic+'|'+r.id)});return null});await cop('imgs','readwrite',function(st){gone.forEach(function(r){st.delete(r.topic+'|'+r.id)});return null})}
+/* ---------- receber ---------- */
+function sinceKey(){return 'lojasg.estoque99.chat-since:'+team.topic}
+function readKey(){return 'lojasg.estoque99.chat-read:'+authSession.storeKey+':'+team.topic}
+function setStatus(on){connected=on;var s=document.getElementById('chat-status');if(s){s.textContent=on?'Conectado':'Reconectando…';s.classList.toggle('on',on)}}
+function connect(){disconnect();if(!team||typeof EventSource!=='function')return;var since=localStorage.getItem(sinceKey())||'12h';
+  es=new EventSource(NTFY+'/'+team.topic+'/sse?since='+encodeURIComponent(since));
+  es.onopen=function(){setStatus(true)};es.onerror=function(){setStatus(false)};
+  es.onmessage=function(ev){var d;try{d=JSON.parse(ev.data)}catch(e){return}if(!d||d.event!=='message')return;receive(d)}}
+function disconnect(){if(es){es.close();es=null}connected=false}
+async function receive(d){var t=team;if(!t)return;var msg=await decMsg(d.message);if(!msg||t!==team)return;
+  if(d.time)try{var prev=+localStorage.getItem(sinceKey())||0;if(d.time>prev)localStorage.setItem(sinceKey(),String(d.time))}catch(e){}
+  if(own[msg.id])return;/* minha própria mensagem: quem envia já guarda */
+  var key=t.topic+'|'+msg.id;var exists=await cop('msgs','readonly',function(st){return st.get(key)}).catch(function(){return null});
+  if(exists){if(msg.img&&d.attachment&&d.attachment.url&&!exists.hasImg)fetchImg(msg.id,d.attachment.url);return}
+  await putMsg({topic:t.topic,id:msg.id,at:msg.at||new Date().toISOString(),payload:d.message,mine:false,hasImg:false});
+  if(msg.img&&d.attachment&&d.attachment.url)await fetchImg(msg.id,d.attachment.url);
+  trim();if(page==='chat'&&!document.hidden){markRead();paint(true)}else{badges();notifyNew(msg)}}
+async function fetchImg(id,url){try{var r=await fetch(url);if(!r.ok)throw Error(r.status);var buf=await r.arrayBuffer();await putImg(id,buf);var rec=await cop('msgs','readonly',function(st){return st.get(team.topic+'|'+id)});if(rec){rec.hasImg=true;await putMsg(rec)}if(page==='chat')paint(false)}catch(e){}}
+function notifyNew(m){try{if(typeof playSiteSound==='function')playSiteSound('tap')}catch(e){}if(typeof Notification==='function'&&Notification.permission==='granted'&&(document.hidden||page!=='chat')){try{var n=new Notification('Chat · '+m.from,{body:m.img&&!m.text?'📷 Foto':m.text.slice(0,140),tag:'estoque99-chat'});n.onclick=function(){window.focus();go('chat');n.close()}}catch(e){}}}
+/* ---------- não lidas ---------- */
+async function unread(){if(!team)return 0;var last=localStorage.getItem(readKey())||'';var l=await allMsgs();return l.filter(function(r){return !r.mine&&String(r.at)>last}).length}
+function markRead(){if(team)localStorage.setItem(readKey(),new Date(Date.now()+1000).toISOString());badges()}
+function badges(){unread().then(function(n){document.querySelectorAll('[onclick="go(\'chat\')"]').forEach(function(b){var s=b.querySelector('.nav-unread');if(n>0){if(!s){s=document.createElement('span');s.className='nav-unread';b.appendChild(s)}s.textContent=n>99?'99+':String(n)}else if(s)s.remove()})})}
+/* ---------- enviar ---------- */
+function msgId(){return Date.now().toString(36)+'-'+b64(crypto.getRandomValues(new Uint8Array(6))).replace(/[^a-zA-Z0-9]/g,'').slice(0,8)}
+function failMsg(status){return status===429?'Limite grátis do ntfy.sh atingido nesta internet (250 mensagens por dia). Tente pelos dados móveis ou amanhã.':status===413?'Foto grande demais (máximo 2 MB).':'Não foi possível enviar ('+(status||'sem internet')+'). Tente de novo.'}
+window.chatSend=async function(text,photoData){if(!team||sending)return false;text=String(text||'').trim().slice(0,1000);if(!text&&!photoData)return false;sending=true;var btn=document.getElementById('chat-send');if(btn)btn.disabled=true;
+  try{var obj={v:1,id:msgId(),from:cfg.name,at:new Date().toISOString(),text:text,img:!!photoData};own[obj.id]=1;var payload=await encMsg(obj);var r;
+    if(photoData){var bytes=Uint8Array.from(atob(photoData.split(',')[1]),function(c){return c.charCodeAt(0)});var encd=await enc(bytes);
+      r=await fetch(NTFY+'/'+team.topic,{method:'PUT',headers:{'X-Message':payload,'X-Filename':'foto.bin'},body:encd});if(r.ok){await putImg(obj.id,encd.buffer)}}
+    else r=await fetch(NTFY+'/'+team.topic,{method:'POST',body:payload});
+    if(!r.ok){notify(failMsg(r.status));return false}
+    await putMsg({topic:team.topic,id:obj.id,at:obj.at,payload:payload,mine:true,hasImg:!!photoData});markRead();if(page==='chat')paint(true);return true}
+  catch(e){notify(failMsg(0));return false}finally{sending=false;if(btn)btn.disabled=false}};
+/* ---------- tela ---------- */
+function esc2(s){return esc(String(s==null?'':s))}
+function time(at){var d=new Date(at);return isNaN(d)?'':('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)}
+function day(at){var d=new Date(at);if(isNaN(d))return '';var t=new Date();var same=function(a,b){return a.toDateString()===b.toDateString()};if(same(d,t))return 'Hoje';var y=new Date(t);y.setDate(t.getDate()-1);if(same(d,y))return 'Ontem';return d.toLocaleDateString('pt-BR')}
+async function paint(scroll){var box=document.getElementById('chat-list');if(!box||!team)return;var keepBottom=scroll||box.scrollHeight-box.scrollTop-box.clientHeight<80;var l=await allMsgs();l.sort(function(a,b){return String(a.at).localeCompare(String(b.at))});
+  var html='',lastDay='',people={};
+  for(var i=0;i<l.length;i++){var r=l[i];var m=mem[r.topic+'|'+r.id]||(mem[r.topic+'|'+r.id]=await decMsg(r.payload));if(!m)continue;people[m.from]=1;var dd=day(m.at);if(dd!==lastDay){html+='<div class="chat-day">'+esc2(dd)+'</div>';lastDay=dd}
+    html+='<div class="chat-msg'+(r.mine?' mine':'')+'">'+(r.mine?'':'<span class="who">'+esc2(m.from)+'</span>')+(m.img?(r.hasImg?'<img data-chat-img="'+esc2(r.id)+'" alt="Foto enviada por '+esc2(m.from)+'">':'<span class="img-wait">📷 Foto (baixando… fotos ficam no servidor só por 3 horas)</span>'):'')+(m.text?esc2(m.text):'')+'<span class="when">'+time(m.at)+'</span></div>'}
+  box.innerHTML=html||'<p class="small" style="text-align:center;margin:auto">Nenhuma mensagem ainda. Diga oi para a equipe!</p>';
+  var cnt=document.getElementById('chat-people');if(cnt)cnt.textContent=Object.keys(people).length+' pessoa(s) já falaram';
+  box.querySelectorAll('img[data-chat-img]').forEach(function(img){var id=img.getAttribute('data-chat-img');getImg(id).then(function(buf){if(!buf)return;return dec(buf).then(function(b){var u=URL.createObjectURL(new Blob([b],{type:'image/jpeg'}));img.src=u;img.onclick=function(){viewImg(u)}})}).catch(function(){img.replaceWith(Object.assign(document.createElement('span'),{className:'img-wait',textContent:'📷 Foto indisponível'}))})});
+  if(keepBottom)box.scrollTop=box.scrollHeight}
+function viewImg(u){var d=document.getElementById('chat-img-view');if(!d){d=document.createElement('dialog');d.id='chat-img-view';d.innerHTML='<img alt="Foto do chat"><button type="button" onclick="this.closest(\'dialog\').close()">Fechar</button>';document.body.appendChild(d)}d.querySelector('img').src=u;d.showModal()}
+window.renderChat=function(){if(!cfg){return hero('Chat da equipe','')+'<div class="panel chat-setup">'
+   +'<div><h2>Criar equipe</h2><form onsubmit="chatCreate(event)"><label>Seu nome no chat<input name="name" required maxlength="40" value="'+esc2(authSession.payload.store==='Estoque 99'?'Gestor':authSession.record.login)+'"></label><button class="primary">Criar equipe e gerar código</button></form></div>'
+   +'<div><h2>Entrar com código</h2><form onsubmit="chatJoin(event)"><label>Código da equipe<input name="code" required maxlength="20" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX" value="'+esc2(pendingInvite?fmt(pendingInvite):'')+'"></label><label>Seu nome no chat<input name="name" required maxlength="40" value="'+esc2(authSession.record.login)+'"></label><button class="primary">Entrar no chat</button></form></div>'
+   +'<p class="small">As mensagens e fotos são criptografadas com o código da equipe e entregues pelo serviço gratuito ntfy.sh. Limites: 250 mensagens por dia por internet; fotos ficam no servidor por 3 horas e mensagens por 12 horas (o histórico fica salvo em cada aparelho).</p></div>'}
+  setTimeout(function(){paint(true);markRead();setStatus(connected)},0);
+  return '<div class="panel chat-wrap"><div class="chat-head"><div><h2>Chat · '+esc2(cfg.team||'Equipe')+'</h2><span class="chat-status" id="chat-status">Conectando…</span> <span class="small" id="chat-people"></span></div><div class="row toolbar"><button type="button" onclick="chatInvite()">Convidar</button><button type="button" onclick="chatLeave()">Sair da equipe</button></div></div>'
+   +'<div id="chat-list" role="log" aria-live="polite"></div>'
+   +'<form id="chat-form" onsubmit="chatSubmit(event)"><textarea id="chat-text" rows="1" maxlength="1000" placeholder="Mensagem para a equipe…" aria-label="Mensagem" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey&&!event.isComposing){event.preventDefault();chatSubmit(event)}"></textarea><div class="chat-btns"><label title="Câmera" aria-label="Tirar foto">📷<input type="file" accept="image/*" capture="environment" hidden onchange="chatPhoto(this)"></label><label title="Galeria" aria-label="Enviar foto da galeria">🖼<input type="file" accept="image/*" hidden onchange="chatPhoto(this)"></label><button type="submit" class="primary" id="chat-send">Enviar</button></div></form></div>'};
+window.chatSubmit=async function(e){if(e)e.preventDefault();var t=document.getElementById('chat-text');if(!t||!t.value.trim())return;var v=t.value;t.value='';var ok=await window.chatSend(v);if(!ok)t.value=v;t.focus()};
+window.chatPhoto=async function(input){var f=input.files&&input.files[0];input.value='';if(!f)return;try{notify('Preparando foto…');var p=await compressPlanPhoto(f);var t=document.getElementById('chat-text');var cap=t?t.value:'';if(await window.chatSend(cap,p.data)&&t)t.value=''}catch(e){notify(e.message||'Não foi possível ler a foto.')}};
+async function start(c){cfg=c;team=c?await makeTeam(c.code):null;mem={};if(team)connect();else disconnect();badges()}
+window.chatCreate=async function(e){e.preventDefault();var v=readForm(e.target);var name=String(v.name||'').trim().slice(0,40);if(!name)return;var code=newCode();var c={code:code,name:name,team:authSession.payload.store||'Equipe',owner:true};await saveCfg(c);await start(c);render();notify('Equipe criada. Toque em Convidar para chamar os auxiliares.')};
+window.chatJoin=async function(e){e.preventDefault();var v=readForm(e.target);var code=norm(v.code);var name=String(v.name||'').trim().slice(0,40);if(code.length!==12){notify('O código tem 12 letras e números.');return}if(!name)return;var c={code:code,name:name,team:'Equipe',owner:false};await saveCfg(c);pendingInvite='';await start(c);render();notify('Você entrou no chat da equipe.')};
+window.chatInvite=function(){if(!cfg)return;var link=location.origin+location.pathname.replace(/robo\.html$/,'')+'#equipe='+fmt(cfg.code);var text='Entre no chat da equipe do Estoque 99: '+link+' (código '+fmt(cfg.code)+')';
+  if(navigator.share){navigator.share({title:'Chat da equipe',text:text}).catch(function(){})}else{try{navigator.clipboard.writeText(text);notify('Convite copiado. Cole no WhatsApp dos auxiliares.')}catch(e){prompt('Copie o convite:',text)}window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener')}};
+window.chatLeave=async function(){if(!cfg||!confirm('Sair do chat desta equipe neste aparelho? Para voltar, use o código.'))return;await saveCfg(null);await start(null);render()};
+window.chatShareRupture=async function(r,photoDataUrl){if(!team){notify('Entre no chat da equipe primeiro (aba Chat).');return false}var c=state.corridors.find(function(x){return x.id===r.corridor});var text='Ruptura: '+(String(r.product||'produto não informado').replace(/\n+/g,', '))+(c?' · corredor '+c.number+' '+c.sector:'')+(r.owner?' · '+owner(r.owner):'');var ok=await window.chatSend(text,photoDataUrl||null);if(ok)notify('Ruptura enviada no chat.');return ok};
+/* ---------- integração ---------- */
+if(typeof labels==='object'&&!labels.chat){labels.chat='Chat';if(typeof icons==='object')icons.chat='✉'}
+var renderBefore=render;render=function(){var r=renderBefore.apply(this,arguments);badges();return r};
+var enterBefore=authEnter;authEnter=function(){var r=enterBefore.apply(this,arguments);loadCfg().then(function(c){return start(c)}).then(function(){if(pendingInvite&&!cfg){notify('Convite para o chat da equipe recebido.');go('chat')}else if(page==='chat')render()});return r};
+var logoutBefore=authLogout;authLogout=async function(){var r=await logoutBefore.apply(this,arguments);if(!authSession){cfg=null;team=null;disconnect()}return r};
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&page==='chat'&&team){markRead();paint(false)}});
+/* botão "Compartilhar no chat" na ruptura */
+var rupOpenBefore=window.ruptureOpen;if(typeof rupOpenBefore==='function'){window.ruptureOpen=function(id){rupOpenBefore.apply(this,arguments);var bar=document.querySelector('#rup-form .toolbar');if(!bar)return;var b=document.getElementById('rup-chat');if(!b){b=document.createElement('button');b.type='button';b.id='rup-chat';b.textContent='Enviar no chat';bar.appendChild(b)}b.hidden=!id;b.onclick=async function(){var r=state.ruptures.find(function(x){return x.id===id});if(!r)return;b.disabled=true;try{var data=r.photos[0]&&window.rupturePhotoDataURL?await window.rupturePhotoDataURL(r.photos[0]):null;await window.chatShareRupture(r,data)}finally{b.disabled=false}}}}
+if(typeof authSession!=='undefined'&&authSession)loadCfg().then(start).then(function(){if(page==='chat')render()});
 })();
 </script>
 <script>

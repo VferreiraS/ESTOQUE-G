@@ -64,6 +64,21 @@ Na aba **Rupturas** (barra de baixo no celular, menu lateral no computador), toq
 - O robô que lê a foto usa o **Google Gemini**: configure a chave na página do Robô (**IA → Serviço: Google Gemini**). A foto é enviada ao Google.
 - Na página do Robô dá para perguntar "O que falta abastecer?". As rupturas em aberto entram no resumo, só em texto, sem fotos.
 
+## Chat da equipe (com fotos)
+Aba **Chat** (no celular fica na barra de baixo; **Planos** foi para o menu **Mais**).
+1. O gestor toca em **Criar equipe**. O site gera um código, por exemplo `ABCD-EFGH-JKLM`.
+2. Toque em **Convidar** e mande o link pelo WhatsApp. O auxiliar abre o link, entra na conta dele e toca em **Entrar no chat**. Ou ele pode digitar o código em **Chat → Entrar com código**.
+3. Mande texto, fotos (📷 câmera ou 🖼 galeria) ou, na janela de uma ruptura, toque em **Enviar no chat**.
+
+Como funciona:
+- **Entrega:** as mensagens passam pelo serviço gratuito **ntfy.sh**, sem cadastro.
+- **Privacidade:**
+  - Tudo é criptografado no aparelho com o código da equipe, então o ntfy.sh só vê texto embaralhado.
+  - Quem tem o código lê o chat. Para tirar alguém, crie outra equipe e mande o código novo só para quem fica.
+- **Prazo para receber:** com o site aberto, chega em segundos (com aviso no sistema, se os avisos estiverem ligados). Se o site estiver fechado, a mensagem chega quando abrir, desde que dentro de **12 horas**. Fotos ficam no servidor só **3 horas**.
+- **Histórico:** as últimas 500 mensagens ficam salvas em cada aparelho.
+- **Limite grátis:** cerca de **250 mensagens por dia por internet** (o Wi-Fi da loja conta como uma só). Se aparecer o aviso de limite, use os dados móveis ou espere o dia seguinte.
+
 ## Status das notas fiscais
 
 Cada NF tem um de quatro status: **Pendente**, **Em conferência**, **Conferido** e **Em divergência**.
