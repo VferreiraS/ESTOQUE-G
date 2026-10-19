@@ -48,6 +48,14 @@ Em **Notas fiscais → Bipar NF**, use o leitor USB, a câmera ou cole a chave d
 - Se a chave já estiver salva, abre a NF com os dados salvos.
 - O código de barras não traz volumes. Eles vêm do XML, da NF já cadastrada ou da contagem na chegada.
 
+## Painel com gráficos
+Menu **Painel** (no celular: **Mais → Painel**, ou o botão **Ver painel com gráficos** no início).
+- Escolha o período: 7, 14 ou 30 dias.
+- Números do topo: rupturas em falta, tempo médio para abastecer (da foto até "Abastecido"), NFs em divergência e tarefas atrasadas (ou produtos que vencem em 7 dias, quando houver controle de validade).
+- Gráficos: rupturas em falta por corredor, rupturas abertas × abastecidas por dia, tarefas por pessoa (atrasadas, abertas, concluídas) e notas fiscais por dia e por status.
+- Toque (ou passe o mouse) numa barra para ver o número; **Ver como tabela** mostra os valores em lista.
+- Tudo em tons de cinza, com hachura para diferenciar as séries.
+
 ## Rupturas (fotos para abastecer)
 
 Na aba **Rupturas** (barra de baixo no celular, menu lateral no computador), toque em **📷 Nova ruptura**:
