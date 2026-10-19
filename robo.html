@@ -227,14 +227,20 @@ var SYSTEM='Você é o Robô do Estoque 99, assistente das Lojas G. Responda em 
 /* ---------- chamada à IA (formato OpenAI) ---------- */
 function httpMessage(status,body){var p=P();try{var j=JSON.parse(body);var m=j&&j.error&&(j.error.message||j.error);if(m)body=String(m)}catch(e){}if(Array.isArray(j)&&j[0]&&j[0].error)body=String(j[0].error.message||'');
   if(status===401||status===403||(status===400&&/api key|API_KEY/i.test(body)))return 'A chave do '+p.name+' foi recusada ('+status+'). Gere outra em '+p.link.replace('https://','')+' e salve de novo.';
-  if(status===429)return 'Limite gratuito do '+p.name+' atingido (429). Espere um pouco, troque o modelo ou use o outro serviço.';
+  var other=p===PROVIDERS.groq?PROVIDERS.gemini.name:PROVIDERS.groq.name;
+  if(status===429)return 'Limite gratuito do '+p.name+' atingido (429), mesmo tentando outros modelos. Espere um pouco ou use o '+other+'.';
   if(status===413)return 'Pergunta grande demais para o modelo (413). Tente uma pergunta mais curta.';
-  if(status>=500)return 'O '+p.name+' está com problema agora ('+status+'). Tente de novo em instantes.';
+  if(status>=500)return 'O '+p.name+' está sobrecarregado agora ('+status+'). Já tentei outros modelos; tente de novo em instantes ou use o '+other+'.';
   return 'O '+p.name+' respondeu com erro '+status+'. '+(body?String(body).slice(0,160):'')}
 function netMessage(){var p=P(),o=p===PROVIDERS.groq?PROVIDERS.gemini:PROVIDERS.groq;return 'Não conectou ao '+p.name+'. Confira a internet. Se o computador tem antivírus da empresa (ex.: Bitdefender), ele pode estar bloqueando '+p.host+': experimente o '+o.name+' em IA → Serviço.'}
-async function pickModel(current){try{var r=await fetch(P().base+'/models',{headers:{'Authorization':'Bearer '+curKey()}});if(!r.ok)return null;var ids=((await r.json()).data||[]).map(function(m){return String(m.id).replace(/^models\//,'')});var MODELS=modelIds(P());
-  var pref=MODELS.filter(function(m){return m!==current&&ids.indexOf(m)>=0});if(pref.length)return pref[0];
-  var any=ids.filter(function(id){return id!==current&&!/whisper|guard|orpheus|tts|safeguard|allam|embedding|image|imagen|veo|live|audio|aqa|learnlm|gemma/i.test(id)}).sort(function(a,b){return (/flash/.test(b)?1:0)-(/flash/.test(a)?1:0)});return any[0]||null}catch(e){return null}}
+/* Outros modelos do mesmo serviço, para quando um some ou está sobrecarregado. */
+async function pickModels(current,busy){var MODELS=modelIds(P()),ids=null;
+  try{var r=await fetch(P().base+'/models',{headers:{'Authorization':'Bearer '+curKey()}});if(r.ok)ids=((await r.json()).data||[]).map(function(m){return String(m.id).replace(/^models\//,'')})}catch(e){}
+  var bad=/whisper|guard|orpheus|tts|safeguard|allam|embedding|image|imagen|veo|live|audio|aqa|learnlm|gemma|exp|computer|robotics|native/i;
+  var list=ids?MODELS.filter(function(m){return ids.indexOf(m)>=0}).concat(ids.filter(function(id){return !bad.test(id)}).sort(function(a,b){return (/flash/.test(b)?1:0)-(/flash/.test(a)?1:0)})):MODELS.slice();
+  var seen={},out=[];list.forEach(function(m){if(m!==current&&!seen[m]){seen[m]=1;out.push(m)}});
+  if(busy)out=out.filter(function(m){return !/pro/.test(m)}).concat(out.filter(function(m){return /pro/.test(m)}));
+  return out}
 async function callAI(messages,opts){
   opts=opts||{};var ctrl=new AbortController(),timer=setTimeout(function(){ctrl.abort('timeout')},opts.timeout||90000);
   if(opts.onCtrl)opts.onCtrl(ctrl);
@@ -242,7 +248,10 @@ async function callAI(messages,opts){
   try{res=await fetch(P().base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+curKey()},body:JSON.stringify({model:opts.model||curModel(),messages:messages,stream:!!opts.stream,temperature:0.3,max_tokens:opts.maxTokens||2048}),signal:ctrl.signal})}
   catch(e){clearTimeout(timer);if(ctrl.signal.aborted)throw Object.assign(Error(ctrl.signal.reason==='timeout'?'O '+P().name+' demorou demais para responder.':'Interrompido.'),{aborted:true});throw Error(netMessage())}
   try{
-    if(!res.ok){var t='';try{t=await res.text()}catch(e){}if((res.status===404||(res.status===400&&/model/i.test(t)))&&!opts.model){clearTimeout(timer);var alt=await pickModel(curModel());if(alt)return callAI(messages,Object.assign({},opts,{model:alt}))}throw Error(httpMessage(res.status,t))}
+    if(!res.ok){var t='';try{t=await res.text()}catch(e){}var st=res.status,modelErr=st===404||(st===400&&/model/i.test(t)&&!/api key/i.test(t)),busyErr=st===429||st>=500;
+      if((modelErr||busyErr)&&!opts.retried){clearTimeout(timer);var tried=opts.tried||[opts.model||curModel()];var cands=(await pickModels(opts.model||curModel(),busyErr)).filter(function(m){return tried.indexOf(m)<0});
+        if(cands.length){if(busyErr)await new Promise(function(ok){setTimeout(ok,800)});var nt=tried.concat([cands[0]]);if(opts.onModel)opts.onModel(cands[0]);return callAI(messages,Object.assign({},opts,{model:cands[0],tried:nt,retried:nt.length>=3}))}}
+      throw Object.assign(Error(httpMessage(st,t)),{http:st})}
     var ct=res.headers.get('content-type')||'',text='',model='';
     if(opts.stream&&ct.indexOf('text/event-stream')>=0&&res.body){
       var reader=res.body.getReader(),dec=new TextDecoder(),buf='';
@@ -267,7 +276,7 @@ async function ask(q){
   try{var r;
     if(noStream)r=await callAI(messages,{stream:false,onCtrl:function(c){busy=c},onText:onText});
     else{try{r=await callAI(messages,{stream:true,onCtrl:function(c){busy=c},onText:onText});if(!r.text.trim())throw Error('vazio')}
-      catch(se){if(se.aborted||/chave|Limite|413|erro 4/.test(se.message||''))throw se;
+      catch(se){if(se.aborted||se.http)throw se;
         /* Antivírus (ex.: Bitdefender) pode barrar a resposta em partes: pede tudo de uma vez e lembra disso. */
         r=await callAI(messages,{stream:false,onCtrl:function(c){busy=c},onText:onText});try{localStorage.setItem('lojasg.estoque99.robot-nostream','1')}catch(e){}}}
     var answer=r.text.replace(/\*\*(.+?)\*\*/g,'$1').trim()||'(O modelo não mandou texto.)';bubble.classList.remove('typing');bubble.textContent=answer;
