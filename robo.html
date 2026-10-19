@@ -11,7 +11,7 @@
 <link rel="icon" type="image/png" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
-/* Robô do estoque: página só para a conversa com a IA (Groq). Mesmo visual preto e branco do site. */
+/* Robô do estoque: página só para a conversa com a IA (Groq ou Google Gemini). Mesmo visual preto e branco do site. */
 :root{--bg:#f6f6f6;--surface:#fff;--ink:#0a0a0a;--ink2:#2e2e2e;--muted:#6b6b6b;--line:#e2e2e2;--soft:#ededed;--shadow:0 1px 2px rgba(0,0,0,.05),0 12px 32px -22px rgba(0,0,0,.28);color-scheme:light}
 body.dark{--bg:#0a0a0a;--surface:#151515;--ink:#f2f2f2;--ink2:#cfcfcf;--muted:#9a9a9a;--line:#2a2a2a;--soft:#232323;--shadow:0 1px 2px rgba(0,0,0,.5),0 16px 40px -24px rgba(0,0,0,.8);color-scheme:dark}
 *{box-sizing:border-box}
@@ -65,6 +65,7 @@ label{display:grid;gap:6px;font-size:13px;font-weight:600;color:var(--muted)}
 .pw input{padding-right:84px}
 .pw button{position:absolute;right:6px;bottom:6px;min-height:36px;height:36px;padding:0 10px;border:0;background:transparent;color:var(--muted);font-size:13px}
 [hidden]{display:none!important}
+.sel{width:100%;min-height:48px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font-size:16px}
 /* Vida do robô */
 @keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-6px) rotate(-1.5deg)}}
 @keyframes think{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
@@ -106,7 +107,7 @@ body.still .bot,body.still .msg.bot.typing::after{animation:none!important}
     </div>
     <div id="app" hidden>
       <div class="card" id="chat">
-        <div class="chat-head"><h2>Conversa</h2><div class="row"><button type="button" id="refresh">Atualizar dados</button><button type="button" id="open-settings">Groq</button></div></div>
+        <div class="chat-head"><h2>Conversa</h2><div class="row"><button type="button" id="refresh">Atualizar dados</button><button type="button" id="open-settings">IA</button></div></div>
         <div id="messages" role="log" aria-live="polite"><p class="empty" id="empty">Pergunte sobre NFs, tarefas, prazos e equipe.</p></div>
         <div id="suggest">
           <button type="button" data-q="O que está pendente hoje?">O que está pendente hoje?</button>
@@ -120,15 +121,16 @@ body.still .bot,body.still .msg.bot.typing::after{animation:none!important}
         </form>
       </div>
       <div class="card" id="settings" hidden style="margin-top:16px">
-        <h2>Groq (IA gratuita)</h2>
+        <h2>IA gratuita</h2>
         <form id="settings-form" class="fields">
-          <label class="pw">Chave do Groq<input name="key" type="password" maxlength="500" autocomplete="off" spellcheck="false" placeholder="gsk_…"><button type="button" data-toggle>Mostrar</button></label>
-          <p class="small" style="margin:0">Não tem chave? <a href="https://console.groq.com/keys" target="_blank" rel="noopener" style="color:inherit;font-weight:650">Criar chave grátis no Groq ↗</a></p>
-          <label>Modelo<select name="model" style="width:100%;min-height:48px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font-size:16px"><option value="openai/gpt-oss-120b">GPT-OSS 120B (melhor resposta)</option><option value="openai/gpt-oss-20b">GPT-OSS 20B (mais rápido)</option><option value="qwen/qwen3.8-27b">Qwen 3.8 27B</option></select></label>
+          <label>Serviço<select name="provider" class="sel"><option value="groq">Groq</option><option value="gemini">Google Gemini</option></select></label>
+          <label class="pw"><span id="key-label">Chave</span><input name="key" type="password" maxlength="500" autocomplete="off" spellcheck="false"><button type="button" data-toggle>Mostrar</button></label>
+          <p class="small" style="margin:0">Não tem chave? <a id="key-link" href="https://console.groq.com/keys" target="_blank" rel="noopener" style="color:inherit;font-weight:650">Criar chave grátis ↗</a></p>
+          <label>Modelo<select name="model" class="sel"></select></label>
           <div class="row"><button class="primary" type="submit">Salvar</button><button type="button" id="test">Testar conexão</button><button type="button" id="close-settings">Fechar</button></div>
         </form>
         <p class="status" id="settings-status" aria-live="polite"></p>
-        <p class="small">As perguntas e um resumo do estoque vão para o Groq. O plano gratuito tem limite de pedidos por minuto e por dia.</p>
+        <p class="small" id="privacy-note">As perguntas e um resumo do estoque vão para o serviço escolhido. O plano gratuito tem limite de pedidos por minuto e por dia. Se o computador da empresa bloquear um serviço, experimente o outro.</p>
       </div>
     </div>
   </section>
@@ -138,9 +140,18 @@ body.still .bot,body.still .msg.bot.typing::after{animation:none!important}
 'use strict';
 var $=function(id){return document.getElementById(id)};
 var AUTH_PREFIX='lojasg.estoque99.account.v1.',AUTH_BLOCK='lojasg.estoque99.block.v1.',ROBOT_PREFIX='lojasg.estoque99.robot-groq:',OLD_PREFIX='lojasg.estoque99.robot:';
-var GROQ='https://api.groq.com/openai/v1',MODELS=['openai/gpt-oss-120b','openai/gpt-oss-20b','qwen/qwen3.8-27b'];
+var PROVIDERS={
+  groq:{name:'Groq',base:'https://api.groq.com/openai/v1',host:'api.groq.com',keyHint:'gsk_…',link:'https://console.groq.com/keys',linkText:'Criar chave grátis no Groq ↗',
+    models:[['openai/gpt-oss-120b','GPT-OSS 120B (melhor resposta)'],['openai/gpt-oss-20b','GPT-OSS 20B (mais rápido)'],['qwen/qwen3.8-27b','Qwen 3.8 27B']]},
+  gemini:{name:'Google Gemini',base:'https://generativelanguage.googleapis.com/v1beta/openai',host:'generativelanguage.googleapis.com',keyHint:'AIza…',link:'https://aistudio.google.com/apikey',linkText:'Criar chave grátis no Google AI Studio ↗',
+    models:[['gemini-flash-latest','Gemini Flash (rápido, limite maior)'],['gemini-pro-latest','Gemini Pro (melhor resposta)'],['gemini-flash-lite-latest','Gemini Flash-Lite (mais leve)']]}};
+function P(c){c=c||cfg;return PROVIDERS[c&&c.provider==='gemini'?'gemini':'groq']}
+function modelIds(p){return p.models.map(function(m){return m[0]})}
+function curKey(c){c=c||cfg;return c&&c.keys?String(c.keys[c.provider]||''):''}
+function curModel(c){c=c||cfg;var m=c&&c.models?c.models[c.provider]:'';return m||modelIds(P(c))[0]}
+function normCfg(c){if(!c)return null;if(!c.keys)c={provider:'groq',keys:{groq:c.key||''},models:{groq:c.model||''}};c.provider=c.provider==='gemini'?'gemini':'groq';c.keys=c.keys||{};c.models=c.models||{};return c}
 /* Só para testes locais: ?api= troca o endereço quando a página roda em localhost. */
-(function(){try{var a=new URLSearchParams(location.search).get('api');if(a&&(location.hostname==='localhost'||location.hostname==='127.0.0.1'))GROQ=a.replace(/\/+$/,'')}catch(e){}})();
+(function(){try{var a=new URLSearchParams(location.search).get('api');if(a&&(location.hostname==='localhost'||location.hostname==='127.0.0.1')){PROVIDERS.groq.base=a.replace(/\/+$/,'');PROVIDERS.gemini.base=a.replace(/\/+$/,'')}}catch(e){}})();
 var S=null,cfg=null,history=[],busy=null;
 
 /* ---------- aparência ---------- */
@@ -174,11 +185,17 @@ function idbGet(k){return idbOp('readonly',function(st){return st.get(k)}).catch
 function idbPut(k,v){return idbOp('readwrite',function(st){return st.put(v,k)}).catch(function(){})}
 function idbDel(k){return idbOp('readwrite',function(st){return st.delete(k)}).catch(function(){})}
 
-/* ---------- configuração do Groq (criptografada com a chave da conta) ---------- */
-async function loadCfg(){var raw=localStorage.getItem(ROBOT_PREFIX+S.storeKey);if(!raw)return null;try{var o=JSON.parse(raw);var p=await crypto.subtle.decrypt({name:'AES-GCM',iv:un64(o.iv),additionalData:bytes('robot|'+loginName(S.login))},S.key,un64(o.cipher));return JSON.parse(new TextDecoder().decode(p))}catch(e){return null}}
+/* ---------- configuração da IA (criptografada com a chave da conta) ---------- */
+async function loadCfg(){return normCfg(await loadCfgRaw())}
+async function loadCfgRaw(){var raw=localStorage.getItem(ROBOT_PREFIX+S.storeKey);if(!raw)return null;try{var o=JSON.parse(raw);var p=await crypto.subtle.decrypt({name:'AES-GCM',iv:un64(o.iv),additionalData:bytes('robot|'+loginName(S.login))},S.key,un64(o.cipher));return JSON.parse(new TextDecoder().decode(p))}catch(e){return null}}
 async function saveCfg(c){var iv=crypto.getRandomValues(new Uint8Array(12));var cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:bytes('robot|'+loginName(S.login))},S.key,bytes(JSON.stringify(c)));localStorage.setItem(ROBOT_PREFIX+S.storeKey,JSON.stringify({v:1,iv:b64(iv),cipher:b64(cipher)}));try{localStorage.removeItem(OLD_PREFIX+S.storeKey)}catch(e){}}
-function readSettings(){var f=$('settings-form');var m=String(f.elements.model.value||'');return {key:String(f.elements.key.value||'').trim(),model:MODELS.indexOf(m)>=0?m:MODELS[0]}}
-function fillSettings(){var f=$('settings-form');f.elements.key.value=cfg?cfg.key:'';f.elements.model.value=cfg&&MODELS.indexOf(cfg.model)>=0?cfg.model:MODELS[0]}
+var draft=null;
+function paintProvider(){var f=$('settings-form'),p=P(draft);f.elements.provider.value=draft.provider;$('key-label').textContent='Chave do '+p.name;f.elements.key.placeholder=p.keyHint;f.elements.key.value=curKey(draft);var a=$('key-link');a.href=p.link;a.textContent=p.linkText;
+  var sel=f.elements.model;sel.innerHTML='';p.models.forEach(function(m){var o=document.createElement('option');o.value=m[0];o.textContent=m[1];sel.appendChild(o)});sel.value=modelIds(p).indexOf(curModel(draft))>=0?curModel(draft):modelIds(p)[0]}
+function captureForm(){var f=$('settings-form');draft.keys[draft.provider]=String(f.elements.key.value||'').trim();var m=String(f.elements.model.value||'');draft.models[draft.provider]=modelIds(P(draft)).indexOf(m)>=0?m:modelIds(P(draft))[0]}
+function readSettings(){captureForm();return JSON.parse(JSON.stringify(draft))}
+function fillSettings(){draft=normCfg(cfg?JSON.parse(JSON.stringify(cfg)):{provider:'groq',keys:{},models:{}});paintProvider()}
+$('settings-form').elements.provider.addEventListener('change',function(e){captureForm();draft.provider=e.target.value==='gemini'?'gemini':'groq';paintProvider();$('settings-status').textContent=''});
 function showSettings(show){$('settings').hidden=!show;if(show){fillSettings();$('settings').scrollIntoView({behavior:'smooth',block:'start'})}}
 
 /* ---------- resumo do estoque para o robô ---------- */
@@ -207,25 +224,25 @@ function buildContext(){
   var text=L.join('\n');if(text.length>12000)text=text.slice(0,12000)+'\n[lista cortada por tamanho]';return text}
 var SYSTEM='Você é o Robô do Estoque 99, assistente das Lojas G. Responda em português do Brasil, de forma curta e direta, usando listas quando ajudar. Use somente os DADOS abaixo; se a informação não estiver neles, diga que não sabe. Não invente números de NF, nomes ou datas. Você não altera nada no sistema: se pedirem uma mudança, explique onde fazer no site.';
 
-/* ---------- chamada ao Groq ---------- */
-function httpMessage(status,body){try{var j=JSON.parse(body);var m=j&&j.error&&(j.error.message||j.error);if(m)body=String(m)}catch(e){}
-  if(status===401||status===403)return 'A chave do Groq foi recusada ('+status+'). Gere outra em console.groq.com/keys e salve de novo.';
-  if(status===429)return 'Limite gratuito do Groq atingido (429). Espere um pouco ou troque para o modelo GPT-OSS 20B.';
+/* ---------- chamada à IA (formato OpenAI) ---------- */
+function httpMessage(status,body){var p=P();try{var j=JSON.parse(body);var m=j&&j.error&&(j.error.message||j.error);if(m)body=String(m)}catch(e){}if(Array.isArray(j)&&j[0]&&j[0].error)body=String(j[0].error.message||'');
+  if(status===401||status===403||(status===400&&/api key|API_KEY/i.test(body)))return 'A chave do '+p.name+' foi recusada ('+status+'). Gere outra em '+p.link.replace('https://','')+' e salve de novo.';
+  if(status===429)return 'Limite gratuito do '+p.name+' atingido (429). Espere um pouco, troque o modelo ou use o outro serviço.';
   if(status===413)return 'Pergunta grande demais para o modelo (413). Tente uma pergunta mais curta.';
-  if(status>=500)return 'O Groq está com problema agora ('+status+'). Tente de novo em instantes.';
-  return 'O Groq respondeu com erro '+status+'. '+(body?String(body).slice(0,160):'')}
-function netMessage(){return 'Não conectou ao Groq. Confira a internet. Se usa antivírus (ex.: Bitdefender), adicione api.groq.com e vferreiras.github.io às exceções da Proteção da Web.'}
-async function pickModel(current){try{var r=await fetch(GROQ+'/models',{headers:{'Authorization':'Bearer '+cfg.key}});if(!r.ok)return null;var ids=((await r.json()).data||[]).map(function(m){return m.id});
+  if(status>=500)return 'O '+p.name+' está com problema agora ('+status+'). Tente de novo em instantes.';
+  return 'O '+p.name+' respondeu com erro '+status+'. '+(body?String(body).slice(0,160):'')}
+function netMessage(){var p=P(),o=p===PROVIDERS.groq?PROVIDERS.gemini:PROVIDERS.groq;return 'Não conectou ao '+p.name+'. Confira a internet. Se o computador tem antivírus da empresa (ex.: Bitdefender), ele pode estar bloqueando '+p.host+': experimente o '+o.name+' em IA → Serviço.'}
+async function pickModel(current){try{var r=await fetch(P().base+'/models',{headers:{'Authorization':'Bearer '+curKey()}});if(!r.ok)return null;var ids=((await r.json()).data||[]).map(function(m){return String(m.id).replace(/^models\//,'')});var MODELS=modelIds(P());
   var pref=MODELS.filter(function(m){return m!==current&&ids.indexOf(m)>=0});if(pref.length)return pref[0];
-  var any=ids.filter(function(id){return id!==current&&!/whisper|guard|orpheus|tts|safeguard|allam/i.test(id)});return any[0]||null}catch(e){return null}}
+  var any=ids.filter(function(id){return id!==current&&!/whisper|guard|orpheus|tts|safeguard|allam|embedding|image|imagen|veo|live|audio|aqa|learnlm|gemma/i.test(id)}).sort(function(a,b){return (/flash/.test(b)?1:0)-(/flash/.test(a)?1:0)});return any[0]||null}catch(e){return null}}
 async function callAI(messages,opts){
   opts=opts||{};var ctrl=new AbortController(),timer=setTimeout(function(){ctrl.abort('timeout')},opts.timeout||90000);
   if(opts.onCtrl)opts.onCtrl(ctrl);
   var res;
-  try{res=await fetch(GROQ+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},body:JSON.stringify({model:opts.model||cfg.model||MODELS[0],messages:messages,stream:!!opts.stream,temperature:0.3,max_tokens:opts.maxTokens||900}),signal:ctrl.signal})}
-  catch(e){clearTimeout(timer);if(ctrl.signal.aborted)throw Object.assign(Error(ctrl.signal.reason==='timeout'?'O Groq demorou demais para responder.':'Interrompido.'),{aborted:true});throw Error(netMessage())}
+  try{res=await fetch(P().base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+curKey()},body:JSON.stringify({model:opts.model||curModel(),messages:messages,stream:!!opts.stream,temperature:0.3,max_tokens:opts.maxTokens||2048}),signal:ctrl.signal})}
+  catch(e){clearTimeout(timer);if(ctrl.signal.aborted)throw Object.assign(Error(ctrl.signal.reason==='timeout'?'O '+P().name+' demorou demais para responder.':'Interrompido.'),{aborted:true});throw Error(netMessage())}
   try{
-    if(!res.ok){var t='';try{t=await res.text()}catch(e){}if((res.status===404||(res.status===400&&/model/i.test(t)))&&!opts.model){clearTimeout(timer);var alt=await pickModel(cfg.model);if(alt)return callAI(messages,Object.assign({},opts,{model:alt}))}throw Error(httpMessage(res.status,t))}
+    if(!res.ok){var t='';try{t=await res.text()}catch(e){}if((res.status===404||(res.status===400&&/model/i.test(t)))&&!opts.model){clearTimeout(timer);var alt=await pickModel(curModel());if(alt)return callAI(messages,Object.assign({},opts,{model:alt}))}throw Error(httpMessage(res.status,t))}
     var ct=res.headers.get('content-type')||'',text='',model='';
     if(opts.stream&&ct.indexOf('text/event-stream')>=0&&res.body){
       var reader=res.body.getReader(),dec=new TextDecoder(),buf='';
@@ -233,7 +250,7 @@ async function callAI(messages,opts){
         for(var i=0;i<lines.length;i++){var line=lines[i].trim();if(line.indexOf('data:')!==0)continue;var data=line.slice(5).trim();if(data==='[DONE]')continue;var j;try{j=JSON.parse(data)}catch(_){continue}if(j.error)throw Error(String(j.error.message||j.error));model=model||j.model||'';var c=j.choices&&j.choices[0];var piece=c&&((c.delta&&c.delta.content)||(c.message&&c.message.content))||'';if(piece){text+=piece;if(opts.onText)opts.onText(text)}}}
     }else{var j2=await res.json();if(j2.error)throw Error(String(j2.error.message||j2.error));model=j2.model||'';text=(j2.choices&&j2.choices[0]&&j2.choices[0].message&&j2.choices[0].message.content)||'';if(opts.onText)opts.onText(text)}
     return {text:text,model:model}}
-  catch(e){if(ctrl.signal.aborted)throw Object.assign(Error(ctrl.signal.reason==='timeout'?'O Groq demorou demais para responder.':'Interrompido.'),{aborted:true});throw e}
+  catch(e){if(ctrl.signal.aborted)throw Object.assign(Error(ctrl.signal.reason==='timeout'?'O '+P().name+' demorou demais para responder.':'Interrompido.'),{aborted:true});throw e}
   finally{clearTimeout(timer)}}
 
 /* ---------- conversa ---------- */
@@ -241,7 +258,7 @@ function addMsg(role,text,extra){var e=$('empty');if(e)e.remove();var d=document
 function setBusy(on){$('send').disabled=on;$('q').disabled=on;$('stop').hidden=!on;document.querySelectorAll('#suggest button').forEach(function(b){b.disabled=on})}
 async function ask(q){
   q=String(q||'').trim();if(!q||busy)return;
-  if(!cfg||!cfg.key){showSettings(true);$('settings-status').textContent='Cole a sua chave grátis do Groq para conversar.';return}
+  if(!cfg||!curKey()){showSettings(true);$('settings-status').textContent='Escolha o serviço e cole a sua chave grátis para conversar.';return}
   addMsg('user',q);$('q').value='';autoGrow();
   var bubble=addMsg('bot','','typing');setBusy(true);botState('thinking','Pensando…');
   var messages=[{role:'system',content:SYSTEM+'\n\nDADOS (atualizados agora):\n'+buildContext()}].concat(history.slice(-10),[{role:'user',content:q}]);
@@ -255,7 +272,7 @@ async function ask(q){
         r=await callAI(messages,{stream:false,onCtrl:function(c){busy=c},onText:onText});try{localStorage.setItem('lojasg.estoque99.robot-nostream','1')}catch(e){}}}
     var answer=r.text.replace(/\*\*(.+?)\*\*/g,'$1').trim()||'(O modelo não mandou texto.)';bubble.classList.remove('typing');bubble.textContent=answer;
     history.push({role:'user',content:q},{role:'assistant',content:answer});history=history.slice(-10);botState('idle','Pronto para ajudar.')}
-  catch(e){bubble.classList.remove('typing');if(e.aborted&&bubble.textContent){bubble.textContent+='\n[interrompido]';botState('idle','Interrompido.')}else{bubble.classList.add('error');bubble.textContent=e.message||'Falha ao falar com o Groq.';botState('idle','Não consegui responder.')}}
+  catch(e){bubble.classList.remove('typing');if(e.aborted&&bubble.textContent){bubble.textContent+='\n[interrompido]';botState('idle','Interrompido.')}else{bubble.classList.add('error');bubble.textContent=e.message||'Falha ao falar com a IA.';botState('idle','Não consegui responder.')}}
   finally{busy=null;setBusy(false);$('q').focus()}}
 function autoGrow(){var q=$('q');q.style.height='auto';q.style.height=Math.min(160,q.scrollHeight+2)+'px'}
 $('q').addEventListener('input',autoGrow);
@@ -266,12 +283,12 @@ document.querySelectorAll('#suggest button').forEach(function(b){b.onclick=funct
 $('open-settings').onclick=function(){showSettings($('settings').hidden)};
 $('close-settings').onclick=function(){showSettings(false)};
 $('refresh').onclick=async function(){try{S=await openAccount(S.storeKey,S.key);botState('idle','Dados atualizados.')}catch(e){botState('idle',e.message)}};
-$('settings-form').onsubmit=async function(e){e.preventDefault();var st=$('settings-status');try{var c=readSettings();if(!c.key)throw Error('Cole a chave do Groq.');await saveCfg(c);cfg=c;st.textContent='Salvo. Toque em Testar conexão para conferir.';botState('idle','Pronto para ajudar.')}catch(err){st.textContent=err.message}};
-$('test').onclick=async function(){var st=$('settings-status'),btn=$('test');var old=cfg;try{var c=readSettings();if(!c.key)throw Error('Cole a chave do Groq.');cfg=c;btn.disabled=true;st.textContent='Testando…';botState('thinking','Testando conexão…');var r=await callAI([{role:'user',content:'Responda apenas: ok'}],{stream:false,maxTokens:300,timeout:30000});st.textContent='Conectado'+(r.model?' · modelo '+r.model:'')+'. Resposta: '+(r.text||'(vazia)').trim().slice(0,60);botState('idle','Conexão funcionando.')}catch(err){st.textContent=err.message;botState('idle','Falha no teste.')}finally{cfg=old;btn.disabled=false}};
+$('settings-form').onsubmit=async function(e){e.preventDefault();var st=$('settings-status');try{var c=readSettings();if(!curKey(c))throw Error('Cole a chave do '+P(c).name+'.');await saveCfg(c);cfg=c;st.textContent='Salvo ('+P(c).name+'). Toque em Testar conexão para conferir.';botState('idle','Pronto para ajudar.')}catch(err){st.textContent=err.message}};
+$('test').onclick=async function(){var st=$('settings-status'),btn=$('test');var old=cfg;try{var c=readSettings();if(!curKey(c))throw Error('Cole a chave do '+P(c).name+'.');cfg=c;btn.disabled=true;st.textContent='Testando…';botState('thinking','Testando conexão…');var r=await callAI([{role:'user',content:'Responda apenas: ok'}],{stream:false,maxTokens:300,timeout:30000});st.textContent='Conectado'+(r.model?' · modelo '+r.model:'')+'. Resposta: '+(r.text||'(vazia)').trim().slice(0,60);botState('idle','Conexão funcionando.')}catch(err){st.textContent=err.message;botState('idle','Falha no teste.')}finally{cfg=old;btn.disabled=false}};
 
 /* ---------- entrar ---------- */
 async function enter(session){S=session;cfg=await loadCfg();$('unlock').hidden=true;$('app').hidden=false;
-  if(!cfg){showSettings(true);$('settings-status').textContent='Primeiro, cole a sua chave grátis do Groq.';botState('idle','Olá! Me conecte ao Groq para conversar.')}
+  if(!cfg){showSettings(true);$('settings-status').textContent='Primeiro, escolha o serviço e cole a sua chave grátis.';botState('idle','Olá! Me conecte a uma IA para conversar.')}
   else botState('idle','Olá! Pergunte sobre o estoque de '+(S.store||'sua loja')+'.')}
 function showUnlock(msg){$('app').hidden=true;$('unlock').hidden=false;$('unlock-err').textContent=msg||'';botState('idle','Entre com sua conta do estoque.')}
 $('unlock-form').onsubmit=async function(e){e.preventDefault();var f=e.target,btn=$('unlock-btn');btn.disabled=true;btn.textContent='Aguarde…';$('unlock-err').textContent='';

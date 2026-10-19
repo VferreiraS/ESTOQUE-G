@@ -106,22 +106,22 @@ O site usa só preto, branco e cinza, no tema claro e no escuro.
 
 A animação de entrada aparece ao abrir o site e ao sair da conta. Em computadores com "reduzir animações" ligado, ela aparece numa versão suave. O botão **Efeitos** desliga a animação neste navegador.
 
-## Robô (Groq, IA gratuita)
+## Robô (IA gratuita: Groq ou Google Gemini)
 
 O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/robo.html**. Abra pelo botão **Conversar com o robô** na Visão geral, tocando no mascote ou pelo item **Robô** do menu. Ela já abre com a sua conta, sem pedir senha de novo. **← Voltar ao estoque** também volta sem senha.
 
-1. Crie uma chave grátis do Groq: entre em **https://console.groq.com/keys** (pode entrar com a conta Google), toque em **Create API Key** e copie a chave (começa com `gsk_`).
-2. Na página do robô, toque em **Groq**, cole a chave, escolha o modelo e toque em **Testar conexão** e depois em **Salvar**.
-   - **GPT-OSS 120B**: respostas melhores (padrão).
-   - **GPT-OSS 20B**: mais rápido.
-   - Se o Groq tirar um modelo do ar, o robô escolhe sozinho outro disponível.
+1. Na página do robô, toque em **IA** e escolha o **Serviço**:
+   - **Google Gemini**: chave grátis em **https://aistudio.google.com/apikey** (entre com a conta Google → **Create API key**). Costuma funcionar em computadores de empresa com antivírus (ex.: Bitdefender).
+   - **Groq**: chave grátis em **https://console.groq.com/keys** (**Create API Key**, começa com `gsk_`).
+2. Cole a chave, escolha o modelo e toque em **Testar conexão** e depois em **Salvar**. Cada serviço guarda a sua própria chave.
 3. Pergunte, por exemplo: "O que está pendente hoje?", "Quais NFs estão em divergência?", "Tarefas atrasadas".
 
-- A chave fica criptografada com a sua conta, só neste aparelho. Se trocar a senha da conta, cole a chave de novo.
-- O plano gratuito do Groq tem limite de pedidos por minuto e por dia. Se aparecer "Limite gratuito do Groq atingido", espere um pouco ou use o modelo 20B.
-- O que vai para o Groq: a pergunta, as últimas mensagens da conversa e um resumo do estoque (NFs não conferidas, tarefas abertas, equipe, corredores e planos do dia).
+- Se um modelo sair do ar, o robô escolhe sozinho outro disponível no mesmo serviço.
+- Se o antivírus barrar a resposta em partes, o robô passa a pedir a resposta inteira de uma vez. Se o computador bloquear um serviço inteiro, use o outro.
+- As chaves ficam criptografadas com a sua conta, só neste aparelho. Se trocar a senha da conta, cole as chaves de novo.
+- Os planos gratuitos têm limite de pedidos por minuto e por dia.
+- O que vai para o serviço escolhido: a pergunta, as últimas mensagens da conversa e um resumo do estoque (NFs não conferidas, tarefas abertas, equipe, corredores e planos do dia). No plano gratuito do Gemini, o Google pode usar as conversas para melhorar os modelos.
 - O robô só lê os dados. Ele não muda nada no estoque.
-- **Antivírus (Bitdefender e outros):** se o antivírus barrar a resposta em partes, o robô passa a pedir a resposta inteira de uma vez. Se ainda assim não conectar, adicione `api.groq.com` e `vferreiras.github.io` às exceções da proteção da web do antivírus.
 
 ## Mascote
 
@@ -158,7 +158,7 @@ As notas respeitam a busca e a aba de status que estão na tela.
 | Arquivo | Para que serve |
 | --- | --- |
 | `index.html` | O sistema completo |
-| `robo.html` | Página do robô (conversa com a IA do Groq) |
+| `robo.html` | Página do robô (conversa com a IA: Groq ou Google Gemini) |
 | `manifest.webmanifest` | Nome, cores e ícones para instalar como app |
 | `sw.js` | Permite abrir sem internet |
 | `icons/` | Ícones do app (iPhone, Android, computador) e o mascote `mascote.png` |
