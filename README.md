@@ -40,6 +40,14 @@ Na aba **Notas fiscais**, toque em **Ler print de NFs** e escolha o print da pla
 - Fornecedores corrigidos uma vez são reconhecidos nos próximos prints.
 - Funciona pelo endereço do site (https). Abrindo o `index.html` direto do computador, o leitor não carrega.
 
+## Bipar NF
+
+Em **Notas fiscais → Bipar NF**, use o leitor USB, a câmera ou cole a chave de 44 dígitos.
+
+- Se a NF já estiver na lista (por exemplo, veio do print de pendentes), o app abre essa NF, mantém fornecedor, data e volumes e acrescenta a chave. Não cria nota repetida.
+- Se a chave já estiver salva, abre a NF com os dados salvos.
+- O código de barras não traz volumes. Eles vêm do XML, da NF já cadastrada ou da contagem na chegada.
+
 ## Status das notas fiscais
 
 Cada NF tem um de quatro status: **Pendente**, **Em conferência**, **Conferido** e **Em divergência**.
@@ -79,6 +87,8 @@ A conta não pode ser aberta: os cadastros ficam criptografados com a senha, e n
 ## Visual em preto e branco
 
 O site usa só preto, branco e cinza, no tema claro e no escuro.
+
+A animação de entrada aparece ao abrir o site e ao sair da conta. Em computadores com "reduzir animações" ligado, ela aparece numa versão suave. O botão **Efeitos** desliga a animação neste navegador.
 
 ## Tema sazonal
 

@@ -398,7 +398,7 @@ function nfParseKey(raw){
  if(+key.slice(25,34)===0)throw Error('Número de NF inválido.');
  return {accessKey:key,number:String(Number(key.slice(25,34))),series:String(Number(key.slice(22,25))),cnpj:key.slice(6,20),emissionMonth:'20'+key.slice(2,4)+'-'+key.slice(4,6),issuerUF:nfUFs[key.slice(0,2)]};
 }
-function nfBarcodeFields(v){return `<section style="padding:16px;border:1px solid var(--line);border-radius:12px"><h3 style="margin-top:0">Bipar código do DANFE</h3><p class="small">Clique no campo e use o leitor USB configurado como teclado. Também pode colar a chave. A leitura preenche os dados abaixo; revise e clique em Salvar.</p><label>Chave de acesso (44 dígitos)<input id="nf-key" name="accessKey" value="${esc(v.accessKey||'')}" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="80" placeholder="Bipe ou cole a chave da NF-e" oninput="nfKeyInput(this)" onkeydown="nfScanKeydown(event)"></label><button type="button" onclick="nfApplyScan()" style="margin-top:10px">Preencher pela chave</button><button type="button" onclick="nfOpenImported()" style="margin-top:10px">Abrir NF cadastrada</button><p id="nf-scan-result" role="status" aria-live="polite" class="small">O código não informa nome do fornecedor, produtos ou volumes. Não consulta a autorização da nota na SEFAZ.</p><div class="pair"><label>Série<input name="series" readonly value="${esc(v.series||'')}"></label><label>CNPJ do emitente<input name="cnpj" readonly value="${esc(v.cnpj||'')}"></label></div><div class="pair"><label>Mês de emissão<input name="emissionMonth" readonly value="${esc(v.emissionMonth||'')}"></label><label>UF do emitente<input name="issuerUF" readonly value="${esc(v.issuerUF||'')}"></label></div></section>`}
+function nfBarcodeFields(v){return `<section style="padding:16px;border:1px solid var(--line);border-radius:12px"><h3 style="margin-top:0">Bipar código do DANFE</h3><p class="small">Clique no campo e use o leitor USB configurado como teclado. Também pode colar a chave. A leitura preenche os dados abaixo; revise e clique em Salvar.</p><label>Chave de acesso (44 dígitos)<input id="nf-key" name="accessKey" value="${esc(v.accessKey||'')}" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="80" placeholder="Bipe ou cole a chave da NF-e" oninput="nfKeyInput(this)" onkeydown="nfScanKeydown(event)"></label><button type="button" onclick="nfApplyScan()" style="margin-top:10px">Preencher pela chave</button><button type="button" onclick="nfOpenImported()" style="margin-top:10px">Abrir NF cadastrada</button><p id="nf-scan-result" role="status" aria-live="polite" class="small">Se a NF já estiver na lista, ela abre com fornecedor, data e volumes. Volumes também vêm do XML.</p><div class="pair"><label>Série<input name="series" readonly value="${esc(v.series||'')}"></label><label>CNPJ do emitente<input name="cnpj" readonly value="${esc(v.cnpj||'')}"></label></div><div class="pair"><label>Mês de emissão<input name="emissionMonth" readonly value="${esc(v.emissionMonth||'')}"></label><label>UF do emitente<input name="issuerUF" readonly value="${esc(v.issuerUF||'')}"></label></div></section>`}
 function nfScanMessage(message){const el=$('nf-scan-result');if(el)el.textContent=message}
 function nfKeyInput(input){nfLastApplied='';if(String(input.value).replace(/\s/g,'').length===44)nfApplyScan();else nfScanMessage('Aguardando a chave completa de 44 dígitos.')}
 function nfScanKeydown(event){if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();nfApplyScan()}}
@@ -408,19 +408,31 @@ function nfApplyScan(){
  try{
   const parsed=nfParseKey(get('accessKey').value);
   const duplicate=state.nfs.find(n=>n.id!==editing.id&&n.accessKey===parsed.accessKey);
-  if(duplicate)throw Error('Esta chave já está cadastrada na NF '+duplicate.number+'. Clique em Abrir NF cadastrada para ver os itens e registrar a chegada.');
+  if(duplicate)return nfSwitchTo(duplicate,null,'NF '+duplicate.number+' já estava cadastrada. Aberta com fornecedor, data e volumes salvos.');
+  const sameNumber=state.nfs.filter(n=>n.id!==editing.id&&!n.accessKey&&String(Number(String(n.number||'').replace(/\D/g,'')))===parsed.number&&(!n.cnpj||n.cnpj===parsed.cnpj));
+  if(sameNumber.length>1)throw Error('Há '+sameNumber.length+' notas com o número '+parsed.number+' na lista. Abra a certa pela lista e bipe de novo.');
+  if(sameNumber.length===1){const f=sameNumber[0];return nfSwitchTo(f,parsed,'NF '+parsed.number+' encontrada na lista ('+f.status+(f.supplier?' · '+f.supplier:'')+'). Chave adicionada. Confira os volumes e salve.')}
   const previousCnpj=get('cnpj').value;
   for(const [name,value] of Object.entries(parsed)){const input=get(name);if(input)input.value=value}
   const known=state.nfs.filter(n=>n.cnpj===parsed.cnpj&&n.supplier&&n.supplier.trim());
   const names=[...new Set(known.map(n=>n.supplier.trim()))];
   let hint='Informe o fornecedor e confira os volumes.';
-  if(names.length===1){get('supplier').value=names[0];hint='Fornecedor reaproveitado do histórico deste CNPJ; confira o nome e os volumes.'}
+  if(names.length===1&&!get('supplier').value.trim()){get('supplier').value=names[0];hint='Fornecedor reaproveitado do histórico deste CNPJ; confira o nome e os volumes.'}
   else if(previousCnpj&&previousCnpj!==parsed.cnpj){get('supplier').value=''}
   nfLastApplied=parsed.accessKey;
   nfScanMessage('NF '+parsed.number+' · série '+parsed.series+' preenchida. '+hint+' A data de recebimento foi mantida. Clique em Salvar após revisar.');
   return true;
  }catch(e){nfScanMessage(e.message);return false}
 }
+function nfSwitchTo(found,parsed,message){
+ const form=$('editor'),get=name=>form.elements.namedItem(name);
+ if(editing.id&&editing.id!==found.id&&!confirm('Abrir a NF '+found.number+'? Alterações não salvas deste formulário serão descartadas.'))return false;
+ const fromBlank=!editing.id,carryVolumes=Number(get('volumes')&&get('volumes').value)||0,carryOwner=get('owner')?get('owner').value:'';
+ openEditor('nf',found.id);
+ const f=$('editor'),g=name=>f.elements.namedItem(name);
+ if(parsed){for(const [name,value] of Object.entries(parsed)){const input=g(name);if(input)input.value=value}nfLastApplied=parsed.accessKey}
+ if(fromBlank){if(carryVolumes>0&&!(Number(found.volumes)>0)&&g('volumes'))g('volumes').value=carryVolumes;if(carryOwner&&!found.owner&&g('owner'))g('owner').value=carryOwner}
+ nfScanMessage(message);return true}
 function nfValidateEntry(v,id){
  if(!v.accessKey){for(const name of ['series','cnpj','emissionMonth','issuerUF'])v[name]='';return true}
  try{
@@ -1041,7 +1053,7 @@ let renderedDay=iso();setInterval(()=>{if(!modal.open&&iso()!==renderedDay){rend
  try{enabled=localStorage.getItem(key)!=='off'}catch(e){}
  function motionAllowed(){return enabled&&!(preference&&preference.matches)}
  function cancelAnimations(){animations.forEach(function(a){try{a.cancel()}catch(e){}});animations=[]}
- function updateControl(){var button=document.getElementById('effects-toggle');document.body.classList.toggle('fx-off',!motionAllowed());if(button){button.textContent=preference&&preference.matches?'Movimento reduzido':enabled?'Efeitos: ligados':'Efeitos: desligados';button.setAttribute('aria-pressed',motionAllowed()?'true':'false');button.title=preference&&preference.matches?'Preferência de movimento reduzido do computador respeitada.':'Ligar ou desligar animações deste site.'}}
+ function updateControl(){var button=document.getElementById('effects-toggle');document.body.classList.toggle('fx-off',!motionAllowed());document.body.classList.toggle('fx-user-off',!enabled);if(button){button.textContent=preference&&preference.matches?'Movimento reduzido':enabled?'Efeitos: ligados':'Efeitos: desligados';button.setAttribute('aria-pressed',motionAllowed()?'true':'false');button.title=preference&&preference.matches?'Preferência de movimento reduzido do computador respeitada.':'Ligar ou desligar animações deste site.'}}
  function reveal(element,delay){if(typeof element.animate!=='function'||!motionAllowed())return;try{var a=element.animate([{opacity:.25,transform:'translateY(14px)'},{opacity:1,transform:'translateY(0)'}],{duration:420,delay:delay,easing:'cubic-bezier(.22,1,.36,1)'});animations.push(a);a.onfinish=function(){var i=animations.indexOf(a);if(i>=0)animations.splice(i,1)}}catch(e){}}
  function updateScroll(){framePending=false;var doc=document.documentElement,height=Math.max(0,doc.scrollHeight-window.innerHeight),y=Math.max(0,window.pageYOffset||doc.scrollTop||0),bar=document.getElementById('scroll-progress'),top=document.getElementById('back-top');if(bar)bar.style.transform='scaleX('+(height?Math.min(1,y/height):0)+')';if(top)top.classList.toggle('hidden',y<320);document.body.classList.toggle('is-scrolled',y>12)}
  function scheduleScroll(){if(framePending)return;framePending=true;if(typeof window.requestAnimationFrame==='function')window.requestAnimationFrame(updateScroll);else updateScroll()}
@@ -2292,4 +2304,26 @@ table.mobile-cards td.nf-act:before{display:none}
 .nf-open{min-height:44px;width:100%}
 }
 </style>
+<style id="login-motion">
+/* Animação de login também com "reduzir animações" do sistema: versão suave, só aparecer e sumir. Desliga só pelo botão Efeitos. */
+@keyframes login-fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){
+body:not(.fx-user-off) .entry-splash{display:grid!important;animation:entry-away .5s ease 1.1s both!important}
+body:not(.fx-user-off) .entry-splash::before,body:not(.fx-user-off) .entry-emblem::after{display:none!important}
+body:not(.fx-user-off) .entry-splash .entry-emblem,body:not(.fx-user-off) .entry-splash .entry-logo,body:not(.fx-user-off) .entry-splash strong,body:not(.fx-user-off) .entry-splash small,body:not(.fx-user-off) .entry-splash .entry-line{animation:login-fade .45s ease both!important;transform:none!important}
+body:not(.fx-user-off) .entry-splash .entry-logo{filter:none!important}
+body:not(.fx-user-off) #auth-screen .auth-card{animation:login-fade .45s ease both!important}
+}
+</style>
+<script id="login-motion-js">
+(function(){
+'use strict';
+function reduced(){return typeof window.matchMedia==='function'&&window.matchMedia('(prefers-reduced-motion: reduce)').matches}
+function userOff(){try{return localStorage.getItem('lojasg.estoque99.visual-effects')==='off'}catch(e){return false}}
+/* Reinicia a animação de entrada (o computador costuma ficar com a aba aberta entre um login e outro). */
+window.replayEntrySplash=function(){if(userOff())return;var el=document.querySelector('.entry-splash');if(!el||!el.parentNode)return;el.parentNode.replaceChild(el.cloneNode(true),el)};
+if(typeof authLogout==='function'){var logoutBefore=authLogout;authLogout=async function(){var r=await logoutBefore.apply(this,arguments);if(!authSession)window.replayEntrySplash();return r}}
+if(typeof authEnter==='function'){var enterBefore=authEnter;authEnter=function(session){var r=enterBefore.apply(this,arguments);if(reduced()&&!userOff()){var view=document.getElementById('view');if(view&&typeof view.animate==='function')view.animate([{opacity:0},{opacity:1}],{duration:320,easing:'ease-out'})}return r}}
+})();
+</script>
 </body></html>
