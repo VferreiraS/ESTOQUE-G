@@ -40,6 +40,16 @@ Na aba **Notas fiscais**, toque em **Ler print de NFs** e escolha o print da pla
 - Fornecedores corrigidos uma vez são reconhecidos nos próximos prints.
 - Funciona pelo endereço do site (https). Abrindo o `index.html` direto do computador, o leitor não carrega.
 
+## Status das notas fiscais
+
+Cada NF tem um de quatro status: **Pendente**, **Em conferência**, **Conferido** e **Em divergência**.
+
+- No topo da lista há abas para ver as notas de cada status, com a quantidade em cada uma.
+- Em cada nota, os botões **Em conferência**, **Conferido** e **Em divergência** mudam o status com um toque.
+- **Em divergência** pede uma descrição (falta, sobra, avaria ou item incorreto).
+- **Conferido** pede confirmação se a nota tiver itens do XML ainda não contados ou com diferença.
+- Notas salvas antes desta versão como "Concluída" viram **Conferido**, e "Divergência" vira **Em divergência**.
+
 ## Esqueci a senha
 
 Ao criar a conta, o app mostra um **código de recuperação** de 24 caracteres. Ele aparece uma vez. Guarde em lugar seguro, fora do navegador.
@@ -62,14 +72,14 @@ O logo ganha um ornamento em cinza conforme o mês do aparelho: janeiro (verão)
 
 ## Compartilhar relatórios
 
-Em cada aba com lista (Notas fiscais, Tarefas, Agenda, Equipe, Corredores e Planos de ação) há um botão **Compartilhar ↗**. Ele gera o relatório do grupo escolhido: **Pendentes**, **Concluídas** ou **Todas**.
+Em cada aba com lista (Notas fiscais, Tarefas, Agenda, Equipe, Corredores e Planos de ação) há um botão **Compartilhar ↗**. Ele gera o relatório do grupo escolhido: **Pendentes**, **Concluídas** (nas notas, **Conferidas**) ou **Todas**.
 
 - **Enviar**: no celular, abre o menu de compartilhamento com texto e planilha CSV. WhatsApp e Outlook aparecem nele.
 - **Copiar texto**: cole no WhatsApp ou no e-mail.
 - **Baixar CSV**: planilha para Excel, para anexar.
 - **Baixar PDF**: abre a janela de impressão. Escolha "Salvar como PDF" e anexe o arquivo.
 
-As notas respeitam a busca e o filtro de status que estão na tela.
+As notas respeitam a busca e a aba de status que estão na tela.
 
 ## Importante sobre os dados
 
