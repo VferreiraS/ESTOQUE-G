@@ -29,18 +29,16 @@ Abra o endereço no Chrome e toque em **Instalar** (aviso na tela de login) ou e
 Abra o endereço. Para ter um ícone de app, clique no ícone de instalar na barra de endereço.
 O arquivo `index.html` também pode ser aberto direto no computador.
 
-## Usar a IA (OmniRoute ou Ollama) no computador
+## Ler print de NFs pendentes
 
-A IA é opcional e roda no seu computador. Ela não funciona no celular, porque o celular não alcança o programa instalado no computador.
+Na aba **Notas fiscais**, toque em **Ler print de NFs** e escolha o print da planilha (colunas Núm NF, Fornecedor e Data de chegada).
 
-1. **Ollama** (mais simples): instale em https://ollama.com e baixe um modelo, por exemplo `ollama pull qwen2.5:3b`.
-2. **OmniRoute** (opcional): instale com `npm i -g omniroute` (exige Node.js 22.22.2 ou mais novo) e rode `omniroute`. Conecte um provedor no painel (http://localhost:20128) e copie a chave de API.
-3. Dê dois cliques em **iniciar-site.bat** (Windows) ou rode **./iniciar-site.sh** (Mac/Linux). O site abre em http://localhost:8000.
-4. Vá em **Assistente**, toque em **Usar Ollama** (ou **Usar OmniRoute**), depois em **Testar conexão**, marque **Ativar**, salve e use **Perguntar à IA**.
-
-Não abra o `index.html` com duplo clique para usar o Ollama: o Ollama bloqueia páginas abertas direto do arquivo. O OmniRoute funciona de qualquer jeito.
-
-Se você usar o endereço publicado no GitHub Pages, o Ollama precisa ser iniciado com `OLLAMA_ORIGINS=https://vferreiras.github.io`.
+- A leitura acontece no próprio aparelho, sem enviar a imagem para fora. Na primeira vez o app baixa cerca de 5 MB do leitor; depois funciona sem internet.
+- Antes de salvar, confira a tabela: dá para corrigir número, fornecedor e data, e desmarcar linhas.
+- NFs que já existem aparecem como **Já cadastrada** e ficam desmarcadas.
+- As notas entram como **Pendentes**, com a data de chegada lida.
+- Fornecedores corrigidos uma vez são reconhecidos nos próximos prints.
+- Funciona pelo endereço do site (https). Abrindo o `index.html` direto do computador, o leitor não carrega.
 
 ## Esqueci a senha
 
@@ -51,11 +49,15 @@ Ao criar a conta, o app mostra um **código de recuperação** de 24 caracteres.
 - Trocar a senha gera um novo código, e o anterior deixa de valer.
 - Sem o código e sem a senha, os cadastros não podem ser recuperados. O recurso não usa e-mail nem servidor.
 
+## Visual em preto e branco
+
+O site usa só preto, branco e cinza, no tema claro e no escuro.
+
 ## Tema sazonal
 
-O app troca de cores e de logo conforme o mês do aparelho: janeiro (verão), fevereiro (carnaval), março (outono), abril (Páscoa), maio (flores), junho (festa junina), julho (inverno), agosto (Dia dos Pais), setembro (primavera), outubro (Dia das Bruxas), novembro (Consciência Negra) e dezembro (Natal).
+O logo ganha um ornamento em cinza conforme o mês do aparelho: janeiro (verão), fevereiro (carnaval), março (outono), abril (Páscoa), maio (flores), junho (festa junina), julho (inverno), agosto (Dia dos Pais), setembro (primavera), outubro (Dia das Bruxas), novembro (Consciência Negra) e dezembro (Natal).
 
-- O botão **Sazonal** (no canto inferior) liga ou desliga o tema neste aparelho.
+- O botão **Sazonal** (no canto inferior) liga ou desliga o ornamento neste aparelho.
 - Quem já instalou o app na tela inicial mantém o ícone instalado. O ícone só muda ao reinstalar.
 
 ## Compartilhar relatórios
@@ -85,4 +87,4 @@ As notas respeitam a busca e o filtro de status que estão na tela.
 | `manifest.webmanifest` | Nome, cores e ícones para instalar como app |
 | `sw.js` | Permite abrir sem internet |
 | `icons/` | Ícones do app (iPhone, Android, computador) |
-| `iniciar-site.bat` / `iniciar-site.sh` | Abrem o site em localhost:8000 para usar a IA no computador |
+| `vendor/tesseract/` | Leitor de texto em imagens (Tesseract.js, licença Apache 2.0) usado em Ler print de NFs |
