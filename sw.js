@@ -1,5 +1,5 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
-const CACHE = 'estoque99-v11';
+const CACHE = 'estoque99-v12';
 const CORE = [
   './',
   './index.html',
@@ -30,7 +30,7 @@ async function networkFirst(request, page) {
   const cache = await caches.open(CACHE);
   try {
     const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 6000));
-    const response = await Promise.race([fetch(request), timeout]);
+    const response = await Promise.race([fetch(request, { cache: 'no-cache' }), timeout]);
     if (response && response.ok && !response.redirected) cache.put(page, response.clone());
     return response;
   } catch (err) {
