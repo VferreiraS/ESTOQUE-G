@@ -361,9 +361,9 @@ function sectorSymbol(sector){
 }
 function render(){if(!authSession){renderAuth();return}renderStorage();$('breadcrumb').textContent=authSession.payload.store+' / '+(page==='mobile-menu'?'Mais opções':labels[page]);$('nav').innerHTML=Object.keys(labels).map(p=>`<button class="${page===p?'active':''}" aria-current="${page===p?'page':'false'}" onclick="go('${p}')"><span aria-hidden="true">${icons[p]}</span>${labels[p]}</button>`).join('');let html='';
  if(page==='home'){const open=state.tasks.filter(t=>t.status!=='Concluído').sort((a,b)=>['Alta','Média','Baixa'].indexOf(priority(a))-['Alta','Média','Baixa'].indexOf(priority(b)));html=hero('Tudo no seu lugar.',new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),newButton('task','Nova tarefa'))+stats()+`<div class="panel"><div class="panelhead"><h2>Prioridades da operação</h2><button onclick="go('tasks')">Ver todas →</button></div>${taskTable(open.slice(0,6))}</div><div class="grid2"><div class="card"><div class="eyebrow">EQUIPE</div><h3>${state.team.length} colaboradores, um objetivo.</h3><p class="small">${esc(state.team.map(x=>x.name).join(' · '))} · TODOS para atividades em conjunto.</p><button onclick="go('team')">Gerenciar equipe →</button></div><div class="card"><div class="eyebrow">MAPA DO ESTOQUE</div><h3>${state.corridors.length} corredores organizados.</h3><p class="small">${state.corridors.filter(c=>!c.owner).length} corredores ainda precisam de responsável.</p><button onclick="go('corridors')">Ver corredores →</button></div></div>`}
- if(page==='tasks'){html=hero('Uma tarefa de cada vez.','Prioridade automática pelo prazo. Corredores livres, operação fluindo.',newButton('task','Nova tarefa'))+stats()+`<div class="panel"><div class="panelhead"><h2>Tarefas do estoque</h2><div class="toolbar"><input aria-label="Buscar tarefa" name="task-search" autocomplete="off" placeholder="Buscar tarefa, pessoa ou setor…" value="${esc(search)}" oninput="search=this.value;refreshTasks()"><select aria-label="Filtrar status" onchange="filter=this.value;refreshTasks()"><option value="">Todos os status</option>${['Pendente','Em andamento','Concluído'].map(s=>`<option ${filter===s?'selected':''}>${s}</option>`).join('')}</select><button onclick="window.print()">Imprimir</button></div></div><div id="tasklist"></div></div>`}
- if(page==='team'){html=hero('Gente que faz acontecer.','As tarefas de TODOS contam para cada integrante da equipe.',newButton('person','Colaborador'))+`<div class="cards">${[...state.team,{id:'todos',name:'TODOS',role:'Atividade em conjunto'}].map(p=>{const tasks=state.tasks.filter(t=>t.owner===p.id||(p.id!=='todos'&&t.owner==='todos')),done=tasks.filter(t=>t.status==='Concluído').length;return `<div class="card"><div class="cardtop"><div class="avatar">${esc(p.name.slice(0,1))}</div>${p.id==='todos'?'<span class="pill">Coletivo</span>':`<button onclick="openEditor('person','${esc(p.id)}')">Editar</button>`}</div><h3>${esc(p.name)}</h3><div class="small">${esc(p.role)}</div><p>${tasks.length-done} pendentes · ${done} concluídas</p><div class="progress"><i style="width:${tasks.length?done/tasks.length*100:0}%"></i></div></div>`}).join('')}</div>`}
- if(page==='corridors'){html=hero('Cada corredor, um endereço.','Cores e símbolos para identificar cada setor de relance.',newButton('corridor','Corredor'))+`<div class="cards">${state.corridors.map(c=>{const tasks=state.tasks.filter(t=>t.corridor===c.id),done=tasks.filter(t=>t.status==='Concluído').length,theme=corridorTheme(c);return `<div class="card corridor-card" style="--sector-color:${theme.color};--sector-soft:${theme.soft};--sector-border:${theme.border}"><div class="cardtop"><div class="eyebrow">CORREDOR ${esc(c.number)}</div><button onclick="openEditor('corridor','${esc(c.id)}')">Editar</button></div><div class="sector-heading"><span class="sector-symbol" aria-hidden="true">${sectorSymbol(c.sector)}</span><h3>${esc(c.sector)}</h3></div><div class="small">Responsável: <b>${esc(owner(c.owner))}</b></div><p>${tasks.length-done} tarefas abertas · ${done} concluídas</p><div class="progress"><i style="width:${tasks.length?done/tasks.length*100:0}%"></i></div></div>`}).join('')}</div>`}
+ if(page==='tasks'){html=hero('Uma tarefa de cada vez.','Prioridade automática pelo prazo. Corredores livres, operação fluindo.',newButton('task','Nova tarefa'))+stats()+`<div class="panel"><div class="panelhead"><h2>Tarefas do estoque</h2><div class="toolbar">${shareReportButton('tasks')}<input aria-label="Buscar tarefa" name="task-search" autocomplete="off" placeholder="Buscar tarefa, pessoa ou setor…" value="${esc(search)}" oninput="search=this.value;refreshTasks()"><select aria-label="Filtrar status" onchange="filter=this.value;refreshTasks()"><option value="">Todos os status</option>${['Pendente','Em andamento','Concluído'].map(s=>`<option ${filter===s?'selected':''}>${s}</option>`).join('')}</select><button onclick="window.print()">Imprimir</button></div></div><div id="tasklist"></div></div>`}
+ if(page==='team'){html=hero('Gente que faz acontecer.','As tarefas de TODOS contam para cada integrante da equipe.',newButton('person','Colaborador')+shareReportButton('team'))+`<div class="cards">${[...state.team,{id:'todos',name:'TODOS',role:'Atividade em conjunto'}].map(p=>{const tasks=state.tasks.filter(t=>t.owner===p.id||(p.id!=='todos'&&t.owner==='todos')),done=tasks.filter(t=>t.status==='Concluído').length;return `<div class="card"><div class="cardtop"><div class="avatar">${esc(p.name.slice(0,1))}</div>${p.id==='todos'?'<span class="pill">Coletivo</span>':`<button onclick="openEditor('person','${esc(p.id)}')">Editar</button>`}</div><h3>${esc(p.name)}</h3><div class="small">${esc(p.role)}</div><p>${tasks.length-done} pendentes · ${done} concluídas</p><div class="progress"><i style="width:${tasks.length?done/tasks.length*100:0}%"></i></div></div>`}).join('')}</div>`}
+ if(page==='corridors'){html=hero('Cada corredor, um endereço.','Cores e símbolos para identificar cada setor de relance.',newButton('corridor','Corredor')+shareReportButton('corridors'))+`<div class="cards">${state.corridors.map(c=>{const tasks=state.tasks.filter(t=>t.corridor===c.id),done=tasks.filter(t=>t.status==='Concluído').length,theme=corridorTheme(c);return `<div class="card corridor-card" style="--sector-color:${theme.color};--sector-soft:${theme.soft};--sector-border:${theme.border}"><div class="cardtop"><div class="eyebrow">CORREDOR ${esc(c.number)}</div><button onclick="openEditor('corridor','${esc(c.id)}')">Editar</button></div><div class="sector-heading"><span class="sector-symbol" aria-hidden="true">${sectorSymbol(c.sector)}</span><h3>${esc(c.sector)}</h3></div><div class="small">Responsável: <b>${esc(owner(c.owner))}</b></div><p>${tasks.length-done} tarefas abertas · ${done} concluídas</p><div class="progress"><i style="width:${tasks.length?done/tasks.length*100:0}%"></i></div></div>`}).join('')}</div>`}
  if(page==='nfs'){html=hero('Recebeu? Conferiu? Registrou.','Acompanhe as notas fiscais da chegada à conclusão.',`<div class="toolbar"><button class="primary" onclick="openNFScanner()">▥ Bipar NF</button><button onclick="openNFImport()">Importar XML</button>${newButton('nf','Nova NF')}</div>`)+`<div class="panel"><div class="panelhead"><h2>Notas fiscais</h2><button onclick="window.print()">Imprimir</button></div>${state.nfs.length?`<div class="tablewrap"><table><thead><tr><th>NF / Fornecedor</th><th>Recebimento</th><th>Volumes</th><th>Responsável</th><th>Status</th><th>Ações</th></tr></thead><tbody>${state.nfs.map(n=>`<tr><td><b>${esc(n.number)}</b>${n.series?`<div class="small">Série ${esc(n.series)}</div>`:''}<div class="small">${esc(n.supplier)}</div>${n.items?`<div class="small">${n.items.length} itens importados</div>`:''}${n.notes?`<div class="small">${n.status==='Divergência'?'Divergência: ':''}${esc(n.notes)}</div>`:''}</td><td>${date(n.date)}${n.arrivalTime?`<div class="small">${esc(n.arrivalTime)}</div>`:''}</td><td>${esc((n.volumes==null?0:n.volumes))}</td><td>${esc(owner(n.owner))}</td><td>${badge(n.status)}</td><td><button onclick="openEditor('nf','${esc(n.id)}')">Editar</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhuma NF cadastrada.</div>'}</div>`}
  if(page==='data'){html=hero('Seus dados, no seu controle.','Os cadastros ficam locais. Consultas opcionais enviam somente CEP ou CNPJ ao serviço escolhido. Use cópias de segurança.')+`<div class="grid2"><div class="panel help"><h2>Backup e restauração</h2><p>O HTML é o programa. O backup JSON contém os cadastros sem senha. Para uma cópia criptografada, use Minha conta → Exportar conta protegida. Guarde os dois em uma pasta segura no computador.</p><div class="toolbar"><button class="primary" onclick="backup()">Exportar backup</button><button onclick="$('restore').click()">Restaurar backup</button></div><p>Última alteração: ${state.updated?esc(new Date(state.updated).toLocaleString('pt-BR')):'Ainda sem alterações'}</p><p>Restaurar substitui os dados atuais após sua confirmação. Um backup da sessão atual será baixado antes da substituição.</p></div><div class="panel help"><h2>Salvar direto em arquivo</h2><p>Quando o navegador disponibilizar esse recurso, escolha um arquivo JSON para atualizar automaticamente durante esta sessão. Na próxima abertura, restaure o backup e conecte o arquivo novamente.</p><button onclick="connectFile()">Conectar arquivo local</button><p id="filehelp">Em navegadores sem esse recurso, use Exportar backup. Não há sincronização entre PCs.</p></div></div><div class="panel help"><h2>Como usar no celular</h2><ol><li>Abra este HTML em um ambiente compatível com JavaScript, criptografia e armazenamento local. A prévia de anexos pode não executar o sistema.</li><li>Confira a equipe e defina os responsáveis pelos corredores.</li><li>Cadastre tarefas e NFs. Os campos de data abrem um calendário em português. Em tarefas, use Limpar prazo quando não houver data definida.</li><li>Atualize o status e anote o motivo das pendências.</li><li>Antes de encerrar, exporte um backup para uma pasta local ou pendrive.</li></ol><p><b>Prioridade:</b> prazo hoje/vencido = Alta; em 1–2 dias = Média; após 2 dias = Baixa. Sem prazo, a tarefa sobe de prioridade conforme envelhece: no mesmo dia Baixa, no dia seguinte Média, após 2 dias Alta. Concluídas não têm prioridade.</p><p><b>Regra do estoque:</b> toda mercadoria deve ter destino definido. Nenhum corredor é endereço permanente de armazenamento.</p><p>Se o navegador bloquear o armazenamento, os dados existem apenas enquanto a página estiver aberta. Exporte o backup: o sistema nunca trata uma sessão não salva como salva.</p></div>`}
  if(page==='mobile-menu')html=renderMobileMenu();
@@ -686,7 +686,7 @@ function planRemovePhoto(index,photo){if(!planDraft||planPhotoBusy||!confirm('Re
 function planCancel(){if(planPhotoBusy)return;if(planDraftDirty&&!confirm('Descartar as alterações não salvas?'))return;planDraft=null;planDraftDirty=false;render()}
 async function savePlan(event){event.preventDefault();if(!authSession||!planDraft||planPhotoBusy)return;try{const next=JSON.parse(JSON.stringify(planDraft));next.title=next.title.trim();for(const a of next.activities){a.title=a.title.trim();a.notes=a.notes.trim()}if(!next.activities.length)throw Error('Adicione pelo menos uma atividade.');const plans=(state.plans||[]).filter(p=>p.id!==next.id).concat(next);validatePlans(plans);state.plans=plans;await save();if(!storageOK){notify('Plano em memória. Exporte uma cópia protegida em Minha conta antes de fechar.');return}planDraft=null;planDraftDirty=false;render();notify('Plano de ação salvo com as fotos.')}catch(e){notify(e.message)}}
 async function deletePlan(id){if(!authSession||!confirm('Excluir este plano e suas fotos? As tarefas já criadas a partir dele serão mantidas.'))return;state.plans=(state.plans||[]).filter(p=>p.id!==id);await save();render()}
-function renderPlans(){if(planDraft)return renderPlanEditor();const rows=(state.plans||[]).filter(p=>!planFilter||p.date===planFilter).slice().sort((a,b)=>b.date.localeCompare(a.date));return hero('Plano de ação','Defina o dia, descreva as atividades e mostre o que precisa ser feito.',`<button class="primary" onclick="openPlan()">＋ Novo plano</button>`)+`<div class="panel"><div class="panelhead"><h2>Planos por dia</h2><label>Filtrar data <input type="date" aria-label="Filtrar planos por data" value="${esc(planFilter)}" onchange="planFilter=this.value;render()"></label><button onclick="planFilter='';render()">Todos os dias</button></div><div class="help"><p class="small">WhatsApp: copie o texto e compartilhe ou baixe as fotos. Outlook: baixe o e-mail com fotos (.eml), abra, confira e preencha os destinatários. O envio depende de internet e do aplicativo disponível.</p>${rows.length?rows.map(p=>`<article class="plan-card"><div class="cardtop"><div><span class="pill">${date(p.date)}</span><h2>${esc(p.title)}</h2></div><button onclick="openPlan('${p.id}')">Editar plano</button></div><p class="small">${p.activities.length} atividades · ${p.activities.reduce((n,a)=>n+a.photos.length,0)} fotos</p><ol class="plan-activities">${p.activities.map(a=>`<li><b>${esc(a.title)}</b><div class="small">Responsável: ${esc(a.owner||'A definir')}</div>${a.notes?`<p class="plan-notes">${esc(a.notes)}</p>`:''}${planPhotosMarkup(a,p.id)}</li>`).join('')}</ol><div class="toolbar"><button class="primary" onclick="copyPlan('${p.id}')">Copiar para WhatsApp / Outlook</button><button onclick="sharePlan('${p.id}')">Compartilhar com fotos</button><button onclick="downloadPlanEml('${p.id}')">E-mail para Outlook (.eml)</button><button onclick="downloadPlanHtml('${p.id}')">Baixar plano com fotos</button><button onclick="planToTasks('${p.id}')">Adicionar às tarefas</button><button class="danger" onclick="deletePlan('${p.id}')">Excluir plano</button></div></article>`).join(''):'<div class="empty"><h3>Nenhum plano nesta seleção.</h3><p>Crie um plano e escolha o dia em que as atividades serão realizadas.</p><button onclick="openPlan()">Criar plano de ação</button></div>'}</div></div>`}
+function renderPlans(){if(planDraft)return renderPlanEditor();const rows=(state.plans||[]).filter(p=>!planFilter||p.date===planFilter).slice().sort((a,b)=>b.date.localeCompare(a.date));return hero('Plano de ação','Defina o dia, descreva as atividades e mostre o que precisa ser feito.',`<button class="primary" onclick="openPlan()">＋ Novo plano</button>${shareReportButton('plans')}`)+`<div class="panel"><div class="panelhead"><h2>Planos por dia</h2><label>Filtrar data <input type="date" aria-label="Filtrar planos por data" value="${esc(planFilter)}" onchange="planFilter=this.value;render()"></label><button onclick="planFilter='';render()">Todos os dias</button></div><div class="help"><p class="small">WhatsApp: copie o texto e compartilhe ou baixe as fotos. Outlook: baixe o e-mail com fotos (.eml), abra, confira e preencha os destinatários. O envio depende de internet e do aplicativo disponível.</p>${rows.length?rows.map(p=>`<article class="plan-card"><div class="cardtop"><div><span class="pill">${date(p.date)}</span><h2>${esc(p.title)}</h2></div><button onclick="openPlan('${p.id}')">Editar plano</button></div><p class="small">${p.activities.length} atividades · ${p.activities.reduce((n,a)=>n+a.photos.length,0)} fotos</p><ol class="plan-activities">${p.activities.map(a=>`<li><b>${esc(a.title)}</b><div class="small">Responsável: ${esc(a.owner||'A definir')}</div>${a.notes?`<p class="plan-notes">${esc(a.notes)}</p>`:''}${planPhotosMarkup(a,p.id)}</li>`).join('')}</ol><div class="toolbar"><button class="primary" onclick="copyPlan('${p.id}')">Copiar para WhatsApp / Outlook</button><button onclick="sharePlan('${p.id}')">Compartilhar com fotos</button><button onclick="downloadPlanEml('${p.id}')">E-mail para Outlook (.eml)</button><button onclick="downloadPlanHtml('${p.id}')">Baixar plano com fotos</button><button onclick="planToTasks('${p.id}')">Adicionar às tarefas</button><button class="danger" onclick="deletePlan('${p.id}')">Excluir plano</button></div></article>`).join(''):'<div class="empty"><h3>Nenhum plano nesta seleção.</h3><p>Crie um plano e escolha o dia em que as atividades serão realizadas.</p><button onclick="openPlan()">Criar plano de ação</button></div>'}</div></div>`}
 function planPhotosMarkup(a,planId){return `<div class="plan-photos">${a.photos.map((ph,i)=>`<figure><img src="${ph.data}" alt="Foto ${i+1} da atividade ${esc(a.title)}" width="170" height="120" loading="lazy"><button onclick="downloadPlanPhoto('${planId}','${a.id}','${ph.id}')">Baixar foto ${i+1}</button></figure>`).join('')}</div>`}
 function renderPlanEditor(){const p=planDraft;return hero('Montar plano de ação','As fotos e atividades são salvas ao clicar em Salvar plano.')+`<form class="panel help" id="plan-editor" onsubmit="savePlan(event)"><div class="fields"><div class="pair"><label>Nome do plano<input name="title" required maxlength="200" value="${esc(p.title)}" oninput="planChange('title',this.value)"></label><label>Dia da realização<input type="date" name="date" required value="${esc(p.date)}" onchange="planChange('date',this.value)"></label></div></div><p class="small">Até 5 fotos por atividade. Fotos são reduzidas para caber no armazenamento local; guarde os originais se precisar de mais detalhes.</p>${p.activities.map((a,i)=>`<section class="plan-edit-item"><div class="cardtop"><h2>Atividade ${i+1}</h2><button type="button" class="danger" onclick="planRemoveItem(${i})" ${planPhotoBusy?'disabled':''}>Remover atividade</button></div><div class="fields"><label>O que será feito?<textarea required maxlength="500" oninput="planChange('title',this.value,${i})">${esc(a.title)}</textarea></label><label>Responsável<input list="plan-owners" maxlength="200" value="${esc(a.owner)}" oninput="planChange('owner',this.value,${i})" placeholder="Nome ou TODOS"></label><label>Orientações / local / observações<textarea maxlength="3000" oninput="planChange('notes',this.value,${i})">${esc(a.notes)}</textarea></label><label>Selecionar fotos da galeria<input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple onchange="planAttachPhotos(event,${i})" ${planPhotoBusy?'disabled':''}></label><label>Tirar foto da atividade<input type="file" accept="image/*" capture="environment" onchange="planAttachPhotos(event,${i})" ${planPhotoBusy?'disabled':''}></label></div><div class="plan-photos">${a.photos.map((ph,j)=>`<figure><img src="${ph.data}" alt="Foto ${j+1} da atividade ${i+1}" width="170" height="120"><button type="button" onclick="planRemovePhoto(${i},${j})" ${planPhotoBusy?'disabled':''}>Remover foto</button></figure>`).join('')}</div></section>`).join('')}<datalist id="plan-owners"><option value="TODOS">${state.team.map(p=>`<option value="${esc(p.name)}">`).join('')}</datalist><p role="status">${planPhotoBusy?'Preparando fotos… Aguarde antes de sair.':''}</p><div class="toolbar"><button type="button" onclick="planAddItem()" ${planPhotoBusy?'disabled':''}>＋ Adicionar atividade</button><button type="submit" class="primary" ${planPhotoBusy?'disabled':''}>Salvar plano</button><button type="button" onclick="planCancel()" ${planPhotoBusy?'disabled':''}>Cancelar</button></div></form>`}
 function compressPlanPhoto(file){return new Promise((resolve,reject)=>{if(file.size>20*1024*1024){reject(Error('A foto ultrapassa 20 MB. Escolha uma versão menor.'));return}const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{URL.revokeObjectURL(url);try{const canvas=document.createElement('canvas');let size=1200,data='';for(let attempt=0;attempt<5;attempt++){const scale=Math.min(1,size/Math.max(img.naturalWidth,img.naturalHeight));canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);data=canvas.toDataURL('image/jpeg',0.72-attempt*0.07);if(data.length<=200000)break;size=Math.round(size*0.78)}if(data.length>200000)throw Error('Esta imagem ainda está grande. Escolha uma versão menor.');resolve({id:uid(),data})}catch(e){reject(e)}};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Formato não suportado pelo navegador. Exporte a foto como JPG ou PNG e tente novamente.'))};img.src=url})}
@@ -795,8 +795,8 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)stopOffline
 function matchingNFs(){const q=nfQuery.trim().toLocaleLowerCase('pt-BR');return state.nfs.filter(n=>(!nfStatusFilter||n.status===nfStatusFilter)&&(!q||[n.number,n.supplier,n.accessKey,n.cnpj,owner(n.owner)].join(' ').toLocaleLowerCase('pt-BR').includes(q))).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''))}
 function nfRows(){const rows=matchingNFs();return rows.length?`<div class="tablewrap"><table><thead><tr><th>Nota / fornecedor</th><th>Chegada</th><th>Volumes</th><th>Conferência</th><th>Status</th><th>Ações</th></tr></thead><tbody>${rows.map(n=>{const s=receiptSummary(n);return `<tr><td><b>NF ${esc(n.number)}</b><div>${esc(n.supplier)}</div><small>${esc(owner(n.owner))}</small></td><td>${date(n.date)} ${esc(n.arrivalTime||'')}</td><td>${esc(n.volumes||0)}</td><td>${s.total?s.counted+'/'+s.total+' itens · '+s.different+' diferenças':'Sem XML'}<div class="small">${n.status==='Divergência'?'Divergência: ':''}${esc(n.notes||'')}</div></td><td>${badge(n.status)}</td><td><button onclick="openEditor('nf','${esc(n.id)}')">Abrir / conferir</button></td></tr>`}).join('')}</tbody></table></div>`:'<div class="empty">Nenhuma nota encontrada nesta seleção.</div>'}
 function refreshNFs(){const box=$('nf-results');if(box)box.innerHTML=nfRows();if(typeof mobileTableLabels==='function')mobileTableLabels()}
-function upgradedNFs(){return hero('Recebimento sob controle.','Leia a DANFE, importe o XML e confira os produtos.',`<div class="toolbar"><button class="primary" onclick="openNFScanner()">Bipar NF</button><button onclick="openNFImport()">Importar XML</button><button onclick="openEditor('nf')">Nova NF</button></div>`)+`<div class="panel"><div class="panelhead"><h2>Notas fiscais</h2><div class="toolbar"><input aria-label="Buscar nota" placeholder="NF, fornecedor, CNPJ ou pessoa" value="${esc(nfQuery)}" oninput="nfQuery=this.value;refreshNFs()"><select aria-label="Status da nota" onchange="nfStatusFilter=this.value;refreshNFs()">${options([['','Todos os status'],...['Pendente','Em conferência','Divergência','Concluída'].map(s=>[s,s])],nfStatusFilter)}</select><button onclick="exportOperations('nfs')">Exportar CSV</button></div></div><div id="nf-results">${nfRows()}</div></div>`}
-function agendaMarkup(){const tasks=state.tasks.filter(t=>(t.due||t.date)===agendaDate),plans=(state.plans||[]).filter(p=>p.date===agendaDate),late=state.tasks.filter(t=>t.status!=='Concluído'&&t.due&&t.due<iso());return hero('O dia tem um plano.','Tarefas pelo prazo; quando não há prazo, pela data da tarefa.')+`<div class="panel help"><div class="toolbar"><button onclick="moveAgenda(-1)">← Anterior</button><label>Dia<input type="date" value="${agendaDate}" onchange="if(this.value){agendaDate=this.value;render()}"></label><button onclick="moveAgenda(1)">Próximo →</button><button onclick="agendaDate=iso();render()">Hoje</button><button class="primary" onclick="newAgendaTask()">Nova tarefa neste dia</button><button onclick="exportOperations('tasks')">Exportar tarefas CSV</button></div><h2>${date(agendaDate)} · ${tasks.length} tarefas</h2>${taskTable(tasks)}<h2>Planos do dia</h2>${plans.length?plans.map(p=>`<div class="agenda-plan"><b>${esc(p.title)}</b><span>${p.activities.length} atividades</span><button onclick="go('plans');openPlan('${esc(p.id)}')">Abrir plano</button></div>`).join(''):'<p class="small">Nenhum plano para este dia.</p>'}</div><div class="panel help"><h2>Prazos vencidos · ${late.length}</h2>${taskTable(late)}</div>`}
+function upgradedNFs(){return hero('Recebimento sob controle.','Leia a DANFE, importe o XML e confira os produtos.',`<div class="toolbar"><button class="primary" onclick="openNFScanner()">Bipar NF</button><button onclick="openNFImport()">Importar XML</button><button onclick="openEditor('nf')">Nova NF</button></div>`)+`<div class="panel"><div class="panelhead"><h2>Notas fiscais</h2><div class="toolbar">${shareReportButton('nfs')}<input aria-label="Buscar nota" placeholder="NF, fornecedor, CNPJ ou pessoa" value="${esc(nfQuery)}" oninput="nfQuery=this.value;refreshNFs()"><select aria-label="Status da nota" onchange="nfStatusFilter=this.value;refreshNFs()">${options([['','Todos os status'],...['Pendente','Em conferência','Divergência','Concluída'].map(s=>[s,s])],nfStatusFilter)}</select><button onclick="exportOperations('nfs')">Exportar CSV</button></div></div><div id="nf-results">${nfRows()}</div></div>`}
+function agendaMarkup(){const tasks=state.tasks.filter(t=>(t.due||t.date)===agendaDate),plans=(state.plans||[]).filter(p=>p.date===agendaDate),late=state.tasks.filter(t=>t.status!=='Concluído'&&t.due&&t.due<iso());return hero('O dia tem um plano.','Tarefas pelo prazo; quando não há prazo, pela data da tarefa.')+`<div class="panel help"><div class="toolbar"><button onclick="moveAgenda(-1)">← Anterior</button><label>Dia<input type="date" value="${agendaDate}" onchange="if(this.value){agendaDate=this.value;render()}"></label><button onclick="moveAgenda(1)">Próximo →</button><button onclick="agendaDate=iso();render()">Hoje</button>${shareReportButton('agenda')}<button class="primary" onclick="newAgendaTask()">Nova tarefa neste dia</button><button onclick="exportOperations('tasks')">Exportar tarefas CSV</button></div><h2>${date(agendaDate)} · ${tasks.length} tarefas</h2>${taskTable(tasks)}<h2>Planos do dia</h2>${plans.length?plans.map(p=>`<div class="agenda-plan"><b>${esc(p.title)}</b><span>${p.activities.length} atividades</span><button onclick="go('plans');openPlan('${esc(p.id)}')">Abrir plano</button></div>`).join(''):'<p class="small">Nenhum plano para este dia.</p>'}</div><div class="panel help"><h2>Prazos vencidos · ${late.length}</h2>${taskTable(late)}</div>`}
 function moveAgenda(offset){const d=new Date(agendaDate+'T12:00:00');d.setDate(d.getDate()+offset);agendaDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');render()}
 function newAgendaTask(){openEditor('task');for(const name of ['date','due']){const input=$('editor').elements.namedItem(name);if(input._flatpickr)input._flatpickr.setDate(agendaDate,true);else input.value=agendaDate}}
 function operationalMetrics(){const open=state.nfs.filter(n=>n.status!=='Concluída'),div=state.nfs.filter(n=>n.status==='Divergência'),counted=state.nfs.reduce((s,n)=>s+receiptSummary(n).counted,0);return `<div class="cards upgrade-metrics"><article class="card"><div class="eyebrow">RECEBIMENTO</div><h3>${open.length} NFs abertas</h3><p class="small">${div.length} com divergência · ${state.nfs.filter(n=>n.date===iso()).length} recebidas hoje</p><button onclick="go('nfs')">Conferir notas →</button></article><article class="card"><div class="eyebrow">CONFERÊNCIA FÍSICA</div><h3>${counted} linhas contadas</h3><p class="small">Contagem registrada por produto nas notas. Não soma unidades de medidas diferentes.</p><button onclick="go('agenda')">Abrir agenda →</button></article></div>`}
@@ -1972,6 +1972,189 @@ var pending=false;
 function schedule(){if(pending)return;pending=true;requestAnimationFrame(function(){pending=false;applySeason()})}
 applySeason();
 if(window.MutationObserver){new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true})}
+})();
+</script>
+<style id="share-reports">
+#report-dialog{width:min(560px,calc(100% - 24px));max-width:560px;padding:0}
+#report-dialog form{padding:22px}
+#report-dialog h2{margin:0 0 6px;font-size:18px;letter-spacing:-.02em}
+.report-groups{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.report-groups button[aria-pressed=true]{background:var(--ds-ink);border-color:var(--ds-ink);color:var(--ds-bg)}
+.report-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.report-actions .wide{grid-column:1/-1}
+#report-text{width:100%;min-height:200px;margin-top:14px;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap}
+@media (max-width:520px){.report-actions{grid-template-columns:1fr}}
+</style>
+<script id="share-reports-js">
+(function(){
+'use strict';
+var KINDS={
+  nfs:{title:'Notas fiscais',groups:true,labels:{pending:'Pendentes',done:'Concluídas',all:'Todas'}},
+  tasks:{title:'Tarefas',groups:true,labels:{pending:'Pendentes',done:'Concluídas',all:'Todas'}},
+  agenda:{title:'Agenda',groups:true,labels:{pending:'Pendentes',done:'Concluídas',all:'Todas'}},
+  team:{title:'Equipe',groups:true,labels:{pending:'Com pendências',done:'Com concluídas',all:'Todas'}},
+  corridors:{title:'Corredores',groups:true,labels:{pending:'Com pendências',done:'Concluídos',all:'Todos'}},
+  plans:{title:'Planos de ação',groups:false,labels:{all:'Todos'}}
+};
+var report={kind:null,group:'pending',data:null};
+
+function tasksInGroup(list,group){
+  if(group==='pending')return list.filter(function(t){return t.status!=='Concluído'});
+  if(group==='done')return list.filter(function(t){return t.status==='Concluído'});
+  return list.slice();
+}
+function nfsInGroup(list,group){
+  if(group==='pending')return list.filter(function(n){return n.status!=='Concluída'});
+  if(group==='done')return list.filter(function(n){return n.status==='Concluída'});
+  return list.slice();
+}
+function countsFor(kind){
+  var groups=KINDS[kind].labels,out={};
+  Object.keys(groups).forEach(function(g){out[g]=buildRows(kind,g).rows.length});
+  return out;
+}
+function buildRows(kind,group){
+  var headers,rows=[],extra='';
+  if(kind==='nfs'){
+    headers=['NF','Fornecedor','Chegada','Volumes','Responsável','Status','Conferência'];
+    nfsInGroup(matchingNFs(),group).forEach(function(n){
+      var s=receiptSummary(n);
+      rows.push([n.number,n.supplier||'',(date(n.date)+' '+(n.arrivalTime||'')).trim(),n.volumes||0,owner(n.owner),n.status,s.total?s.counted+'/'+s.total:'—']);
+    });
+  }else if(kind==='tasks'){
+    headers=['Tarefa','Prazo','Responsável','Corredor','Prioridade','Status'];
+    tasksInGroup(state.tasks,group).forEach(function(t){rows.push([t.title,t.due?date(t.due):'Sem prazo',owner(t.owner),corridor(t.corridor),priority(t),t.status])});
+  }else if(kind==='agenda'){
+    headers=['Tarefa','Prazo','Responsável','Corredor','Prioridade','Status'];
+    var day=state.tasks.filter(function(t){return (t.due||t.date)===agendaDate});
+    tasksInGroup(day,group).forEach(function(t){rows.push([t.title,t.due?date(t.due):'Sem prazo',owner(t.owner),corridor(t.corridor),priority(t),t.status])});
+    extra='Dia '+date(agendaDate);
+  }else if(kind==='team'){
+    headers=['Pessoa','Função','Pendentes','Concluídas'];
+    var people=state.team.map(function(p){return {id:p.id,name:p.name,role:p.role||''}}).concat([{id:'todos',name:'TODOS',role:'Atividade em conjunto'}]);
+    people.forEach(function(p){
+      var mine=state.tasks.filter(function(t){return t.owner===p.id||(p.id!=='todos'&&t.owner==='todos')});
+      var pend=mine.filter(function(t){return t.status!=='Concluído'}).length,done=mine.length-pend;
+      var keep=group==='pending'?pend>0:group==='done'?done>0:true;
+      if(keep)rows.push([p.name,p.role,pend,done]);
+    });
+  }else if(kind==='corridors'){
+    headers=['Corredor','Setor','Responsável','Pendentes','Concluídas'];
+    state.corridors.forEach(function(c){
+      var mine=state.tasks.filter(function(t){return t.corridor===c.id});
+      var pend=mine.filter(function(t){return t.status!=='Concluído'}).length,done=mine.length-pend;
+      var keep=group==='pending'?pend>0:group==='done'?(mine.length>0&&pend===0):true;
+      if(keep)rows.push([c.number,c.sector,owner(c.owner),pend,done]);
+    });
+  }else if(kind==='plans'){
+    headers=['Data','Plano','Atividades','Responsáveis'];
+    (state.plans||[]).slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'')}).forEach(function(p){
+      var owners=p.activities.map(function(a){return a.owner||'A definir'}).filter(function(v,i,arr){return arr.indexOf(v)===i}).join(', ');
+      rows.push([date(p.date),p.title,p.activities.length,owners]);
+    });
+  }
+  return {headers:headers,rows:rows,extra:extra};
+}
+function reportTitle(kind,group){
+  var k=KINDS[kind],label=k.groups?(k.labels[group]||''):'';
+  return k.title+(label?' · '+label:'');
+}
+function buildReport(kind,group){
+  var built=buildRows(kind,group),store=authSession?authSession.payload.store:'';
+  var now=new Date(),stamp=('0'+now.getDate()).slice(-2)+'/'+('0'+(now.getMonth()+1)).slice(-2)+'/'+now.getFullYear()+' '+('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
+  var title=reportTitle(kind,group);
+  var head='*'+title+'*\n'+store+(built.extra?' · '+built.extra:'')+'\nTotal: '+built.rows.length+'\nGerado em '+stamp;
+  var body=built.rows.length?built.rows.map(function(r,i){
+    var first=String(r[0]),rest=r.slice(1).map(function(v,j){return built.headers[j+1]+': '+(v===''||v==null?'—':v)}).join('\n   ');
+    return (i+1)+'. *'+first+'*\n   '+rest;
+  }).join('\n\n'):'Nenhum item neste grupo.';
+  var text=head+'\n\n'+body+'\n\n— Estoque 99';
+  return {kind:kind,group:group,title:title,store:store,stamp:stamp,headers:built.headers,rows:built.rows,text:text};
+}
+function reportCsv(data){
+  var rows=[data.headers].concat(data.rows);
+  return '﻿'+rows.map(function(r){return r.map(csvCell).join(';')}).join('\r\n');
+}
+function reportFileName(data,ext){return 'estoque99-'+data.kind+'-'+data.group+'-'+iso()+'.'+ext}
+function reportHtml(data){
+  var head=data.headers.map(function(h){return '<th>'+esc(h)+'</th>'}).join('');
+  var body=data.rows.map(function(r){return '<tr>'+r.map(function(v){return '<td>'+esc(String(v==null?'':v))+'</td>'}).join('')+'</tr>'}).join('');
+  return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(data.title)+'</title><style>body{font:13px -apple-system,Segoe UI,system-ui,sans-serif;color:#111;margin:28px}h1{font-size:18px;margin:0 0 4px}.meta{color:#555;margin-bottom:16px}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #ddd;padding:7px 8px;text-align:left;vertical-align:top}th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#555}@media print{body{margin:14mm}}</style></head><body><h1>'+esc(data.title)+'</h1><div class="meta">'+esc(data.store)+' · '+esc(data.stamp)+' · '+data.rows.length+' item(ns)</div><table><thead><tr>'+head+'</tr></thead><tbody>'+(body||'<tr><td colspan="'+data.headers.length+'">Nenhum item neste grupo.</td></tr>')+'</tbody></table><script>window.onload=function(){setTimeout(function(){window.print()},200)}<\/script></body></html>';
+}
+function ensureDialog(){
+  var d=document.getElementById('report-dialog');
+  if(d)return d;
+  d=document.createElement('dialog');d.id='report-dialog';d.setAttribute('aria-labelledby','report-title');
+  d.innerHTML='<form method="dialog" onsubmit="return false"><h2 id="report-title"></h2><p class="small" id="report-note"></p><div class="report-groups" id="report-groups" role="group" aria-label="Grupo do relatório"></div><div class="report-actions"><button type="button" class="primary wide" onclick="reportShare()">Enviar (WhatsApp, Outlook…)</button><button type="button" onclick="reportCopy()">Copiar texto</button><button type="button" onclick="reportCsvFile()">Baixar CSV</button><button type="button" class="wide" onclick="reportPdf()">Baixar PDF (para imprimir ou anexar)</button></div><textarea id="report-text" readonly aria-label="Prévia do relatório"></textarea><div class="formfoot"><button type="button" onclick="document.getElementById(\'report-dialog\').close()">Fechar</button></div></form>';
+  document.body.appendChild(d);
+  return d;
+}
+function renderDialog(){
+  var k=KINDS[report.kind],counts=countsFor(report.kind);
+  document.getElementById('report-title').textContent='Compartilhar: '+k.title;
+  document.getElementById('report-note').textContent=report.kind==='nfs'?'Respeita a busca e o filtro de status que estão na tela.':report.kind==='agenda'?'Tarefas do dia escolhido na agenda.':'Escolha o grupo, confira a prévia e envie.';
+  var groups=document.getElementById('report-groups');
+  groups.innerHTML='';
+  Object.keys(k.labels).forEach(function(g){
+    var b=document.createElement('button');b.type='button';b.setAttribute('aria-pressed',String(report.group===g));
+    b.textContent=k.labels[g]+' ('+counts[g]+')';
+    b.onclick=function(){report.group=g;refreshReport()};
+    groups.appendChild(b);
+  });
+  if(!k.groups)report.group='all';
+  refreshReport();
+}
+function refreshReport(){
+  report.data=buildReport(report.kind,report.group);
+  var area=document.getElementById('report-text');if(area)area.value=report.data.text;
+  var groups=document.getElementById('report-groups');
+  if(groups)Array.prototype.forEach.call(groups.querySelectorAll('button'),function(b){
+    var key=Object.keys(KINDS[report.kind].labels).filter(function(g){return b.textContent.indexOf(KINDS[report.kind].labels[g]+' (')===0})[0];
+    b.setAttribute('aria-pressed',String(key===report.group));
+  });
+}
+window.openShareReport=function(kind){
+  if(!authSession||!KINDS[kind])return;
+  report.kind=kind;report.group=KINDS[kind].groups?'pending':'all';
+  var d=ensureDialog();renderDialog();
+  if(!d.open)d.showModal();
+};
+window.reportCopy=function(){
+  var text=report.data.text;
+  function fallback(){var a=document.getElementById('report-text');a.focus();a.select();try{document.execCommand('copy');notify('Texto selecionado. Copie e cole no WhatsApp ou no Outlook.')}catch(e){notify('Selecione o texto da prévia e copie manualmente.')}}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){notify('Texto copiado. Cole no WhatsApp ou no Outlook.')},fallback)}else fallback();
+};
+window.reportCsvFile=function(){
+  var csv=reportCsv(report.data);
+  planDownload(csv,reportFileName(report.data,'csv'),'text/csv;charset=utf-8');
+  notify('CSV baixado. Anexe no WhatsApp ou no Outlook.');
+};
+window.reportPdf=function(){
+  var w=window.open('','_blank');
+  if(!w){notify('O navegador bloqueou a janela. Permita pop-ups deste site para gerar o PDF.');return}
+  w.document.open();w.document.write(reportHtml(report.data));w.document.close();
+  notify('Na janela de impressão, escolha "Salvar como PDF" e anexe o arquivo.');
+};
+window.reportShare=function(){
+  var data=report.data,title=data.title+' · '+data.store;
+  if(!navigator.share){window.reportCopy();return}
+  var files=[];
+  try{
+    if(data.rows.length){
+      var f=new File([reportCsv(data)],reportFileName(data,'csv'),{type:'text/csv'});
+      if(navigator.canShare&&navigator.canShare({files:[f]}))files.push(f);
+    }
+  }catch(e){}
+  var payload={title:title,text:data.text};
+  if(files.length)payload.files=files;
+  navigator.share(payload).then(function(){},function(e){
+    if(e&&e.name==='AbortError')return;
+    notify('Não foi possível compartilhar daqui. Use Copiar texto ou Baixar CSV.');
+  });
+};
+window.shareReportButton=function(kind){
+  return '<button type="button" onclick="openShareReport(\''+kind+'\')" aria-haspopup="dialog">Compartilhar ↗</button>';
+};
 })();
 </script>
 </body></html>

@@ -58,6 +58,17 @@ O app troca de cores e de logo conforme o mês do aparelho: janeiro (verão), fe
 - O botão **Sazonal** (no canto inferior) liga ou desliga o tema neste aparelho.
 - Quem já instalou o app na tela inicial mantém o ícone instalado. O ícone só muda ao reinstalar.
 
+## Compartilhar relatórios
+
+Em cada aba com lista (Notas fiscais, Tarefas, Agenda, Equipe, Corredores e Planos de ação) há um botão **Compartilhar ↗**. Ele gera o relatório do grupo escolhido: **Pendentes**, **Concluídas** ou **Todas**.
+
+- **Enviar**: no celular, abre o menu de compartilhamento com texto e planilha CSV. WhatsApp e Outlook aparecem nele.
+- **Copiar texto**: cole no WhatsApp ou no e-mail.
+- **Baixar CSV**: planilha para Excel, para anexar.
+- **Baixar PDF**: abre a janela de impressão. Escolha "Salvar como PDF" e anexe o arquivo.
+
+As notas respeitam a busca e o filtro de status que estão na tela.
+
 ## Importante sobre os dados
 
 - Os cadastros ficam **só no aparelho e navegador** onde foram feitos. Celular e computador **não sincronizam sozinhos**.
