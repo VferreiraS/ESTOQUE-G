@@ -58,6 +58,22 @@ Cada NF tem um de quatro status: **Pendente**, **Em conferência**, **Conferido*
 - **Conferido** pede confirmação se a nota tiver itens do XML ainda não contados ou com diferença.
 - Notas salvas antes desta versão como "Concluída" viram **Conferido**, e "Divergência" vira **Em divergência**.
 
+## Relatório por e-mail
+
+Em **Alertas → Relatório por e-mail**, confira o endereço (já vem `ferreiradasilvavitorhugo44@gmail.com`), escolha os horários (8h e 18h) e toque em **Ativar envio automático**.
+
+- O relatório traz NFs a conferir, NFs em divergência, tarefas atrasadas e tarefas de hoje.
+- O envio é feito pelo serviço gratuito FormSubmit. O conteúdo do relatório passa por ele.
+- **Na primeira vez**, chega um e-mail do FormSubmit: abra e clique em **Activate Form**. Depois disso os relatórios chegam normalmente. Use **Enviar teste agora** para disparar esse primeiro e-mail.
+- Só envia com o site aberto e a conta aberta (pode estar minimizado) em algum aparelho no horário. Se o aparelho estava desligado, envia quando abrir, até 4 horas depois do horário.
+
+## Avisos no computador e manter conectado
+
+- Em **Alertas**, toque em **Permitir notificações no computador**. Os avisos aparecem no canto da tela do Windows mesmo usando outros programas, enquanto o site estiver aberto (pode estar minimizado).
+- **Manter conectado neste aparelho** (caixa na tela de login ou em **Minha conta**): o site abre a conta sem pedir senha neste aparelho. Vem marcada no computador. **Sair** desliga.
+- Para receber avisos e e-mails sem abrir o site: instale o app pelo ícone na barra do Chrome ou Edge e ative **Iniciar ao fazer login** em `chrome://apps` ou `edge://apps`.
+- Com o navegador totalmente fechado, nada é enviado: os dados ficam só no aparelho e o site não tem servidor.
+
 ## Senha
 
 A senha tem de 4 a 8 números, sem letras nem símbolos. Contas antigas continuam entrando com a senha que já têm; a regra vale ao criar a conta ou trocar a senha.
@@ -89,6 +105,10 @@ A conta não pode ser aberta: os cadastros ficam criptografados com a senha, e n
 O site usa só preto, branco e cinza, no tema claro e no escuro.
 
 A animação de entrada aparece ao abrir o site e ao sair da conta. Em computadores com "reduzir animações" ligado, ela aparece numa versão suave. O botão **Efeitos** desliga a animação neste navegador.
+
+## Mascote
+
+O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza como o resto do site.
 
 ## Tema sazonal
 
@@ -123,5 +143,5 @@ As notas respeitam a busca e a aba de status que estão na tela.
 | `index.html` | O sistema completo |
 | `manifest.webmanifest` | Nome, cores e ícones para instalar como app |
 | `sw.js` | Permite abrir sem internet |
-| `icons/` | Ícones do app (iPhone, Android, computador) |
+| `icons/` | Ícones do app (iPhone, Android, computador) e o mascote `mascote.png` |
 | `vendor/tesseract/` | Leitor de texto em imagens (Tesseract.js, licença Apache 2.0) usado em Ler print de NFs |

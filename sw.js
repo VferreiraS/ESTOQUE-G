@@ -1,5 +1,5 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
-const CACHE = 'estoque99-v6';
+const CACHE = 'estoque99-v7';
 const CORE = [
   './',
   './index.html',
@@ -8,7 +8,8 @@ const CORE = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
-  './icons/favicon-32.png'
+  './icons/favicon-32.png',
+  './icons/mascote.png'
 ];
 
 self.addEventListener('install', (event) => {
