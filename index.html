@@ -2699,6 +2699,19 @@ window.ruptureAI=async function(){if(!authSession)return;var photos=(window.rupt
 .nav-unread{display:inline-block;min-width:18px;padding:0 6px;margin-left:6px;border-radius:999px;background:var(--ds-ink);color:var(--ds-bg);font-size:11px;font-weight:750;line-height:18px;text-align:center}
 .mobile-bottom button{position:relative}
 .mobile-bottom .nav-unread{position:absolute;top:2px;right:calc(50% - 22px);margin:0}
+.chat-audio{display:flex;align-items:center;gap:8px;margin:4px 0;max-width:100%}
+.chat-audio audio{width:240px;max-width:100%;height:40px;filter:grayscale(1)}
+.chat-audio .dur{font-size:12px;opacity:.75;white-space:nowrap}
+.chat-rec{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:2px solid var(--ds-ink);border-radius:14px;padding:8px 10px}
+.chat-rec[hidden]{display:none}
+.chat-rec .dot{width:12px;height:12px;border-radius:50%;background:var(--ds-ink);animation:chatRecBlink 1s steps(2,start) infinite}
+.chat-rec .t{font-weight:750;flex:1;min-width:8em}
+.chat-rec .lim{font-size:12px;color:var(--ds-muted)}
+.chat-rec button{min-height:44px}
+#chat-mic[aria-pressed=true]{background:var(--ds-ink);color:var(--ds-bg);border-color:var(--ds-ink)}
+@keyframes chatRecBlink{to{visibility:hidden}}
+@media (prefers-reduced-motion:reduce){.chat-rec .dot{animation:none}}
+@media (max-width:520px){#chat-form{grid-template-columns:minmax(0,1fr)}.chat-btns{justify-content:flex-end}.chat-btns #chat-send{flex:1}.chat-rec .lim{display:none}.chat-rec .t{flex:1 1 calc(100% - 30px)}.chat-rec button{flex:1}}
 #chat-img-view{border:0;padding:0;background:#000;border-radius:16px;max-width:96vw}
 #chat-img-view img{display:block;max-width:96vw;max-height:86dvh;filter:none!important}
 #chat-img-view button{position:absolute;top:8px;right:8px;background:#1c1c1c!important;color:#fff!important}
@@ -2709,7 +2722,7 @@ window.ruptureAI=async function(){if(!authSession)return;var photos=(window.rupt
 'use strict';
 var NTFY='https://ntfy.sh';
 try{var o=new URLSearchParams(location.search).get('ntfy');if(o&&(location.hostname==='localhost'||location.hostname==='127.0.0.1'))NTFY=o.replace(/\/+$/,'')}catch(e){}
-var cfg=null,team=null,es=null,connected=false,mem={},sending=false,pendingInvite='',own={};
+var cfg=null,team=null,es=null,connected=false,mem={},sending=false,pendingInvite='',own={},audioURL={},rec=null;
 /* convite: #equipe=CODIGO */
 try{var m=String(location.hash||'').match(/equipe=([A-Za-z0-9-]{8,20})/);if(m){pendingInvite=m[1];history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
 function b64(b){return authB64(b)}function un64(s){return authUn64(s)}
@@ -2724,7 +2737,9 @@ async function makeTeam(code){var n=norm(code);var h=new Uint8Array(await crypto
 async function enc(bytes){var iv=crypto.getRandomValues(new Uint8Array(12));var ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},team.key,bytes));var out=new Uint8Array(12+ct.length);out.set(iv);out.set(ct,12);return out}
 async function dec(bytes){bytes=new Uint8Array(bytes);return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes.slice(0,12)},team.key,bytes.slice(12)))}
 async function encMsg(obj){return 'E99:'+b64(await enc(authBytes(JSON.stringify(obj))))}
-async function decMsg(str){if(typeof str!=='string'||str.indexOf('E99:')!==0)return null;try{var o=JSON.parse(new TextDecoder().decode(await dec(un64(str.slice(4)))));if(!o||o.v!==1||typeof o.id!=='string'||!/^[a-zA-Z0-9_-]{1,60}$/.test(o.id))return null;return {id:o.id,from:String(o.from||'?').slice(0,60),at:String(o.at||''),text:String(o.text||'').slice(0,1000),img:!!o.img}}catch(e){return null}}
+async function decMsg(str){if(typeof str!=='string'||str.indexOf('E99:')!==0)return null;try{var o=JSON.parse(new TextDecoder().decode(await dec(un64(str.slice(4)))));if(!o||o.v!==1||typeof o.id!=='string'||!/^[a-zA-Z0-9_-]{1,60}$/.test(o.id))return null;return {id:o.id,from:String(o.from||'?').slice(0,60),at:String(o.at||''),text:String(o.text||'').slice(0,1000),img:!!o.img,audio:okAudio(o.audio)}}catch(e){return null}}
+function okAudio(a){if(!a||typeof a!=='object'||typeof a.mime!=='string'||!/^audio\/(mp4|webm|ogg|aac|mpeg|x-m4a)$/.test(a.mime)||!Number.isFinite(a.dur)||a.dur<0||a.dur>130)return null;return {mime:a.mime,dur:Math.round(a.dur)}}
+function mmss(s){s=Math.max(0,Math.round(s||0));return Math.floor(s/60)+':'+('0'+s%60).slice(-2)}
 /* ---------- histórico local (IndexedDB, guardado ainda criptografado com o código da equipe) ---------- */
 function cdb(){return new Promise(function(res,rej){try{var r=indexedDB.open('estoque99-chat',1);r.onupgradeneeded=function(){r.result.createObjectStore('msgs');r.result.createObjectStore('imgs')};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}}catch(e){rej(e)}})}
 function cop(store,mode,fn){return cdb().then(function(db){return new Promise(function(res,rej){var tx=db.transaction(store,mode),req=fn(tx.objectStore(store));tx.oncomplete=function(){db.close();res(req&&req.result)};tx.onerror=function(){db.close();rej(tx.error)}})})}
@@ -2746,12 +2761,12 @@ async function receive(d){var t=team;if(!t)return;var msg=await decMsg(d.message
   if(d.time)try{var prev=+localStorage.getItem(sinceKey())||0;if(d.time>prev)localStorage.setItem(sinceKey(),String(d.time))}catch(e){}
   if(own[msg.id])return;/* minha própria mensagem: quem envia já guarda */
   var key=t.topic+'|'+msg.id;var exists=await cop('msgs','readonly',function(st){return st.get(key)}).catch(function(){return null});
-  if(exists){if(msg.img&&d.attachment&&d.attachment.url&&!exists.hasImg)fetchImg(msg.id,d.attachment.url);return}
+  if(exists){if((msg.img||msg.audio)&&d.attachment&&d.attachment.url&&!exists.hasImg)fetchImg(msg.id,d.attachment.url);return}
   await putMsg({topic:t.topic,id:msg.id,at:msg.at||new Date().toISOString(),payload:d.message,mine:false,hasImg:false});
-  if(msg.img&&d.attachment&&d.attachment.url)await fetchImg(msg.id,d.attachment.url);
+  if((msg.img||msg.audio)&&d.attachment&&d.attachment.url)await fetchImg(msg.id,d.attachment.url);
   trim();if(page==='chat'&&!document.hidden){markRead();paint(true)}else{badges();notifyNew(msg)}}
 async function fetchImg(id,url){try{var r=await fetch(url);if(!r.ok)throw Error(r.status);var buf=await r.arrayBuffer();await putImg(id,buf);var rec=await cop('msgs','readonly',function(st){return st.get(team.topic+'|'+id)});if(rec){rec.hasImg=true;await putMsg(rec)}if(page==='chat')paint(false)}catch(e){}}
-function notifyNew(m){try{if(typeof playSiteSound==='function')playSiteSound('tap')}catch(e){}if(typeof Notification==='function'&&Notification.permission==='granted'&&(document.hidden||page!=='chat')){try{var n=new Notification('Chat · '+m.from,{body:m.img&&!m.text?'📷 Foto':m.text.slice(0,140),tag:'estoque99-chat'});n.onclick=function(){window.focus();go('chat');n.close()}}catch(e){}}}
+function notifyNew(m){try{if(typeof playSiteSound==='function')playSiteSound('tap')}catch(e){}if(typeof Notification==='function'&&Notification.permission==='granted'&&(document.hidden||page!=='chat')){try{var n=new Notification('Chat · '+m.from,{body:m.audio?'🎤 Áudio ('+mmss(m.audio.dur)+')':m.img&&!m.text?'📷 Foto':m.text.slice(0,140),tag:'estoque99-chat'});n.onclick=function(){window.focus();go('chat');n.close()}}catch(e){}}}
 /* ---------- não lidas ---------- */
 async function unread(){if(!team)return 0;var last=localStorage.getItem(readKey())||'';var l=await allMsgs();return l.filter(function(r){return !r.mine&&String(r.at)>last}).length}
 function markRead(){if(team)localStorage.setItem(readKey(),new Date(Date.now()+1000).toISOString());badges()}
@@ -2759,14 +2774,39 @@ function badges(){unread().then(function(n){document.querySelectorAll('[onclick=
 /* ---------- enviar ---------- */
 function msgId(){return Date.now().toString(36)+'-'+b64(crypto.getRandomValues(new Uint8Array(6))).replace(/[^a-zA-Z0-9]/g,'').slice(0,8)}
 function failMsg(status){return status===429?'Limite grátis do ntfy.sh atingido nesta internet (250 mensagens por dia). Tente pelos dados móveis ou amanhã.':status===413?'Foto grande demais (máximo 2 MB).':'Não foi possível enviar ('+(status||'sem internet')+'). Tente de novo.'}
-window.chatSend=async function(text,photoData){if(!team||sending)return false;text=String(text||'').trim().slice(0,1000);if(!text&&!photoData)return false;sending=true;var btn=document.getElementById('chat-send');if(btn)btn.disabled=true;
-  try{var obj={v:1,id:msgId(),from:cfg.name,at:new Date().toISOString(),text:text,img:!!photoData};own[obj.id]=1;var payload=await encMsg(obj);var r;
-    if(photoData){var bytes=Uint8Array.from(atob(photoData.split(',')[1]),function(c){return c.charCodeAt(0)});var encd=await enc(bytes);
+window.chatSend=async function(text,photoData,audio){if(!team||sending)return false;text=String(text||'').trim().slice(0,1000);if(!text&&!photoData&&!audio)return false;sending=true;var btn=document.getElementById('chat-send');if(btn)btn.disabled=true;
+  try{var obj={v:1,id:msgId(),from:cfg.name,at:new Date().toISOString(),text:text,img:!!photoData};if(audio)obj.audio={mime:audio.mime,dur:Math.round(audio.dur)};own[obj.id]=1;var payload=await encMsg(obj);var r;
+    if(audio){var abytes=new Uint8Array(await audio.blob.arrayBuffer());var aenc=await enc(abytes);if(aenc.length>1900000){notify('Áudio grande demais. Grave mensagens mais curtas.');return false}
+      r=await fetch(NTFY+'/'+team.topic,{method:'PUT',headers:{'X-Message':payload,'X-Filename':'audio.bin'},body:aenc});if(r.ok){await putImg(obj.id,aenc.buffer);if(audio.url)audioURL[team.topic+'|'+obj.id]=audio.url}}
+    else if(photoData){var bytes=Uint8Array.from(atob(photoData.split(',')[1]),function(c){return c.charCodeAt(0)});var encd=await enc(bytes);
       r=await fetch(NTFY+'/'+team.topic,{method:'PUT',headers:{'X-Message':payload,'X-Filename':'foto.bin'},body:encd});if(r.ok){await putImg(obj.id,encd.buffer)}}
     else r=await fetch(NTFY+'/'+team.topic,{method:'POST',body:payload});
     if(!r.ok){notify(failMsg(r.status));return false}
-    await putMsg({topic:team.topic,id:obj.id,at:obj.at,payload:payload,mine:true,hasImg:!!photoData});markRead();if(page==='chat')paint(true);return true}
+    await putMsg({topic:team.topic,id:obj.id,at:obj.at,payload:payload,mine:true,hasImg:!!(photoData||audio)});markRead();if(page==='chat')paint(true);return true}
   catch(e){notify(failMsg(0));return false}finally{sending=false;if(btn)btn.disabled=false}};
+/* ---------- áudio ---------- */
+var MAXREC=120;
+function pickMime(){var l=['audio/mp4','audio/mp4;codecs=mp4a.40.2','audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus'];if(typeof MediaRecorder!=='function'||!MediaRecorder.isTypeSupported)return '';for(var i=0;i<l.length;i++){try{if(MediaRecorder.isTypeSupported(l[i]))return l[i]}catch(e){}}return ''}
+function recSecs(r){return r&&r.start?((r.stopAt||Date.now())-r.start)/1000:0}
+function recBar(){var b=document.getElementById('chat-rec'),mic=document.getElementById('chat-mic');if(mic)mic.setAttribute('aria-pressed',rec?'true':'false');if(!b)return;b.hidden=!rec;if(!rec)return;var t=b.querySelector('.t');if(t)t.textContent=!rec.mr?'Abrindo o microfone…':rec.stopAt?'Limite de 2:00. Toque em Enviar áudio.':'Gravando '+mmss(recSecs(rec));var sb=document.getElementById('chat-rec-send');if(sb)sb.disabled=!rec.mr}
+function stopMr(r){return new Promise(function(res){if(!r.mr||r.mr.state==='inactive'){res();return}r.mr.addEventListener('stop',function(){res()},{once:true});try{r.mr.stop()}catch(e){res()}})}
+function endRec(r){clearInterval(r.timer);if(r.stream)r.stream.getTracks().forEach(function(t){t.stop()});if(rec===r)rec=null;recBar()}
+function cancelRec(){var r=rec;if(!r)return;stopMr(r);endRec(r)}
+window.chatRecCancel=cancelRec;
+window.chatMic=async function(){if(rec||!team)return;if(typeof MediaRecorder!=='function'||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){notify('Este navegador não grava áudio. Atualize o navegador ou use outro aparelho.');return}
+  var r={chunks:[],start:0,stream:null,mr:null,timer:0,stopAt:0};rec=r;recBar();
+  try{r.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}})}
+  catch(e){if(rec===r){rec=null;recBar()}notify(e&&e.name==='NotAllowedError'?'Permita o uso do microfone para gravar áudio (toque no cadeado ao lado do endereço do site).':e&&e.name==='NotFoundError'?'Nenhum microfone encontrado neste aparelho.':'Não foi possível abrir o microfone.');return}
+  if(rec!==r){r.stream.getTracks().forEach(function(t){t.stop()});return}
+  var mime=pickMime();try{r.mr=new MediaRecorder(r.stream,mime?{mimeType:mime,audioBitsPerSecond:32000}:{audioBitsPerSecond:32000})}catch(e){try{r.mr=new MediaRecorder(r.stream)}catch(e2){endRec(r);notify('Este navegador não grava áudio.');return}}
+  r.mr.ondataavailable=function(ev){if(ev.data&&ev.data.size)r.chunks.push(ev.data)};
+  try{r.mr.start(1000)}catch(e){endRec(r);notify('Não foi possível começar a gravar.');return}
+  r.start=Date.now();try{if(typeof playSiteSound==='function')playSiteSound('tap')}catch(e){}
+  r.timer=setInterval(function(){if(rec!==r)return;if(page!=='chat'||!team){cancelRec();return}if(!r.stopAt&&recSecs(r)>=MAXREC){r.stopAt=r.start+MAXREC*1000;stopMr(r)}recBar()},250);recBar()};
+window.chatRecSend=async function(){var r=rec;if(!r||!r.mr)return;var dur=Math.min(MAXREC,recSecs(r));await stopMr(r);endRec(r);
+  if(dur<0.7||!r.chunks.length){notify('Áudio muito curto. Toque no microfone, fale e depois toque em Enviar áudio.');return}
+  var type=String(r.mr.mimeType||pickMime()||'audio/webm').split(';')[0];var blob=new Blob(r.chunks,{type:type});var url=URL.createObjectURL(blob);
+  notify('Enviando áudio…');var ok=await window.chatSend('',null,{blob:blob,mime:type,dur:dur,url:url});if(!ok)URL.revokeObjectURL(url)};
 /* ---------- tela ---------- */
 function esc2(s){return esc(String(s==null?'':s))}
 function time(at){var d=new Date(at);return isNaN(d)?'':('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)}
@@ -2774,23 +2814,29 @@ function day(at){var d=new Date(at);if(isNaN(d))return '';var t=new Date();var s
 async function paint(scroll){var box=document.getElementById('chat-list');if(!box||!team)return;var keepBottom=scroll||box.scrollHeight-box.scrollTop-box.clientHeight<80;var l=await allMsgs();l.sort(function(a,b){return String(a.at).localeCompare(String(b.at))});
   var html='',lastDay='',people={};
   for(var i=0;i<l.length;i++){var r=l[i];var m=mem[r.topic+'|'+r.id]||(mem[r.topic+'|'+r.id]=await decMsg(r.payload));if(!m)continue;people[m.from]=1;var dd=day(m.at);if(dd!==lastDay){html+='<div class="chat-day">'+esc2(dd)+'</div>';lastDay=dd}
-    html+='<div class="chat-msg'+(r.mine?' mine':'')+'">'+(r.mine?'':'<span class="who">'+esc2(m.from)+'</span>')+(m.img?(r.hasImg?'<img data-chat-img="'+esc2(r.id)+'" alt="Foto enviada por '+esc2(m.from)+'">':'<span class="img-wait">📷 Foto (baixando… fotos ficam no servidor só por 3 horas)</span>'):'')+(m.text?esc2(m.text):'')+'<span class="when">'+time(m.at)+'</span></div>'}
+    html+='<div class="chat-msg'+(r.mine?' mine':'')+'">'+(r.mine?'':'<span class="who">'+esc2(m.from)+'</span>')+(m.img?(r.hasImg?'<img data-chat-img="'+esc2(r.id)+'" alt="Foto enviada por '+esc2(m.from)+'">':'<span class="img-wait">📷 Foto (baixando… fotos ficam no servidor só por 3 horas)</span>'):'')+(m.audio?(r.hasImg?'<span class="chat-audio"><audio data-chat-audio="'+esc2(r.id)+'" data-mime="'+esc2(m.audio.mime)+'" controls preload="metadata" aria-label="Áudio de '+esc2(m.from)+'"></audio><span class="dur">'+mmss(m.audio.dur)+'</span></span>':'<span class="img-wait">🎤 Áudio de '+mmss(m.audio.dur)+' (baixando… áudios ficam no servidor só por 3 horas)</span>'):'')+(m.text?esc2(m.text):'')+'<span class="when">'+time(m.at)+'</span></div>'}
+  var keep={};box.querySelectorAll('audio[data-chat-audio]').forEach(function(a){if(a.src)keep[a.getAttribute('data-chat-audio')]=a});
   box.innerHTML=html||'<p class="small" style="text-align:center;margin:auto">Nenhuma mensagem ainda. Diga oi para a equipe!</p>';
   var cnt=document.getElementById('chat-people');if(cnt)cnt.textContent=Object.keys(people).length+' pessoa(s) já falaram';
   box.querySelectorAll('img[data-chat-img]').forEach(function(img){var id=img.getAttribute('data-chat-img');getImg(id).then(function(buf){if(!buf)return;return dec(buf).then(function(b){var u=URL.createObjectURL(new Blob([b],{type:'image/jpeg'}));img.src=u;img.onclick=function(){viewImg(u)}})}).catch(function(){img.replaceWith(Object.assign(document.createElement('span'),{className:'img-wait',textContent:'📷 Foto indisponível'}))})});
+  box.querySelectorAll('audio[data-chat-audio]').forEach(function(a){var id=a.getAttribute('data-chat-audio'),mime=a.getAttribute('data-mime'),k=team.topic+'|'+id;if(keep[id]){a.replaceWith(keep[id]);return}
+    if(a.canPlayType&&a.canPlayType(mime)===''){a.parentNode.replaceWith(Object.assign(document.createElement('span'),{className:'img-wait',textContent:'🎤 Este aparelho não toca este formato de áudio ('+mime.replace('audio/','')+'). Abra no computador ou atualize o navegador.'}));return}
+    if(audioURL[k]){a.src=audioURL[k];return}
+    getImg(id).then(function(buf){if(!buf)throw Error('sem');return dec(buf).then(function(b){audioURL[k]=URL.createObjectURL(new Blob([b],{type:mime}));a.src=audioURL[k]})}).catch(function(){if(a.parentNode)a.parentNode.replaceWith(Object.assign(document.createElement('span'),{className:'img-wait',textContent:'🎤 Áudio indisponível'}))})});
   if(keepBottom)box.scrollTop=box.scrollHeight}
 function viewImg(u){var d=document.getElementById('chat-img-view');if(!d){d=document.createElement('dialog');d.id='chat-img-view';d.innerHTML='<img alt="Foto do chat"><button type="button" onclick="this.closest(\'dialog\').close()">Fechar</button>';document.body.appendChild(d)}d.querySelector('img').src=u;d.showModal()}
 window.renderChat=function(){if(!cfg){return hero('Chat da equipe','')+'<div class="panel chat-setup">'
    +'<div><h2>Criar equipe</h2><form onsubmit="chatCreate(event)"><label>Seu nome no chat<input name="name" required maxlength="40" value="'+esc2(authSession.payload.store==='Estoque 99'?'Gestor':authSession.record.login)+'"></label><button class="primary">Criar equipe e gerar código</button></form></div>'
    +'<div><h2>Entrar com código</h2><form onsubmit="chatJoin(event)"><label>Código da equipe<input name="code" required maxlength="20" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX" value="'+esc2(pendingInvite?fmt(pendingInvite):'')+'"></label><label>Seu nome no chat<input name="name" required maxlength="40" value="'+esc2(authSession.record.login)+'"></label><button class="primary">Entrar no chat</button></form></div>'
    +'<p class="small">As mensagens e fotos são criptografadas com o código da equipe e entregues pelo serviço gratuito ntfy.sh. Limites: 250 mensagens por dia por internet; fotos ficam no servidor por 3 horas e mensagens por 12 horas (o histórico fica salvo em cada aparelho).</p></div>'}
-  setTimeout(function(){paint(true);markRead();setStatus(connected)},0);
+  setTimeout(function(){paint(true);markRead();setStatus(connected);recBar()},0);
   return '<div class="panel chat-wrap"><div class="chat-head"><div><h2>Chat · '+esc2(cfg.team||'Equipe')+'</h2><span class="chat-status" id="chat-status">Conectando…</span> <span class="small" id="chat-people"></span></div><div class="row toolbar"><button type="button" onclick="chatInvite()">Convidar</button><button type="button" onclick="chatLeave()">Sair da equipe</button></div></div>'
    +'<div id="chat-list" role="log" aria-live="polite"></div>'
-   +'<form id="chat-form" onsubmit="chatSubmit(event)"><textarea id="chat-text" rows="1" maxlength="1000" placeholder="Mensagem para a equipe…" aria-label="Mensagem" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey&&!event.isComposing){event.preventDefault();chatSubmit(event)}"></textarea><div class="chat-btns"><label title="Câmera" aria-label="Tirar foto">📷<input type="file" accept="image/*" capture="environment" hidden onchange="chatPhoto(this)"></label><label title="Galeria" aria-label="Enviar foto da galeria">🖼<input type="file" accept="image/*" hidden onchange="chatPhoto(this)"></label><button type="submit" class="primary" id="chat-send">Enviar</button></div></form></div>'};
+   +'<div id="chat-rec" class="chat-rec" role="status"'+(rec?'':' hidden')+'><span class="dot" aria-hidden="true"></span><span class="t">Gravando 0:00</span><span class="lim">máx. 2:00</span><button type="button" onclick="chatRecCancel()">Cancelar</button><button type="button" class="primary" id="chat-rec-send" onclick="chatRecSend()">Enviar áudio</button></div>'
+   +'<form id="chat-form" onsubmit="chatSubmit(event)"><textarea id="chat-text" rows="1" maxlength="1000" placeholder="Mensagem para a equipe…" aria-label="Mensagem" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey&&!event.isComposing){event.preventDefault();chatSubmit(event)}"></textarea><div class="chat-btns"><label title="Câmera" aria-label="Tirar foto">📷<input type="file" accept="image/*" capture="environment" hidden onchange="chatPhoto(this)"></label><label title="Galeria" aria-label="Enviar foto da galeria">🖼<input type="file" accept="image/*" hidden onchange="chatPhoto(this)"></label><button type="button" id="chat-mic" aria-label="Gravar áudio" title="Gravar áudio" aria-pressed="false" onclick="chatMic()"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg></button><button type="submit" class="primary" id="chat-send">Enviar</button></div></form></div>'};
 window.chatSubmit=async function(e){if(e)e.preventDefault();var t=document.getElementById('chat-text');if(!t||!t.value.trim())return;var v=t.value;t.value='';var ok=await window.chatSend(v);if(!ok)t.value=v;t.focus()};
 window.chatPhoto=async function(input){var f=input.files&&input.files[0];input.value='';if(!f)return;try{notify('Preparando foto…');var p=await compressPlanPhoto(f);var t=document.getElementById('chat-text');var cap=t?t.value:'';if(await window.chatSend(cap,p.data)&&t)t.value=''}catch(e){notify(e.message||'Não foi possível ler a foto.')}};
-async function start(c){cfg=c;team=c?await makeTeam(c.code):null;mem={};if(team)connect();else disconnect();badges()}
+async function start(c){cancelRec();cfg=c;team=c?await makeTeam(c.code):null;mem={};Object.keys(audioURL).forEach(function(k){URL.revokeObjectURL(audioURL[k])});audioURL={};if(team)connect();else disconnect();badges()}
 window.chatCreate=async function(e){e.preventDefault();var v=readForm(e.target);var name=String(v.name||'').trim().slice(0,40);if(!name)return;var code=newCode();var c={code:code,name:name,team:authSession.payload.store||'Equipe',owner:true};await saveCfg(c);await start(c);render();notify('Equipe criada. Toque em Convidar para chamar os auxiliares.')};
 window.chatJoin=async function(e){e.preventDefault();var v=readForm(e.target);var code=norm(v.code);var name=String(v.name||'').trim().slice(0,40);if(code.length!==12){notify('O código tem 12 letras e números.');return}if(!name)return;var c={code:code,name:name,team:'Equipe',owner:false};await saveCfg(c);pendingInvite='';await start(c);render();notify('Você entrou no chat da equipe.')};
 window.chatInvite=function(){if(!cfg)return;var link=location.origin+location.pathname.replace(/robo\.html$/,'')+'#equipe='+fmt(cfg.code);var text='Entre no chat da equipe do Estoque 99: '+link+' (código '+fmt(cfg.code)+')';
