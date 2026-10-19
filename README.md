@@ -112,12 +112,13 @@ O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/rob
 
 1. Crie uma chave grátis do Groq: entre em **https://console.groq.com/keys** (pode entrar com a conta Google), toque em **Create API Key** e copie a chave (começa com `gsk_`).
 2. Na página do robô, toque em **Groq**, cole a chave, escolha o modelo e toque em **Testar conexão** e depois em **Salvar**.
-   - **Llama 3.3 70B**: respostas melhores (padrão).
-   - **Llama 3.1 8B**: mais rápido e com limite gratuito maior. O robô troca sozinho para ele se o 70B estiver indisponível.
+   - **GPT-OSS 120B**: respostas melhores (padrão).
+   - **GPT-OSS 20B**: mais rápido.
+   - Se o Groq tirar um modelo do ar, o robô escolhe sozinho outro disponível.
 3. Pergunte, por exemplo: "O que está pendente hoje?", "Quais NFs estão em divergência?", "Tarefas atrasadas".
 
 - A chave fica criptografada com a sua conta, só neste aparelho. Se trocar a senha da conta, cole a chave de novo.
-- O plano gratuito do Groq tem limite de pedidos por minuto e por dia. Se aparecer "Limite gratuito do Groq atingido", espere um pouco ou use o modelo 8B.
+- O plano gratuito do Groq tem limite de pedidos por minuto e por dia. Se aparecer "Limite gratuito do Groq atingido", espere um pouco ou use o modelo 20B.
 - O que vai para o Groq: a pergunta, as últimas mensagens da conversa e um resumo do estoque (NFs não conferidas, tarefas abertas, equipe, corredores e planos do dia).
 - O robô só lê os dados. Ele não muda nada no estoque.
 
