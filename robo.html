@@ -11,7 +11,7 @@
 <link rel="icon" type="image/png" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
-/* Robô do estoque: página só para a conversa com o OmniRoute. Mesmo visual preto e branco do site. */
+/* Robô do estoque: página só para a conversa com a IA (Groq). Mesmo visual preto e branco do site. */
 :root{--bg:#f6f6f6;--surface:#fff;--ink:#0a0a0a;--ink2:#2e2e2e;--muted:#6b6b6b;--line:#e2e2e2;--soft:#ededed;--shadow:0 1px 2px rgba(0,0,0,.05),0 12px 32px -22px rgba(0,0,0,.28);color-scheme:light}
 body.dark{--bg:#0a0a0a;--surface:#151515;--ink:#f2f2f2;--ink2:#cfcfcf;--muted:#9a9a9a;--line:#2a2a2a;--soft:#232323;--shadow:0 1px 2px rgba(0,0,0,.5),0 16px 40px -24px rgba(0,0,0,.8);color-scheme:dark}
 *{box-sizing:border-box}
@@ -106,7 +106,7 @@ body.still .bot,body.still .msg.bot.typing::after{animation:none!important}
     </div>
     <div id="app" hidden>
       <div class="card" id="chat">
-        <div class="chat-head"><h2>Conversa</h2><div class="row"><button type="button" id="refresh">Atualizar dados</button><button type="button" id="open-settings">OmniRoute</button></div></div>
+        <div class="chat-head"><h2>Conversa</h2><div class="row"><button type="button" id="refresh">Atualizar dados</button><button type="button" id="open-settings">Groq</button></div></div>
         <div id="messages" role="log" aria-live="polite"><p class="empty" id="empty">Pergunte sobre NFs, tarefas, prazos e equipe.</p></div>
         <div id="suggest">
           <button type="button" data-q="O que está pendente hoje?">O que está pendente hoje?</button>
@@ -120,15 +120,15 @@ body.still .bot,body.still .msg.bot.typing::after{animation:none!important}
         </form>
       </div>
       <div class="card" id="settings" hidden style="margin-top:16px">
-        <h2>OmniRoute</h2>
+        <h2>Groq (IA gratuita)</h2>
         <form id="settings-form" class="fields">
-          <label>Endereço do OmniRoute<input name="base" required maxlength="300" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://seu-omniroute.exemplo.com/v1"></label>
-          <label class="pw">Chave (API key)<input name="key" type="password" maxlength="500" autocomplete="off" spellcheck="false" placeholder="sk-…"><button type="button" data-toggle>Mostrar</button></label>
-          <label>Modelo<input name="model" maxlength="120" autocomplete="off" spellcheck="false" placeholder="auto"></label>
+          <label class="pw">Chave do Groq<input name="key" type="password" maxlength="500" autocomplete="off" spellcheck="false" placeholder="gsk_…"><button type="button" data-toggle>Mostrar</button></label>
+          <p class="small" style="margin:0">Não tem chave? <a href="https://console.groq.com/keys" target="_blank" rel="noopener" style="color:inherit;font-weight:650">Criar chave grátis no Groq ↗</a></p>
+          <label>Modelo<select name="model" style="width:100%;min-height:48px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font-size:16px"><option value="llama-3.3-70b-versatile">Llama 3.3 70B (melhor resposta)</option><option value="llama-3.1-8b-instant">Llama 3.1 8B (mais rápido, limite maior)</option></select></label>
           <div class="row"><button class="primary" type="submit">Salvar</button><button type="button" id="test">Testar conexão</button><button type="button" id="close-settings">Fechar</button></div>
         </form>
         <p class="status" id="settings-status" aria-live="polite"></p>
-        <p class="small">As perguntas e um resumo do estoque vão para o seu OmniRoute e para o provedor de IA configurado nele. No servidor, use CORS_ALLOWED_ORIGINS=https://vferreiras.github.io e REQUIRE_API_KEY=true.</p>
+        <p class="small">As perguntas e um resumo do estoque vão para o Groq. O plano gratuito tem limite de pedidos por minuto e por dia.</p>
       </div>
     </div>
   </section>
@@ -137,7 +137,10 @@ body.still .bot,body.still .msg.bot.typing::after{animation:none!important}
 (function(){
 'use strict';
 var $=function(id){return document.getElementById(id)};
-var AUTH_PREFIX='lojasg.estoque99.account.v1.',AUTH_BLOCK='lojasg.estoque99.block.v1.',ROBOT_PREFIX='lojasg.estoque99.robot:';
+var AUTH_PREFIX='lojasg.estoque99.account.v1.',AUTH_BLOCK='lojasg.estoque99.block.v1.',ROBOT_PREFIX='lojasg.estoque99.robot-groq:',OLD_PREFIX='lojasg.estoque99.robot:';
+var GROQ='https://api.groq.com/openai/v1',MODELS=['llama-3.3-70b-versatile','llama-3.1-8b-instant'];
+/* Só para testes locais: ?api= troca o endereço quando a página roda em localhost. */
+(function(){try{var a=new URLSearchParams(location.search).get('api');if(a&&(location.hostname==='localhost'||location.hostname==='127.0.0.1'))GROQ=a.replace(/\/+$/,'')}catch(e){}})();
 var S=null,cfg=null,history=[],busy=null;
 
 /* ---------- aparência ---------- */
@@ -171,16 +174,11 @@ function idbGet(k){return idbOp('readonly',function(st){return st.get(k)}).catch
 function idbPut(k,v){return idbOp('readwrite',function(st){return st.put(v,k)}).catch(function(){})}
 function idbDel(k){return idbOp('readwrite',function(st){return st.delete(k)}).catch(function(){})}
 
-/* ---------- configuração do OmniRoute (criptografada com a chave da conta) ---------- */
-function normBase(v){var u;try{u=new URL(String(v||'').trim())}catch(e){throw Error('Endereço inválido. Exemplo: https://seu-omniroute.exemplo.com/v1')}
-  var local=u.hostname==='localhost'||u.hostname==='127.0.0.1';
-  if(u.protocol!=='https:'&&!(u.protocol==='http:'&&local))throw Error('Use um endereço https:// (ou http://localhost no próprio computador).');
-  if(u.username||u.password)throw Error('Não coloque usuário ou senha no endereço.');
-  var path=u.pathname.replace(/\/+$/,'');path=path.replace(/\/chat\/completions$/,'');if(!/\/v1$/.test(path))path+='/v1';return u.origin+path}
+/* ---------- configuração do Groq (criptografada com a chave da conta) ---------- */
 async function loadCfg(){var raw=localStorage.getItem(ROBOT_PREFIX+S.storeKey);if(!raw)return null;try{var o=JSON.parse(raw);var p=await crypto.subtle.decrypt({name:'AES-GCM',iv:un64(o.iv),additionalData:bytes('robot|'+loginName(S.login))},S.key,un64(o.cipher));return JSON.parse(new TextDecoder().decode(p))}catch(e){return null}}
-async function saveCfg(c){var iv=crypto.getRandomValues(new Uint8Array(12));var cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:bytes('robot|'+loginName(S.login))},S.key,bytes(JSON.stringify(c)));localStorage.setItem(ROBOT_PREFIX+S.storeKey,JSON.stringify({v:1,iv:b64(iv),cipher:b64(cipher)}))}
-function readSettings(){var f=$('settings-form');return {base:normBase(f.elements.base.value),key:String(f.elements.key.value||'').trim(),model:String(f.elements.model.value||'').trim()||'auto'}}
-function fillSettings(){var f=$('settings-form');f.elements.base.value=cfg?cfg.base:'';f.elements.key.value=cfg?cfg.key:'';f.elements.model.value=cfg?cfg.model:'auto'}
+async function saveCfg(c){var iv=crypto.getRandomValues(new Uint8Array(12));var cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:bytes('robot|'+loginName(S.login))},S.key,bytes(JSON.stringify(c)));localStorage.setItem(ROBOT_PREFIX+S.storeKey,JSON.stringify({v:1,iv:b64(iv),cipher:b64(cipher)}));try{localStorage.removeItem(OLD_PREFIX+S.storeKey)}catch(e){}}
+function readSettings(){var f=$('settings-form');var m=String(f.elements.model.value||'');return {key:String(f.elements.key.value||'').trim(),model:MODELS.indexOf(m)>=0?m:MODELS[0]}}
+function fillSettings(){var f=$('settings-form');f.elements.key.value=cfg?cfg.key:'';f.elements.model.value=cfg&&MODELS.indexOf(cfg.model)>=0?cfg.model:MODELS[0]}
 function showSettings(show){$('settings').hidden=!show;if(show){fillSettings();$('settings').scrollIntoView({behavior:'smooth',block:'start'})}}
 
 /* ---------- resumo do estoque para o robô ---------- */
@@ -209,22 +207,22 @@ function buildContext(){
   var text=L.join('\n');if(text.length>12000)text=text.slice(0,12000)+'\n[lista cortada por tamanho]';return text}
 var SYSTEM='Você é o Robô do Estoque 99, assistente das Lojas G. Responda em português do Brasil, de forma curta e direta, usando listas quando ajudar. Use somente os DADOS abaixo; se a informação não estiver neles, diga que não sabe. Não invente números de NF, nomes ou datas. Você não altera nada no sistema: se pedirem uma mudança, explique onde fazer no site.';
 
-/* ---------- chamada ao OmniRoute ---------- */
+/* ---------- chamada ao Groq ---------- */
 function httpMessage(status,body){try{var j=JSON.parse(body);var m=j&&j.error&&(j.error.message||j.error);if(m)body=String(m)}catch(e){}
-  if(status===401||status===403)return 'A chave do OmniRoute foi recusada ('+status+'). Confira a chave em OmniRoute → Dashboard → Endpoints.';
-  if(status===404)return 'Endereço não encontrado (404). Confira se o endereço termina em /v1.';
-  if(status===429)return 'Limite de uso atingido no OmniRoute ou no provedor (429). Tente de novo em instantes.';
-  if(status>=500)return 'O OmniRoute ou o provedor de IA falhou ('+status+'). '+(body?String(body).slice(0,160):'');
-  return 'O OmniRoute respondeu com erro '+status+'. '+(body?String(body).slice(0,160):'')}
-function netMessage(){return 'Não conectou ao OmniRoute. Confira o endereço, se ele está ligado e se CORS_ALLOWED_ORIGINS inclui '+location.origin+'.'}
-async function callOmni(messages,opts){
+  if(status===401||status===403)return 'A chave do Groq foi recusada ('+status+'). Gere outra em console.groq.com/keys e salve de novo.';
+  if(status===429)return 'Limite gratuito do Groq atingido (429). Espere um pouco ou troque para o modelo Llama 3.1 8B.';
+  if(status===413)return 'Pergunta grande demais para o modelo (413). Tente o Llama 3.3 70B ou uma pergunta mais curta.';
+  if(status>=500)return 'O Groq está com problema agora ('+status+'). Tente de novo em instantes.';
+  return 'O Groq respondeu com erro '+status+'. '+(body?String(body).slice(0,160):'')}
+function netMessage(){return 'Não conectou ao Groq. Confira a internet e tente de novo.'}
+async function callAI(messages,opts){
   opts=opts||{};var ctrl=new AbortController(),timer=setTimeout(function(){ctrl.abort('timeout')},opts.timeout||90000);
   if(opts.onCtrl)opts.onCtrl(ctrl);
   var res;
-  try{res=await fetch(cfg.base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},body:JSON.stringify({model:cfg.model||'auto',messages:messages,stream:!!opts.stream,temperature:0.3,max_tokens:opts.maxTokens||900}),signal:ctrl.signal})}
-  catch(e){clearTimeout(timer);if(ctrl.signal.aborted)throw Object.assign(Error(ctrl.signal.reason==='timeout'?'O OmniRoute demorou demais para responder.':'Interrompido.'),{aborted:true});throw Error(netMessage())}
+  try{res=await fetch(GROQ+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},body:JSON.stringify({model:opts.model||cfg.model||MODELS[0],messages:messages,stream:!!opts.stream,temperature:0.3,max_tokens:opts.maxTokens||900}),signal:ctrl.signal})}
+  catch(e){clearTimeout(timer);if(ctrl.signal.aborted)throw Object.assign(Error(ctrl.signal.reason==='timeout'?'O Groq demorou demais para responder.':'Interrompido.'),{aborted:true});throw Error(netMessage())}
   try{
-    if(!res.ok){var t='';try{t=await res.text()}catch(e){}throw Error(httpMessage(res.status,t))}
+    if(!res.ok){var t='';try{t=await res.text()}catch(e){}if((res.status===404||(res.status===400&&/model/i.test(t)))&&!opts.model&&cfg.model!==MODELS[1]){clearTimeout(timer);return callAI(messages,Object.assign({},opts,{model:MODELS[1]}))}throw Error(httpMessage(res.status,t))}
     var ct=res.headers.get('content-type')||'',text='',model='';
     if(opts.stream&&ct.indexOf('text/event-stream')>=0&&res.body){
       var reader=res.body.getReader(),dec=new TextDecoder(),buf='';
@@ -232,7 +230,7 @@ async function callOmni(messages,opts){
         for(var i=0;i<lines.length;i++){var line=lines[i].trim();if(line.indexOf('data:')!==0)continue;var data=line.slice(5).trim();if(data==='[DONE]')continue;var j;try{j=JSON.parse(data)}catch(_){continue}if(j.error)throw Error(String(j.error.message||j.error));model=model||j.model||'';var c=j.choices&&j.choices[0];var piece=c&&((c.delta&&c.delta.content)||(c.message&&c.message.content))||'';if(piece){text+=piece;if(opts.onText)opts.onText(text)}}}
     }else{var j2=await res.json();if(j2.error)throw Error(String(j2.error.message||j2.error));model=j2.model||'';text=(j2.choices&&j2.choices[0]&&j2.choices[0].message&&j2.choices[0].message.content)||'';if(opts.onText)opts.onText(text)}
     return {text:text,model:model}}
-  catch(e){if(ctrl.signal.aborted)throw Object.assign(Error(ctrl.signal.reason==='timeout'?'O OmniRoute demorou demais para responder.':'Interrompido.'),{aborted:true});throw e}
+  catch(e){if(ctrl.signal.aborted)throw Object.assign(Error(ctrl.signal.reason==='timeout'?'O Groq demorou demais para responder.':'Interrompido.'),{aborted:true});throw e}
   finally{clearTimeout(timer)}}
 
 /* ---------- conversa ---------- */
@@ -240,14 +238,14 @@ function addMsg(role,text,extra){var e=$('empty');if(e)e.remove();var d=document
 function setBusy(on){$('send').disabled=on;$('q').disabled=on;$('stop').hidden=!on;document.querySelectorAll('#suggest button').forEach(function(b){b.disabled=on})}
 async function ask(q){
   q=String(q||'').trim();if(!q||busy)return;
-  if(!cfg||!cfg.base){showSettings(true);$('settings-status').textContent='Configure o endereço e a chave do OmniRoute para conversar.';return}
+  if(!cfg||!cfg.key){showSettings(true);$('settings-status').textContent='Cole a sua chave grátis do Groq para conversar.';return}
   addMsg('user',q);$('q').value='';autoGrow();
   var bubble=addMsg('bot','','typing');setBusy(true);botState('thinking','Pensando…');
   var messages=[{role:'system',content:SYSTEM+'\n\nDADOS (atualizados agora):\n'+buildContext()}].concat(history.slice(-10),[{role:'user',content:q}]);
-  try{var r=await callOmni(messages,{stream:true,onCtrl:function(c){busy=c},onText:function(t){bubble.classList.remove('typing');bubble.textContent=t;botState('talking','Respondendo…');bubble.scrollIntoView({block:'end'})}});
+  try{var r=await callAI(messages,{stream:true,onCtrl:function(c){busy=c},onText:function(t){bubble.classList.remove('typing');bubble.textContent=t;botState('talking','Respondendo…');bubble.scrollIntoView({block:'end'})}});
     var answer=r.text.trim()||'(O modelo não mandou texto.)';bubble.classList.remove('typing');bubble.textContent=answer;
     history.push({role:'user',content:q},{role:'assistant',content:answer});history=history.slice(-10);botState('idle','Pronto para ajudar.')}
-  catch(e){bubble.classList.remove('typing');if(e.aborted&&bubble.textContent){bubble.textContent+='\n[interrompido]';botState('idle','Interrompido.')}else{bubble.classList.add('error');bubble.textContent=e.message||'Falha ao falar com o OmniRoute.';botState('idle','Não consegui responder.')}}
+  catch(e){bubble.classList.remove('typing');if(e.aborted&&bubble.textContent){bubble.textContent+='\n[interrompido]';botState('idle','Interrompido.')}else{bubble.classList.add('error');bubble.textContent=e.message||'Falha ao falar com o Groq.';botState('idle','Não consegui responder.')}}
   finally{busy=null;setBusy(false);$('q').focus()}}
 function autoGrow(){var q=$('q');q.style.height='auto';q.style.height=Math.min(160,q.scrollHeight+2)+'px'}
 $('q').addEventListener('input',autoGrow);
@@ -258,12 +256,12 @@ document.querySelectorAll('#suggest button').forEach(function(b){b.onclick=funct
 $('open-settings').onclick=function(){showSettings($('settings').hidden)};
 $('close-settings').onclick=function(){showSettings(false)};
 $('refresh').onclick=async function(){try{S=await openAccount(S.storeKey,S.key);botState('idle','Dados atualizados.')}catch(e){botState('idle',e.message)}};
-$('settings-form').onsubmit=async function(e){e.preventDefault();var st=$('settings-status');try{var c=readSettings();if(!c.key)throw Error('Informe a chave do OmniRoute.');await saveCfg(c);cfg=c;st.textContent='Salvo. Toque em Testar conexão para conferir.';botState('idle','Pronto para ajudar.')}catch(err){st.textContent=err.message}};
-$('test').onclick=async function(){var st=$('settings-status'),btn=$('test');var old=cfg;try{var c=readSettings();if(!c.key)throw Error('Informe a chave do OmniRoute.');cfg=c;btn.disabled=true;st.textContent='Testando…';botState('thinking','Testando conexão…');var r=await callOmni([{role:'user',content:'Responda apenas: ok'}],{stream:false,maxTokens:5,timeout:30000});st.textContent='Conectado'+(r.model?' · modelo '+r.model:'')+'. Resposta: '+(r.text||'(vazia)').trim().slice(0,60);botState('idle','Conexão funcionando.')}catch(err){st.textContent=err.message;botState('idle','Falha no teste.')}finally{cfg=old;btn.disabled=false}};
+$('settings-form').onsubmit=async function(e){e.preventDefault();var st=$('settings-status');try{var c=readSettings();if(!c.key)throw Error('Cole a chave do Groq.');await saveCfg(c);cfg=c;st.textContent='Salvo. Toque em Testar conexão para conferir.';botState('idle','Pronto para ajudar.')}catch(err){st.textContent=err.message}};
+$('test').onclick=async function(){var st=$('settings-status'),btn=$('test');var old=cfg;try{var c=readSettings();if(!c.key)throw Error('Cole a chave do Groq.');cfg=c;btn.disabled=true;st.textContent='Testando…';botState('thinking','Testando conexão…');var r=await callAI([{role:'user',content:'Responda apenas: ok'}],{stream:false,maxTokens:5,timeout:30000});st.textContent='Conectado'+(r.model?' · modelo '+r.model:'')+'. Resposta: '+(r.text||'(vazia)').trim().slice(0,60);botState('idle','Conexão funcionando.')}catch(err){st.textContent=err.message;botState('idle','Falha no teste.')}finally{cfg=old;btn.disabled=false}};
 
 /* ---------- entrar ---------- */
 async function enter(session){S=session;cfg=await loadCfg();$('unlock').hidden=true;$('app').hidden=false;
-  if(!cfg){showSettings(true);$('settings-status').textContent='Primeiro, informe o endereço e a chave do seu OmniRoute.';botState('idle','Olá! Me conecte ao OmniRoute para conversar.')}
+  if(!cfg){showSettings(true);$('settings-status').textContent='Primeiro, cole a sua chave grátis do Groq.';botState('idle','Olá! Me conecte ao Groq para conversar.')}
   else botState('idle','Olá! Pergunte sobre o estoque de '+(S.store||'sua loja')+'.')}
 function showUnlock(msg){$('app').hidden=true;$('unlock').hidden=false;$('unlock-err').textContent=msg||'';botState('idle','Entre com sua conta do estoque.')}
 $('unlock-form').onsubmit=async function(e){e.preventDefault();var f=e.target,btn=$('unlock-btn');btn.disabled=true;btn.textContent='Aguarde…';$('unlock-err').textContent='';

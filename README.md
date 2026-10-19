@@ -106,29 +106,20 @@ O site usa só preto, branco e cinza, no tema claro e no escuro.
 
 A animação de entrada aparece ao abrir o site e ao sair da conta. Em computadores com "reduzir animações" ligado, ela aparece numa versão suave. O botão **Efeitos** desliga a animação neste navegador.
 
-## Robô (OmniRoute)
+## Robô (Groq, IA gratuita)
 
-O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/robo.html**. Abra pelo botão **Conversar com o robô** na Visão geral, tocando no mascote ou pelo item **Robô** do menu. Assim ela já abre com a sua conta, sem pedir senha de novo. **← Voltar ao estoque** também volta sem senha.
+O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/robo.html**. Abra pelo botão **Conversar com o robô** na Visão geral, tocando no mascote ou pelo item **Robô** do menu. Ela já abre com a sua conta, sem pedir senha de novo. **← Voltar ao estoque** também volta sem senha.
 
-1. Na primeira vez, toque em **OmniRoute** e preencha:
-   - **Endereço**: o seu OmniRoute com https, por exemplo `https://seu-omniroute.exemplo.com/v1`. O `/v1` é colocado sozinho se faltar.
-   - **Chave**: a chave do OmniRoute, em Dashboard → Endpoints.
-   - **Modelo**: `auto` deixa o OmniRoute escolher.
-2. Toque em **Testar conexão** e depois em **Salvar**. A configuração fica criptografada com a sua conta, só neste aparelho.
+1. Crie uma chave grátis do Groq: entre em **https://console.groq.com/keys** (pode entrar com a conta Google), toque em **Create API Key** e copie a chave (começa com `gsk_`).
+2. Na página do robô, toque em **Groq**, cole a chave, escolha o modelo e toque em **Testar conexão** e depois em **Salvar**.
+   - **Llama 3.3 70B**: respostas melhores (padrão).
+   - **Llama 3.1 8B**: mais rápido e com limite gratuito maior. O robô troca sozinho para ele se o 70B estiver indisponível.
 3. Pergunte, por exemplo: "O que está pendente hoje?", "Quais NFs estão em divergência?", "Tarefas atrasadas".
 
-No servidor do OmniRoute, configure:
-
-```
-CORS_ALLOWED_ORIGINS=https://vferreiras.github.io
-REQUIRE_API_KEY=true
-```
-
-- Sem o `CORS_ALLOWED_ORIGINS`, o navegador bloqueia a conversa e o robô avisa "Não conectou".
-- Mantenha o OmniRoute atualizado: a versão 3.8.x teve uma falha grave (CVE-2026-88062).
-- O que vai para o OmniRoute: a pergunta, as últimas mensagens da conversa e um resumo do estoque (NFs não conferidas, tarefas abertas, equipe, corredores e planos do dia). O provedor de IA configurado no OmniRoute também recebe esse conteúdo.
+- A chave fica criptografada com a sua conta, só neste aparelho. Se trocar a senha da conta, cole a chave de novo.
+- O plano gratuito do Groq tem limite de pedidos por minuto e por dia. Se aparecer "Limite gratuito do Groq atingido", espere um pouco ou use o modelo 8B.
+- O que vai para o Groq: a pergunta, as últimas mensagens da conversa e um resumo do estoque (NFs não conferidas, tarefas abertas, equipe, corredores e planos do dia).
 - O robô só lê os dados. Ele não muda nada no estoque.
-- Se trocar a senha da conta, configure o OmniRoute de novo na página do robô.
 
 ## Mascote
 
@@ -165,7 +156,7 @@ As notas respeitam a busca e a aba de status que estão na tela.
 | Arquivo | Para que serve |
 | --- | --- |
 | `index.html` | O sistema completo |
-| `robo.html` | Página do robô (conversa com o OmniRoute) |
+| `robo.html` | Página do robô (conversa com a IA do Groq) |
 | `manifest.webmanifest` | Nome, cores e ícones para instalar como app |
 | `sw.js` | Permite abrir sem internet |
 | `icons/` | Ícones do app (iPhone, Android, computador) e o mascote `mascote.png` |
