@@ -52,12 +52,25 @@ Cada NF tem um de quatro status: **Pendente**, **Em conferência**, **Conferido*
 
 ## Esqueci a senha
 
-Ao criar a conta, o app mostra um **código de recuperação** de 24 caracteres. Ele aparece uma vez. Guarde em lugar seguro, fora do navegador.
+Ao criar a conta, o app mostra um **código de recuperação** de 24 caracteres. Ele aparece uma vez. Para entrar, digite os 4 últimos caracteres do código ou baixe o arquivo `.txt`. Assim o código fica guardado de verdade.
 
-- Se esquecer a senha: na tela de login, toque em **Esqueci a senha**, informe o login, o código e a nova senha. Os cadastros continuam os mesmos.
-- Contas criadas antes desta versão: entre com a senha, vá em **Minha conta** e gere um código em **Recuperação de acesso**.
+- **Com o código:** na tela de login, toque em **Esqueci a senha**, informe o login, o código e a nova senha. Os cadastros continuam os mesmos.
+- **Com Face ID / digital:** em **Minha conta → Face ID / digital**, confirme a senha e ative. Depois dá para:
+  - tocar em **Entrar com Face ID / digital** no login;
+  - em **Esqueci a senha**, tocar em **Usar Face ID / digital no lugar do código**. O app cria uma senha nova e um código novo.
+  - Funciona no iPhone/iPad (iOS 18 ou mais novo), no Android com Chrome e no Windows com Windows Hello. Onde não houver suporte, a opção não aparece.
+  - Vale só no aparelho onde foi ativado. Trocar a senha (ou recuperar pelo código) desliga o Face ID / digital; é só ativar de novo.
+- Contas criadas antes do código de recuperação: entre com a senha, vá em **Minha conta** e gere um código em **Recuperação de acesso**.
 - Trocar a senha gera um novo código, e o anterior deixa de valer.
-- Sem o código e sem a senha, os cadastros não podem ser recuperados. O recurso não usa e-mail nem servidor.
+
+### Sem senha, sem código e sem Face ID / digital
+
+A conta não pode ser aberta: os cadastros ficam criptografados com a senha, e nem quem fez o site consegue abrir. O que ainda dá para fazer:
+
+1. Procure a senha salva no navegador (iPhone: app **Senhas**; Chrome: **Gerenciador de senhas**).
+2. Procure o arquivo `codigo-recuperacao-estoque99.txt` em Downloads ou no app Arquivos.
+3. Se a conta ainda estiver aberta em algum aparelho, vá em **Dados e ajuda → Exportar backup**.
+4. Com um backup (`Estoque-99-backup-….json`): crie uma conta nova e use **Dados e ajuda → Restaurar backup**.
 
 ## Visual em preto e branco
 
