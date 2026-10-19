@@ -67,6 +67,16 @@ Em **Alertas → Relatório por e-mail**, confira o endereço (já vem `ferreira
 - **Na primeira vez**, chega um e-mail do FormSubmit no endereço principal: abra e clique em **Activate Form**. Os endereços em cópia não precisam confirmar. Depois disso os relatórios chegam normalmente. Use **Enviar teste agora** para disparar esse primeiro e-mail.
 - Só envia com o site aberto e a conta aberta (pode estar minimizado) em algum aparelho no horário. Se o aparelho estava desligado, envia quando abrir, até 4 horas depois do horário.
 
+## Contas criadas por outras pessoas
+
+Em **Minha conta → Contas criadas no site** aparece o total de contas criadas em qualquer aparelho e quantas foram criadas no mês. Se você entrar como Site Gestor, o mesmo quadro aparece em **Administração**.
+
+- A contagem começou em 19/10/2026. Contas criadas antes disso, em outros aparelhos, não têm como ser contadas.
+- A cada conta nova, chega um e-mail para `ferreiradasilvavitorhugo44@gmail.com` com o nome do estoque, o login, o tipo de conta, a data e o aparelho. Usa o mesmo FormSubmit dos relatórios, então o endereço precisa estar confirmado (Activate Form).
+- A tela de criar conta avisa quem cria que esses dados vão para o responsável pelo site. A senha e os cadastros não saem do aparelho.
+- O total vem de um contador gratuito e público (Abacus). Serve como acompanhamento, não como número oficial: alguém mal-intencionado poderia somar contas falsas. Os e-mails são o registro confiável.
+- Sem internet na hora de criar a conta, o aviso fica guardado no aparelho e é enviado quando o site abrir com internet.
+
 ## Avisos no computador e manter conectado
 
 - Em **Alertas**, toque em **Permitir notificações no computador**. Os avisos aparecem no canto da tela do Windows mesmo usando outros programas, enquanto o site estiver aberto (pode estar minimizado).

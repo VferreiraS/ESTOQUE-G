@@ -1,5 +1,5 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
-const CACHE = 'estoque99-v15';
+const CACHE = 'estoque99-v16';
 const CORE = [
   './',
   './index.html',
