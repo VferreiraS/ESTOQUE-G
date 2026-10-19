@@ -42,6 +42,15 @@ Não abra o `index.html` com duplo clique para usar o Ollama: o Ollama bloqueia 
 
 Se você usar o endereço publicado no GitHub Pages, o Ollama precisa ser iniciado com `OLLAMA_ORIGINS=https://vferreiras.github.io`.
 
+## Esqueci a senha
+
+Ao criar a conta, o app mostra um **código de recuperação** de 24 caracteres. Ele aparece uma vez. Guarde em lugar seguro, fora do navegador.
+
+- Se esquecer a senha: na tela de login, toque em **Esqueci a senha**, informe o login, o código e a nova senha. Os cadastros continuam os mesmos.
+- Contas criadas antes desta versão: entre com a senha, vá em **Minha conta** e gere um código em **Recuperação de acesso**.
+- Trocar a senha gera um novo código, e o anterior deixa de valer.
+- Sem o código e sem a senha, os cadastros não podem ser recuperados. O recurso não usa e-mail nem servidor.
+
 ## Importante sobre os dados
 
 - Os cadastros ficam **só no aparelho e navegador** onde foram feitos. Celular e computador **não sincronizam sozinhos**.
