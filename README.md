@@ -51,6 +51,13 @@ Ao criar a conta, o app mostra um **código de recuperação** de 24 caracteres.
 - Trocar a senha gera um novo código, e o anterior deixa de valer.
 - Sem o código e sem a senha, os cadastros não podem ser recuperados. O recurso não usa e-mail nem servidor.
 
+## Tema sazonal
+
+O app troca de cores e de logo conforme o mês do aparelho: janeiro (verão), fevereiro (carnaval), março (outono), abril (Páscoa), maio (flores), junho (festa junina), julho (inverno), agosto (Dia dos Pais), setembro (primavera), outubro (Dia das Bruxas), novembro (Consciência Negra) e dezembro (Natal).
+
+- O botão **Sazonal** (no canto inferior) liga ou desliga o tema neste aparelho.
+- Quem já instalou o app na tela inicial mantém o ícone instalado. O ícone só muda ao reinstalar.
+
 ## Importante sobre os dados
 
 - Os cadastros ficam **só no aparelho e navegador** onde foram feitos. Celular e computador **não sincronizam sozinhos**.

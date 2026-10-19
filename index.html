@@ -282,7 +282,7 @@ dialog{width:100%!important;max-width:100%!important;max-height:94vh;max-height:
 }
 @media print{.mobile-bottom{display:none!important}}
 </style>
-<div class="visual-tools" aria-label="Opções visuais"><button id="theme-toggle" type="button" aria-pressed="false" onclick="toggleSiteTheme()">☾ Modo escuro</button><button id="effects-toggle" type="button" aria-pressed="true" onclick="if(window.toggleVisualEffects)window.toggleVisualEffects()">Efeitos: ligados</button><button id="back-top" class="to-top hidden" type="button" aria-label="Voltar ao topo" onclick="if(window.scrollToSiteTop)window.scrollToSiteTop()">↑ Topo</button></div>
+<div class="visual-tools" aria-label="Opções visuais"><button id="theme-toggle" type="button" aria-pressed="false" onclick="toggleSiteTheme()">☾ Modo escuro</button><button id="effects-toggle" type="button" aria-pressed="true" onclick="if(window.toggleVisualEffects)window.toggleVisualEffects()">Efeitos: ligados</button><button id="season-toggle" type="button" aria-pressed="true" onclick="toggleSeason()">Sazonal</button><button id="back-top" class="to-top hidden" type="button" aria-label="Voltar ao topo" onclick="if(window.scrollToSiteTop)window.scrollToSiteTop()">↑ Topo</button></div>
 <section id="alert-popup" class="alert-popup hidden" aria-label="Avisos de prazos" aria-live="polite"></section>
 <noscript><div class="notice">JavaScript está desativado ou bloqueado. Este visualizador não executa o sistema. Abra o endereço do site no Safari, Chrome ou Edge. Se continuar bloqueado, peça apoio ao TI.</div></noscript>
 <script>
@@ -1886,4 +1886,92 @@ body.dark .hero button.primary:hover,body.dark .hero .primary:hover{background:#
 .hero>div{overflow:visible!important;min-width:0}
 .eyebrow{overflow:visible!important}
 </style>
+<style id="seasons">
+/* Tema sazonal: cores por mês (automático pelo calendário do aparelho). */
+body.season-1{--ds-accent:#0b7a84;--ds-accent-soft:#e2f3f4;--ds-lime:#f2e27a}
+body.season-1.dark{--ds-accent:#7fd3dc;--ds-accent-soft:#15292c;--ds-lime:#f2e27a}
+body.season-2{--ds-accent:#b02a6b;--ds-accent-soft:#fbe6ef;--ds-lime:#ffd166}
+body.season-2.dark{--ds-accent:#ff8fb8;--ds-accent-soft:#2e1822;--ds-lime:#ffd166}
+body.season-3{--ds-accent:#9a4f1f;--ds-accent-soft:#f8ebdf;--ds-lime:#f2c28b}
+body.season-3.dark{--ds-accent:#f0b07a;--ds-accent-soft:#2a1d14;--ds-lime:#f2c28b}
+body.season-4{--ds-accent:#6a4aa6;--ds-accent-soft:#eee8f8;--ds-lime:#e0d2f7}
+body.season-4.dark{--ds-accent:#b9a2ec;--ds-accent-soft:#1f1930;--ds-lime:#e0d2f7}
+body.season-5{--ds-accent:#b44a72;--ds-accent-soft:#fbe9ef;--ds-lime:#f6c6d6}
+body.season-5.dark{--ds-accent:#f29bb9;--ds-accent-soft:#2d1820;--ds-lime:#f6c6d6}
+body.season-6{--ds-accent:#c0560f;--ds-accent-soft:#fdeedf;--ds-lime:#f2a03d}
+body.season-6.dark{--ds-accent:#ffb36b;--ds-accent-soft:#2e1d10;--ds-lime:#f2a03d}
+body.season-7{--ds-accent:#2a5a8f;--ds-accent-soft:#e6eef9;--ds-lime:#b9d7f5}
+body.season-7.dark{--ds-accent:#8fbdeb;--ds-accent-soft:#131d2b;--ds-lime:#b9d7f5}
+body.season-8{--ds-accent:#2f5d6b;--ds-accent-soft:#e5f0f2;--ds-lime:#bfe3ea}
+body.season-8.dark{--ds-accent:#8ccad6;--ds-accent-soft:#13222a;--ds-lime:#bfe3ea}
+body.season-9{--ds-accent:#3d7a2e;--ds-accent-soft:#eaf4e1;--ds-lime:#cdeab2}
+body.season-9.dark{--ds-accent:#9fdc85;--ds-accent-soft:#17241a;--ds-lime:#cdeab2}
+body.season-10{--ds-accent:#c4511a;--ds-accent-soft:#fdeadb;--ds-lime:#ffb86b}
+body.season-10.dark{--ds-accent:#ffa24a;--ds-accent-soft:#2c1a10;--ds-lime:#ffb86b}
+body.season-11{--ds-accent:#4d3a8a;--ds-accent-soft:#ece8f8;--ds-lime:#d6ccf5}
+body.season-11.dark{--ds-accent:#b4a4f0;--ds-accent-soft:#1c1830;--ds-lime:#d6ccf5}
+body.season-12{--ds-accent:#b3261e;--ds-accent-soft:#fbe4e1;--ds-lime:#cdeeb8}
+body.season-12.dark{--ds-accent:#f08a80;--ds-accent-soft:#2a1513;--ds-lime:#cdeeb8}
+@keyframes ds-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes ds-logo{from{opacity:0;transform:rotate(-10deg) scale(.7)}to{opacity:1;transform:none}}
+@keyframes ds-float{0%,100%{transform:translate(0,0) rotate(0)}50%{transform:translate(-6px,8px) rotate(4deg)}}
+#view>*{animation:ds-rise .6s cubic-bezier(.2,.8,.2,1) both}
+#view>*:nth-child(2){animation-delay:.06s}
+#view>*:nth-child(3){animation-delay:.12s}
+#view>*:nth-child(4){animation-delay:.18s}
+#view>*:nth-child(n+5){animation-delay:.24s}
+.stats>.stat{animation:ds-rise .6s cubic-bezier(.2,.8,.2,1) both}
+.stats>.stat:nth-child(2){animation-delay:.05s}.stats>.stat:nth-child(3){animation-delay:.1s}.stats>.stat:nth-child(4){animation-delay:.15s}
+.logo img{animation:ds-logo .9s cubic-bezier(.2,.8,.2,1) both}
+body .hero{position:relative}
+#auth-screen button.primary{background:var(--ds-accent)!important;box-shadow:0 10px 26px -12px color-mix(in srgb,var(--ds-accent) 60%,transparent)!important}
+#auth-screen input:focus{border-color:var(--ds-accent)!important}
+body .hero::before{content:'';display:block!important;position:absolute;right:18px;top:-6px;width:150px;height:150px;background:var(--season-motif,none) center/contain no-repeat;opacity:.16;pointer-events:none;animation:ds-float 11s ease-in-out infinite}
+@media (hover:hover) and (pointer:fine){
+  .panel,.card,.stat{transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
+  .panel:hover,.card:hover,.stat:hover{transform:translateY(-2px);box-shadow:0 18px 40px -26px rgba(14,29,24,.35)}
+}
+body .mobile-bottom button{transition:transform .18s cubic-bezier(.2,.8,.2,1)}
+body .mobile-bottom button:active{transform:scale(.94)}
+@media (prefers-reduced-motion:reduce){#view>*,.stats>.stat,.logo img,body .hero::before{animation:none!important}.panel,.card,.stat{transition:none!important}}
+</style>
+<script id="seasons-js">
+(function(){
+'use strict';
+var SEASONS={"1": {"name": "Janeiro", "short": "Janeiro · Verão", "acc": "#0b7a84", "deep": "#075a62", "soft": "#e2f3f4", "lime": "#f2e27a", "accD": "#7fd3dc", "softD": "#15292c", "limeD": "#f2e27a", "orn": "<path d=\"M0-11L3-3L11 0L3 3L0 11L-3 3L-11 0L-3-3Z\" fill=\"#fff6d6\"/>"}, "2": {"name": "Fevereiro", "short": "Fevereiro · Carnaval", "acc": "#b02a6b", "deep": "#7d1b4a", "soft": "#fbe6ef", "lime": "#ffd166", "accD": "#ff8fb8", "softD": "#2e1822", "limeD": "#ffd166", "orn": "<circle cx=\"-5\" cy=\"-3\" r=\"2.6\" fill=\"#ffd166\"/><circle cx=\"4\" cy=\"-5\" r=\"2.2\" fill=\"#7fd3dc\"/><circle cx=\"1\" cy=\"5\" r=\"2.6\" fill=\"#fff6d6\"/><circle cx=\"6\" cy=\"4\" r=\"1.6\" fill=\"#ff8fb8\"/>"}, "3": {"name": "Março", "short": "Março · Outono", "acc": "#9a4f1f", "deep": "#6a3413", "soft": "#f8ebdf", "lime": "#f2c28b", "accD": "#f0b07a", "softD": "#2a1d14", "limeD": "#f2c28b", "orn": "<path d=\"M-9 8C-9-6 0-10 9-9C9 2 2 9-9 8Z\" fill=\"#f6c28b\"/><path d=\"M-8 7L5-4\" stroke=\"#7a3f14\" stroke-width=\"1.2\" fill=\"none\"/>"}, "4": {"name": "Abril", "short": "Abril · Páscoa", "acc": "#6a4aa6", "deep": "#47307a", "soft": "#eee8f8", "lime": "#e0d2f7", "accD": "#b9a2ec", "softD": "#1f1930", "limeD": "#e0d2f7", "orn": "<ellipse rx=\"7\" ry=\"9\" fill=\"#fff6d6\"/><path d=\"M-7-1H7M-6 4H6\" stroke=\"#b58be0\" stroke-width=\"1.6\"/>"}, "5": {"name": "Maio", "short": "Maio · Flores", "acc": "#b44a72", "deep": "#7d2d4c", "soft": "#fbe9ef", "lime": "#f6c6d6", "accD": "#f29bb9", "softD": "#2d1820", "limeD": "#f6c6d6", "orn": "<g fill=\"#f6b8cc\"><circle cy=\"-5\" r=\"4\"/><circle cx=\"4.8\" cy=\"-1.5\" r=\"4\"/><circle cx=\"3\" cy=\"4.5\" r=\"4\"/><circle cx=\"-3\" cy=\"4.5\" r=\"4\"/><circle cx=\"-4.8\" cy=\"-1.5\" r=\"4\"/></g><circle r=\"2.4\" fill=\"#e8c575\"/>"}, "6": {"name": "Junho", "short": "Junho · Festa junina", "acc": "#c0560f", "deep": "#7f3a0a", "soft": "#fdeedf", "lime": "#f2a03d", "accD": "#ffb36b", "softD": "#2e1d10", "limeD": "#f2a03d", "orn": "<path d=\"M-11-6Q0-2 11-6\" stroke=\"#fff6d6\" fill=\"none\" stroke-width=\"1\"/><path d=\"M-9-5L-5-5L-7 3Z\" fill=\"#f2a03d\"/><path d=\"M-2-4L2-4L0 4Z\" fill=\"#7fd3dc\"/><path d=\"M5-4.5L9-4.5L7 2.5Z\" fill=\"#f2e27a\"/>"}, "7": {"name": "Julho", "short": "Julho · Inverno", "acc": "#2a5a8f", "deep": "#1b3d63", "soft": "#e6eef9", "lime": "#b9d7f5", "accD": "#8fbdeb", "softD": "#131d2b", "limeD": "#b9d7f5", "orn": "<g stroke=\"#dff1ff\" stroke-width=\"1.6\" stroke-linecap=\"round\" fill=\"none\"><path d=\"M0-10V10M-8.7-5L8.7 5M-8.7 5L8.7-5\"/></g>"}, "8": {"name": "Agosto", "short": "Agosto · Dia dos Pais", "acc": "#2f5d6b", "deep": "#1d3d48", "soft": "#e5f0f2", "lime": "#bfe3ea", "accD": "#8ccad6", "softD": "#13222a", "limeD": "#bfe3ea", "orn": "<path d=\"M-3-10H3L5-4L0 10L-5-4Z\" fill=\"#f6e7c8\"/><rect x=\"-3\" y=\"-12\" width=\"6\" height=\"3.5\" rx=\"1\" fill=\"#f6e7c8\"/>"}, "9": {"name": "Setembro", "short": "Setembro · Primavera", "acc": "#3d7a2e", "deep": "#2a5620", "soft": "#eaf4e1", "lime": "#cdeab2", "accD": "#9fdc85", "softD": "#17241a", "limeD": "#cdeab2", "orn": "<path d=\"M0 10V-2\" stroke=\"#e7f6dc\" stroke-width=\"1.6\"/><ellipse cx=\"-4\" cy=\"2\" rx=\"4\" ry=\"2\" fill=\"#bfe6a0\" transform=\"rotate(-25-4 2)\"/><ellipse cx=\"4\" cy=\"-3\" rx=\"4\" ry=\"2\" fill=\"#bfe6a0\" transform=\"rotate(25 4-3)\"/><circle cy=\"-7\" r=\"3\" fill=\"#ffd166\"/>"}, "10": {"name": "Outubro", "short": "Outubro · Dia das Bruxas", "acc": "#c4511a", "deep": "#8a3710", "soft": "#fdeadb", "lime": "#ffb86b", "accD": "#ffa24a", "softD": "#2c1a10", "limeD": "#ffb86b", "orn": "<ellipse cx=\"-4\" cy=\"1\" rx=\"6.5\" ry=\"7\" fill=\"#ffb86b\"/><ellipse cx=\"4\" cy=\"1\" rx=\"6.5\" ry=\"7\" fill=\"#ffa24a\"/><path d=\"M0-7V-10\" stroke=\"#5d7a2a\" stroke-width=\"2.2\" stroke-linecap=\"round\"/>"}, "11": {"name": "Novembro", "short": "Novembro · Consciência Negra", "acc": "#4d3a8a", "deep": "#33265e", "soft": "#ece8f8", "lime": "#d6ccf5", "accD": "#b4a4f0", "softD": "#1c1830", "limeD": "#d6ccf5", "orn": "<path d=\"M-9-5H2L9 2L2 9L-9-2Z\" fill=\"#e6dcff\"/><circle cx=\"-5\" cy=\"-0.5\" r=\"1.6\" fill=\"#4d3a8a\"/>"}, "12": {"name": "Dezembro", "short": "Dezembro · Natal", "acc": "#b3261e", "deep": "#7d1812", "soft": "#fbe4e1", "lime": "#cdeeb8", "accD": "#f08a80", "softD": "#2a1513", "limeD": "#cdeeb8", "orn": "<path d=\"M0-11L7 3H-7Z\" fill=\"#c8f0c4\"/><path d=\"M0-4L9 9H-9Z\" fill=\"#9fe39a\"/><rect x=\"-1.6\" y=\"9\" width=\"3.2\" height=\"3\" fill=\"#8a5a2b\"/><circle cy=\"-13\" r=\"2\" fill=\"#ffd166\"/>"}};
+var PREF_KEY='lojasg.estoque99.season';
+function getPref(){try{return localStorage.getItem(PREF_KEY)==='off'?'off':'auto'}catch(e){return 'auto'}}
+function setPref(v){try{localStorage.setItem(PREF_KEY,v)}catch(e){}}
+function currentMonth(){return new Date().getMonth()+1}
+function svgUri(svg){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)}
+function logoSvg(s){return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" rx="24" fill="'+s.deep+'"/><rect x="0" y="0" width="96" height="96" rx="24" fill="'+s.acc+'" fill-opacity=".92"/><rect x="5" y="5" width="86" height="86" rx="20" fill="none" stroke="#e8c575" stroke-opacity=".5"/><text x="44" y="67" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="56" fill="#e8c575">G</text><g transform="translate(74 22)">'+s.orn+'</g></svg>'}
+function motifSvg(s){return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -16 32 32"><g transform="scale(1.9)">'+s.orn+'</g></svg>'}
+function activeKey(){return getPref()==='off'?0:currentMonth()}
+function applySeason(){
+  var key=activeKey(),s=SEASONS[key]||null,b=document.body,root=document.documentElement;
+  for(var i=1;i<=12;i++)b.classList.remove('season-'+i);
+  if(s)b.classList.add('season-'+key);
+  b.dataset.season=String(key);
+  if(s){root.style.setProperty('--season-motif','url("'+svgUri(motifSvg(s))+'")')}else{root.style.removeProperty('--season-motif')}
+  refreshBrand(s);
+  var btn=document.getElementById('season-toggle');
+  if(btn){btn.textContent=s?'Sazonal: '+s.name.toLowerCase():'Sazonal: desligado';btn.setAttribute('aria-pressed',String(!!s))}
+  var link=document.querySelector('link[rel=icon]');
+  if(link){if(!link.dataset.orig)link.dataset.orig=link.getAttribute('href');link.setAttribute('type',s?'image/svg+xml':'image/png');link.setAttribute('href',s?svgUri(logoSvg(s)):link.dataset.orig)}
+  document.querySelectorAll('.logo img').forEach(function(img){
+    if(!img.dataset.orig)img.dataset.orig=img.getAttribute('src');
+    var want=s?svgUri(logoSvg(s)):img.dataset.orig;
+    if(img.getAttribute('src')!==want)img.setAttribute('src',want);
+  });
+}
+function refreshBrand(s){
+  document.querySelectorAll('aside .brand small').forEach(function(el){el.textContent=s?'ESTOQUE 99 · '+s.name.toUpperCase():'ESTOQUE 99'});
+}
+window.toggleSeason=function(){setPref(getPref()==='off'?'auto':'off');applySeason();if(typeof notify==='function')notify(getPref()==='off'?'Tema sazonal desligado.':'Tema sazonal ligado: cores e logo do mês.')};
+var pending=false;
+function schedule(){if(pending)return;pending=true;requestAnimationFrame(function(){pending=false;applySeason()})}
+applySeason();
+if(window.MutationObserver){new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true})}
+})();
+</script>
 </body></html>
