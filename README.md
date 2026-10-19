@@ -60,11 +60,11 @@ Cada NF tem um de quatro status: **Pendente**, **Em conferência**, **Conferido*
 
 ## Relatório por e-mail
 
-Em **Alertas → Relatório por e-mail**, confira o endereço (já vem `ferreiradasilvavitorhugo44@gmail.com`), escolha os horários (8h e 18h) e toque em **Ativar envio automático**.
+Em **Alertas → Relatório por e-mail**, confira o endereço (já vem `ferreiradasilvavitorhugo44@gmail.com`) e a **Cópia para** (já vem `99.estoque@lojasg.com.br`; aceita até 5 e-mails separados por vírgula), escolha os horários (8h e 18h) e toque em **Ativar envio automático**.
 
 - O relatório traz NFs a conferir, NFs em divergência, tarefas atrasadas e tarefas de hoje.
 - O envio é feito pelo serviço gratuito FormSubmit. O conteúdo do relatório passa por ele.
-- **Na primeira vez**, chega um e-mail do FormSubmit: abra e clique em **Activate Form**. Depois disso os relatórios chegam normalmente. Use **Enviar teste agora** para disparar esse primeiro e-mail.
+- **Na primeira vez**, chega um e-mail do FormSubmit no endereço principal: abra e clique em **Activate Form**. Os endereços em cópia não precisam confirmar. Depois disso os relatórios chegam normalmente. Use **Enviar teste agora** para disparar esse primeiro e-mail.
 - Só envia com o site aberto e a conta aberta (pode estar minimizado) em algum aparelho no horário. Se o aparelho estava desligado, envia quando abrir, até 4 horas depois do horário.
 
 ## Avisos no computador e manter conectado

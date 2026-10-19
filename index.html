@@ -2388,7 +2388,8 @@ load().then(async function(v){if(!v||!v.key||!v.storeKey){return}remembered={sto
 (function(){
 'use strict';
 /* Relatório automático por e-mail (FormSubmit). Só roda com o site aberto e a conta aberta. */
-var DEFAULT_TO='ferreiradasilvavitorhugo44@gmail.com',DEFAULT_TIMES=['08:00','18:00'],WINDOW_MS=4*3600000;
+var DEFAULT_TO='ferreiradasilvavitorhugo44@gmail.com',DEFAULT_CC='99.estoque@lojasg.com.br',DEFAULT_TIMES=['08:00','18:00'],WINDOW_MS=4*3600000;
+function ccList(v){return String(v||'').split(/[,;\s]+/).map(function(x){return x.trim()}).filter(Boolean)}
 var sending=false;
 function cfgKey(){return 'lojasg.estoque99.email-reports:'+authSession.storeKey}
 function sentKey(){return 'lojasg.estoque99.email-sent:'+authSession.storeKey}
@@ -2396,7 +2397,7 @@ function readJSON(k,def){try{var v=JSON.parse(localStorage.getItem(k)||'null');r
 function writeJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 function validEmail(v){return /^[^\s@<>"']{1,64}@[^\s@<>"']{1,190}\.[a-z]{2,}$/i.test(String(v||''))}
 function validTime(v){return /^([01]\d|2[0-3]):[0-5]\d$/.test(String(v||''))}
-function getCfg(){var c=readJSON(cfgKey(),{});return {enabled:c.enabled===true,to:validEmail(c.to)?c.to:DEFAULT_TO,times:Array.isArray(c.times)?c.times.filter(validTime).slice(0,4):DEFAULT_TIMES.slice(),status:typeof c.status==='string'?c.status.slice(0,300):'',retryAt:Number(c.retryAt)||0,lastSent:Number(c.lastSent)||0}}
+function getCfg(){var c=readJSON(cfgKey(),{});return {enabled:c.enabled===true,to:validEmail(c.to)?c.to:DEFAULT_TO,cc:typeof c.cc==='string'?ccList(c.cc).filter(validEmail).slice(0,5).join(', '):DEFAULT_CC,times:Array.isArray(c.times)?c.times.filter(validTime).slice(0,4):DEFAULT_TIMES.slice(),status:typeof c.status==='string'?c.status.slice(0,300):'',retryAt:Number(c.retryAt)||0,lastSent:Number(c.lastSent)||0}}
 function setCfg(c){writeJSON(cfgKey(),c)}
 function pad(n){return ('0'+n).slice(-2)}
 function br(d){return pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes())}
@@ -2419,7 +2420,7 @@ function buildFields(label){
 async function post(to,fields){var r=await fetch('https://formsubmit.co/ajax/'+encodeURIComponent(to),{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(fields)});var data={};try{data=await r.json()}catch(e){}var ok=r.ok&&(data.success===true||data.success==='true');var msg=String(data.message||'');return {ok:ok,activation:/activat|confirm/i.test(msg),message:msg,status:r.status}}
 async function sendNow(label,slotId){
  if(!authSession||sending)return false;sending=true;var c=getCfg();
- try{var res=await post(c.to,buildFields(label));c=getCfg();
+ try{var fields=buildFields(label);if(c.cc)fields._cc=c.cc;var res=await post(c.to,fields);c=getCfg();
   if(res.ok){c.status='Último envio: '+br(new Date())+'.';c.lastSent=Date.now();c.retryAt=0;if(slotId){var sent=readJSON(sentKey(),{});sent[slotId]=Date.now();var cut=Date.now()-8*86400000;Object.keys(sent).forEach(function(k){if(sent[k]<cut)delete sent[k]});writeJSON(sentKey(),sent)}setCfg(c);return true}
   if(res.activation){c.status='Falta confirmar: abra o e-mail do FormSubmit em '+c.to+' e clique em “Activate Form”.';c.retryAt=Date.now()+30*60000}
   else{c.status='Não foi possível enviar ('+(res.message||('erro '+res.status))+'). Nova tentativa em 10 min.';c.retryAt=Date.now()+10*60000}
@@ -2431,11 +2432,11 @@ async function tick(){if(!authSession||sending)return;var c=getCfg();if(!c.enabl
  var run=function(){var s2=dueSlot(getCfg(),Date.now());return s2?sendNow(s2.label,s2.id):false};
  if(navigator.locks&&navigator.locks.request)await navigator.locks.request('estoque99-email:'+authSession.storeKey,{ifAvailable:true},function(lock){return lock?run():null});else await run()}
 window.emailReportTick=tick;
-window.emailReportSave=function(ev){ev.preventDefault();if(!authSession)return;var v=readForm(ev.target);var to=String(v.to||'').trim();if(!validEmail(to)){notify('Confira o e-mail.');return}var times=[v.t1,v.t2].filter(validTime);if(!times.length){notify('Escolha pelo menos um horário.');return}var c=getCfg();var first=!c.enabled||c.to!==to;c.enabled=true;c.to=to;c.times=times;c.retryAt=0;if(first&&!c.lastSent)c.status='Ativado. No primeiro envio chega um e-mail do FormSubmit para confirmar.';setCfg(c);notify('Relatório automático ativado: '+times.join(' e ')+'.');render();tick()};
+window.emailReportSave=function(ev){ev.preventDefault();if(!authSession)return;var v=readForm(ev.target);var to=String(v.to||'').trim();if(!validEmail(to)){notify('Confira o e-mail.');return}var cc=ccList(v.cc);if(cc.some(function(x){return !validEmail(x)})){notify('Confira os e-mails em Cópia para.');return}if(cc.length>5){notify('Use no máximo 5 e-mails em Cópia para.');return}var times=[v.t1,v.t2].filter(validTime);if(!times.length){notify('Escolha pelo menos um horário.');return}var c=getCfg();c.cc=cc.join(', ');var first=!c.enabled||c.to!==to;c.enabled=true;c.to=to;c.times=times;c.retryAt=0;if(first&&!c.lastSent)c.status='Ativado. No primeiro envio chega um e-mail do FormSubmit para confirmar.';setCfg(c);notify('Relatório automático ativado: '+times.join(' e ')+'.');render();tick()};
 window.emailReportDisable=function(){if(!authSession)return;var c=getCfg();c.enabled=false;c.status='Desativado.';setCfg(c);notify('Relatório automático desativado.');render()};
-window.emailReportTest=function(){if(!authSession)return;notify('Enviando relatório…');sendNow('de teste',null).then(function(ok){notify(ok?'Relatório enviado para '+getCfg().to+'.':getCfg().status)})};
+window.emailReportTest=function(){if(!authSession)return;notify('Enviando relatório…');sendNow('de teste',null).then(function(ok){var c=getCfg();notify(ok?'Relatório enviado para '+c.to+(c.cc?' e '+c.cc:'')+'.':c.status)})};
 window.emailPanelHTML=function(){if(!authSession)return '';var c=getCfg(),t=c.times.concat(['',''])
- ;return '<div class="panel help" id="email-panel"><h2>Relatório por e-mail</h2><form onsubmit="emailReportSave(event)"><div class="fields"><label>Enviar para<input type="email" name="to" required maxlength="200" autocomplete="email" value="'+esc(c.to)+'"></label><div class="pair"><label>Horário 1<input type="time" name="t1" value="'+esc(t[0]||'')+'"></label><label>Horário 2<input type="time" name="t2" value="'+esc(t[1]||'')+'"></label></div><button class="primary">'+(c.enabled?'Salvar':'Ativar envio automático')+'</button></div></form><p class="small email-status">'+(c.enabled?'Ativo: '+esc(c.times.join(' e '))+'. ':'Desativado. ')+esc(c.status)+'</p><div class="toolbar"><button type="button" onclick="emailReportTest()">Enviar teste agora</button>'+(c.enabled?'<button type="button" onclick="emailReportDisable()">Desativar</button>':'')+'</div><p class="small">Envia pelo FormSubmit com o site aberto, mesmo minimizado.</p></div>'};
+ ;return '<div class="panel help" id="email-panel"><h2>Relatório por e-mail</h2><form onsubmit="emailReportSave(event)"><div class="fields"><label>Enviar para<input type="email" name="to" required maxlength="200" autocomplete="email" value="'+esc(c.to)+'"></label><label>Cópia para<input type="text" name="cc" maxlength="400" autocomplete="off" spellcheck="false" placeholder="outro@email.com, mais@email.com" value="'+esc(c.cc)+'"></label><div class="pair"><label>Horário 1<input type="time" name="t1" value="'+esc(t[0]||'')+'"></label><label>Horário 2<input type="time" name="t2" value="'+esc(t[1]||'')+'"></label></div><button class="primary">'+(c.enabled?'Salvar':'Ativar envio automático')+'</button></div></form><p class="small email-status">'+(c.enabled?'Ativo: '+esc(c.times.join(' e '))+'. ':'Desativado. ')+esc(c.status)+'</p><div class="toolbar"><button type="button" onclick="emailReportTest()">Enviar teste agora</button>'+(c.enabled?'<button type="button" onclick="emailReportDisable()">Desativar</button>':'')+'</div><p class="small">Envia pelo FormSubmit com o site aberto, mesmo minimizado.</p></div>'};
 var alertsBefore=renderAlertsPage;
 renderAlertsPage=function(){var html=alertsBefore.apply(this,arguments);return html+'<div class="grid2">'+window.emailPanelHTML()+(typeof isPhoneLayout==='function'&&!isPhoneLayout()?'<div class="panel help"><h2>Avisos com o site fechado</h2><p>Instale o app (ícone de instalar na barra do Chrome ou Edge) e ative “Iniciar ao fazer login” em chrome://apps ou edge://apps. Com “Manter conectado”, os avisos e e-mails seguem sem você abrir o site.</p></div>':'')+'</div>'};
 setInterval(tick,30000);
