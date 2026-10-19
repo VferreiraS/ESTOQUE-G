@@ -214,7 +214,7 @@ function httpMessage(status,body){try{var j=JSON.parse(body);var m=j&&j.error&&(
   if(status===413)return 'Pergunta grande demais para o modelo (413). Tente uma pergunta mais curta.';
   if(status>=500)return 'O Groq está com problema agora ('+status+'). Tente de novo em instantes.';
   return 'O Groq respondeu com erro '+status+'. '+(body?String(body).slice(0,160):'')}
-function netMessage(){return 'Não conectou ao Groq. Confira a internet e tente de novo.'}
+function netMessage(){return 'Não conectou ao Groq. Confira a internet. Se usa antivírus (ex.: Bitdefender), adicione api.groq.com e vferreiras.github.io às exceções da Proteção da Web.'}
 async function pickModel(current){try{var r=await fetch(GROQ+'/models',{headers:{'Authorization':'Bearer '+cfg.key}});if(!r.ok)return null;var ids=((await r.json()).data||[]).map(function(m){return m.id});
   var pref=MODELS.filter(function(m){return m!==current&&ids.indexOf(m)>=0});if(pref.length)return pref[0];
   var any=ids.filter(function(id){return id!==current&&!/whisper|guard|orpheus|tts|safeguard|allam/i.test(id)});return any[0]||null}catch(e){return null}}
@@ -245,7 +245,14 @@ async function ask(q){
   addMsg('user',q);$('q').value='';autoGrow();
   var bubble=addMsg('bot','','typing');setBusy(true);botState('thinking','Pensando…');
   var messages=[{role:'system',content:SYSTEM+'\n\nDADOS (atualizados agora):\n'+buildContext()}].concat(history.slice(-10),[{role:'user',content:q}]);
-  try{var r=await callAI(messages,{stream:true,onCtrl:function(c){busy=c},onText:function(t){bubble.classList.remove('typing');bubble.textContent=t;botState('talking','Respondendo…');bubble.scrollIntoView({block:'end'})}});
+  var onText=function(t){bubble.classList.remove('typing');bubble.textContent=t;botState('talking','Respondendo…');bubble.scrollIntoView({block:'end'})};
+  var noStream=false;try{noStream=localStorage.getItem('lojasg.estoque99.robot-nostream')==='1'}catch(e){}
+  try{var r;
+    if(noStream)r=await callAI(messages,{stream:false,onCtrl:function(c){busy=c},onText:onText});
+    else{try{r=await callAI(messages,{stream:true,onCtrl:function(c){busy=c},onText:onText});if(!r.text.trim())throw Error('vazio')}
+      catch(se){if(se.aborted||/chave|Limite|413|erro 4/.test(se.message||''))throw se;
+        /* Antivírus (ex.: Bitdefender) pode barrar a resposta em partes: pede tudo de uma vez e lembra disso. */
+        r=await callAI(messages,{stream:false,onCtrl:function(c){busy=c},onText:onText});try{localStorage.setItem('lojasg.estoque99.robot-nostream','1')}catch(e){}}}
     var answer=r.text.replace(/\*\*(.+?)\*\*/g,'$1').trim()||'(O modelo não mandou texto.)';bubble.classList.remove('typing');bubble.textContent=answer;
     history.push({role:'user',content:q},{role:'assistant',content:answer});history=history.slice(-10);botState('idle','Pronto para ajudar.')}
   catch(e){bubble.classList.remove('typing');if(e.aborted&&bubble.textContent){bubble.textContent+='\n[interrompido]';botState('idle','Interrompido.')}else{bubble.classList.add('error');bubble.textContent=e.message||'Falha ao falar com o Groq.';botState('idle','Não consegui responder.')}}

@@ -121,6 +121,7 @@ O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/rob
 - O plano gratuito do Groq tem limite de pedidos por minuto e por dia. Se aparecer "Limite gratuito do Groq atingido", espere um pouco ou use o modelo 20B.
 - O que vai para o Groq: a pergunta, as últimas mensagens da conversa e um resumo do estoque (NFs não conferidas, tarefas abertas, equipe, corredores e planos do dia).
 - O robô só lê os dados. Ele não muda nada no estoque.
+- **Antivírus (Bitdefender e outros):** se o antivírus barrar a resposta em partes, o robô passa a pedir a resposta inteira de uma vez. Se ainda assim não conectar, adicione `api.groq.com` e `vferreiras.github.io` às exceções da proteção da web do antivírus.
 
 ## Mascote
 
