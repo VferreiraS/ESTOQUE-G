@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Robô · Estoque 99</title>
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+/* Robô do estoque: página só para a conversa com o OmniRoute. Mesmo visual preto e branco do site. */
+:root{--bg:#f6f6f6;--surface:#fff;--ink:#0a0a0a;--ink2:#2e2e2e;--muted:#6b6b6b;--line:#e2e2e2;--soft:#ededed;--shadow:0 1px 2px rgba(0,0,0,.05),0 12px 32px -22px rgba(0,0,0,.28);color-scheme:light}
+body.dark{--bg:#0a0a0a;--surface:#151515;--ink:#f2f2f2;--ink2:#cfcfcf;--muted:#9a9a9a;--line:#2a2a2a;--soft:#232323;--shadow:0 1px 2px rgba(0,0,0,.5),0 16px 40px -24px rgba(0,0,0,.8);color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;overflow-x:hidden;min-height:100vh;min-height:100dvh;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+button,input,textarea{font:inherit;color:inherit}
+button{min-height:42px;padding:0 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font-weight:600;cursor:pointer}
+button:hover{background:var(--soft)}
+button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.primary:hover{opacity:.9;background:var(--ink)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+input,textarea{width:100%;min-height:48px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:16px}
+textarea{resize:none;min-height:52px;max-height:160px}
+label{display:grid;gap:6px;font-size:13px;font-weight:600;color:var(--muted)}
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top a{color:var(--ink);font-weight:650;text-decoration:none;min-height:42px;display:inline-flex;align-items:center}
+.top strong{font-size:14px;letter-spacing:.12em}
+.top .tools{display:flex;gap:8px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;max-width:1120px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.layout>*{min-width:0}
+.stage{display:flex;align-items:center;gap:14px;min-width:0}
+.stage h1{margin:0;font-size:clamp(24px,6vw,34px);line-height:1.08;letter-spacing:-.03em}
+.stage p{margin:4px 0 0;color:var(--muted)}
+.bot{width:96px;height:auto;flex:none;display:block;filter:grayscale(1);user-select:none;-webkit-user-drag:none;transform-origin:50% 90%}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px}
+.card h2{margin:0 0 12px;font-size:17px}
+.fields{display:grid;gap:14px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.small{font-size:13px;color:var(--muted);margin:10px 0 0}
+.status{font-weight:600;color:var(--ink);margin:10px 0 0;white-space:pre-wrap}
+.status:empty{display:none}
+.err{font-weight:650;margin:8px 0 0}
+.err:empty{display:none}
+.err:not(:empty)::before{content:'! '}
+.chat-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.chat-head h2{margin:0}
+#messages{display:flex;flex-direction:column;gap:10px;min-height:220px;max-height:calc(100dvh - 380px);overflow-y:auto;padding:4px 2px 8px;scroll-behavior:smooth}
+.msg{width:fit-content;max-width:88%;padding:10px 14px;border-radius:16px;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal}
+.msg.user{align-self:flex-end;background:var(--ink);color:var(--bg);border-bottom-right-radius:6px}
+.msg.bot{align-self:flex-start;background:var(--soft);border-bottom-left-radius:6px}
+.msg.bot.error{background:var(--surface);border:2px solid var(--ink);font-weight:600}
+.msg.bot.typing::after{content:'…';animation:blink 1s steps(2) infinite}
+.empty{color:var(--muted);text-align:center;margin:auto 0;padding:28px 8px}
+#suggest{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px;scrollbar-width:none}
+#suggest::-webkit-scrollbar{display:none}
+#suggest button{flex:none;min-height:36px;border-radius:999px;font-size:13.5px;font-weight:550}
+#ask{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}
+#ask .btns{display:flex;gap:8px}
+.pw{position:relative}
+.pw input{padding-right:84px}
+.pw button{position:absolute;right:6px;bottom:6px;min-height:36px;height:36px;padding:0 10px;border:0;background:transparent;color:var(--muted);font-size:13px}
+[hidden]{display:none!important}
+/* Vida do robô */
+@keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-6px) rotate(-1.5deg)}}
+@keyframes think{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+@keyframes talk{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+@keyframes blink{50%{opacity:0}}
+.bot.idle{animation:bob 3.6s ease-in-out infinite}
+.bot.thinking{animation:think .9s ease-in-out infinite}
+.bot.talking{animation:talk .45s ease-in-out infinite}
+body.still .bot,body.still .msg.bot.typing::after{animation:none!important}
+@media (prefers-reduced-motion:reduce){.bot,.msg.bot.typing::after{animation:none!important}#messages{scroll-behavior:auto}}
+@media (min-width:900px){
+.layout{grid-template-columns:300px minmax(0,1fr);align-items:start;padding-top:28px}
+.stage{flex-direction:column;align-items:flex-start;position:sticky;top:90px}
+.bot{width:240px}
+#messages{max-height:calc(100dvh - 330px)}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <a href="./" id="back">← Voltar ao estoque</a>
+  <strong>ROBÔ</strong>
+  <div class="tools"><button type="button" id="theme" aria-label="Alternar tema claro e escuro">☾ / ☀</button></div>
+</header>
+<main class="layout">
+  <aside class="stage">
+    <img id="bot" class="bot idle" src="icons/mascote.png" alt="" aria-hidden="true" width="357" height="440">
+    <div><h1>Robô do estoque</h1><p id="bot-state" aria-live="polite">Abrindo sua conta…</p></div>
+  </aside>
+  <section>
+    <div class="card" id="unlock" hidden>
+      <h2>Entrar</h2>
+      <form id="unlock-form" class="fields" autocomplete="on">
+        <label>Login<input name="login" required maxlength="80" autocomplete="username"></label>
+        <label class="pw">Senha<input name="password" type="password" required maxlength="128" autocomplete="current-password"><button type="button" data-toggle>Mostrar</button></label>
+        <button class="primary" type="submit" id="unlock-btn">Entrar</button>
+        <p class="err" id="unlock-err" role="alert"></p>
+      </form>
+    </div>
+    <div id="app" hidden>
+      <div class="card" id="chat">
+        <div class="chat-head"><h2>Conversa</h2><div class="row"><button type="button" id="refresh">Atualizar dados</button><button type="button" id="open-settings">OmniRoute</button></div></div>
+        <div id="messages" role="log" aria-live="polite"><p class="empty" id="empty">Pergunte sobre NFs, tarefas, prazos e equipe.</p></div>
+        <div id="suggest">
+          <button type="button" data-q="O que está pendente hoje?">O que está pendente hoje?</button>
+          <button type="button" data-q="Quais NFs estão em divergência?">NFs em divergência</button>
+          <button type="button" data-q="Quais tarefas estão atrasadas e com quem?">Tarefas atrasadas</button>
+          <button type="button" data-q="Quais NFs chegaram há mais tempo e ainda não foram conferidas?">NFs mais antigas</button>
+        </div>
+        <form id="ask">
+          <textarea id="q" rows="1" maxlength="2000" placeholder="Escreva sua pergunta…" aria-label="Pergunta para o robô"></textarea>
+          <div class="btns"><button class="primary" type="submit" id="send">Enviar</button><button type="button" id="stop" hidden>Parar</button></div>
+        </form>
+      </div>
+      <div class="card" id="settings" hidden style="margin-top:16px">
+        <h2>OmniRoute</h2>
+        <form id="settings-form" class="fields">
+          <label>Endereço do OmniRoute<input name="base" required maxlength="300" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://seu-omniroute.exemplo.com/v1"></label>
+          <label class="pw">Chave (API key)<input name="key" type="password" maxlength="500" autocomplete="off" spellcheck="false" placeholder="sk-…"><button type="button" data-toggle>Mostrar</button></label>
+          <label>Modelo<input name="model" maxlength="120" autocomplete="off" spellcheck="false" placeholder="auto"></label>
+          <div class="row"><button class="primary" type="submit">Salvar</button><button type="button" id="test">Testar conexão</button><button type="button" id="close-settings">Fechar</button></div>
+        </form>
+        <p class="status" id="settings-status" aria-live="polite"></p>
+        <p class="small">As perguntas e um resumo do estoque vão para o seu OmniRoute e para o provedor de IA configurado nele. No servidor, use CORS_ALLOWED_ORIGINS=https://vferreiras.github.io e REQUIRE_API_KEY=true.</p>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id)};
+var AUTH_PREFIX='lojasg.estoque99.account.v1.',AUTH_BLOCK='lojasg.estoque99.block.v1.',ROBOT_PREFIX='lojasg.estoque99.robot:';
+var S=null,cfg=null,history=[],busy=null;
+
+/* ---------- aparência ---------- */
+function applyTheme(){var dark=false;try{dark=localStorage.getItem('lojasg.estoque99.theme')==='dark'}catch(e){}document.body.classList.toggle('dark',dark);var m=document.querySelector('meta[name=theme-color]');if(m)m.content=dark?'#0a0a0a':'#ffffff'}
+applyTheme();
+try{if(localStorage.getItem('lojasg.estoque99.visual-effects')==='off')document.body.classList.add('still')}catch(e){}
+$('theme').onclick=function(){var dark=!document.body.classList.contains('dark');try{localStorage.setItem('lojasg.estoque99.theme',dark?'dark':'light')}catch(e){}applyTheme()};
+document.querySelectorAll('[data-toggle]').forEach(function(b){b.onclick=function(){var i=b.parentNode.querySelector('input');var show=i.type==='password';i.type=show?'text':'password';b.textContent=show?'Ocultar':'Mostrar'}});
+function botState(mode,text){var b=$('bot');b.classList.remove('idle','thinking','talking');b.classList.add(mode);if(text!=null)$('bot-state').textContent=text}
+
+/* ---------- criptografia (igual ao site) ---------- */
+function bytes(t){return new TextEncoder().encode(t)}
+function b64(b){var s='',a=new Uint8Array(b);for(var i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s)}
+function un64(t){return Uint8Array.from(atob(t),function(c){return c.charCodeAt(0)})}
+function loginName(n){return String(n).normalize('NFKC').trim().replace(/\s+/g,' ').toLocaleLowerCase('pt-BR')}
+async function storageKey(login){return AUTH_PREFIX+b64(await crypto.subtle.digest('SHA-256',bytes(loginName(login))))}
+async function keyFromPassword(password,salt){var m=await crypto.subtle.importKey('raw',bytes(password),'PBKDF2',false,['deriveBits']);var bits=new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:un64(salt),iterations:600000},m,256));return crypto.subtle.importKey('raw',bits,{name:'AES-GCM'},false,['encrypt','decrypt'])}
+async function openAccount(storeKey,key){
+  var raw=localStorage.getItem(storeKey);if(!raw)throw Error('Conta não encontrada neste aparelho.');
+  if(localStorage.getItem(AUTH_BLOCK+storeKey)==='yes')throw Error('Esta conta foi bloqueada pelo ADM neste navegador.');
+  var record=JSON.parse(raw);
+  var plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:un64(record.iv),additionalData:bytes(loginName(record.login))},key,un64(record.cipher));
+  var payload=JSON.parse(new TextDecoder().decode(plain));
+  if(payload.seed||!payload.state)throw Error('Conta ainda não ativada.');
+  return {storeKey:storeKey,key:key,login:record.login,store:payload.store||'',state:payload.state};
+}
+/* ---------- IndexedDB compartilhado com o site ---------- */
+function idb(){return new Promise(function(res,rej){try{var r=indexedDB.open('estoque99-local',1);r.onupgradeneeded=function(){r.result.createObjectStore('remember')};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}}catch(e){rej(e)}})}
+function idbOp(mode,fn){return idb().then(function(db){return new Promise(function(res,rej){var tx=db.transaction('remember',mode),req=fn(tx.objectStore('remember'));tx.oncomplete=function(){db.close();res(req&&req.result)};tx.onerror=function(){db.close();rej(tx.error)}})})}
+function idbGet(k){return idbOp('readonly',function(st){return st.get(k)}).catch(function(){return null})}
+function idbPut(k,v){return idbOp('readwrite',function(st){return st.put(v,k)}).catch(function(){})}
+function idbDel(k){return idbOp('readwrite',function(st){return st.delete(k)}).catch(function(){})}
+
+/* ---------- configuração do OmniRoute (criptografada com a chave da conta) ---------- */
+function normBase(v){var u;try{u=new URL(String(v||'').trim())}catch(e){throw Error('Endereço inválido. Exemplo: https://seu-omniroute.exemplo.com/v1')}
+  var local=u.hostname==='localhost'||u.hostname==='127.0.0.1';
+  if(u.protocol!=='https:'&&!(u.protocol==='http:'&&local))throw Error('Use um endereço https:// (ou http://localhost no próprio computador).');
+  if(u.username||u.password)throw Error('Não coloque usuário ou senha no endereço.');
+  var path=u.pathname.replace(/\/+$/,'');path=path.replace(/\/chat\/completions$/,'');if(!/\/v1$/.test(path))path+='/v1';return u.origin+path}
+async function loadCfg(){var raw=localStorage.getItem(ROBOT_PREFIX+S.storeKey);if(!raw)return null;try{var o=JSON.parse(raw);var p=await crypto.subtle.decrypt({name:'AES-GCM',iv:un64(o.iv),additionalData:bytes('robot|'+loginName(S.login))},S.key,un64(o.cipher));return JSON.parse(new TextDecoder().decode(p))}catch(e){return null}}
+async function saveCfg(c){var iv=crypto.getRandomValues(new Uint8Array(12));var cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:bytes('robot|'+loginName(S.login))},S.key,bytes(JSON.stringify(c)));localStorage.setItem(ROBOT_PREFIX+S.storeKey,JSON.stringify({v:1,iv:b64(iv),cipher:b64(cipher)}))}
+function readSettings(){var f=$('settings-form');return {base:normBase(f.elements.base.value),key:String(f.elements.key.value||'').trim(),model:String(f.elements.model.value||'').trim()||'auto'}}
+function fillSettings(){var f=$('settings-form');f.elements.base.value=cfg?cfg.base:'';f.elements.key.value=cfg?cfg.key:'';f.elements.model.value=cfg?cfg.model:'auto'}
+function showSettings(show){$('settings').hidden=!show;if(show){fillSettings();$('settings').scrollIntoView({behavior:'smooth',block:'start'})}}
+
+/* ---------- resumo do estoque para o robô ---------- */
+function pad(n){return ('0'+n).slice(-2)}
+function isoToday(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function br(iso){return iso?String(iso).split('-').reverse().join('/'):'sem data'}
+function daysSince(iso){if(!iso)return 0;var a=new Date(iso+'T00:00:00'),b=new Date(isoToday()+'T00:00:00');return Math.round((b-a)/86400000)}
+function buildContext(){
+  var st=S.state,today=isoToday(),team=st.team||[],L=[];
+  function who(id){if(id==='todos')return 'TODOS';var p=team.find(function(x){return x.id===id});return p?p.name:'sem responsável'}
+  var now=new Date();
+  L.push('Loja: '+S.store+'. Hoje: '+br(today)+' ('+now.toLocaleDateString('pt-BR',{weekday:'long'})+'), '+pad(now.getHours())+':'+pad(now.getMinutes())+'.');
+  var nfs=(st.nfs||[]).filter(function(n){return n.status!=='Conferido'}).sort(function(a,b){return String(a.date).localeCompare(String(b.date))});
+  var done=(st.nfs||[]).filter(function(n){return n.status==='Conferido'});
+  L.push('','NOTAS FISCAIS NÃO CONFERIDAS ('+nfs.length+'):');
+  nfs.forEach(function(n){L.push('- NF '+n.number+' | '+(n.supplier||'fornecedor não informado')+' | '+n.status+' | chegada '+br(n.date)+(n.arrivalTime?' '+n.arrivalTime:'')+' ('+daysSince(n.date)+' dias) | '+(n.volumes||0)+' volumes | conferente: '+who(n.owner)+(n.notes?' | obs: '+String(n.notes).slice(0,200):''))});
+  L.push('NFs já conferidas: '+done.length+'.');
+  var open=(st.tasks||[]).filter(function(t){return t.status!=='Concluído'}).sort(function(a,b){return String(a.due||'9999').localeCompare(String(b.due||'9999'))});
+  L.push('','TAREFAS ABERTAS ('+open.length+'):');
+  open.forEach(function(t){var late=t.due&&t.due<today;L.push('- '+t.title+' | responsável: '+who(t.owner)+' | prazo: '+(t.due?br(t.due):'sem prazo')+' | '+t.status+(late?' | ATRASADA':t.due===today?' | vence hoje':''))});
+  L.push('Tarefas concluídas: '+(st.tasks||[]).filter(function(t){return t.status==='Concluído'}).length+'.');
+  if(team.length){L.push('','EQUIPE ('+team.length+'): '+team.map(function(p){return p.name+(p.role?' ('+p.role+')':'')}).join('; '))}
+  var cor=st.corridors||[];if(cor.length){L.push('','CORREDORES ('+cor.length+'): '+cor.map(function(c){return c.number+' '+c.sector+' – '+who(c.owner)}).join('; '))}
+  var plans=(st.plans||[]).filter(function(p){return p.date===today});
+  if(plans.length){L.push('','PLANOS DE HOJE:');plans.forEach(function(p){L.push('- '+p.title+': '+(p.activities||[]).map(function(a){return a.title+(a.owner?' ('+a.owner+')':'')}).join('; '))})}
+  var text=L.join('\n');if(text.length>12000)text=text.slice(0,12000)+'\n[lista cortada por tamanho]';return text}
+var SYSTEM='Você é o Robô do Estoque 99, assistente das Lojas G. Responda em português do Brasil, de forma curta e direta, usando listas quando ajudar. Use somente os DADOS abaixo; se a informação não estiver neles, diga que não sabe. Não invente números de NF, nomes ou datas. Você não altera nada no sistema: se pedirem uma mudança, explique onde fazer no site.';
+
+/* ---------- chamada ao OmniRoute ---------- */
+function httpMessage(status,body){try{var j=JSON.parse(body);var m=j&&j.error&&(j.error.message||j.error);if(m)body=String(m)}catch(e){}
+  if(status===401||status===403)return 'A chave do OmniRoute foi recusada ('+status+'). Confira a chave em OmniRoute → Dashboard → Endpoints.';
+  if(status===404)return 'Endereço não encontrado (404). Confira se o endereço termina em /v1.';
+  if(status===429)return 'Limite de uso atingido no OmniRoute ou no provedor (429). Tente de novo em instantes.';
+  if(status>=500)return 'O OmniRoute ou o provedor de IA falhou ('+status+'). '+(body?String(body).slice(0,160):'');
+  return 'O OmniRoute respondeu com erro '+status+'. '+(body?String(body).slice(0,160):'')}
+function netMessage(){return 'Não conectou ao OmniRoute. Confira o endereço, se ele está ligado e se CORS_ALLOWED_ORIGINS inclui '+location.origin+'.'}
+async function callOmni(messages,opts){
+  opts=opts||{};var ctrl=new AbortController(),timer=setTimeout(function(){ctrl.abort('timeout')},opts.timeout||90000);
+  if(opts.onCtrl)opts.onCtrl(ctrl);
+  var res;
+  try{res=await fetch(cfg.base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},body:JSON.stringify({model:cfg.model||'auto',messages:messages,stream:!!opts.stream,temperature:0.3,max_tokens:opts.maxTokens||900}),signal:ctrl.signal})}
+  catch(e){clearTimeout(timer);if(ctrl.signal.aborted)throw Object.assign(Error(ctrl.signal.reason==='timeout'?'O OmniRoute demorou demais para responder.':'Interrompido.'),{aborted:true});throw Error(netMessage())}
+  try{
+    if(!res.ok){var t='';try{t=await res.text()}catch(e){}throw Error(httpMessage(res.status,t))}
+    var ct=res.headers.get('content-type')||'',text='',model='';
+    if(opts.stream&&ct.indexOf('text/event-stream')>=0&&res.body){
+      var reader=res.body.getReader(),dec=new TextDecoder(),buf='';
+      for(;;){var r=await reader.read();if(r.done)break;buf+=dec.decode(r.value,{stream:true});var lines=buf.split(/\r?\n/);buf=lines.pop();
+        for(var i=0;i<lines.length;i++){var line=lines[i].trim();if(line.indexOf('data:')!==0)continue;var data=line.slice(5).trim();if(data==='[DONE]')continue;var j;try{j=JSON.parse(data)}catch(_){continue}if(j.error)throw Error(String(j.error.message||j.error));model=model||j.model||'';var c=j.choices&&j.choices[0];var piece=c&&((c.delta&&c.delta.content)||(c.message&&c.message.content))||'';if(piece){text+=piece;if(opts.onText)opts.onText(text)}}}
+    }else{var j2=await res.json();if(j2.error)throw Error(String(j2.error.message||j2.error));model=j2.model||'';text=(j2.choices&&j2.choices[0]&&j2.choices[0].message&&j2.choices[0].message.content)||'';if(opts.onText)opts.onText(text)}
+    return {text:text,model:model}}
+  catch(e){if(ctrl.signal.aborted)throw Object.assign(Error(ctrl.signal.reason==='timeout'?'O OmniRoute demorou demais para responder.':'Interrompido.'),{aborted:true});throw e}
+  finally{clearTimeout(timer)}}
+
+/* ---------- conversa ---------- */
+function addMsg(role,text,extra){var e=$('empty');if(e)e.remove();var d=document.createElement('div');d.className='msg '+role+(extra?' '+extra:'');d.textContent=text;$('messages').appendChild(d);d.scrollIntoView({block:'end'});return d}
+function setBusy(on){$('send').disabled=on;$('q').disabled=on;$('stop').hidden=!on;document.querySelectorAll('#suggest button').forEach(function(b){b.disabled=on})}
+async function ask(q){
+  q=String(q||'').trim();if(!q||busy)return;
+  if(!cfg||!cfg.base){showSettings(true);$('settings-status').textContent='Configure o endereço e a chave do OmniRoute para conversar.';return}
+  addMsg('user',q);$('q').value='';autoGrow();
+  var bubble=addMsg('bot','','typing');setBusy(true);botState('thinking','Pensando…');
+  var messages=[{role:'system',content:SYSTEM+'\n\nDADOS (atualizados agora):\n'+buildContext()}].concat(history.slice(-10),[{role:'user',content:q}]);
+  try{var r=await callOmni(messages,{stream:true,onCtrl:function(c){busy=c},onText:function(t){bubble.classList.remove('typing');bubble.textContent=t;botState('talking','Respondendo…');bubble.scrollIntoView({block:'end'})}});
+    var answer=r.text.trim()||'(O modelo não mandou texto.)';bubble.classList.remove('typing');bubble.textContent=answer;
+    history.push({role:'user',content:q},{role:'assistant',content:answer});history=history.slice(-10);botState('idle','Pronto para ajudar.')}
+  catch(e){bubble.classList.remove('typing');if(e.aborted&&bubble.textContent){bubble.textContent+='\n[interrompido]';botState('idle','Interrompido.')}else{bubble.classList.add('error');bubble.textContent=e.message||'Falha ao falar com o OmniRoute.';botState('idle','Não consegui responder.')}}
+  finally{busy=null;setBusy(false);$('q').focus()}}
+function autoGrow(){var q=$('q');q.style.height='auto';q.style.height=Math.min(160,q.scrollHeight+2)+'px'}
+$('q').addEventListener('input',autoGrow);
+$('q').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();ask($('q').value)}});
+$('ask').onsubmit=function(e){e.preventDefault();ask($('q').value)};
+$('stop').onclick=function(){if(busy)busy.abort('stop')};
+document.querySelectorAll('#suggest button').forEach(function(b){b.onclick=function(){ask(b.getAttribute('data-q'))}});
+$('open-settings').onclick=function(){showSettings($('settings').hidden)};
+$('close-settings').onclick=function(){showSettings(false)};
+$('refresh').onclick=async function(){try{S=await openAccount(S.storeKey,S.key);botState('idle','Dados atualizados.')}catch(e){botState('idle',e.message)}};
+$('settings-form').onsubmit=async function(e){e.preventDefault();var st=$('settings-status');try{var c=readSettings();if(!c.key)throw Error('Informe a chave do OmniRoute.');await saveCfg(c);cfg=c;st.textContent='Salvo. Toque em Testar conexão para conferir.';botState('idle','Pronto para ajudar.')}catch(err){st.textContent=err.message}};
+$('test').onclick=async function(){var st=$('settings-status'),btn=$('test');var old=cfg;try{var c=readSettings();if(!c.key)throw Error('Informe a chave do OmniRoute.');cfg=c;btn.disabled=true;st.textContent='Testando…';botState('thinking','Testando conexão…');var r=await callOmni([{role:'user',content:'Responda apenas: ok'}],{stream:false,maxTokens:5,timeout:30000});st.textContent='Conectado'+(r.model?' · modelo '+r.model:'')+'. Resposta: '+(r.text||'(vazia)').trim().slice(0,60);botState('idle','Conexão funcionando.')}catch(err){st.textContent=err.message;botState('idle','Falha no teste.')}finally{cfg=old;btn.disabled=false}};
+
+/* ---------- entrar ---------- */
+async function enter(session){S=session;cfg=await loadCfg();$('unlock').hidden=true;$('app').hidden=false;
+  if(!cfg){showSettings(true);$('settings-status').textContent='Primeiro, informe o endereço e a chave do seu OmniRoute.';botState('idle','Olá! Me conecte ao OmniRoute para conversar.')}
+  else botState('idle','Olá! Pergunte sobre o estoque de '+(S.store||'sua loja')+'.')}
+function showUnlock(msg){$('app').hidden=true;$('unlock').hidden=false;$('unlock-err').textContent=msg||'';botState('idle','Entre com sua conta do estoque.')}
+$('unlock-form').onsubmit=async function(e){e.preventDefault();var f=e.target,btn=$('unlock-btn');btn.disabled=true;btn.textContent='Aguarde…';$('unlock-err').textContent='';
+  try{var sk=await storageKey(f.elements.login.value);var raw=localStorage.getItem(sk);if(!raw)throw Error('Login ou senha incorretos.');var rec=JSON.parse(raw);var key=await keyFromPassword(f.elements.password.value,rec.salt);var s;try{s=await openAccount(sk,key)}catch(err){throw Error(/bloqueada|ativada/.test(err.message)?err.message:'Login ou senha incorretos.')}f.reset();await enter(s)}
+  catch(err){$('unlock-err').textContent=err.message}finally{btn.disabled=false;btn.textContent='Entrar'}};
+/* Voltar: devolve a conta aberta para o site, sem pedir senha de novo. */
+$('back').onclick=function(e){if(!S)return;e.preventDefault();idbPut('handoff',{storeKey:S.storeKey,key:S.key,at:Date.now()}).then(function(){location.href='./'})};
+if(!window.crypto||!crypto.subtle||!window.indexedDB&&!window.localStorage){showUnlock('Este navegador não oferece a criptografia necessária.')}
+else (async function(){
+  var h=await idbGet('handoff');if(h)await idbDel('handoff');
+  var candidates=[];if(h&&h.key&&h.storeKey&&Date.now()-Number(h.at||0)<120000)candidates.push(h);
+  var r=await idbGet('session');if(r&&r.key&&r.storeKey)candidates.push(r);
+  for(var i=0;i<candidates.length;i++){try{await enter(await openAccount(candidates[i].storeKey,candidates[i].key));return}catch(e){}}
+  showUnlock('');
+})();
+})();
+</script>
+</body>
+</html>

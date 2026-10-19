@@ -1,8 +1,9 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
-const CACHE = 'estoque99-v8';
+const CACHE = 'estoque99-v9';
 const CORE = [
   './',
   './index.html',
+  './robo.html',
   './manifest.webmanifest',
   './icons/apple-touch-icon.png',
   './icons/icon-192.png',
@@ -25,15 +26,15 @@ self.addEventListener('activate', (event) => {
 });
 
 // Página: busca a versão mais nova na internet; sem conexão, usa a cópia salva.
-async function networkFirst(request) {
+async function networkFirst(request, page) {
   const cache = await caches.open(CACHE);
   try {
     const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 6000));
     const response = await Promise.race([fetch(request), timeout]);
-    if (response && response.ok && !response.redirected) cache.put('./index.html', response.clone());
+    if (response && response.ok && !response.redirected) cache.put(page, response.clone());
     return response;
   } catch (err) {
-    return (await cache.match('./index.html')) || (await cache.match('./')) || Response.error();
+    return (await cache.match(page)) || (await cache.match('./index.html')) || (await cache.match('./')) || Response.error();
   }
 }
 
@@ -43,8 +44,9 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return; // consultas externas (CEP, CNPJ) passam direto
 
-  if (request.mode === 'navigate' || url.pathname.endsWith('/index.html')) {
-    event.respondWith(networkFirst(request));
+  const robot = url.pathname.endsWith('/robo.html');
+  if (request.mode === 'navigate' || url.pathname.endsWith('/index.html') || robot) {
+    event.respondWith(networkFirst(request, robot ? './robo.html' : './index.html'));
     return;
   }
   event.respondWith(

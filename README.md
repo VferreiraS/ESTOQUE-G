@@ -106,6 +106,30 @@ O site usa só preto, branco e cinza, no tema claro e no escuro.
 
 A animação de entrada aparece ao abrir o site e ao sair da conta. Em computadores com "reduzir animações" ligado, ela aparece numa versão suave. O botão **Efeitos** desliga a animação neste navegador.
 
+## Robô (OmniRoute)
+
+O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/robo.html**. Abra pelo botão **Conversar com o robô** na Visão geral, tocando no mascote ou pelo item **Robô** do menu. Assim ela já abre com a sua conta, sem pedir senha de novo. **← Voltar ao estoque** também volta sem senha.
+
+1. Na primeira vez, toque em **OmniRoute** e preencha:
+   - **Endereço**: o seu OmniRoute com https, por exemplo `https://seu-omniroute.exemplo.com/v1`. O `/v1` é colocado sozinho se faltar.
+   - **Chave**: a chave do OmniRoute, em Dashboard → Endpoints.
+   - **Modelo**: `auto` deixa o OmniRoute escolher.
+2. Toque em **Testar conexão** e depois em **Salvar**. A configuração fica criptografada com a sua conta, só neste aparelho.
+3. Pergunte, por exemplo: "O que está pendente hoje?", "Quais NFs estão em divergência?", "Tarefas atrasadas".
+
+No servidor do OmniRoute, configure:
+
+```
+CORS_ALLOWED_ORIGINS=https://vferreiras.github.io
+REQUIRE_API_KEY=true
+```
+
+- Sem o `CORS_ALLOWED_ORIGINS`, o navegador bloqueia a conversa e o robô avisa "Não conectou".
+- Mantenha o OmniRoute atualizado: a versão 3.8.x teve uma falha grave (CVE-2026-88062).
+- O que vai para o OmniRoute: a pergunta, as últimas mensagens da conversa e um resumo do estoque (NFs não conferidas, tarefas abertas, equipe, corredores e planos do dia). O provedor de IA configurado no OmniRoute também recebe esse conteúdo.
+- O robô só lê os dados. Ele não muda nada no estoque.
+- Se trocar a senha da conta, configure o OmniRoute de novo na página do robô.
+
 ## Mascote
 
 O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza como o resto do site.
@@ -141,6 +165,7 @@ As notas respeitam a busca e a aba de status que estão na tela.
 | Arquivo | Para que serve |
 | --- | --- |
 | `index.html` | O sistema completo |
+| `robo.html` | Página do robô (conversa com o OmniRoute) |
 | `manifest.webmanifest` | Nome, cores e ícones para instalar como app |
 | `sw.js` | Permite abrir sem internet |
 | `icons/` | Ícones do app (iPhone, Android, computador) e o mascote `mascote.png` |

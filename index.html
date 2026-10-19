@@ -330,7 +330,7 @@ function renderMobileMenu(){return hero('Seu estoque na palma da mão.','Acesse 
 if(window.visualViewport&&window.visualViewport.addEventListener){window.visualViewport.addEventListener('resize',()=>{const typing=document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);document.body.classList.toggle('keyboard-open',!!typing&&window.innerHeight-window.visualViewport.height>140)})}
 
 function go(p){page=p;search='';filter='';document.body.classList.remove('menu');render()}
-function hero(title,sub,action=''){const home=page==='home';return `<div class="hero${home?' hero-home':''}"><div><h1>${title}</h1>${home&&sub?`<p class="subtitle">${sub}</p>`:''}</div>${action}${home?'<img class="hero-mascot mascot" src="icons/mascote.png" alt="" aria-hidden="true" width="357" height="440" decoding="async">':''}</div>`}
+function hero(title,sub,action=''){const home=page==='home';return `<div class="hero${home?' hero-home':''}"><div><h1>${title}</h1>${home&&sub?`<p class="subtitle">${sub}</p>`:''}</div>${home?`<div class="toolbar">${action}<button type="button" onclick="openRobotPage()">Conversar com o robô</button></div>`:action}${home?'<img class="hero-mascot mascot" src="icons/mascote.png" alt="" aria-hidden="true" width="357" height="440" decoding="async" onclick="openRobotPage()" title="Conversar com o robô">':''}</div>`}
 function newButton(kind,title){return `<button class="primary" onclick="openEditor('${kind}')">＋ ${title}</button>`}
 function stats(){const open=state.tasks.filter(t=>t.status!=='Concluído');return `<div class="stats">${[[open.length,'Tarefas abertas'],[open.filter(t=>t.due&&t.due<iso()).length,'Atrasadas'],[open.filter(t=>t.due===iso()).length,'Vencem hoje'],[state.nfs.filter(n=>n.status!=='Conferido').length,'Notas aguardando']].map(([n,s])=>`<div class="stat"><strong>${n}</strong><span>${s}</span></div>`).join('')}</div>`}
 function taskTable(tasks){return tasks.length?`<div class="tablewrap"><table><thead><tr><th>Tarefa / setor</th><th>Responsável</th><th>Prioridade</th><th>Prazo</th><th>Status</th><th>Ações</th></tr></thead><tbody>${tasks.map(t=>`<tr><td><div class="tasktitle">${esc(t.title)}</div><div class="small">${esc(corridor(t.corridor))}</div>${t.reason?`<div class="small">Pendência: ${esc(t.reason)}</div>`:''}</td><td>${esc(owner(t.owner))}</td><td>${badge(priority(t))}</td><td class="${t.due&&t.due<iso()&&t.status!=='Concluído'?'late':''}">${date(t.due)}</td><td>${badge(t.status)}</td><td><div class="rowactions"><button onclick="openEditor('task','${esc(t.id)}')">Editar</button>${t.status!=='Concluído'?`<button onclick="finish('${esc(t.id)}')" aria-label="Concluir tarefa">✓</button>`:''}</div></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty"><h3>Nenhuma tarefa por aqui.</h3><p>Cadastre uma tarefa para começar a organizar a operação.</p>${newButton('task','Nova tarefa')}</div>`}
@@ -2317,7 +2317,7 @@ table.mobile-cards td.nf-act:before{display:none}
 }
 .hero.hero-home{position:relative;padding-right:120px!important;min-height:120px}
 .hero.hero-home::before{display:none!important}
-.hero-mascot{position:absolute;right:0;top:-8px;width:96px;animation:mascot-in .6s cubic-bezier(.2,.8,.2,1) both,mascot-bob 3.6s ease-in-out 1s infinite}
+.hero-mascot{position:absolute;right:0;top:-8px;width:96px;pointer-events:auto;cursor:pointer;animation:mascot-in .6s cubic-bezier(.2,.8,.2,1) both,mascot-bob 3.6s ease-in-out 1s infinite}
 @media (min-width:901px){.hero.hero-home{padding-right:190px!important;min-height:180px}.hero-mascot{width:150px;top:-14px}}
 body.fx-off .mascot{animation:none!important}
 @media (prefers-reduced-motion:reduce){.mascot{animation:none!important}}
@@ -2360,6 +2360,9 @@ var remembered=null,wanted=null,autoEntering=false;
 function idb(){return new Promise(function(res,rej){try{var r=indexedDB.open(DB,1);r.onupgradeneeded=function(){r.result.createObjectStore(STORE)};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}}catch(e){rej(e)}})}
 function op(mode,fn){return idb().then(function(db){return new Promise(function(res,rej){var tx=db.transaction(STORE,mode),st=tx.objectStore(STORE),req=fn(st);tx.oncomplete=function(){db.close();res(req&&req.result)};tx.onerror=function(){db.close();rej(tx.error)}})})}
 function load(){return op('readonly',function(st){return st.get('session')}).catch(function(){return null})}
+function takeHandoff(){return op('readonly',function(st){return st.get('handoff')}).catch(function(){return null}).then(function(h){if(!h)return null;return op('readwrite',function(st){return st.delete('handoff')}).catch(function(){}).then(function(){return h&&h.key&&h.storeKey&&Date.now()-Number(h.at||0)<120000?h:null})})}
+/* Página do robô (robo.html): leva a conta aberta para lá sem pedir senha de novo. */
+window.openRobotPage=function(){if(!authSession){location.href='robo.html';return}op('readwrite',function(st){return st.put({storeKey:authSession.storeKey,key:authSession.key,at:Date.now()},'handoff')}).catch(function(){}).then(function(){location.href='robo.html'})};
 function save(session){if(!session||!session.key||!session.storeKey)return Promise.resolve();var v={storeKey:session.storeKey,key:session.key,at:Date.now()};return op('readwrite',function(st){return st.put(v,'session')}).then(function(){remembered={storeKey:v.storeKey}}).catch(function(){})}
 function forget(){remembered=null;return op('readwrite',function(st){return st.delete('session')}).catch(function(){})}
 function prefDefault(){try{var p=localStorage.getItem(PREF);if(p==='on')return true;if(p==='off')return false}catch(e){}return !(typeof isPhoneLayout==='function'&&isPhoneLayout())}
@@ -2378,10 +2381,12 @@ var enterBefore=authEnter;
 authEnter=function(session){var r=enterBefore.apply(this,arguments);if(!autoEntering&&authSession===session){if(wanted===true)save(session);else if(wanted===false&&remembered&&remembered.storeKey===session.storeKey)forget();else window.rememberRefresh(session)}wanted=null;return r};
 var logoutBefore=authLogout;
 authLogout=async function(){var r=await logoutBefore.apply(this,arguments);if(!authSession)await forget();return r};
+if(typeof labels==='object'&&!labels.robot){labels.robot='Robô';if(typeof icons==='object')icons.robot='◉'}
+var goBefore=go;go=function(p){if(p==='robot'){window.openRobotPage();return}return goBefore.apply(this,arguments)};
 var accountBefore=renderAccount;
 renderAccount=function(){return accountBefore.apply(this,arguments)+'<div class="grid2">'+window.rememberPanelHTML()+'</div>'};
 /* Ao abrir: entra sozinho se este aparelho foi marcado. */
-load().then(async function(v){if(!v||!v.key||!v.storeKey){return}remembered={storeKey:v.storeKey};if(authSession)return;try{var raw=localStorage.getItem(v.storeKey);if(!raw||authIsBlocked(v.storeKey))throw Error('gone');var record=authCheckRecord(JSON.parse(raw));var payload=await openWithKey(record,v.key);if(authSession)return;autoEntering=true;try{authEnter({key:v.key,record:record,storeKey:v.storeKey,payload:payload})}finally{autoEntering=false}}catch(e){await forget()}});
+Promise.all([takeHandoff(),load()]).then(async function(r){var h=r[0],saved=r[1];if(saved&&saved.key&&saved.storeKey)remembered={storeKey:saved.storeKey};var v=h||(saved&&saved.key&&saved.storeKey?saved:null);if(!v)return;if(authSession)return;try{var raw=localStorage.getItem(v.storeKey);if(!raw||authIsBlocked(v.storeKey))throw Error('gone');var record=authCheckRecord(JSON.parse(raw));var payload=await openWithKey(record,v.key);if(authSession)return;autoEntering=true;try{authEnter({key:v.key,record:record,storeKey:v.storeKey,payload:payload})}finally{autoEntering=false}}catch(e){if(!h)await forget()}});
 })();
 </script>
 <script id="email-reports-js">
