@@ -310,7 +310,7 @@ function validate(s){
  s.nfs.forEach(nfValidateExtras);
  const owners=new Set(['','todos',...s.team.map(x=>x.id)]),corridors=new Set(['',...s.corridors.map(x=>x.id)]);
  if(s.corridors.some(x=>!owners.has(x.owner))||s.tasks.some(x=>!owners.has(x.owner)||!corridors.has(x.corridor))||s.nfs.some(x=>!owners.has(x.owner)))throw Error('Backup inválido');
- return {version:1,plans:validatePlans(s.plans),team:s.team,corridors:s.corridors,tasks:s.tasks,nfs:s.nfs,ruptures:validateRuptures(s.ruptures,s),photoKey:validPhotoKey(s.photoKey),updated:s.updated||null,alertSettings:normalizeAlertSettings(s.alertSettings),alertSnoozes:normalizeSnoozes(s.alertSnoozes)};
+ return {version:1,plans:validatePlans(s.plans),team:s.team,corridors:s.corridors,tasks:s.tasks,nfs:s.nfs,ruptures:validateRuptures(s.ruptures,s),expiries:validateExpiries(s.expiries,s),photoKey:validPhotoKey(s.photoKey),updated:s.updated||null,alertSettings:normalizeAlertSettings(s.alertSettings),alertSnoozes:normalizeSnoozes(s.alertSnoozes)};
 }
 function notify(s){$('toast').textContent=s;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').textContent='',4000)}
 async function save(){if(!authSession)return;state.updated=new Date().toISOString();dirty=true;const snapshot=JSON.stringify(state);try{await authPersist(snapshot);storageOK=true;dirty=JSON.stringify(state)!==snapshot}catch(e){storageOK=false;notify(e.message||'Falha ao salvar. Exporte uma cópia protegida.')}renderStorage();if(fileHandle)await writeFile();}
@@ -527,11 +527,12 @@ if(typeof modal.showModal!=='function'){
  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.open)modal.close()});
 }
 function normalizeAlertSettings(value){const s=value||{},integer=(v,d,min,max)=>Number.isInteger(v)&&v>=min&&v<=max?v:d;return {enabled:s.enabled!==false,desktopEnabled:s.desktopEnabled===true,taskDays:integer(s.taskDays,2,0,30),nfDays:integer(s.nfDays,2,0,90),repeatMinutes:integer(s.repeatMinutes,60,5,1440)}}
-function normalizeSnoozes(value){const out={};if(value&&typeof value==='object'&&!Array.isArray(value))for(const key of Object.keys(value).slice(0,10000))if(/^(task|nf):[a-zA-Z0-9_:-]+$/.test(key)&&Number.isFinite(value[key])&&value[key]>=0)out[key]=value[key];return out}
+function normalizeSnoozes(value){const out={};if(value&&typeof value==='object'&&!Array.isArray(value))for(const key of Object.keys(value).slice(0,10000))if(/^(task|nf|exp):[a-zA-Z0-9_:-]+$/.test(key)&&Number.isFinite(value[key])&&value[key]>=0)out[key]=value[key];return out}
 function collectAlerts(today=iso()){
  const settings=normalizeAlertSettings(state.alertSettings),out=[];
  for(const t of state.tasks){if(t.status==='Concluído'||!t.due)continue;const remaining=days(t.due,today);if(remaining>settings.taskDays)continue;const message=remaining<0?`${-remaining} dia(s) de atraso`:remaining===0?'Vence hoje':remaining===1?'Vence amanhã':`Vence em ${remaining} dias`;out.push({key:`task:${t.id}:${t.due}:${today}`,kind:'task',id:t.id,title:t.title,message,detail:`${owner(t.owner)} · Prazo ${date(t.due)}`,late:remaining<0,weight:remaining<0?100-remaining:20-remaining})}
  for(const n of state.nfs){if(n.status==='Conferido')continue;const age=days(today,n.date),overdue=age-settings.nfDays;if(overdue<=0)continue;out.push({key:`nf:${n.id}:${n.date}:${settings.nfDays}:${today}`,kind:'nf',id:n.id,title:`NF ${n.number} · ${n.supplier}`,message:`${overdue} dia(s) de atraso na conferência`,detail:`Recebida há ${age} dia(s) · Limite: ${settings.nfDays} dia(s) · ${owner(n.owner)}`,late:true,weight:100+overdue})}
+ for(const x of (state.expiries||[])){if(x.status!=='Ativo')continue;const rem=days(x.date,today);if(!(rem<0||rem<=7||rem===15||rem===30))continue;const where=(x.corridor?'Corredor '+corridor(x.corridor):'Sem corredor')+' · '+owner(x.owner)+' · '+x.qty+' un.';out.push({key:`exp:${x.id}:${x.date}:${today}`,kind:'exp',id:x.id,title:'Validade: '+x.product,message:rem<0?`Venceu há ${-rem} dia(s). Retire da gôndola.`:rem===0?'Vence hoje':rem===1?'Vence amanhã':`Vence em ${rem} dias`,detail:where+' · Vence '+date(x.date),late:rem<=0,weight:rem<0?120-rem:rem===0?110:30-rem})}
  return out.sort((a,b)=>b.weight-a.weight);
 }
 let alertShown={},alertPopupOpen=false,desktopShown={},desktopNotice=null,desktopError='';
@@ -542,7 +543,7 @@ async function disableDesktopNotifications(){state.alertSettings.desktopEnabled=
 function emitDesktop(title,body){try{if(desktopPermission()!=='granted')return false;const note=new window.Notification(title,{body,tag:'estoque99-prazos',requireInteraction:true});desktopNotice=note;note.onclick=function(){window.focus();if(modal.open)modal.close();go('alerts');note.close()};note.onerror=function(){desktopError='O navegador não conseguiu exibir a notificação. Confira as notificações do navegador no sistema operacional.';notify(desktopError)};return true}catch(e){if(navigator.serviceWorker&&navigator.serviceWorker.controller){navigator.serviceWorker.ready.then(r=>r.showNotification(title,{body,tag:'estoque99-prazos',icon:'icons/icon-192.png',badge:'icons/icon-192.png'})).catch(()=>{});return true}desktopError='Falha ao criar a notificação. Os avisos dentro do site continuam disponíveis.';notify(desktopError);return false}}
 function testDesktopNotification(){if(desktopPermission()!=='granted'){notify('Primeiro toque em Permitir notificações.');return}if(!normalizeAlertSettings(state.alertSettings).desktopEnabled){notify('Ative as notificações neste site antes do teste.');return}const sent=emitDesktop('Estoque 99 · Teste de notificação','Se você está vendo este aviso, as notificações estão funcionando. Toque ou clique para abrir a central de alertas.');if(sent)notify('Teste enviado. Confira a tela ou a central de notificações.')}
 function sendDesktopAlerts(items,now){const settings=normalizeAlertSettings(state.alertSettings);if(!settings.enabled||!settings.desktopEnabled||desktopPermission()!=='granted')return;const snoozes=state.alertSnoozes||{},fresh=items.filter(a=>(snoozes[a.key]||0)<=now&&(desktopShown[a.key]||0)<=now);if(!fresh.length)return;const body=fresh.slice(0,3).map(a=>a.title+' — '+a.message).join('\n')+(fresh.length>3?'\nMais '+(fresh.length-3)+' aviso(s). Clique para ver todos.':'\nClique para abrir a central de alertas.');if(emitDesktop('Estoque 99 · '+fresh.length+' aviso(s) de prazo',body))for(const a of fresh)desktopShown[a.key]=now+settings.repeatMinutes*60000;else for(const a of fresh)desktopShown[a.key]=now+5*60000}
-function alertRows(items,limit=items.length){return items.slice(0,limit).map(a=>`<div class="alert-item"><b>${esc(a.title)}</b><p class="${a.late?'late':''}">${esc(a.message)}</p><div class="small">${esc(a.detail)}</div><button style="margin-top:10px" onclick="openAlert('${a.kind}','${esc(a.id)}')">${a.kind==='task'?'Abrir tarefa':'Abrir NF'} →</button></div>`).join('')}
+function alertRows(items,limit=items.length){return items.slice(0,limit).map(a=>`<div class="alert-item"><b>${esc(a.title)}</b><p class="${a.late?'late':''}">${esc(a.message)}</p><div class="small">${esc(a.detail)}</div><button style="margin-top:10px" onclick="openAlert('${a.kind}','${esc(a.id)}')">${a.kind==='task'?'Abrir tarefa':a.kind==='exp'?'Abrir validade':'Abrir NF'} →</button></div>`).join('')}
 function checkAlerts(force=false,now=Date.now()){if(!authSession||authIsBlocked(authSession.storeKey))return;
  const settings=normalizeAlertSettings(state.alertSettings),items=collectAlerts(),count=$('alert-total');if(count)count.textContent=items.length;
  if(!settings.enabled||!items.length){$('alert-popup').classList.add('hidden');alertPopupOpen=false;if(desktopNotice){desktopNotice.close();desktopNotice=null}if(force)notify(!settings.enabled?'Ative os pop-ups nas preferências de alertas.':'Tudo em dia. Nenhum alerta no momento.');return}
@@ -555,8 +556,8 @@ function checkAlerts(force=false,now=Date.now()){if(!authSession||authIsBlocked(
  const box=$('alert-popup');box.innerHTML=`<div class="cardtop"><h2>⏱ Atenção aos prazos</h2><button onclick="closeAlertPopup(60)" aria-label="Fechar e adiar avisos por 1 hora">✕</button></div><p class="small">${items.length} pendência(s) precisam de atenção.</p>${alertRows(items,3)}${items.length>3?`<p class="small">Mais ${items.length-3} pendência(s) na central de alertas.</p>`:''}<div class="toolbar"><button class="primary" onclick="closeAlertPopup(15);go('alerts')">Ver todas</button><button onclick="closeAlertPopup(15)">Adiar 15 min</button><button onclick="closeAlertPopup(60)">Adiar 1 hora</button></div><p class="small">Os alertas funcionam enquanto este site estiver aberto.</p>`;box.classList.remove('hidden');alertPopupOpen=true;
 }
 async function closeAlertPopup(minutes){const until=Date.now()+minutes*60000;state.alertSnoozes=normalizeSnoozes(state.alertSnoozes);for(const a of collectAlerts()){state.alertSnoozes[a.key]=until;alertShown[a.key]=until;desktopShown[a.key]=until}if(desktopNotice)desktopNotice.close();desktopNotice=null;for(const key of Object.keys(state.alertSnoozes))if(state.alertSnoozes[key]<Date.now())delete state.alertSnoozes[key];$('alert-popup').classList.add('hidden');alertPopupOpen=false;await save()}
-function openAlert(kind,id){closeAlertPopup(15);go(kind==='task'?'tasks':'nfs');openEditor(kind,id)}
-function renderAlertsPage(){const s=normalizeAlertSettings(state.alertSettings),items=collectAlerts();return hero('Nenhum prazo passa batido.','Alertas locais para tarefas e conferência de notas fiscais.',`<button onclick="checkAlerts(true)">Mostrar pop-up agora</button>`)+`<div class="panel help"><h2>Configurar avisos</h2><form class="alert-settings" onsubmit="saveAlertSettings(event)"><label>Pop-ups automáticos<select name="enabled"><option value="yes" ${s.enabled?'selected':''}>Ativados</option><option value="no" ${!s.enabled?'selected':''}>Desativados</option></select></label><label>Avisar tarefas com até (dias)<input type="number" name="taskDays" min="0" max="30" required value="${s.taskDays}"></label><label>Limite de conferência NF (dias)<input type="number" name="nfDays" min="0" max="90" required value="${s.nfDays}"></label><label>Repetir avisos a cada<select name="repeatMinutes">${options([[15,'15 minutos'],[30,'30 minutos'],[60,'1 hora'],[120,'2 horas'],[240,'4 horas']].map(([v,t])=>[String(v),t]),String(s.repeatMinutes))}</select></label><button class="primary">Salvar preferências</button></form><p class="small">Verificação a cada minuto e ao voltar para a aba. Não aparecem notificações com o site fechado ou o computador desligado. Preferências e adiamentos entram no backup.</p></div><div class="panel help"><div class="cardtop"><h2>Central de alertas</h2><span class="alert-count">${items.length} pendência(s)</span></div>${items.length?alertRows(items):'<div class="empty">Tudo em dia. Nenhuma pendência dentro dos critérios configurados.</div>'}</div>`}
+function openAlert(kind,id){closeAlertPopup(15);if(kind==='exp'){go('expiry');if(window.expiryOpen)window.expiryOpen(id);return}go(kind==='task'?'tasks':'nfs');openEditor(kind,id)}
+function renderAlertsPage(){const s=normalizeAlertSettings(state.alertSettings),items=collectAlerts();return hero('Nenhum prazo passa batido.','Alertas locais para tarefas, conferência de notas fiscais e validades.',`<button onclick="checkAlerts(true)">Mostrar pop-up agora</button>`)+`<div class="panel help"><h2>Configurar avisos</h2><form class="alert-settings" onsubmit="saveAlertSettings(event)"><label>Pop-ups automáticos<select name="enabled"><option value="yes" ${s.enabled?'selected':''}>Ativados</option><option value="no" ${!s.enabled?'selected':''}>Desativados</option></select></label><label>Avisar tarefas com até (dias)<input type="number" name="taskDays" min="0" max="30" required value="${s.taskDays}"></label><label>Limite de conferência NF (dias)<input type="number" name="nfDays" min="0" max="90" required value="${s.nfDays}"></label><label>Repetir avisos a cada<select name="repeatMinutes">${options([[15,'15 minutos'],[30,'30 minutos'],[60,'1 hora'],[120,'2 horas'],[240,'4 horas']].map(([v,t])=>[String(v),t]),String(s.repeatMinutes))}</select></label><button class="primary">Salvar preferências</button></form><p class="small">Verificação a cada minuto e ao voltar para a aba. Não aparecem notificações com o site fechado ou o computador desligado. Preferências e adiamentos entram no backup.</p></div><div class="panel help"><div class="cardtop"><h2>Central de alertas</h2><span class="alert-count">${items.length} pendência(s)</span></div>${items.length?alertRows(items):'<div class="empty">Tudo em dia. Nenhuma pendência dentro dos critérios configurados.</div>'}</div>`}
 async function saveAlertSettings(event){event.preventDefault();const v=readForm(event.target);state.alertSettings=normalizeAlertSettings({enabled:v.enabled==='yes',desktopEnabled:state.alertSettings.desktopEnabled,taskDays:Number(v.taskDays),nfDays:Number(v.nfDays),repeatMinutes:Number(v.repeatMinutes)});state.alertSnoozes={};alertShown={};desktopShown={};alertPopupOpen=false;$('alert-popup').classList.add('hidden');await save();render();notify('Preferências de alertas salvas.')}
 // Offline assistant: deterministic queries over live state, never a remote AI call.
 let assistantMessages=[],assistantContext={},assistantPageSize=8;
@@ -687,6 +688,10 @@ function showFeatureCredits(){notify('Busca: Fuse.js 7.1.0. Calendários: Flatpi
 // Local encrypted accounts. No network identity, no shared-store administration.
 let planDraft=null,planDraftDirty=false,planPhotoBusy=false,planFilter='';
 /* Rupturas: corrige em vez de recusar, para a conta sempre abrir. Fotos ficam no IndexedDB (só ids aqui). */
+function validateExpiries(list,st){if(!Array.isArray(list))return [];const okId=x=>typeof x==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(x);const people=new Set(['','todos',...((st&&st.team)||[]).map(x=>x&&x.id)]),cors=new Set(['',...((st&&st.corridors)||[]).map(x=>x&&x.id)]);const ids=new Set(),out=[];const str=(v,n)=>typeof v==='string'?v.slice(0,n):'';const day=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&!isNaN(Date.parse(v+'T12:00:00'))?v:'';
+ for(const x of list.slice(0,5000)){if(!x||!okId(x.id)||ids.has(x.id))continue;const d=day(x.date);const product=str(x.product,200).trim();if(!d||!product)continue;ids.add(x.id);const t=Date.parse(x.createdAt),q=Number(x.qty);
+  out.push({id:x.id,product,ean:typeof x.ean==='string'&&/^\d{0,20}$/.test(x.ean)?x.ean:'',qty:Number.isInteger(q)&&q>=0&&q<=999999?q:1,date:d,corridor:cors.has(x.corridor)?x.corridor:'',owner:people.has(x.owner)?x.owner:'',status:x.status==='Retirado'?'Retirado':'Ativo',notes:str(x.notes,1000),createdAt:isNaN(t)?new Date().toISOString():new Date(t).toISOString(),doneAt:x.status==='Retirado'&&!isNaN(Date.parse(x.doneAt))?new Date(Date.parse(x.doneAt)).toISOString():''})}
+ return out}
 function validPhotoKey(k){return typeof k==='string'&&/^[A-Za-z0-9+/]{43}=$/.test(k)?k:''}
 function validateRuptures(list,st){if(!Array.isArray(list))return [];const okId=x=>typeof x==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(x);const people=new Set(['','todos',...((st&&st.team)||[]).map(x=>x&&x.id)]),cors=new Set(['',...((st&&st.corridors)||[]).map(x=>x&&x.id)]);const ids=new Set(),out=[];
  for(const r of list.slice(0,2000)){if(!r||!okId(r.id)||ids.has(r.id))continue;ids.add(r.id);const str=(v,n)=>typeof v==='string'?v.slice(0,n):'';const t=Date.parse(r.createdAt);
@@ -2419,12 +2424,14 @@ function buildFields(label){
  var open=state.tasks.filter(function(t){return t.status!=='Concluído'});
  var late=open.filter(function(t){return t.due&&t.due<today}),due=open.filter(function(t){return t.due===today});
  f['Loja']=store;f['Gerado em']=br(new Date());
- f['Resumo']=nfs.length+' NFs a conferir · '+div.length+' em divergência · '+late.length+' tarefas atrasadas · '+due.length+' para hoje';
+ f['Resumo']=nfs.length+' NFs a conferir · '+div.length+' em divergência · '+late.length+' tarefas atrasadas · '+due.length+' para hoje'+((state.expiries||[]).length?' · '+(state.expiries||[]).filter(function(x){return x.status==='Ativo'&&x.date<=(function(){var d=new Date();d.setDate(d.getDate()+7);return iso(d)})()}).length+' validades em até 7 dias':'');
  var used=0,LIMIT=80;
  function add(name,value){if(used>=LIMIT)return;var k=name,i=2;while(f[k]!==undefined)k=name+' ('+(i++)+')';f[k]=value;used++}
  nfs.forEach(function(n){add('NF '+n.number,(n.supplier||'—')+' · '+n.status+' · chegada '+date(n.date)+' · '+(n.volumes||0)+' vol.'+(n.status==='Em divergência'&&n.notes?' · '+n.notes:''))});
  late.concat(due).forEach(function(t){add('Tarefa: '+t.title,owner(t.owner)+' · prazo '+date(t.due)+' · '+t.status+(t.due<today?' · ATRASADA':''))});
- var total=nfs.length+late.length+due.length;if(total>used)f['Mais']=(total-used)+' itens não cabem no e-mail. Veja no site.';
+ var lim=new Date();lim.setDate(lim.getDate()+7);var lk=iso(lim);var exp=(state.expiries||[]).filter(function(x){return x.status==='Ativo'&&x.date<=lk}).sort(function(a,b){return a.date.localeCompare(b.date)});
+ exp.forEach(function(x){var r=Math.round((new Date(x.date+'T12:00:00')-new Date(today+'T12:00:00'))/864e5);add('Validade: '+x.product,(r<0?'VENCEU há '+(-r)+' dia(s) · retirar':r===0?'vence HOJE':'vence em '+r+' dia(s)')+' · '+date(x.date)+' · '+x.qty+' un. · '+corridor(x.corridor)+' · '+owner(x.owner))});
+ var total=nfs.length+late.length+due.length+exp.length;if(total>used)f['Mais']=(total-used)+' itens não cabem no e-mail. Veja no site.';
  if(!total)f['Situação']='Nada pendente. Tudo em dia.';
  f._subject='Estoque 99 · Relatório '+label+' · '+store+' · '+date(today);f._template='table';f._captcha='false';
  return f}
@@ -2642,8 +2649,8 @@ var GEMINI='https://generativelanguage.googleapis.com/v1beta/openai',MODELS=['ge
 var PROMPT='Esta é uma foto de gôndola/prateleira de uma loja (supermercado ou varejo). Liste, em português do Brasil, os produtos que parecem estar em falta (espaço vazio, ruptura) ou acabando. Uma linha por produto, curta, com marca e tamanho quando der para ler na etiqueta ou nos produtos vizinhos. Sem introdução e sem numeração. Se não der para identificar, responda apenas: não identificado.';
 async function robotCfg(){var raw=localStorage.getItem('lojasg.estoque99.robot-groq:'+authSession.storeKey);if(!raw)return null;try{var o=JSON.parse(raw);var p=await crypto.subtle.decrypt({name:'AES-GCM',iv:authUn64(o.iv),additionalData:authBytes('robot|'+authLoginName(authSession.record.login))},authSession.key,authUn64(o.cipher));return JSON.parse(new TextDecoder().decode(p))}catch(e){return null}}
 function clean(t){return String(t||'').replace(/\*\*/g,'').split(/\n+/).map(function(l){return l.replace(/^\s*(?:[-•*]|\d+[.)])\s*/,'').trim()}).filter(Boolean).join('\n').slice(0,1000)}
-async function ask(key,images){var last='';for(var i=0;i<MODELS.length;i++){var res;
-  try{res=await fetch(GEMINI+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:MODELS[i],max_tokens:2048,temperature:0.2,messages:[{role:'user',content:[{type:'text',text:PROMPT}].concat(images.map(function(u){return {type:'image_url',image_url:{url:u}}}))}]})})}
+async function ask(key,images,prompt){var last='';for(var i=0;i<MODELS.length;i++){var res;
+  try{res=await fetch(GEMINI+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:MODELS[i],max_tokens:2048,temperature:0.2,messages:[{role:'user',content:[{type:'text',text:prompt||PROMPT}].concat(images.map(function(u){return {type:'image_url',image_url:{url:u}}}))}]})})}
   catch(e){throw Error('Não conectou ao Google Gemini. Confira a internet; se o computador da empresa bloquear, use o celular.')}
   if(res.ok){var j=await res.json();var t=j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;return clean(Array.isArray(t)?t.map(function(x){return x.text||''}).join('\n'):t)}
   var body='';try{body=await res.text()}catch(e){}
@@ -2651,6 +2658,7 @@ async function ask(key,images){var last='';for(var i=0;i<MODELS.length;i++){var 
   if(res.status===404||res.status===429||res.status>=500){last=res.status;continue}
   throw Error('O Gemini respondeu com erro '+res.status+'.')}
   throw Error(last===429?'Limite gratuito do Gemini atingido. Tente em alguns minutos.':'O Gemini está sobrecarregado agora. Tente de novo em instantes.')}
+window.geminiVision=async function(prompt,images){var cfg=await robotCfg();var key=cfg&&cfg.keys&&cfg.keys.gemini;if(!key){var er=Error('Para o robô ler fotos, configure o Google Gemini na página do Robô (menu Robô → IA).');er.noKey=true;throw er}return ask(key,images,prompt)};
 window.ruptureAI=async function(){if(!authSession)return;var photos=(window.ruptureDraftPhotos&&window.ruptureDraftPhotos())||[];
   if(!photos.length){window.ruptureAIStatus('Tire ou anexe uma foto primeiro.');return}
   var cfg=await robotCfg();var key=cfg&&cfg.keys&&cfg.keys.gemini;
@@ -2882,7 +2890,7 @@ function empty(){return '<p class="pn-empty">Sem dados no período.</p>'}
 function ownerName(id){return id===''?'Sem responsável':owner(id)}
 
 function renderReports(){var n=days(),dlist=range(n),keys=dlist.map(function(d){return iso(d)}),first=keys[0],today=iso(),inP=function(k){return k&&k>=first&&k<=today};
-  var rup=Array.isArray(state.ruptures)?state.ruptures:[],nfs=state.nfs||[],tasks=state.tasks||[],exp=Array.isArray(state.expiries)?state.expiries:null;
+  var rup=Array.isArray(state.ruptures)?state.ruptures:[],nfs=state.nfs||[],tasks=state.tasks||[],exp=Array.isArray(state.expiries)&&state.expiries.length?state.expiries:null;
   var open=rup.filter(function(r){return r.status==='Falta'});
   var doneP=rup.filter(function(r){return r.status==='Abastecido'&&inP(dayOf(r.doneAt))&&r.createdAt});
   var avg=doneP.length?doneP.reduce(function(a,r){return a+Math.max(0,new Date(r.doneAt)-new Date(r.createdAt))},0)/doneP.length:0;
@@ -2931,6 +2939,133 @@ document.addEventListener('click',function(ev){var t=ev.target&&ev.target.closes
 if(typeof labels==='object'&&!labels.reports){labels.reports='Painel';icons.reports='▥';var ks=Object.keys(labels),pos=ks.indexOf('home');ks.slice(pos+1).filter(function(k){return k!=='reports'}).forEach(function(k){var v=labels[k];delete labels[k];labels[k]=v})}
 /* atalho no início */
 var before=render;render=function(){var r=before.apply(this,arguments);if(authSession&&page==='home'){var st=document.querySelector('#view .stats');if(st&&!document.querySelector('#view .pn-homelink')){var d=document.createElement('div');d.className='pn-homelink';d.innerHTML='<button type="button" onclick="go(\'reports\')">▥ Ver painel com gráficos →</button>';st.after(d)}}return r};
+})();
+</script>
+<style id="validade-css">
+/* Controle de validade: preto e branco; urgência por espessura da borda e negrito, não por cor. */
+.exp-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:6px}
+.exp-card{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:16px;padding:14px;display:grid;gap:10px;min-width:0}
+.exp-card.warm{border:2px solid var(--ds-ink)}
+.exp-card.hot{border:3px solid var(--ds-ink)}
+.exp-card.done{opacity:.72}
+.exp-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.exp-top b{font-size:16px;line-height:1.3;overflow-wrap:anywhere}
+.exp-meta{font-size:12.5px;color:var(--ds-muted);overflow-wrap:anywhere}
+.exp-pill{flex:none;font-size:12.5px;font-weight:750;border-radius:999px;padding:5px 10px;white-space:nowrap;background:var(--ds-accent-soft);color:var(--ds-ink)}
+.exp-card.warm .exp-pill{background:var(--ds-surface);box-shadow:inset 0 0 0 2px var(--ds-ink)}
+.exp-card.hot .exp-pill{background:var(--ds-ink);color:var(--ds-bg)}
+.exp-actions{display:flex;gap:8px;flex-wrap:wrap}
+.exp-actions button{min-height:44px}
+.exp-actions .primary{flex:1}
+.exp-home{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:2px solid var(--ds-ink);background:var(--ds-surface);border-radius:16px;padding:14px 16px;margin:0 0 16px}
+.exp-home b{font-size:15px}
+#exp-dialog{border:0;padding:0;background:var(--ds-surface);color:var(--ds-ink);border-radius:20px;width:min(560px,100%);max-height:94dvh;overflow:auto}
+#exp-dialog::backdrop{background:rgba(0,0,0,.55)}
+#exp-form{padding:18px;display:grid;gap:14px}
+#exp-form label{display:grid;gap:6px;font-weight:600;font-size:13.5px}
+#exp-form input,#exp-form select,#exp-form textarea{width:100%;min-width:0}
+#exp-form .pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.exp-ean{display:flex;gap:8px}
+.exp-ean input{flex:1}
+.exp-ean button{white-space:nowrap;min-height:44px}
+.exp-hint{font-size:12.5px;font-weight:400;color:var(--ds-muted);margin:0}
+.exp-hint:empty{display:none}
+#exp-video{width:100%;max-height:240px;border-radius:12px;background:#000;object-fit:cover;filter:none!important}
+.exp-photo{display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border:1px dashed var(--ds-ink);border-radius:12px;background:var(--ds-bg);font-weight:600;cursor:pointer;text-align:center;padding:0 12px}
+.exp-photo.busy{opacity:.6;pointer-events:none}
+.exp-foot{display:flex;gap:8px;flex-wrap:wrap}
+.exp-foot .primary{flex:1}
+@media (max-width:900px){#exp-form .pair{grid-template-columns:1fr 1fr}#exp-dialog{border-radius:20px 20px 0 0;margin:auto 0 0}.exp-home button{width:100%}}
+</style>
+<script id="validade-js">
+(function(){
+'use strict';
+window.extraPages=window.extraPages||{};
+var view='soon',scan=null,editingId=null;
+function list(){if(!Array.isArray(state.expiries))state.expiries=[];return state.expiries}
+function e(s){return esc(String(s==null?'':s))}
+function rem(x){return Math.round((new Date(x.date+'T12:00:00')-new Date(iso()+'T12:00:00'))/864e5)}
+function when(r){return r<-1?'Venceu há '+(-r)+' dias':r===-1?'Venceu ontem':r===0?'Vence hoje':r===1?'Vence amanhã':'Vence em '+r+' dias'}
+function level(x){if(x.status!=='Ativo')return 'done';var r=rem(x);return r<=0?'hot':r<=7?'warm':''}
+function options(rows,v){return rows.map(function(o){return '<option value="'+e(o[0])+'"'+(o[0]===v?' selected':'')+'>'+e(o[1])+'</option>'}).join('')}
+function groups(){var a=list(),act=a.filter(function(x){return x.status==='Ativo'});return {soon:act.filter(function(x){var r=rem(x);return r>=0&&r<=30}),late:act.filter(function(x){return rem(x)<0}),all:act,done:a.filter(function(x){return x.status==='Retirado'})}}
+window.expiryTab=function(v){view=v;render()};
+window.renderExpiry=function(){var g=groups(),items=(g[view]||g.soon).slice();
+  if(view==='done')items.sort(function(a,b){return String(b.doneAt).localeCompare(String(a.doneAt))});else items.sort(function(a,b){return a.date.localeCompare(b.date)});
+  var tabs=[['soon','Vencendo',g.soon.length],['late','Vencidos',g.late.length],['all','Todos',g.all.length],['done','Retirados',g.done.length]];
+  var empty={soon:'Nada vence nos próximos 30 dias.',late:'Nenhum produto vencido na gôndola.',all:'Nenhuma validade cadastrada. Toque em Nova validade.',done:'Nenhum produto retirado ainda.'}[view];
+  return hero('Nada vence na gôndola.','Avisos 30, 15 e 7 dias antes e no dia do vencimento.','<button class="primary" type="button" onclick="expiryOpen()">＋ Nova validade</button>')
+   +'<div class="panel" style="padding:16px"><div class="nf-tabs" role="tablist" aria-label="Filtro de validades">'+tabs.map(function(t){return '<button type="button" role="tab" aria-selected="'+(view===t[0])+'" onclick="expiryTab(\''+t[0]+'\')">'+t[1]+' <span class="nf-count">'+t[2]+'</span></button>'}).join('')+'</div>'
+   +(items.length?'<div class="exp-list">'+items.map(card).join('')+'</div>':'<div class="empty">'+e(empty)+'</div>')+'</div>'};
+function card(x){var r=rem(x),lv=level(x);var meta=[x.ean?'Cód. '+x.ean:'',x.qty+' un.','vence '+date(x.date)].filter(Boolean).join(' · ');
+  return '<article class="exp-card '+lv+'"><div class="exp-top"><div style="display:grid;gap:3px;min-width:0"><b>'+e(x.product)+'</b><span class="exp-meta">'+e(meta)+'</span></div><span class="exp-pill">'+e(x.status==='Ativo'?when(r):'Retirado '+(x.doneAt?new Date(x.doneAt).toLocaleDateString('pt-BR'):''))+'</span></div>'
+   +'<div class="exp-meta">'+e((x.corridor?'Corredor '+corridor(x.corridor):'Sem corredor')+' · '+owner(x.owner))+(x.notes?'<br>'+e(x.notes):'')+'</div>'
+   +'<div class="exp-actions">'+(x.status==='Ativo'?'<button type="button" class="primary" onclick="expiryDone(\''+e(x.id)+'\')">Retirado da gôndola</button>':'<button type="button" onclick="expiryUndo(\''+e(x.id)+'\')">Voltar para a gôndola</button>')+'<button type="button" onclick="expiryOpen(\''+e(x.id)+'\')">Editar</button></div></article>'}
+window.expiryDone=async function(id){var x=list().find(function(y){return y.id===id});if(!x)return;x.status='Retirado';x.doneAt=new Date().toISOString();await save();notify('Marcado como retirado da gôndola.');render()};
+window.expiryUndo=async function(id){var x=list().find(function(y){return y.id===id});if(!x)return;x.status='Ativo';x.doneAt='';await save();render()};
+/* janela de cadastro */
+function dialog(){var d=document.getElementById('exp-dialog');if(d)return d;d=document.createElement('dialog');d.id='exp-dialog';d.setAttribute('aria-labelledby','exp-title');
+  d.innerHTML='<form id="exp-form" method="dialog" novalidate><div class="rup-head"><h2 id="exp-title">Nova validade</h2><button type="button" aria-label="Fechar" onclick="expiryClose()">×</button></div>'
+   +'<label>Código de barras<span class="exp-ean"><input name="ean" inputmode="numeric" autocomplete="off" maxlength="20" placeholder="Bipe, digite ou leia pela câmera"><button type="button" id="exp-scan">▥ Ler código</button></span></label>'
+   +'<div id="exp-cam" hidden><video id="exp-video" playsinline muted></video><p class="exp-hint" id="exp-cam-status"></p></div>'
+   +'<label>Produto<input name="product" maxlength="200" autocomplete="off" required placeholder="Ex.: Leite UHT integral 1 L"><span class="exp-hint" id="exp-found"></span></label>'
+   +'<div class="pair"><label>Quantidade<input name="qty" type="number" inputmode="numeric" min="0" max="999999" step="1" value="1"></label><label>Vence em<input name="date" type="date" required></label></div>'
+   +'<label class="exp-photo" id="exp-photo-btn">📷 Ler a data pela foto (robô)<input type="file" accept="image/*" capture="environment" hidden id="exp-photo"></label><p class="exp-hint" id="exp-ai" aria-live="polite"></p>'
+   +'<div class="pair"><label>Corredor<select name="corridor"></select></label><label>Responsável<select name="owner"></select></label></div>'
+   +'<label>Observação<textarea name="notes" rows="2" maxlength="1000" placeholder="Lote, local na gôndola…"></textarea></label>'
+   +'<div class="exp-foot"><button type="button" id="exp-del" hidden>Excluir</button><button type="button" onclick="expiryClose()">Cancelar</button><button type="submit" class="primary" id="exp-save">Salvar validade</button></div></form>';
+  document.body.appendChild(d);var f=d.querySelector('form');
+  f.onsubmit=function(ev){ev.preventDefault();saveForm()};
+  f.elements.ean.addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();lookup(true)}});
+  f.elements.ean.addEventListener('change',function(){lookup(false)});
+  f.elements.corridor.onchange=function(){var c=state.corridors.find(function(x){return x.id===f.elements.corridor.value});if(c&&c.owner&&!f.elements.owner.value)f.elements.owner.value=c.owner};
+  d.querySelector('#exp-scan').onclick=function(){scan?stopScan('Câmera fechada.'):startScan()};
+  d.querySelector('#exp-photo').onchange=function(){readDate(this)};
+  d.querySelector('#exp-del').onclick=deleteCurrent;
+  d.addEventListener('close',function(){stopScan('')});
+  return d}
+window.expiryOpen=function(id){var d=dialog(),f=d.querySelector('form'),x=id?list().find(function(y){return y.id===id}):null;editingId=x?x.id:null;
+  d.querySelector('#exp-title').textContent=x?'Editar validade':'Nova validade';
+  f.elements.ean.value=x?x.ean:'';f.elements.product.value=x?x.product:'';f.elements.qty.value=x?x.qty:1;f.elements.date.value=x?x.date:'';f.elements.notes.value=x?x.notes:'';
+  f.elements.corridor.innerHTML=options([['','Sem corredor']].concat(state.corridors.map(function(c){return [c.id,c.number+' · '+c.sector]})),x?x.corridor:'');
+  f.elements.owner.innerHTML=options([['','Sem responsável'],['todos','TODOS']].concat(state.team.map(function(p){return [p.id,p.name]})),x?x.owner:'');
+  d.querySelector('#exp-found').textContent='';d.querySelector('#exp-ai').textContent='';d.querySelector('#exp-del').hidden=!x;
+  if(!d.open)d.showModal();if(!x)setTimeout(function(){f.elements.ean.focus()},50)};
+window.expiryClose=function(){var d=document.getElementById('exp-dialog');if(d&&d.open)d.close()};
+function known(code){if(!code)return null;var a=list().filter(function(x){return x.ean===code}).sort(function(a,b){return String(b.createdAt).localeCompare(String(a.createdAt))})[0];if(a)return {name:a.product,from:'validade cadastrada antes'};
+  for(var i=state.nfs.length-1;i>=0;i--){var n=state.nfs[i];var it=(n.items||[]).find(function(y){return y.ean===code||y.code===code});if(it&&it.description)return {name:it.description,from:'NF '+n.number}}return null}
+function lookup(fromEnter){var f=dialog().querySelector('form'),code=String(f.elements.ean.value||'').replace(/\D/g,'');f.elements.ean.value=code;var hint=dialog().querySelector('#exp-found');var k=known(code);
+  if(k){if(!f.elements.product.value.trim())f.elements.product.value=k.name;hint.textContent='Nome encontrado pelo código ('+k.from+').'}else hint.textContent=code?'Código novo: escreva o nome do produto.':'';
+  if(fromEnter)(f.elements.product.value.trim()?f.elements.date:f.elements.product).focus()}
+async function startScan(){var d=dialog(),box=d.querySelector('#exp-cam'),st=d.querySelector('#exp-cam-status'),video=d.querySelector('#exp-video');box.hidden=false;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||typeof ZXing==='undefined'){st.textContent='Câmera indisponível aqui. Use o leitor USB ou digite o código.';return}
+  var s={reader:new ZXing.BrowserMultiFormatReader(),stream:null};scan=s;st.textContent='Aguardando permissão da câmera…';d.querySelector('#exp-scan').textContent='Fechar câmera';
+  try{var stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});if(scan!==s){stream.getTracks().forEach(function(t){t.stop()});return}s.stream=stream;st.textContent='Aponte para o código de barras do produto.';
+    await s.reader.decodeFromStream(stream,video,function(res){if(!res||scan!==s)return;var code=res.getText();stopScan('Código lido.');var f=d.querySelector('form');f.elements.ean.value=code;lookup(true)})}
+  catch(err){if(scan===s)stopScan('Não foi possível abrir a câmera. Confira a permissão.')}}
+function stopScan(msg){var s=scan;scan=null;if(s){if(s.stream)s.stream.getTracks().forEach(function(t){t.stop()});try{s.reader.reset()}catch(e){}}var d=document.getElementById('exp-dialog');if(!d)return;var v=d.querySelector('#exp-video');if(v)v.srcObject=null;var b=d.querySelector('#exp-scan');if(b)b.textContent='▥ Ler código';var box=d.querySelector('#exp-cam');if(box)box.hidden=!msg;var st=d.querySelector('#exp-cam-status');if(st)st.textContent=msg||''}
+var PROMPT='Esta foto mostra a embalagem de um produto. Encontre a DATA DE VALIDADE (pode aparecer como VAL, VALIDADE, VENC, EXP, "consumir até"). Não use a data de fabricação (FAB). Responda somente a data no formato AAAA-MM-DD. Se só houver mês e ano, use o último dia do mês. Se não encontrar, responda apenas: NADA';
+function parseDate(t){t=String(t||'');var m=t.match(/(20\d{2})-(\d{2})-(\d{2})/);if(m)return ok(m[1],m[2],m[3]);m=t.match(/(\d{2})[\/.](\d{2})[\/.](\d{2,4})/);if(m)return ok(m[3].length===2?'20'+m[3]:m[3],m[2],m[1]);return '';
+  function ok(y,mo,d){var v=y+'-'+mo+'-'+d;var dt=new Date(v+'T12:00:00');return !isNaN(dt)&&dt.getMonth()+1===+mo&&+y>=2020&&+y<=2100?v:''}}
+async function readDate(input){var d=dialog(),out=d.querySelector('#exp-ai'),btn=d.querySelector('#exp-photo-btn');var file=input.files&&input.files[0];input.value='';if(!file)return;
+  if(typeof window.geminiVision!=='function'){out.textContent='Robô indisponível.';return}
+  btn.classList.add('busy');out.textContent='🤖 Procurando a data de validade na foto…';
+  try{var p=await compressPlanPhoto(file);var txt=await window.geminiVision(PROMPT,[p.data]);var v=parseDate(txt);
+    if(v){d.querySelector('form').elements.date.value=v;out.textContent='Data lida pelo robô: '+date(v)+'. Confira antes de salvar.'}else out.textContent='O robô não achou a data na foto. Digite a data.'}
+  catch(err){out.textContent=err.message||'Não foi possível ler a foto.'}finally{btn.classList.remove('busy')}}
+async function saveForm(){var f=dialog().querySelector('form');var product=f.elements.product.value.trim(),dt=f.elements.date.value,q=parseInt(f.elements.qty.value,10);
+  if(!product){notify('Escreva o nome do produto.');f.elements.product.focus();return}
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(dt)){notify('Informe a data de validade.');f.elements.date.focus();return}
+  var rec={product:product.slice(0,200),ean:String(f.elements.ean.value||'').replace(/\D/g,'').slice(0,20),qty:Number.isInteger(q)&&q>=0?Math.min(q,999999):1,date:dt,corridor:f.elements.corridor.value,owner:f.elements.owner.value,notes:f.elements.notes.value.trim().slice(0,1000)};
+  var x=editingId&&list().find(function(y){return y.id===editingId});if(x)Object.assign(x,rec);else list().push(Object.assign({id:uid(),status:'Ativo',createdAt:new Date().toISOString(),doneAt:''},rec));
+  await save();expiryClose();var r=rem(rec);if(r<0)view='late';else if(view==='done'||(view==='late'&&r>=0))view='soon';notify(x?'Validade atualizada.':'Validade salva. '+when(r)+'.');render()}
+async function deleteCurrent(){if(!editingId||!confirm('Excluir esta validade?'))return;state.expiries=list().filter(function(y){return y.id!==editingId});await save();expiryClose();render()}
+window.extraPages.expiry=window.renderExpiry;
+/* menu: Validade logo depois de Notas fiscais */
+if(typeof labels==='object'&&!labels.expiry){labels.expiry='Validade';icons.expiry='◷';var ks=Object.keys(labels),pos=ks.indexOf('nfs');if(pos>=0)ks.slice(pos+1).filter(function(k){return k!=='expiry'}).forEach(function(k){var v=labels[k];delete labels[k];labels[k]=v})}
+/* aviso no início */
+var before=render;render=function(){var r=before.apply(this,arguments);if(authSession&&page==='home'){var g=groups();var lim=g.all.filter(function(x){var d=rem(x);return d>=0&&d<=7}).length;if((lim||g.late.length)&&!document.querySelector('#view .exp-home')){var st=document.querySelector('#view .pn-homelink')||document.querySelector('#view .stats');if(st){var b=document.createElement('div');b.className='exp-home';b.innerHTML='<div><b>'+(lim?lim+' produto(s) vencem em até 7 dias':'Validade')+'</b><div class="small">'+(g.late.length?g.late.length+' já vencido(s) na gôndola':'Confira e retire antes de vencer.')+'</div></div><button type="button" onclick="go(\'expiry\');expiryTab(\''+(g.late.length?'late':'soon')+'\')">◷ Ver validade →</button>';st.after(b)}}}return r};
+document.addEventListener('visibilitychange',function(){if(document.hidden)stopScan('')});
 })();
 </script>
 <script>

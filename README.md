@@ -56,6 +56,17 @@ Menu **Painel** (no celular: **Mais → Painel**, ou o botão **Ver painel com g
 - Toque (ou passe o mouse) numa barra para ver o número; **Ver como tabela** mostra os valores em lista.
 - Tudo em tons de cinza, com hachura para diferenciar as séries.
 
+## Controle de validade
+Menu **Validade** (no celular: **Mais → Validade**).
+1. Toque em **＋ Nova validade**.
+2. **Código de barras:** bipe com o leitor USB, digite ou toque em **▥ Ler código** para usar a câmera. Se o código já apareceu numa NF importada (ou numa validade anterior), o nome do produto é preenchido sozinho.
+3. **Vence em:** digite a data ou toque em **📷 Ler a data pela foto (robô)** — o Google Gemini configurado na página do Robô lê a data impressa na embalagem. Confira antes de salvar.
+4. Informe quantidade, corredor (preenche o responsável) e observação (lote, local).
+
+Abas: **Vencendo** (próximos 30 dias), **Vencidos**, **Todos** e **Retirados**. Até 7 dias o cartão fica com borda grossa; vencido ou vencendo hoje, borda mais grossa e etiqueta preta. Ao tirar o produto, toque em **Retirado da gôndola**.
+
+Avisos: a central de alertas (e o aviso no computador, se ligado) avisa 30 e 15 dias antes, todos os dias a partir de 7 dias, no dia e enquanto estiver vencido na gôndola. O relatório por e-mail das 8h e 18h e o Robô (pergunta "O que vence esta semana?") também mostram as validades. O início mostra um aviso quando há produto vencendo em até 7 dias.
+
 ## Rupturas (fotos para abastecer)
 
 Na aba **Rupturas** (barra de baixo no celular, menu lateral no computador), toque em **📷 Nova ruptura**:

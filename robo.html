@@ -113,6 +113,7 @@ body.still .bot,body.still .msg.bot.typing::after{animation:none!important}
           <button type="button" data-q="O que está pendente hoje?">O que está pendente hoje?</button>
           <button type="button" data-q="Quais NFs estão em divergência?">NFs em divergência</button>
           <button type="button" data-q="O que falta abastecer (rupturas em aberto) e com quem?">O que falta abastecer?</button>
+          <button type="button" data-q="Quais produtos vencem esta semana ou já venceram, e onde estão?">O que vence esta semana?</button>
           <button type="button" data-q="Quais tarefas estão atrasadas e com quem?">Tarefas atrasadas</button>
           <button type="button" data-q="Quais NFs chegaram há mais tempo e ainda não foram conferidas?">NFs mais antigas</button>
         </div>
@@ -221,6 +222,10 @@ function buildContext(){
   var rup=(st.ruptures||[]).filter(function(r){return r.status!=='Abastecido'});
   L.push('','RUPTURAS EM FALTA PARA ABASTECER ('+rup.length+'):');
   rup.forEach(function(r){var c=(st.corridors||[]).find(function(x){return x.id===r.corridor});var h=Math.max(0,Math.round((Date.now()-Date.parse(r.createdAt))/3600000));L.push('- '+(String(r.product||'produto não informado').replace(/\n+/g,'; '))+' | '+(c?'corredor '+c.number+' '+c.sector:'sem corredor')+' | responsável: '+who(r.owner)+' | registrada há '+(h<1?'menos de 1 hora':h+' h')+' | '+(r.photos||[]).length+' foto(s)'+(r.notes?' | obs: '+String(r.notes).slice(0,150):''))});
+  var lim=new Date();lim.setDate(lim.getDate()+30);var lk=lim.getFullYear()+'-'+('0'+(lim.getMonth()+1)).slice(-2)+'-'+('0'+lim.getDate()).slice(-2);
+  var exp=(st.expiries||[]).filter(function(x){return x.status!=='Retirado'&&x.date<=lk}).sort(function(a,b){return String(a.date).localeCompare(String(b.date))});
+  L.push('','VALIDADES (produtos ativos que vencem em até 30 dias ou já vencidos) ('+exp.length+'):');
+  exp.forEach(function(x){var c=(st.corridors||[]).find(function(y){return y.id===x.corridor});var r=Math.round((new Date(x.date+'T12:00:00')-new Date(today+'T12:00:00'))/864e5);L.push('- '+x.product+' | '+(r<0?'VENCIDO há '+(-r)+' dia(s)':r===0?'vence HOJE':'vence em '+r+' dia(s)')+' ('+br(x.date)+') | '+(x.qty||0)+' un. | '+(c?'corredor '+c.number+' '+c.sector:'sem corredor')+' | responsável: '+who(x.owner)+(x.ean?' | código '+x.ean:''))});
   if(team.length){L.push('','EQUIPE ('+team.length+'): '+team.map(function(p){return p.name+(p.role?' ('+p.role+')':'')}).join('; '))}
   var cor=st.corridors||[];if(cor.length){L.push('','CORREDORES ('+cor.length+'): '+cor.map(function(c){return c.number+' '+c.sector+' – '+who(c.owner)}).join('; '))}
   var plans=(st.plans||[]).filter(function(p){return p.date===today});
