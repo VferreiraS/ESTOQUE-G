@@ -50,6 +50,10 @@ Cada NF tem um de quatro status: **Pendente**, **Em conferência**, **Conferido*
 - **Conferido** pede confirmação se a nota tiver itens do XML ainda não contados ou com diferença.
 - Notas salvas antes desta versão como "Concluída" viram **Conferido**, e "Divergência" vira **Em divergência**.
 
+## Senha
+
+A senha tem de 4 a 8 números, sem letras nem símbolos. Contas antigas continuam entrando com a senha que já têm; a regra vale ao criar a conta ou trocar a senha.
+
 ## Esqueci a senha
 
 Ao criar a conta, o app mostra um **código de recuperação** de 24 caracteres. Ele aparece uma vez. Para entrar, digite os 4 últimos caracteres do código ou baixe o arquivo `.txt`. Assim o código fica guardado de verdade.
