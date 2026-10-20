@@ -191,7 +191,7 @@ A conta não pode ser aberta: os cadastros ficam criptografados com a senha, e n
 
 ## Visual em preto e branco
 
-O site usa só preto, branco e cinza, no tema claro e no escuro.
+O site usa só preto, branco e cinza, no tema escuro.
 
 A animação de entrada aparece ao abrir o site e ao sair da conta. Em computadores com "reduzir animações" ligado, ela aparece numa versão suave. O botão **Efeitos** desliga a animação neste navegador.
 
@@ -216,6 +216,21 @@ O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/rob
 
 O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza como o resto do site.
 
+## Planilha no Google
+
+O app pode manter uma planilha do Google Sheets sempre atualizada com planos, atividades, NFs, corredores e equipe (sem fotos).
+
+1. Crie uma planilha no Google Sheets.
+2. Abra **Extensões → Apps Script**, apague o que estiver lá e cole o arquivo [`apps-script/planilha.gs`](apps-script/planilha.gs).
+3. Troque `COLE_AQUI_A_SENHA` por uma senha só sua (8 caracteres ou mais) e salve.
+4. **Implantar → Nova implantação → App da Web**. Executar como: Eu. Quem pode acessar: Qualquer pessoa. Autorize.
+5. Copie o URL do app da Web (termina em `/exec`).
+6. No app: **Dados e ajuda → Planilha no Google**, cole o URL e a mesma senha e toque em **Salvar e enviar agora**.
+
+- A cada mudança, o app manda uma cópia completa (no máximo a cada 2 minutos). Só gestor e conta do estoque enviam; auxiliar não.
+- O endereço e a senha ficam cifrados com a senha da conta. **Na planilha, os dados ficam sem cifra.**
+- A aba **Atualizado** mostra cada envio: quando, de qual conta e aparelho, e quantos itens.
+
 ## Apagar tudo e começar de novo
 
 - Em **Dados e ajuda → Apagar tudo neste aparelho**, digite APAGAR. O aparelho apaga todas as contas, a equipe, planos, NFs, corredores, pessoas, perfis e chats. Mantém só o tema, os efeitos, o sazonal e o som.
@@ -224,7 +239,7 @@ O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza 
 ## Logo e atualização
 
 - Os ícones do app têm nome novo (`-v36`), para o navegador não reaproveitar o ícone antigo do cache.
-- Se o PC ainda mostrar a versão antiga, feche todas as abas do site, abra de novo e atualize (Ctrl+F5). A versão aparece em Dados e ajuda.
+- Se o PC ainda mostrar a versão antiga, feche todas as abas do site, abra de novo e atualize (Ctrl+F5). A versão aparece no rodapé do login, em Dados e ajuda e em Minha conta.
 
 ## Itens repetidos
 
@@ -254,7 +269,6 @@ O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza 
 - O site abre no tema escuro: fundo preto estrelado, títulos grandes em Oswald (fonte livre, em `vendor/fonts`) e o "S" da Stok feito de partículas vermelhas no login e no Início.
 - Detalhes em vermelho com brilho: palavra final dos títulos, botões principais, item ativo do menu (em pílula) e o primeiro cartão do Início. Cartões de vidro translúcido e bolhas de luz vermelha no fundo.
 - O "G" gira devagar e se afasta do dedo ou do mouse. Ele pausa quando sai da tela ou o app fica em segundo plano, e fica parado se o aparelho pede menos movimento.
-- O botão de tema volta para o modo claro, que continua em preto e branco e sem partículas.
 
 ## Tema sazonal
 
