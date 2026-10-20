@@ -216,6 +216,12 @@ O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/rob
 
 O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza como o resto do site.
 
+## Itens repetidos
+
+- Quando dois aparelhos juntam os dados na mesma equipe, o mesmo corredor, pessoa, NF ou plano pode ficar duas vezes. O Início avisa o gestor ("Encontrei N itens repetidos").
+- Em **Revisar** (ou em Dados e ajuda → Procurar repetidos), o site mostra a lista e **Juntar repetidos** deixa um de cada: o mais completo. As ligações (dono do corredor, responsável da NF) passam para o que fica, e as atividades dos planos se juntam sem perder o que já foi feito. A limpeza vai para toda a equipe.
+- A mesma conta aberta em dois aparelhos aparece como uma pessoa só no Perfil e na lista de aparelhos. A conta do PC do estoque (login Estoque 99) aparece como **Computador do estoque**.
+
 ## Perfis
 
 - Toda conta (gestor, estoque e auxiliar) tem um perfil em **Perfil** no menu: foto, capa, nome, **@usuário** (único na equipe), cargo e recado.
@@ -229,6 +235,7 @@ O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza 
 
 ## Visual escuro
 
+- Os efeitos seguem o botão **Efeitos: ligados/desligados** do site, mesmo quando o Windows está com as animações desligadas (com isso, o movimento fica mais calmo).
 - O site abre no tema escuro: fundo preto estrelado, títulos grandes em Oswald (fonte livre, em `vendor/fonts`) e o "S" da Stok feito de partículas vermelhas no login e no Início.
 - Detalhes em vermelho com brilho: palavra final dos títulos, botões principais, item ativo do menu (em pílula) e o primeiro cartão do Início. Cartões de vidro translúcido e bolhas de luz vermelha no fundo.
 - O "G" gira devagar e se afasta do dedo ou do mouse. Ele pausa quando sai da tela ou o app fica em segundo plano, e fica parado se o aparelho pede menos movimento.
