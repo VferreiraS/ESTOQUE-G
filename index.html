@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="34"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="35"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -2909,6 +2909,8 @@ function boxHTML(){var t=window.e99Team&&window.e99Team.get();if(!t)return '';va
    +'<h3>Últimas mudanças da equipe</h3><div class="sync-feed" id="sync-feed">'+feedHTML()+'</div></div></details>'}
 var rcBefore=window.renderChat;if(typeof rcBefore==='function')window.renderChat=function(){var h=rcBefore.apply(this,arguments);if(h.indexOf('<div id="chat-list"')<0)return h;return h.replace('<div id="chat-list"',boxHTML()+'<div id="chat-list"')};
 window.syncToggle=async function(on){if(!window.e99Team)return;await window.e99Team.setSync(on,on?{replace:false}:null);if(page==='chat')render();notify(on?'Compartilhando os dados com a equipe.':'Sincronização desligada neste aparelho.')};
+/* reenvia todos os dados desta equipe (pessoas, corredores, NFs e planos), inclusive itens que nunca saíram deste aparelho */
+window.e99SendAll=async function(){if(!active()||!chan)return false;var s=sy();C.forEach(function(c){Object.keys(s.meta[c]||{}).forEach(function(id){if(s.meta[c][id]&&!s.meta[c][id][2])s.meta[c][id][3]=''})});if(stamp())await persist();await publish();return true};
 window.syncNow=async function(){if(!active())return;notify('Sincronizando…');lastErr='';if(stamp())await persist();await publish();await sendHello(true)};
 window.syncStatus=function(){return {active:active(),ready:!!(state&&state.sync&&state.sync.ready),pending:(state&&state.sync&&state.sync.pending||[]).length,connected:connected,topic:chan&&chan.topic,dev:DEV,text:statusText()}};
 /* ---------- ligar/desligar conforme a equipe do chat ---------- */
@@ -3413,7 +3415,7 @@ function publish(now){clearTimeout(pubTimer);pubTimer=setTimeout(async function(
     var ok=await window.e99SyncSend('profile',{pat:p.at,user:p.user,login:authSession.record.login},p);if(ok){lastPub[i.topic]=Date.now();try{localStorage.setItem('lojasg.estoque99.profile-pub:'+authSession.storeKey,JSON.stringify(lastPub))}catch(x){}}},now?600:2000+Math.random()*6000)}
 window.e99OnHello=function(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i)return;if(Date.now()-(lastPub[i.topic]||0)>10*60000)publish(false);
   /* quem acabou de entrar recebe também os perfis de quem já está na equipe (com o aparelho de origem) */
-  var hk='lojasg.estoque99.profile-relay:'+i.topic;var last=+(sessionStorage.getItem(hk)||0);if(Date.now()-last<2*60000)return;try{sessionStorage.setItem(hk,String(Date.now()))}catch(x){}
+  var hk='lojasg.estoque99.profile-relay:'+i.topic;var last=+(localStorage.getItem(hk)||0);if(Date.now()-last<10*60000)return;try{localStorage.setItem(hk,String(Date.now()))}catch(x){}
   setTimeout(function(){Object.keys(team).forEach(function(k,n){var r=team[k];if(!r||!r.p||!r.p.user)return;setTimeout(function(){window.e99SyncSend('profile',{pat:r.p.at,user:r.p.user,login:r.login||'',orig:k,r:r.role==='auxiliar'?'auxiliar':'gestor'},r.p)},300*n)})},1500)};
 window.e99OnProfile=async function(o,getBody,t){if(!authSession||typeof o.dev!=='string'||!/^[a-z0-9]{6,40}$/.test(o.dev))return;var key=typeof o.orig==='string'&&/^[a-z0-9]{6,40}$/.test(o.orig)?o.orig:o.dev;var cur=team[key];if(cur&&cur.p&&cur.p.at>=Number(o.pat))return;
   var body=null;try{body=await getBody()}catch(x){}var p=clean(body);if(!p)return;p.at=Number(o.pat)||Date.now();
@@ -3574,6 +3576,25 @@ var admDel=renderAdmin;renderAdmin=function(){var h=admDel.apply(this,arguments)
     if(self||est)return '';
     return '<div class="panel help" style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><span><b>'+esc(r.login)+'</b><br><span class="small">Excluir remove esta conta deste navegador. Os cadastros da equipe continuam.</span></span><button type="button" class="danger" onclick="authDeleteAccount('+i+')">Excluir conta</button></div>'}).join('');
   return h+(list?'<h2 style="margin-top:18px">Excluir conta antiga</h2>'+list:'')}catch(x){}return h};
+})();
+</script>
+<script id="team-diag-js">
+(function(){
+'use strict';
+/* Diagnóstico da equipe no Chat: mostra, por aparelho, o que está sendo sincronizado e permite enviar tudo de uma vez. */
+function e(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function counts(){var s=state.sync||{},meta=s.meta||{},out={team:(state.team||[]).length,corridors:(state.corridors||[]).length,nfs:(state.nfs||[]).length,plans:(state.plans||[]).length,semEnvio:0};
+  ['team','corridors','nfs','plans'].forEach(function(c){(state[c]||[]).forEach(function(x){if(x&&x.id&&!(meta[c]&&meta[c][x.id]))out.semEnvio++})});return out}
+function lastProfile(){var t=window.e99SyncSend&&window.e99SyncInfo&&window.e99SyncInfo();if(!t||!authSession)return 'sem equipe';try{var m=JSON.parse(localStorage.getItem('lojasg.estoque99.profile-pub:'+authSession.storeKey)||'{}'),at=m[t.topic];return at?'há '+Math.max(1,Math.round((Date.now()-at)/60000))+' min':'ainda não enviado'}catch(x){return '—'}}
+window.sendAllTeam=async function(){if(!window.e99SyncInfo||!window.e99SyncInfo()){notify('Entre numa equipe com a sincronização ligada.');return}
+  if(typeof window.isAux==='function'&&window.isAux()){notify('Só o gestor envia tudo para a equipe.');return}
+  notify('Enviando tudo para a equipe…');try{await window.e99SendAll();if(window.e99OnHello)window.e99OnHello();notify('Dados enviados para a equipe. Os outros aparelhos recebem em instantes.')}catch(x){notify('Não foi possível enviar agora. Tente de novo com internet.')}render()};
+function panel(){if(!authSession||!window.e99SyncInfo||!window.e99SyncInfo())return '';var c=counts();
+  return '<details class="sync-box" id="team-diag"><summary><span>Diagnóstico da equipe</span></summary><div class="sync-body"><p class="small" style="margin:0">Compare com o outro aparelho: os números devem ser iguais.</p>'
+   +'<div class="aux-list"><div><span><b>Pessoas</b></span><span>'+c.team+'</span></div><div><span><b>Corredores</b></span><span>'+c.corridors+'</span></div><div><span><b>Notas fiscais</b></span><span>'+c.nfs+'</span></div><div><span><b>Planos</b></span><span>'+c.plans+'</span></div>'
+   +'<div><span><b>Itens sem envio</b></span><span>'+c.semEnvio+'</span></div><div><span><b>Último perfil enviado</b></span><span>'+e(lastProfile())+'</span></div></div>'
+   +'<button type="button" class="primary" onclick="sendAllTeam()">Enviar tudo para a equipe agora</button></div></details>'}
+var rc=window.renderChat;if(typeof rc==='function')window.renderChat=function(){var h=rc.apply(this,arguments);try{return h+panel()}catch(x){return h}};
 })();
 </script>
 <script>

@@ -224,6 +224,8 @@ O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza 
 
 ## Perfis
 
+- Se o PC e o celular mostram pessoas diferentes, abra **Chat → Diagnóstico da equipe**. Compare os números nos dois aparelhos. Em **Enviar tudo para a equipe agora** (só gestor), o aparelho reenvia todas as pessoas, corredores, NFs e planos, inclusive os que nunca tinham saído dele.
+
 - Se você muda o perfil no celular, o PC com a mesma conta recebe a mudança sozinho (foto, nome, @usuário, cargo e recado). Pessoas que entram depois na equipe também recebem os perfis dos outros pelos aparelhos que já estão com o site aberto.
 
 - Toda conta (gestor, estoque e auxiliar) tem um perfil em **Perfil** no menu: foto, capa, nome, **@usuário** (único na equipe), cargo e recado.
