@@ -87,6 +87,7 @@ O que a conta de auxiliar faz:
 - **Mudanças de equipe e corredores** que venham de um auxiliar são ignoradas pelos outros aparelhos.
 - **Para tirar o acesso de alguém**, crie uma equipe nova e convide só quem fica. Quem tem o código da equipe consegue ler os dados.
 
+- **Quem já criou a conta:** em **Chat → Contas dos auxiliares**, cada convite mostra **✓ Conta criada em dd/mm · login · ativo há X**, ou **○ Ainda não criou a conta**. Embaixo aparecem os outros aparelhos que estão na equipe. O status chega pela equipe sincronizada quando o aparelho do auxiliar tem internet.
 ## Chat da equipe (com fotos)
 Aba **Chat** (no celular fica na barra de baixo; **Planos** foi para o menu **Mais**).
 1. O gestor toca em **Criar equipe**. O site gera um código, por exemplo `ABCD-EFGH-JKLM`.
@@ -231,6 +232,14 @@ Em cada aba com lista (Notas fiscais, Agenda, Equipe, Corredores e Planos de aç
 - **Baixar PDF**: abre a janela de impressão. Escolha "Salvar como PDF" e anexe o arquivo.
 
 As notas respeitam a busca e a aba de status que estão na tela.
+
+## Notificações
+- **Com o site aberto ou em segundo plano:** em **Alertas**, ative os avisos no aparelho. As mensagens do chat e as NFs atrasadas aparecem como notificação do sistema. No iPhone, isso só funciona com o site **instalado na Tela de Início** (Safari → Compartilhar → Adicionar à Tela de Início) e aberto por lá, com iOS 16.4 ou mais novo. No Safari comum, o iPhone não mostra notificação de site.
+- **Com o app fechado ou o celular bloqueado:** o site sozinho não consegue avisar, então usamos o app gratuito **ntfy**.
+  1. Instale o ntfy (iPhone ou Android).
+  2. Em **Alertas → Avisos com o app fechado**, toque em **Assinar avisos da equipe** (ou copie o canal e cole no app).
+  3. Chegam avisos curtos de **mensagem nova no chat** (no máximo 1 a cada 2 minutos por pessoa) e, uma vez por dia a partir das 8h, de **NFs aguardando conferência**. O aviso de NF sai quando algum aparelho da equipe abre o site no dia.
+- **Relatórios por e-mail:** o FormSubmit só envia depois que o formulário é ativado. Abra o e-mail "Activate Form" do FormSubmit na caixa do destinatário principal (veja também o spam) e clique no link. A cópia para o e-mail do estoque só sai depois disso. Se não chegar, peça à TI para liberar o remetente formsubmit.co.
 
 ## Atualizações do site
 - **Quando procura:** o site procura versão nova ao abrir, ao voltar para o app (inclusive o instalado na tela inicial do iPhone), quando a internet volta e a cada 30 minutos.

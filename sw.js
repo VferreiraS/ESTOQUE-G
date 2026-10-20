@@ -1,5 +1,5 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
-const CACHE = 'estoque99-v25';
+const CACHE = 'estoque99-v26';
 const VERSION = (CACHE.match(/-v(\d+)$/) || [])[1] || '';
 const CORE = [
   './index.html',
@@ -78,10 +78,12 @@ self.addEventListener('fetch', (event) => {
 // Toque na notificação: abre o site na central de alertas.
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  const page = (event.notification.data && event.notification.data.page) || 'alerts';
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       for (const client of clients) {
-        client.postMessage({ type: 'open-alerts' });
+        client.postMessage({ type: 'open-page', page });
+        if (page === 'alerts') client.postMessage({ type: 'open-alerts' });
         if ('focus' in client) return client.focus();
       }
       return self.clients.openWindow('./');
