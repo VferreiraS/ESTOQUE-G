@@ -63,6 +63,14 @@ As abas **Tarefas**, **Rupturas** e **Validade** saíram do site.
   - na Agenda.
 - **Marcar como feita:** toque no círculo de uma atividade. Fica registrado quem fez e a hora. Toque de novo para desmarcar.
 
+## Importar mapa de corredores (Excel)
+Em **Corredores**, toque em **⇪ Importar mapa (Excel)** e escolha a planilha (.xlsx ou .csv). Ela precisa ter as colunas **Corredor**, **Setor** e **Responsável**.
+- **Prévia:** antes de aplicar, mostra o que muda (por exemplo "A definir → Leonardo"), os corredores novos e as pessoas que ainda não estão na Equipe (são cadastradas automaticamente).
+- **Responsável:** "A definir" deixa sem responsável; "TODOS" (mesmo com texto entre parênteses) vira atividade coletiva.
+- **Corredores fora da planilha:** continuam como estão.
+- **Se a equipe mudar enquanto a prévia está aberta,** nada é aplicado: importe de novo.
+- **Leitura no aparelho:** a planilha é lida no próprio aparelho. Com a equipe sincronizada, o mapa novo vai para todos.
+
 ## Contas dos auxiliares
 No **Chat**, quem criou a equipe vê **Contas dos auxiliares**.
 1. Informe o nome do auxiliar e uma **senha inicial** (4 a 8 números).
