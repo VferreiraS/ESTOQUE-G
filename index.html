@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="31"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="32"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -3537,6 +3537,37 @@ var rr=render;render=function(){var r=rr.apply(this,arguments);try{if(!authSessi
   if(page==='home'){var d=find();var hidden='';try{hidden=localStorage.getItem(HIDE)||''}catch(x){}if(d.total&&hidden!==sig(d)&&!view.querySelector('.dup-banner')){var parts=Object.keys(KEYS).filter(function(c){return d[c].length}).map(function(c){var k=d[c].reduce(function(s,g){return s+g.drop.length},0);return k+' '+NAMES[c][k>1?1:0]});
       var b=document.createElement('div');b.className='notice dup-banner';b.innerHTML='<span><b>Encontrei '+d.total+' '+(d.total>1?'itens repetidos':'item repetido')+'</b> ('+e(parts.join(', '))+'), provavelmente de quando dois aparelhos juntaram os dados.</span><span class="row"><button type="button" onclick="hideDupes()">Agora não</button><button class="primary" type="button" onclick="openDupes()">Revisar</button></span>';view.insertBefore(b,view.firstChild)}}
   if(page==='data'&&!view.querySelector('.dup-panel')){var p=document.createElement('div');p.className='panel help dup-panel';p.innerHTML='<h2>Itens repetidos</h2><p>Procura corredores, pessoas, NFs e planos cadastrados duas vezes e junta num só.</p><button type="button" onclick="openDupes()">Procurar repetidos</button>';view.appendChild(p)}}catch(x){}return r};
+})();
+</script>
+<script id="delete-account-js">
+(function(){
+'use strict';
+/* Excluir uma conta gestor deste navegador (Administração local). Só o gestor logado pode; não apaga a conta em uso
+   nem a conta est99 do estoque. Pede para digitar o login para confirmar. Os cadastros da equipe não são apagados. */
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+window.authDeleteAccount=function(index){
+  if(!authSession||authSession.payload.role!=='gestor')return;
+  var rows=authAccounts(),row=rows[index];
+  if(!row)return;
+  if(row.key===authSession.storeKey){notify('Não é possível excluir a conta que está aberta. Entre em outra conta gestor para excluir esta.');return}
+  if(row.login.toLowerCase()==='estoque 99'){notify('A conta do estoque (Estoque 99) não pode ser excluída por aqui.');return}
+  var typed=window.prompt('Para excluir a conta "'+row.login+'" deste navegador, digite o login exatamente como aparece:','');
+  if(typed===null)return;
+  if(typed.trim().toLowerCase()!==row.login.toLowerCase()){notify('O login digitado não confere. Nada foi excluído.');return}
+  try{
+    localStorage.removeItem(row.key);
+    localStorage.removeItem(AUTH_BLOCK+row.key);
+    var suffix=row.key.slice(AUTH_PREFIX.length);
+    ['lojasg.estoque99.chat:','lojasg.estoque99.robot-groq:','lojasg.estoque99.robot:','lojasg.estoque99.email-reports:','lojasg.estoque99.email-sent:'].forEach(function(k){try{localStorage.removeItem(k+suffix)}catch(x){}});
+    notify('Conta "'+row.login+'" excluída deste navegador.');
+    render();
+  }catch(x){notify('O navegador não permitiu excluir a conta.')}
+};
+var admDel=renderAdmin;renderAdmin=function(){var h=admDel.apply(this,arguments);try{if(!authSession||authSession.payload.role!=='gestor')return h;var rows=authAccounts();
+  var list=rows.map(function(r,i){var self=r.key===authSession.storeKey,est=r.login.toLowerCase()==='estoque 99';
+    if(self||est)return '';
+    return '<div class="panel help" style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><span><b>'+esc(r.login)+'</b><br><span class="small">Excluir remove esta conta deste navegador. Os cadastros da equipe continuam.</span></span><button type="button" class="danger" onclick="authDeleteAccount('+i+')">Excluir conta</button></div>'}).join('');
+  return h+(list?'<h2 style="margin-top:18px">Excluir conta antiga</h2>'+list:'')}catch(x){}return h};
 })();
 </script>
 <script>
