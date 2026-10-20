@@ -1,5 +1,5 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
-const CACHE = 'estoque99-v27';
+const CACHE = 'estoque99-v28';
 const VERSION = (CACHE.match(/-v(\d+)$/) || [])[1] || '';
 const CORE = [
   './index.html',
@@ -81,12 +81,16 @@ self.addEventListener('notificationclick', (event) => {
   const page = (event.notification.data && event.notification.data.page) || 'alerts';
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-      for (const client of clients) {
-        client.postMessage({ type: 'open-page', page });
-        if (page === 'alerts') client.postMessage({ type: 'open-alerts' });
-        if ('focus' in client) return client.focus();
+      const target = './#abrir=' + encodeURIComponent(page);
+      const main = clients.find((c) => !/robo\.html/.test(c.url));
+      if (main) {
+        main.postMessage({ type: 'open-page', page });
+        if (page === 'alerts') main.postMessage({ type: 'open-alerts' });
+        if ('focus' in main) return main.focus();
       }
-      return self.clients.openWindow('./');
+      // Só a página do robô está aberta: leva ela para o site principal, já na página do aviso.
+      if (clients[0] && 'navigate' in clients[0]) return clients[0].navigate(target).then((c) => c && c.focus && c.focus());
+      return self.clients.openWindow(target);
     })
   );
 });

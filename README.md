@@ -74,9 +74,9 @@ Em **Corredores**, toque em **⇪ Importar mapa (Excel)** e escolha a planilha (
 
 ## Contas dos auxiliares
 No **Chat**, quem criou a equipe vê **Contas dos auxiliares**.
-1. Informe o nome do auxiliar e uma **senha inicial** (4 a 8 números).
-2. Toque em **Criar conta e enviar link** e mande o link pelo WhatsApp. Passe a senha inicial por fora (ligação ou pessoalmente).
-3. O auxiliar abre o link no celular dele, digita a senha inicial, escolhe a própria senha e guarda o código de recuperação. Ele já entra na equipe com os dados sincronizados.
+1. Informe o nome do auxiliar. O site cria um **código do convite** aleatório (ex.: `7K2QP-M9XRA`), que aparece na lista até a conta ser criada.
+2. Toque em **Criar conta e enviar link** e mande o link pelo WhatsApp. Passe o código do convite por fora (ligação ou pessoalmente).
+3. O auxiliar abre o link no celular dele, digita o código do convite, escolhe a própria senha e guarda o código de recuperação. Ele já entra na equipe com os dados sincronizados.
 
 O que a conta de auxiliar faz:
 - **Vê:** Início, Plano de ação, Notas fiscais e Chat.
@@ -215,6 +215,12 @@ O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/rob
 ## Mascote
 
 O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza como o resto do site.
+
+## Visual escuro
+
+- O site abre no tema escuro: fundo preto estrelado, títulos grandes em Oswald (fonte livre, em `vendor/fonts`) e o "G" da Lojas G feito de partículas douradas e azuis no login e no Início.
+- O "G" gira devagar e se afasta do dedo ou do mouse. Ele pausa quando sai da tela ou o app fica em segundo plano, e fica parado se o aparelho pede menos movimento.
+- O botão de tema volta para o modo claro, que continua em preto e branco e sem partículas.
 
 ## Tema sazonal
 

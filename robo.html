@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="27">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="28">
 <title>Robô · Estoque 99</title>
 <meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -225,7 +225,7 @@ function buildContext(){
   var lim=new Date();lim.setDate(lim.getDate()-7);var lk=lim.getFullYear()+'-'+('0'+(lim.getMonth()+1)).slice(-2)+'-'+('0'+lim.getDate()).slice(-2);
   var plans=(st.plans||[]).filter(function(p){return p.date>=lk}).sort(function(a,b){return String(b.date).localeCompare(String(a.date))});
   L.push('','PLANOS DE AÇÃO (últimos 7 dias e próximos) ('+plans.length+'):');
-  plans.forEach(function(p){L.push('- '+br(p.date)+(p.date===today?' (HOJE)':'')+' · '+p.title+':');(p.activities||[]).forEach(function(a){L.push('   • '+a.title+' | responsável: '+(a.owner||'a definir')+' | '+(a.done?'FEITA'+(a.doneBy?' por '+a.doneBy:''):'a fazer')+(a.notes?' | obs: '+String(a.notes).slice(0,150):''))})});
+  var nd=new Date(),nowHM=('0'+nd.getHours()).slice(-2)+':'+('0'+nd.getMinutes()).slice(-2);plans.forEach(function(p){L.push('- '+br(p.date)+(p.date===today?' (HOJE)':'')+' · '+p.title+':');(p.activities||[]).forEach(function(a){var late=!a.done&&(p.date<today||(p.date===today&&a.time&&a.time<nowHM));L.push('   • '+a.title+(a.time?' | até '+a.time:'')+' | responsável: '+(a.owner||'a definir')+' | '+(a.done?'FEITA'+(a.doneBy?' por '+a.doneBy:''):late?'ATRASADA':'a fazer')+(a.notes?' | obs: '+String(a.notes).slice(0,150):''))})});
   var text=L.join('\n');if(text.length>12000)text=text.slice(0,12000)+'\n[lista cortada por tamanho]';return text}
 var SYSTEM='Você é o Robô do Estoque 99, assistente das Lojas G. Responda em português do Brasil, de forma curta e direta, usando listas quando ajudar. Use somente os DADOS abaixo; se a informação não estiver neles, diga que não sabe. Não invente números de NF, nomes ou datas. Você não altera nada no sistema: se pedirem uma mudança, explique onde fazer no site.';
 
