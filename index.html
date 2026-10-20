@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="44"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="45"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -3839,6 +3839,11 @@ var rr=render;render=function(){var r=rr.apply(this,arguments);try{var v=documen
 @keyframes si-halo{0%{opacity:0;transform:scale(.6)}60%{opacity:1}100%{opacity:.7;transform:scale(1)}}
 @keyframes si-zoom{to{transform:scale(16);opacity:0;filter:drop-shadow(0 0 40px #ff2a1f)}}
 @keyframes si-out{to{opacity:0;visibility:hidden}}
+#stok-gate{position:fixed;inset:0;z-index:100002;background:#000;display:grid;place-content:center;justify-items:center;gap:22px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#stok-gate svg{width:min(26vw,120px);filter:drop-shadow(0 0 22px #ff2a1f99);animation:sg-p 1.6s ease-in-out infinite}
+#stok-gate .sg-t{font:600 13px/1 system-ui,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:#ff8a7a;animation:sg-b 1.6s ease-in-out infinite}
+@keyframes sg-p{50%{transform:scale(1.06);filter:drop-shadow(0 0 34px #ff2a1f)}}
+@keyframes sg-b{50%{opacity:.45}}
 </style>
 <script id="intro-js">
 (function(){
@@ -3858,14 +3863,23 @@ function tudum(ctx){var t=ctx.currentTime+.02,out=ctx.createGain();out.gain.valu
   var lp=ctx.createBiquadFilter();lp.type='lowpass';lp.Q.value=4;lp.frequency.setValueAtTime(260,t+.32);lp.frequency.exponentialRampToValueAtTime(2600,t+1.6);
   var cg=ctx.createGain();cg.gain.setValueAtTime(0.0001,t+.32);cg.gain.exponentialRampToValueAtTime(.16,t+1.2);cg.gain.exponentialRampToValueAtTime(0.0001,t+2.4);lp.connect(cg);cg.connect(out);
   [110,164.81,220.5,261.63,329.63].forEach(function(f,i){var o=ctx.createOscillator();o.type=i<3?'sawtooth':'triangle';o.frequency.setValueAtTime(f,t+.32);o.detune.value=(i%2?7:-7);o.connect(lp);o.start(t+.32);o.stop(t+2.5)})}
-function play(){try{if(typeof siteSoundEnabled!=='undefined'&&!siteSoundEnabled)return;var ctx=typeof unlockSiteAudio==='function'?unlockSiteAudio():null;if(!ctx)return;if(ctx.state==='running')tudum(ctx);else ctx.resume().then(function(){if(ctx.state==='running')tudum(ctx)}).catch(function(){})}catch(x){}}
+function play(){try{if(typeof siteSoundEnabled!=='undefined'&&!siteSoundEnabled)return;var ctx=typeof unlockSiteAudio==='function'?unlockSiteAudio():null;if(!ctx)return;if(ctx.state==='running'){tudum(ctx);return}var t0=Date.now();ctx.resume().then(function(){if(ctx.state==='running'&&Date.now()-t0<350)tudum(ctx)}).catch(function(){})}catch(x){}}
+/* aparelho bloqueou o som: mostra "Toque para abrir" e começa animação + som juntos no toque */
+function soundOn(){return !(typeof siteSoundEnabled!=='undefined'&&!siteSoundEnabled)}
+function gate(){var g=document.createElement('div');g.id='stok-gate';g.innerHTML='<svg viewBox="0 0 100 100"><path fill="#ff2a1f" d="'+S+'"/></svg><div class="sg-t">Toque para abrir</div>';document.body.appendChild(g);
+  function go(){g.removeEventListener('pointerdown',go);g.removeEventListener('keydown',go);document.removeEventListener('keydown',go);g.remove();lastShow=0;show();play()}
+  g.addEventListener('pointerdown',go);document.addEventListener('keydown',go)}
+function first(){if(off()){return}if(!soundOn()){show();return}var ctx=null;try{ctx=typeof unlockSiteAudio==='function'?unlockSiteAudio():null}catch(x){}
+  if(ctx&&ctx.state==='running'){show();play();return}
+  var done=false;if(ctx)ctx.resume().then(function(){if(!done&&ctx.state==='running'){done=true;show();play()}}).catch(function(){});
+  setTimeout(function(){if(!done){done=true;if(document.body)gate();else show()}},250)}
 window.playStokIntro=function(withSound){show();if(withSound)play()};
 /* o som de "login" antigo vira o som de entrada */
 var ps=playSiteSound;playSiteSound=function(kind){if(kind==='login'){play();return}return ps.apply(this,arguments)};
 var en=authEnter;authEnter=function(){var r=en.apply(this,arguments);show();return r};
 window.replayEntrySplash=function(){show()};
 /* ao abrir o app/site: abertura uma vez por sessão (o som só toca se o aparelho já permitir) */
-try{if(!sessionStorage.getItem('e99-intro')){sessionStorage.setItem('e99-intro','1');show();play()}}catch(x){show()}
+try{if(!sessionStorage.getItem('e99-intro')){sessionStorage.setItem('e99-intro','1');first()}}catch(x){show()}
 })();
 </script>
 <script>

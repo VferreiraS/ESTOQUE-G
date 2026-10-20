@@ -3,6 +3,9 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 45
+- Abertura: se o aparelho bloquear o som, aparece "Toque para abrir" e o som toca junto com a animação, sem atraso.
+
 ## Versão 44
 - Perfil do celular aparece no PC mesmo depois que o anexo expira (nome, @ e cargo); a foto é pedida de novo ao celular.
 
