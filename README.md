@@ -249,6 +249,7 @@ O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza 
 
 ## Visual escuro
 
+- O site e o app têm só o tema escuro (preto). O botão de modo claro foi removido.
 - Os efeitos seguem o botão **Efeitos: ligados/desligados** do site, mesmo quando o Windows está com as animações desligadas (com isso, o movimento fica mais calmo).
 - O site abre no tema escuro: fundo preto estrelado, títulos grandes em Oswald (fonte livre, em `vendor/fonts`) e o "S" da Stok feito de partículas vermelhas no login e no Início.
 - Detalhes em vermelho com brilho: palavra final dos títulos, botões principais, item ativo do menu (em pílula) e o primeiro cartão do Início. Cartões de vidro translúcido e bolhas de luz vermelha no fundo.

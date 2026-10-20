@@ -2,9 +2,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="36">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="37">
 <title>Robô · Estoque 99</title>
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest.webmanifest">
@@ -91,7 +91,6 @@ body.still .bot,body.still .msg.bot.typing::after{animation:none!important}
 <header class="top">
   <a href="./" id="back">← Voltar ao estoque</a>
   <strong>ROBÔ</strong>
-  <div class="tools"><button type="button" id="theme" aria-label="Alternar tema claro e escuro">☾ / ☀</button></div>
 </header>
 <main class="layout">
   <aside class="stage">
@@ -162,10 +161,9 @@ window.siteBusy=function(){var st=document.getElementById('settings');return !!b
 window.beforeSiteReload=function(){return S?idbPut('handoff',{storeKey:S.storeKey,key:S.key,at:Date.now()}).catch(function(){}):Promise.resolve()};
 
 /* ---------- aparência ---------- */
-function applyTheme(){var dark=false;try{dark=localStorage.getItem('lojasg.estoque99.theme')==='dark'}catch(e){}document.body.classList.toggle('dark',dark);var m=document.querySelector('meta[name=theme-color]');if(m)m.content=dark?'#0a0a0a':'#ffffff'}
+function applyTheme(){try{localStorage.removeItem('lojasg.estoque99.theme')}catch(e){}document.body.classList.add('dark');var m=document.querySelector('meta[name=theme-color]');if(m)m.content='#000000'}
 applyTheme();
 try{if(localStorage.getItem('lojasg.estoque99.visual-effects')==='off')document.body.classList.add('still')}catch(e){}
-$('theme').onclick=function(){var dark=!document.body.classList.contains('dark');try{localStorage.setItem('lojasg.estoque99.theme',dark?'dark':'light')}catch(e){}applyTheme()};
 document.querySelectorAll('[data-toggle]').forEach(function(b){b.onclick=function(){var i=b.parentNode.querySelector('input');var show=i.type==='password';i.type=show?'text':'password';b.textContent=show?'Ocultar':'Mostrar'}});
 function botState(mode,text){var b=$('bot');b.classList.remove('idle','thinking','talking');b.classList.add(mode);if(text!=null)$('bot-state').textContent=text}
 
