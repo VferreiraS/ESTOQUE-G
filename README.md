@@ -216,6 +216,11 @@ O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/rob
 
 O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza como o resto do site.
 
+## Conta de auxiliar pronta de uma vez
+
+- Em Chat → Contas dos auxiliares, escolha a pessoa da Equipe (ex.: Leonardo) e toque em Criar conta e enviar link.
+- O auxiliar abre o link, digita o código do convite e cria a própria senha. A conta já nasce com login, chat, equipe sincronizada e perfil (nome, @usuário e cargo da Equipe). Os corredores e atividades dele já aparecem.
+
 ## Corredores dos cartazes
 
 - Em **Corredores → Cadastrar corredores dos cartazes (15)**, o app cadastra os 15 corredores dos cartazes impressos (01 a 14 e o Novo setor), com setor, linha de produtos e responsável (Leonardo, Thomaz DSL, Augusto, TODOS no 13). Corredor que já existe com o mesmo número é atualizado e mantém as ligações. Só gestor e conta do estoque veem o botão.

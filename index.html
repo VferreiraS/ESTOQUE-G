@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="39"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="40"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -2997,7 +2997,7 @@ var enterBefore=authEnter;authEnter=function(session){var r=enterBefore.apply(th
   if(hasOld()){wipe();save().then(function(){notify('Rupturas, Tarefas e Validade foram removidas do site. Use o Plano de ação.')})}
   teamFix();
   var join=null;try{join=JSON.parse(sessionStorage.getItem('e99-aux-join')||'null')}catch(x){}
-  if(join&&isAux()&&window.e99Team&&window.e99Team.join){sessionStorage.removeItem('e99-aux-join');window.e99Team.join(join.code,join.name,{team:join.team}).then(function(){go('home');notify('Bem-vindo(a), '+join.name+'! Você já está na equipe.')})}
+  if(join&&isAux()&&window.e99Team&&window.e99Team.join){sessionStorage.removeItem('e99-aux-join');try{localStorage.setItem('lojasg.estoque99.aux-profile:'+authSession.storeKey,JSON.stringify({name:join.name,cargo:join.role||''}))}catch(x){}window.e99Team.join(join.code,join.name,{team:join.team}).then(function(){go('home');notify('Bem-vindo(a), '+join.name+'! Você já está na equipe.')})}
   render();inviteWhileLogged();return r};
 /* auxiliar: só lê/marca planos; não apaga NF */
 var openPlanBefore=openPlan;openPlan=function(){if(isAux()){notify('Só o gestor monta e edita os planos.');return}return openPlanBefore.apply(this,arguments)};
@@ -3019,7 +3019,7 @@ function auxCardHTML(){var t=window.e99Team&&window.e99Team.get();if(!t||!t.owne
   var created=rows.length?l.filter(function(x,i){return rows[i].indexOf('✓ Conta criada')>=0}).length:0;
   var seenLg={};var others=devs.filter(function(d){if(used[d])return false;var lg=mem[d].login?normalText(mem[d].login):'';if(lg&&lg===normalText(authSession.record.login))return false;if(lg){if(seenLg[lg]){seenLg[lg].n++;return false}seenLg[lg]={n:1}}mem[d].__lg=lg;return true}).sort(function(a,b){return (mem[b].seen||0)-(mem[a].seen||0)}).map(function(d){var m=mem[d];return '<div><span><b>'+e(m.name)+'</b> · '+(m.role==='auxiliar'?'auxiliar':'gestor/estoque')+(m.__lg&&seenLg[m.__lg]&&seenLg[m.__lg].n>1?' · '+seenLg[m.__lg].n+' aparelhos':'')+'<br><span class="small">'+(m.created?'conta criada em '+new Date(m.created).toLocaleDateString('pt-BR')+' · ':'')+'ativo '+ago2(m.seen)+'</span></span></div>'});
   return '<details class="sync-box" id="aux-box"><summary><span>♙ Contas dos auxiliares ('+created+' de '+l.length+' criadas)</span></summary><div class="sync-body aux-card"><p class="small" style="margin:0">Crie a conta do auxiliar: ele recebe um link, digita o código do convite que o site cria (passe por fora do link, por voz ou outra mensagem) e escolhe a própria senha. A conta de auxiliar só vê <b>Início, Plano de ação (marca atividades feitas), Notas fiscais e Chat</b>.</p>'
-   +'<form onsubmit="auxInvite(event)"><div class="pair"><label>Nome do auxiliar<input name="name" required maxlength="40" autocomplete="off"></label></div><button class="primary">Criar conta e enviar link</button></form>'
+   +'<form onsubmit="auxInvite(event)"><div class="pair"><label>Nome do auxiliar (escolha da Equipe)<input name="name" required maxlength="40" autocomplete="off" list="aux-people"></label><datalist id="aux-people">'+(state.team||[]).map(function(p){return '<option value="'+e(p.name)+'">'+e(p.role||'')+'</option>'}).join('')+'</datalist></div><button class="primary">Criar conta e enviar link</button></form>'
    +(rows.length?'<div class="aux-list">'+rows.join('')+'</div>':'')
    +(others.length?'<h3 style="margin:6px 0 0;font-size:14px">Outros aparelhos na equipe</h3><div class="aux-list">'+others.join('')+'</div>':'')
    +'<p class="small" style="margin:0">O status chega pela equipe sincronizada quando o aparelho do auxiliar está com internet. Para tirar o acesso de alguém de verdade, crie uma equipe nova (Sair da equipe → Criar equipe) e convide só quem fica.</p></div></details>'}
@@ -3028,7 +3028,7 @@ function loginFor(name){return normalText(name).replace(/[^a-z0-9 ]/g,'').trim()
 window.auxInvite=async function(ev){ev.preventDefault();var t=window.e99Team&&window.e99Team.get();if(!t||!t.owner)return;var v=readForm(ev.target),name=String(v.name||'').trim().slice(0,40);if(!name)return;
   /* código aleatório de 10 caracteres (50 bits): não dá para adivinhar testando senhas, ao contrário de um PIN de 4 números */
   var rb=crypto.getRandomValues(new Uint8Array(10)),key='';for(var ki=0;ki<10;ki++){key+=AUTH_CODE_CHARS[rb[ki]%32];if(ki===4)key+='-'}var pin=pinNorm(key);
-  var login=loginFor(name),inviteId=b64u(crypto.getRandomValues(new Uint8Array(9)));var token=await sealInvite({v:1,code:t.code,team:t.team||authSession.payload.store,name:name,login:login,store:authSession.payload.store,inviteId:inviteId},pin);
+  var login=loginFor(name),inviteId=b64u(crypto.getRandomValues(new Uint8Array(9)));var person=(state.team||[]).find(function(p){return normalText(p.name)===normalText(name)});var token=await sealInvite({v:1,code:t.code,team:t.team||authSession.payload.store,name:person?person.name:name,role:person&&person.role?person.role:'Auxiliar de estoque',login:login,store:authSession.payload.store,inviteId:inviteId},pin);
   var link=location.origin+location.pathname.replace(/robo\.html$/,'').replace(/index\.html$/,'')+'#auxiliar='+token;var text='Sua conta de auxiliar do Estoque 99 ('+authSession.payload.store+'): '+link+' — peça o código do convite ao gestor.';
   var l=invites();l.unshift({name:name,login:login,at:Date.now(),inviteId:inviteId,key:key});try{localStorage.setItem(listKey(),JSON.stringify(l.slice(0,50)))}catch(x){}
   if(navigator.share){navigator.share({title:'Conta de auxiliar',text:text}).catch(function(){})}else{try{await navigator.clipboard.writeText(text);notify('Link copiado. Mande para '+name+' e passe o código '+key+' por fora.')}catch(x){prompt('Copie o link:',text)}window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener')}
@@ -3050,7 +3050,7 @@ window.auxOpen=async function(ev){ev.preventDefault();if(invBusy)return;invBusy=
 window.auxCreate=async function(ev){ev.preventDefault();if(invBusy||!invite)return;var v=readForm(ev.target);invBusy=true;invErr='';renderAuth();
   try{authPasswordCheck(v.password,v.confirmation);var login=authLoginName(v.login);if(login.length<3)throw Error('O login precisa ter pelo menos 3 letras.');if(login==='estoque 99')throw Error('Login reservado. Escolha outro.');
     var session=await authCreate(login,String(invite.store||'Estoque').slice(0,80),v.password,authEmpty(),'auxiliar');
-    sessionStorage.setItem('e99-aux-join',JSON.stringify({code:invite.code,name:invite.name,team:invite.team,inviteId:invite.inviteId||''}));try{localStorage.setItem('lojasg.estoque99.announce-created',JSON.stringify({inviteId:invite.inviteId||''}))}catch(x){}sessionStorage.removeItem('e99-aux-invite');invite=null;
+    sessionStorage.setItem('e99-aux-join',JSON.stringify({code:invite.code,name:invite.name,team:invite.team,inviteId:invite.inviteId||'',role:String(invite.role||'Auxiliar de estoque').slice(0,40)}));try{localStorage.setItem('lojasg.estoque99.announce-created',JSON.stringify({inviteId:invite.inviteId||''}))}catch(x){}sessionStorage.removeItem('e99-aux-invite');invite=null;
     authRecoveryShow={code:session.recoveryCode,session:session,legacy:false};invBusy=false;renderAuth()}
   catch(x){invErr=x.message||'Não foi possível criar a conta.';invBusy=false;renderAuth()}};
 if(typeof authSession!=='undefined'&&authSession)applyRole();else if(token()&&document.body.classList.contains('locked'))setTimeout(function(){if(!authSession)renderAuth()},0);
@@ -3407,7 +3407,8 @@ window.profAvatar=function(name,cls){return avatar(find(name),name,cls)};
 window.profChip=function(name){var r=find(name);return '<span class="prof-chip" role="link" tabindex="0" onclick="event.stopPropagation();openProfile(\''+e(String(r?r.key:'n:'+name).replace(/'/g,''))+'\')">'+avatar(r,name,'av-s')+e(r?r.p.name:name)+'</span>'};
 window.openProfile=function(key){view=key||'me';go('profile')};
 /* ---------- carregar e guardar ---------- */
-async function load(){if(!authSession)return;var sk=authSession.storeKey;var m=await get('me|'+sk);mine=clean(m);if(mine&&m&&m.at)mine.at=m.at;team={};var t=topic();if(t){var idx=await get('idx|'+t)||[];for(var i=0;i<idx.length;i++){var r=await get('tm|'+t+'|'+idx[i]);if(r&&r.p){r.p=clean(r.p);if(r.p)team[idx[i]]=r}}}
+async function load(){if(!authSession)return;var sk=authSession.storeKey;var m=await get('me|'+sk);mine=clean(m);if(mine&&m&&m.at)mine.at=m.at;
+  try{var seed=JSON.parse(localStorage.getItem('lojasg.estoque99.aux-profile:'+sk)||'null');if(seed&&!mine){var b=blank();b.name=String(seed.name||b.name).slice(0,40);b.user=suggestUser(b.name);b.cargo=String(seed.cargo||'').slice(0,40);var c=clean(b);if(c){mine=c;await saveMine(c)}localStorage.removeItem('lojasg.estoque99.aux-profile:'+sk)}}catch(x){}team={};var t=topic();if(t){var idx=await get('idx|'+t)||[];for(var i=0;i<idx.length;i++){var r=await get('tm|'+t+'|'+idx[i]);if(r&&r.p){r.p=clean(r.p);if(r.p)team[idx[i]]=r}}}
   try{lastPub=JSON.parse(localStorage.getItem('lojasg.estoque99.profile-pub:'+sk)||'{}')||{}}catch(x){lastPub={}}refresh()}
 function refresh(){if(!authSession)return;if(page==='profile'||page==='team'||page==='plans'||page==='home')render();decorateChat();decorateHeader()}
 async function saveMine(p){p.at=Date.now();mine=p;await put('me|'+authSession.storeKey,p);publish(true)}
