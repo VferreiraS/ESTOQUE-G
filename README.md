@@ -62,6 +62,7 @@ As abas **Tarefas**, **Rupturas** e **Validade** saíram do site.
   - no Início ("Plano de ação de hoje");
   - na Agenda.
 - **Marcar como feita:** toque no círculo de uma atividade. Fica registrado quem fez e a hora. Toque de novo para desmarcar.
+- **Horário (opcional):** no editor do plano, preencha "Até que horas?". Se a atividade não for marcada como feita até lá, ela ganha a etiqueta **Atrasada**, entra na central de alertas (e no aviso do aparelho) e no aviso diário do app ntfy.
 
 ## Importar mapa de corredores (Excel)
 Em **Corredores**, toque em **⇪ Importar mapa (Excel)** e escolha a planilha (.xlsx ou .csv). Ela precisa ter as colunas **Corredor**, **Setor** e **Responsável**.
