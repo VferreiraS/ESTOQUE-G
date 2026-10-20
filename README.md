@@ -218,7 +218,8 @@ O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza 
 
 ## Visual escuro
 
-- O site abre no tema escuro: fundo preto estrelado, títulos grandes em Oswald (fonte livre, em `vendor/fonts`) e o "G" da Lojas G feito de partículas douradas e azuis no login e no Início.
+- O site abre no tema escuro: fundo preto estrelado, títulos grandes em Oswald (fonte livre, em `vendor/fonts`) e o "G" da Lojas G feito de partículas vermelhas no login e no Início.
+- Detalhes em vermelho com brilho: palavra final dos títulos, botões principais, item ativo do menu (em pílula) e o primeiro cartão do Início. Cartões de vidro translúcido e bolhas de luz vermelha no fundo.
 - O "G" gira devagar e se afasta do dedo ou do mouse. Ele pausa quando sai da tela ou o app fica em segundo plano, e fica parado se o aparelho pede menos movimento.
 - O botão de tema volta para o modo claro, que continua em preto e branco e sem partículas.
 
