@@ -1,6 +1,6 @@
 # Estoque 99 · Lojas G
 
-Sistema de estoque, tarefas e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
+Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
 ## Publicar o site (uma vez só)
@@ -49,45 +49,41 @@ Em **Notas fiscais → Bipar NF**, use o leitor USB, a câmera ou cole a chave d
 - O código de barras não traz volumes. Eles vêm do XML, da NF já cadastrada ou da contagem na chegada.
 
 ## Painel com gráficos
-Menu **Painel** (no celular: **Mais → Painel**, ou o botão **Ver painel com gráficos** no início).
-- Escolha o período: 7, 14 ou 30 dias.
-- Números do topo: rupturas em falta, tempo médio para abastecer (da foto até "Abastecido"), NFs em divergência e tarefas atrasadas (ou produtos que vencem em 7 dias, quando houver controle de validade).
-- Gráficos: rupturas em falta por corredor, rupturas abertas × abastecidas por dia, tarefas por pessoa (atrasadas, abertas, concluídas) e notas fiscais por dia e por status.
-- Toque (ou passe o mouse) numa barra para ver o número; **Ver como tabela** mostra os valores em lista.
-- Tudo em tons de cinza, com hachura para diferenciar as séries.
+Menu **Painel** (no celular: **Mais → Painel**, ou **Ver painel com gráficos** no início). Período de 7, 14 ou 30 dias.
+- **Números do topo:** atividades de hoje feitas, % de atividades feitas no período, NFs aguardando e NFs em divergência.
+- **Gráficos:** atividades por responsável, atividades por dia (feitas e a fazer), notas fiscais por dia e notas por status.
+- **Detalhes:** toque numa barra para ver o número; **Ver como tabela** mostra os valores em lista.
 
-## Controle de validade
-Menu **Validade** (no celular: **Mais → Validade**).
-1. Toque em **＋ Nova validade**.
-2. **Código de barras:** bipe com o leitor USB, digite ou toque em **▥ Ler código** para usar a câmera. Se o código já apareceu numa NF importada (ou numa validade anterior), o nome do produto é preenchido sozinho.
-3. **Vence em:** digite a data ou toque em **📷 Ler a data pela foto (robô)** — o Google Gemini configurado na página do Robô lê a data impressa na embalagem. Confira antes de salvar.
-4. Informe quantidade, corredor (preenche o responsável) e observação (lote, local).
+## Plano de ação (lugar das antigas Tarefas e Rupturas)
+As abas **Tarefas**, **Rupturas** e **Validade** saíram do site.
+- **Dados antigos:** os que existiam foram apagados ao entrar na versão nova.
+- **Onde aparece:**
+  - na barra do celular, em **Plano**;
+  - no Início ("Plano de ação de hoje");
+  - na Agenda.
+- **Marcar como feita:** toque no círculo de uma atividade. Fica registrado quem fez e a hora. Toque de novo para desmarcar.
 
-Abas: **Vencendo** (próximos 30 dias), **Vencidos**, **Todos** e **Retirados**. Até 7 dias o cartão fica com borda grossa; vencido ou vencendo hoje, borda mais grossa e etiqueta preta. Ao tirar o produto, toque em **Retirado da gôndola**.
+## Contas dos auxiliares
+No **Chat**, quem criou a equipe vê **Contas dos auxiliares**.
+1. Informe o nome do auxiliar e uma **senha inicial** (4 a 8 números).
+2. Toque em **Criar conta e enviar link** e mande o link pelo WhatsApp. Passe a senha inicial por fora (ligação ou pessoalmente).
+3. O auxiliar abre o link no celular dele, digita a senha inicial, escolhe a própria senha e guarda o código de recuperação. Ele já entra na equipe com os dados sincronizados.
 
-Avisos: a central de alertas (e o aviso no computador, se ligado) avisa 30 e 15 dias antes, todos os dias a partir de 7 dias, no dia e enquanto estiver vencido na gôndola. O relatório por e-mail das 8h e 18h e o Robô (pergunta "O que vence esta semana?") também mostram as validades. O início mostra um aviso quando há produto vencendo em até 7 dias.
-
-## Rupturas (fotos para abastecer)
-
-Na aba **Rupturas** (barra de baixo no celular, menu lateral no computador), toque em **📷 Nova ruptura**:
-
-1. Tire a foto da prateleira vazia (**Câmera**) ou escolha da **Galeria**. São até 6 fotos por ruptura.
-2. Toque em **🤖 Robô identificar produtos** para o robô olhar a foto e sugerir os produtos em falta. Confira e ajuste o texto.
-3. Escolha o **corredor**; o responsável do corredor é preenchido sozinho, e você pode trocar.
-4. Toque em **Salvar**.
-
-- As abas **Em falta**, **Abastecidas** e **Todas** mostram quantas há em cada uma. Toque na foto para ver em tela cheia.
-- Quando abastecer, toque em **Abastecido** no cartão.
-- As fotos ficam **só neste aparelho**, criptografadas. Elas não entram em Exportar backup nem em Exportar conta protegida. Trocar a senha não apaga as fotos.
-- **Excluir** uma ruptura apaga as fotos dela.
-- O robô que lê a foto usa o **Google Gemini**: configure a chave na página do Robô (**IA → Serviço: Google Gemini**). A foto é enviada ao Google.
-- Na página do Robô dá para perguntar "O que falta abastecer?". As rupturas em aberto entram no resumo, só em texto, sem fotos.
+O que a conta de auxiliar faz:
+- **Vê:** Início, Plano de ação, Notas fiscais e Chat.
+- **Pode:** marcar atividades como feitas, bipar e conferir NFs e conversar no chat.
+- **Não pode:**
+  - criar ou apagar planos nem apagar cadastros;
+  - mexer em equipe, corredores, painel, alertas, backup, robô e administração;
+  - sair da equipe.
+- **Mudanças de equipe e corredores** que venham de um auxiliar são ignoradas pelos outros aparelhos.
+- **Para tirar o acesso de alguém**, crie uma equipe nova e convide só quem fica. Quem tem o código da equipe consegue ler os dados.
 
 ## Chat da equipe (com fotos)
 Aba **Chat** (no celular fica na barra de baixo; **Planos** foi para o menu **Mais**).
 1. O gestor toca em **Criar equipe**. O site gera um código, por exemplo `ABCD-EFGH-JKLM`.
 2. Toque em **Convidar** e mande o link pelo WhatsApp. O auxiliar abre o link, entra na conta dele e toca em **Entrar no chat**. Ou ele pode digitar o código em **Chat → Entrar com código**.
-3. Mande texto, fotos (📷 câmera ou 🖼 galeria) ou, na janela de uma ruptura, toque em **Enviar no chat**.
+3. Mande texto ou fotos (📷 câmera ou 🖼 galeria).
 4. **Áudio:** toque no microfone, fale e toque em **Enviar áudio** (ou **Cancelar**). Máximo de 2 minutos por áudio. Na primeira vez o navegador pede permissão para usar o microfone.
 
 Como funciona:
@@ -101,7 +97,7 @@ Como funciona:
 - **Limite grátis:** cerca de **250 mensagens por dia por internet** (o Wi-Fi da loja conta como uma só). Se aparecer o aviso de limite, use os dados móveis ou espere o dia seguinte.
 
 ## Equipe sincronizada (dados em todos os aparelhos)
-Usa a mesma equipe do **Chat**. Com ela ligada, **tarefas, notas fiscais, rupturas (com fotos), validades, equipe e corredores** ficam iguais em todos os aparelhos: quando a auxiliar marca "Abastecido" no celular, você vê no computador em segundos.
+Usa a mesma equipe do **Chat**. Com ela ligada, **notas fiscais, planos de ação, equipe e corredores** ficam iguais em todos os aparelhos: quando a auxiliar marca uma atividade como feita no celular, você vê no computador em segundos.
 - **Quem cria a equipe** já começa compartilhando os dados do aparelho dele.
 - **Quem entra** escolhe:
   - **Usar só os dados da equipe neste aparelho** (marcado por padrão): os cadastros do aparelho são trocados pelos da equipe;
@@ -109,14 +105,14 @@ Usa a mesma equipe do **Chat**. Com ela ligada, **tarefas, notas fiscais, ruptur
 - Na tela do **Chat**, toque na linha **Equipe sincronizada** para:
   - ligar ou desligar o compartilhamento neste aparelho;
   - tocar em **Sincronizar agora**;
-  - ver as **últimas mudanças da equipe** ("Ana abasteceu…", "Leo concluiu a tarefa…").
+  - ver as **últimas mudanças da equipe** ("Ana fez “Repor arroz”", "Leo mudou a NF 123 para Conferido").
 - O rodapé do site mostra "Equipe sincronizada · há 1 min".
 
 Como funciona:
 - **Envio:** cada mudança vai cifrada com o código da equipe pelo ntfy.sh. Várias gravações em sequência viram uma mensagem só.
 - **Edições ao mesmo tempo:** se duas pessoas editarem o mesmo item, vale a última edição.
 - **Validação:** mudanças inválidas são recusadas.
-- **Quem ficou fora:** se ficou mais de 10 horas fora (ou é novo na equipe), o aparelho pede uma cópia completa a quem estiver com o site aberto. As fotos ficam no servidor por 3 horas.
+- **Quem ficou fora:** se ficou mais de 10 horas fora (ou é novo na equipe), o aparelho pede uma cópia completa a quem estiver com o site aberto. Anexos grandes ficam no servidor por 3 horas.
 - **O que não vai para a equipe:** alertas, planos, senha e chaves do robô.
 - **Permissões:** todos da equipe podem editar e apagar. Para tirar alguém, crie uma equipe nova.
 - **Limite:** chat e dados somados contam no limite grátis de cerca de 250 envios por dia por internet.
@@ -135,7 +131,7 @@ Cada NF tem um de quatro status: **Pendente**, **Em conferência**, **Conferido*
 
 Em **Alertas → Relatório por e-mail**, confira o endereço (já vem `ferreiradasilvavitorhugo44@gmail.com`) e a **Cópia para** (já vem `99.estoque@lojasg.com.br`; aceita até 5 e-mails separados por vírgula), escolha os horários (8h e 18h) e toque em **Ativar envio automático**.
 
-- O relatório traz NFs a conferir, NFs em divergência, tarefas atrasadas e tarefas de hoje.
+- O relatório traz NFs a conferir, NFs em divergência e as atividades do plano de hoje que faltam fazer.
 - O envio é feito pelo serviço gratuito FormSubmit. O conteúdo do relatório passa por ele.
 - **Na primeira vez**, chega um e-mail do FormSubmit no endereço principal: abra e clique em **Activate Form**. Os endereços em cópia não precisam confirmar. Depois disso os relatórios chegam normalmente. Use **Enviar teste agora** para disparar esse primeiro e-mail.
 - Só envia com o site aberto e a conta aberta (pode estar minimizado) em algum aparelho no horário. Se o aparelho estava desligado, envia quando abrir, até 4 horas depois do horário.
@@ -197,13 +193,13 @@ O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/rob
    - **Google Gemini**: chave grátis em **https://aistudio.google.com/apikey** (entre com a conta Google → **Create API key**). Costuma funcionar em computadores de empresa com antivírus (ex.: Bitdefender).
    - **Groq**: chave grátis em **https://console.groq.com/keys** (**Create API Key**, começa com `gsk_`).
 2. Cole a chave, escolha o modelo e toque em **Testar conexão** e depois em **Salvar**. Cada serviço guarda a sua própria chave.
-3. Pergunte, por exemplo: "O que está pendente hoje?", "Quais NFs estão em divergência?", "Tarefas atrasadas".
+3. Pergunte, por exemplo: "O que falta do plano de hoje?", "Quais NFs estão em divergência?".
 
 - Se um modelo sair do ar, o robô escolhe sozinho outro disponível no mesmo serviço.
 - Se o antivírus barrar a resposta em partes, o robô passa a pedir a resposta inteira de uma vez. Se o computador bloquear um serviço inteiro, use o outro.
 - As chaves ficam criptografadas com a sua conta, só neste aparelho. Se trocar a senha da conta, cole as chaves de novo.
 - Os planos gratuitos têm limite de pedidos por minuto e por dia.
-- O que vai para o serviço escolhido: a pergunta, as últimas mensagens da conversa e um resumo do estoque (NFs não conferidas, tarefas abertas, equipe, corredores e planos do dia). No plano gratuito do Gemini, o Google pode usar as conversas para melhorar os modelos.
+- O que vai para o serviço escolhido: a pergunta, as últimas mensagens da conversa e um resumo do estoque (NFs não conferidas, planos de ação, equipe e corredores). No plano gratuito do Gemini, o Google pode usar as conversas para melhorar os modelos.
 - O robô só lê os dados. Ele não muda nada no estoque.
 
 ## Mascote
@@ -219,7 +215,7 @@ O logo ganha um ornamento em cinza conforme o mês do aparelho: janeiro (verão)
 
 ## Compartilhar relatórios
 
-Em cada aba com lista (Notas fiscais, Tarefas, Agenda, Equipe, Corredores e Planos de ação) há um botão **Compartilhar ↗**. Ele gera o relatório do grupo escolhido: **Pendentes**, **Concluídas** (nas notas, **Conferidas**) ou **Todas**.
+Em cada aba com lista (Notas fiscais, Agenda, Equipe, Corredores e Planos de ação) há um botão **Compartilhar ↗**. Ele gera o relatório do grupo escolhido: **Pendentes**, **Concluídas** (nas notas, **Conferidas**) ou **Todas**.
 
 - **Enviar**: no celular, abre o menu de compartilhamento com texto e planilha CSV. WhatsApp e Outlook aparecem nele.
 - **Copiar texto**: cole no WhatsApp ou no e-mail.
