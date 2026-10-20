@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="45"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="46"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -3513,6 +3513,29 @@ window.openProfile=function(key){var k=key||'me';goBefore('profile');view=k;rend
 var enter0=authEnter;authEnter=function(){var r=enter0.apply(this,arguments);mine=null;team={};setTimeout(function(){load().then(startup)},300);return r};
 if(window.e99Team&&window.e99Team.onChange)window.e99Team.onChange(function(){setTimeout(load,800)});
 if(typeof authSession!=='undefined'&&authSession)load().then(startup);
+/* ---------- nuvem (Firebase): todos os perfis da loja no mesmo lugar ---------- */
+var FB={apiKey:"AIzaSyBy72TCofmFQGsaiC72TWKkwT8fsMXfxLI",authDomain:"gen-lang-client-0167474823.firebaseapp.com",projectId:"gen-lang-client-0167474823",storageBucket:"gen-lang-client-0167474823.firebasestorage.app",messagingSenderId:"1025566705857",appId:"1:1025566705857:web:66be4b316f327de3c42c40"};
+var FBV='10.14.1',fbP=null,fs=null,cloudSid='',cloudUnsub=null,cloudAt=0;
+function js(u){return new Promise(function(res,rej){var x=document.createElement('script');x.src=u;x.onload=res;x.onerror=rej;document.head.appendChild(x)})}
+async function sha(t){var h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(h)).map(function(b){return b.toString(16).padStart(2,'0')}).join('').slice(0,32)}
+function fb(){if(fbP)return fbP;fbP=(async function(){var b='https://www.gstatic.com/firebasejs/'+FBV+'/';await js(b+'firebase-app-compat.js');await js(b+'firebase-auth-compat.js');await js(b+'firebase-firestore-compat.js');
+  var app=firebase.apps.length?firebase.app():firebase.initializeApp(FB);var au=app.auth();await au.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
+  if(!au.currentUser){await new Promise(function(r){var u=au.onAuthStateChanged(function(){u();r()})})}
+  if(!au.currentUser){var k='lojasg.estoque99.cloud-dev',c=null;try{c=JSON.parse(localStorage.getItem(k)||'null')}catch(x){}
+    if(!c){var a=new Uint8Array(18);crypto.getRandomValues(a);c={e:'d'+Array.from(a.slice(0,8)).map(function(b){return b.toString(16).padStart(2,'0')}).join('')+'@stok-e99.app',p:btoa(String.fromCharCode.apply(null,a))};try{localStorage.setItem(k,JSON.stringify(c))}catch(x){}}
+    try{await au.signInWithEmailAndPassword(c.e,c.p)}catch(x){await au.createUserWithEmailAndPassword(c.e,c.p)}}
+  fs=app.firestore();return fs})();fbP.catch(function(e){fbP=null;try{console.warn('Stok nuvem:',e&&e.code||e)}catch(x){}});return fbP}
+async function cloudStart(){if(!authSession)return;var t=topic();if(!t)return;var sid=await sha('loja|'+t);if(sid===cloudSid&&cloudUnsub)return;var d;try{d=await fb()}catch(x){return}
+  if(cloudUnsub){cloudUnsub();cloudUnsub=null}cloudSid=sid;
+  cloudUnsub=d.collection('lojas').doc(sid).collection('perfis').onSnapshot(function(q){q.forEach(function(doc){cloudIn(doc.data()).catch(function(){})})},function(e){try{console.warn('Stok nuvem:',e&&e.code)}catch(x){}});cloudPut()}
+async function cloudIn(x){if(!x||!authSession||typeof x.login!=='string')return;var p=clean(x.p);if(!p)return;p.at=Number(x.at)||0;var lg=x.login.slice(0,80);
+  if(authLoginName(lg)===myLogin()){if(!mine||!mine.at||p.at>mine.at){mine=p;await put('me|'+authSession.storeKey,mine);refresh()}return}
+  var key='fb'+(await sha('p|'+authLoginName(lg))).slice(0,30);var cur=team[key];if(cur&&cur.p&&cur.p.at>=p.at)return;
+  team[key]={p:p,role:x.role==='auxiliar'?'auxiliar':'gestor',seen:p.at,login:lg};var t=topic();await put('tm|'+t+'|'+key,team[key]);var idx=await get('idx|'+t)||[];if(idx.indexOf(key)<0){idx.push(key);await put('idx|'+t,idx.slice(-200))}refresh()}
+async function cloudPut(){if(!authSession||!mine||!mine.at||!cloudSid||mine.at<=cloudAt)return;var d;try{d=await fb()}catch(x){return}var p=clean(mine);if(!p)return;
+  var id=await sha('p|'+myLogin());try{await d.collection('lojas').doc(cloudSid).collection('perfis').doc(id).set({login:authSession.record.login,role:authSession.payload.role==='auxiliar'?'auxiliar':'gestor',p:p,at:mine.at});cloudAt=mine.at}catch(e){try{console.warn('Stok nuvem:',e&&e.code)}catch(x){}}}
+var _pub=publish;publish=function(now){_pub(now);setTimeout(function(){cloudStart().then(cloudPut)},400)};
+setInterval(function(){if(authSession&&!document.hidden)cloudStart()},20000);setTimeout(function(){cloudStart()},3000);
 })();
 </script>
 <style id="dedupe-css">

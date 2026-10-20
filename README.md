@@ -3,6 +3,9 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 46
+- Nuvem (Firebase): os perfis de todas as contas da loja ficam no mesmo lugar e aparecem em todos os aparelhos; contas antigas sobem sozinhas ao abrir o app.
+
 ## Versão 45
 - Abertura: se o aparelho bloquear o som, aparece "Toque para abrir" e o som toca junto com a animação, sem atraso.
 
