@@ -216,6 +216,10 @@ O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/rob
 
 O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza como o resto do site.
 
+## Puxar para atualizar (celular)
+
+- No topo de qualquer tela, arraste para baixo e solte: aparece a bolinha que gira e o app sincroniza a equipe, procura versão nova do site e redesenha a tela.
+
 ## Conta de auxiliar pronta de uma vez
 
 - Em Chat → Contas dos auxiliares, escolha a pessoa da Equipe (ex.: Leonardo) e toque em Criar conta e enviar link.

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="40"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="41"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -3740,6 +3740,40 @@ function ver(){var m=document.querySelector('meta[name="estoque99-version"]');re
 var raVer=renderAuth;renderAuth=function(){var r=raVer.apply(this,arguments);try{var box=document.getElementById('auth-screen');if(box&&!box.querySelector('.site-version')){var v=document.createElement('p');v.className='small site-version';v.style.cssText='text-align:center;opacity:.7;margin:8px 0 0';v.textContent='Versão '+ver();var card=box.querySelector('.auth-card');(card||box).appendChild(v)}}catch(x){}return r};
 var rrVer=render;render=function(){var r=rrVer.apply(this,arguments);try{var bc=document.getElementById('breadcrumb');if(bc&&/ \/ undefined$/.test(bc.textContent))bc.textContent=bc.textContent.replace(/undefined$/,page==='admin'?'Administração':'');if(page==='data'){var view=document.getElementById('view');if(view&&!view.querySelector('.site-version')){var v=document.createElement('p');v.className='small site-version';v.textContent='Versão do site neste aparelho: '+ver()+'.';var h=view.querySelector('.hero');if(h&&h.nextSibling)view.insertBefore(v,h.nextSibling);else view.appendChild(v)}}}catch(x){}return r};
 try{if(document.getElementById('auth-screen')&&!document.getElementById('auth-screen').hidden&&!window.authSession)renderAuth()}catch(x){}
+})();
+</script>
+<style id="ptr-css">
+/* Puxar para atualizar (celular): bolinha que gira no topo */
+#ptr{position:fixed;left:50%;top:0;z-index:200;width:42px;height:42px;margin-left:-21px;border-radius:50%;background:#151517;border:1px solid #ffffff22;box-shadow:0 6px 20px #000a;display:grid;place-items:center;transform:translateY(-60px);opacity:0;pointer-events:none;transition:opacity .15s}
+#ptr i{width:22px;height:22px;border-radius:50%;border:3px solid #ffffff2a;border-top-color:#ff2a1f}
+#ptr.spin i{animation:ptr-spin .7s linear infinite}
+@keyframes ptr-spin{to{transform:rotate(360deg)}}
+@media (max-width:900px){html,body{overscroll-behavior-y:contain}}
+</style>
+<script id="ptr-js">
+(function(){
+'use strict';
+/* No celular: arrastar a tela para baixo no topo e soltar atualiza (equipe, dados e versão do site). */
+if(!('ontouchstart' in window))return;
+var el=document.createElement('div');el.id='ptr';el.setAttribute('aria-hidden','true');el.innerHTML='<i></i>';document.body.appendChild(el);
+var y0=null,dy=0,busy=false,MAX=110,GO=70;
+function topNow(){return (window.scrollY||document.documentElement.scrollTop||0)<=0}
+function blocked(t){return !!(document.querySelector('dialog[open]')||(t&&t.closest&&t.closest('input,textarea,select,#chat-list,.tablewrap')))}
+function show(d){var p=Math.min(MAX,d);el.style.transform='translateY('+(p-50)+'px) rotate('+(p*4)+'deg)';el.style.opacity=String(Math.min(1,p/GO))}
+function hide(){el.classList.remove('spin');el.style.transition='transform .25s,opacity .25s';el.style.transform='translateY(-60px)';el.style.opacity='0';setTimeout(function(){el.style.transition=''},260)}
+addEventListener('touchstart',function(e){if(busy||!topNow()||blocked(e.target)||e.touches.length!==1){y0=null;return}y0=e.touches[0].clientY;dy=0},{passive:true});
+addEventListener('touchmove',function(e){if(y0==null)return;dy=e.touches[0].clientY-y0;if(dy>0&&topNow())show(dy*.6);else if(dy<=0){y0=null;hide()}},{passive:true});
+addEventListener('touchend',async function(){if(y0==null)return;y0=null;if(dy*.6<GO){hide();return}
+  busy=true;el.classList.add('spin');el.style.transform='translateY(18px)';el.style.opacity='1';
+  try{if(navigator.vibrate)navigator.vibrate(10)}catch(x){}
+  try{
+    if(typeof authSession==='undefined'||!authSession){location.reload();return}
+    var jobs=[];if(window.syncNow)jobs.push(Promise.resolve(window.syncNow()).catch(function(){}));
+    if(navigator.serviceWorker)jobs.push(navigator.serviceWorker.getRegistration().then(function(r){return r&&r.update()}).catch(function(){}));
+    await Promise.race([Promise.all(jobs),new Promise(function(r){setTimeout(r,4000)})]);
+    await new Promise(function(r){setTimeout(r,500)});
+    try{render()}catch(x){}
+  }finally{busy=false;hide()}});
 })();
 </script>
 <script>
