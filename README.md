@@ -216,6 +216,16 @@ O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/rob
 
 O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza como o resto do site.
 
+## Apagar tudo e começar de novo
+
+- Em **Dados e ajuda → Apagar tudo neste aparelho**, digite APAGAR. O aparelho apaga todas as contas, a equipe, planos, NFs, corredores, pessoas, perfis e chats. Mantém só o tema, os efeitos, o sazonal e o som.
+- Não apaga nada nos outros aparelhos: no celular e no PC, cada um precisa ser limpo.
+
+## Logo e atualização
+
+- Os ícones do app têm nome novo (`-v36`), para o navegador não reaproveitar o ícone antigo do cache.
+- Se o PC ainda mostrar a versão antiga, feche todas as abas do site, abra de novo e atualize (Ctrl+F5). A versão aparece em Dados e ajuda.
+
 ## Itens repetidos
 
 - Quando dois aparelhos juntam os dados na mesma equipe, o mesmo corredor, pessoa, NF ou plano pode ficar duas vezes. O Início avisa o gestor ("Encontrei N itens repetidos").
