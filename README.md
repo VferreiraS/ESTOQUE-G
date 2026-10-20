@@ -3,6 +3,9 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 44
+- Perfil do celular aparece no PC mesmo depois que o anexo expira (nome, @ e cargo); a foto é pedida de novo ao celular.
+
 ## Publicar o site (uma vez só)
 
 1. No GitHub, abra o repositório → **Settings** → **Pages**.

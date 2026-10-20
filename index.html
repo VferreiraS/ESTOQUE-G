@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="43"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="44"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -2820,6 +2820,7 @@ async function handle(d,ch){if(ch!==chan||!authSession)return;var o=await decStr
   if(o.k==='nfping'){if(typeof o.day==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(o.day))try{localStorage.setItem(nfKey(),o.day)}catch(e){}return}
   if(o.k==='member'){memTouch(o.dev,{name:who,role:o.r,login:o.login,inviteId:o.inviteId,created:o.event==='created'?(Number(o.at)||Date.now()):0,seen:Number(o.at)||Date.now()});
     if(o.event==='created'){feedAdd(who,'criou a conta de auxiliar');notify(who+' criou a conta de auxiliar.');if(page==='chat')scheduleRender()}return}
+  if(o.k==='profreq'){if(window.e99OnProfReq)try{window.e99OnProfReq(o)}catch(e){}return}
   if(o.k==='profile'){if(window.e99OnProfile)try{window.e99OnProfile(o,async function(){if(!d.attachment||!d.attachment.url)return null;var r=await fetch(d.attachment.url);if(!r.ok)return null;return JSON.parse(new TextDecoder().decode(await dec(ch,await r.arrayBuffer())))},ch.topic)}catch(e){}return}
   if(o.k==='hello'){if(window.e99OnHello)try{window.e99OnHello()}catch(e){}if(sy().ready&&!snapTimer)snapTimer=setTimeout(function(){snapTimer=0;sendSnap()},1000+Math.random()*3000);return}
   if(o.k==='snap'&&snapTimer){clearTimeout(snapTimer);snapTimer=0}
@@ -3424,13 +3425,20 @@ async function saveMine(p){p.at=Date.now();mine=p;await put('me|'+authSession.st
 /* ---------- equipe: enviar e receber ---------- */
 var pubTimer=0;
 function publish(now){clearTimeout(pubTimer);pubTimer=setTimeout(async function(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i||!authSession)return;var p=mine||blank();if(!mine){mine=p;mine.at=Date.now();await put('me|'+authSession.storeKey,mine)}
-    var ok=await window.e99SyncSend('profile',{pat:p.at,user:p.user,login:authSession.record.login},p);if(ok){lastPub[i.topic]=Date.now();try{localStorage.setItem('lojasg.estoque99.profile-pub:'+authSession.storeKey,JSON.stringify(lastPub))}catch(x){}}},now?600:2000+Math.random()*6000)}
+    var ok=await window.e99SyncSend('profile',{pat:p.at,user:p.user,login:authSession.record.login,pt:{name:p.name,user:p.user,cargo:p.cargo,bio:String(p.bio||'').slice(0,160),names:(p.names||[]).slice(0,3)}},p);if(ok){lastPub[i.topic]=Date.now();try{localStorage.setItem('lojasg.estoque99.profile-pub:'+authSession.storeKey,JSON.stringify(lastPub))}catch(x){}}},now?600:2000+Math.random()*6000)}
+var askAt={};function askResend(dev){if(Date.now()-(askAt[dev]||0)<10*60000)return;askAt[dev]=Date.now();setTimeout(function(){if(window.e99SyncSend)window.e99SyncSend('profreq',{want:dev})},1500)}
+var replyAt=0;window.e99OnProfReq=function(o){var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i||typeof o.want!=='string')return;
+  if(o.want===i.dev){if(Date.now()-replyAt>60000){replyAt=Date.now();publish(true)}return}
+  var r=team[o.want];if(r&&r.p&&r.p.photo&&Date.now()-(askAt['relay:'+o.want]||0)>5*60000){askAt['relay:'+o.want]=Date.now();setTimeout(function(){window.e99SyncSend('profile',{pat:r.p.at,user:r.p.user,login:r.login||'',orig:o.want,r:r.role==='auxiliar'?'auxiliar':'gestor',pt:{name:r.p.name,user:r.p.user,cargo:r.p.cargo}},r.p)},2000+Math.random()*4000)}};
 window.e99OnHello=function(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i)return;if(Date.now()-(lastPub[i.topic]||0)>2*60000)publish(false);
   /* quem acabou de entrar recebe também os perfis de quem já está na equipe (com o aparelho de origem) */
   var hk='lojasg.estoque99.profile-relay:'+i.topic;var last=+(localStorage.getItem(hk)||0);if(Date.now()-last<10*60000)return;try{localStorage.setItem(hk,String(Date.now()))}catch(x){}
-  setTimeout(function(){Object.keys(team).forEach(function(k,n){var r=team[k];if(!r||!r.p||!r.p.user)return;setTimeout(function(){window.e99SyncSend('profile',{pat:r.p.at,user:r.p.user,login:r.login||'',orig:k,r:r.role==='auxiliar'?'auxiliar':'gestor'},r.p)},300*n)})},1500)};
-window.e99OnProfile=async function(o,getBody,t){if(!authSession||typeof o.dev!=='string'||!/^[a-z0-9]{6,40}$/.test(o.dev))return;var key=typeof o.orig==='string'&&/^[a-z0-9]{6,40}$/.test(o.orig)?o.orig:o.dev;var cur=team[key];if(cur&&cur.p&&cur.p.at>=Number(o.pat))return;
-  var body=null;try{body=await getBody()}catch(x){}var p=clean(body);if(!p)return;p.at=Number(o.pat)||Date.now();
+  setTimeout(function(){Object.keys(team).forEach(function(k,n){var r=team[k];if(!r||!r.p||!r.p.user)return;setTimeout(function(){window.e99SyncSend('profile',{pat:r.p.at,user:r.p.user,login:r.login||'',orig:k,r:r.role==='auxiliar'?'auxiliar':'gestor',pt:{name:r.p.name,user:r.p.user,cargo:r.p.cargo,bio:String(r.p.bio||'').slice(0,160)}},r.p)},300*n)})},1500)};
+window.e99OnProfile=async function(o,getBody,t){if(!authSession||typeof o.dev!=='string'||!/^[a-z0-9]{6,40}$/.test(o.dev))return;var key=typeof o.orig==='string'&&/^[a-z0-9]{6,40}$/.test(o.orig)?o.orig:o.dev;var cur=team[key];if(cur&&cur.p&&(cur.p.at>Number(o.pat)||(cur.p.at===Number(o.pat)&&!cur.partial)))return;
+  var body=null;try{body=await getBody()}catch(x){}var p=clean(body),partial=false;
+  /* o anexo (foto e capa) some do servidor depois de 3 h: usa o nome/@/cargo que vem na própria mensagem e pede a foto de novo */
+  if(!p&&o.pt&&typeof o.pt==='object'){p=clean(Object.assign({},o.pt));partial=!!p;if(p&&cur&&cur.p){p.photo=cur.p.photo;p.cover=cur.p.cover}askResend(key)}
+  if(!p)return;p.at=Number(o.pat)||Date.now();if(partial&&cur&&cur.p&&cur.p.at>=p.at&&cur.p.photo)return;
   var lg=typeof o.login==='string'?o.login.slice(0,80):'';
   /* mesma conta em outro aparelho (ex.: celular): este aparelho adota o perfil mais novo da própria conta */
   if(lg&&authLoginName(lg)===authLoginName(authSession.record.login)){if(!mine||!mine.at||p.at>mine.at){var np=Object.assign({},p,{v:1,at:p.at});mine=clean(np)||mine;if(mine){mine.at=p.at;await put('me|'+authSession.storeKey,mine);try{localStorage.setItem('lojasg.estoque99.profile-seen:'+authSession.storeKey,String(Date.now()))}catch(x){}}}refresh();return}
@@ -3440,8 +3448,8 @@ async function storeRename(){if(!isStore())return;var k='lojasg.estoque99.store-
   if(!clash&&!(mine===null||!mine.at))return;var NAME='Computador do estoque';try{localStorage.setItem(k,'1')}catch(x){}
   if(!mine||!mine.at){var b=blank();await saveMine(b)}else if(clash){mine.names=[mine.name].concat(mine.names||[]).slice(0,6);mine.name=NAME;await saveMine(mine)}
   if(t.name!==NAME&&window.e99ChatReload)try{await window.e99ChatReload({code:t.code,name:NAME,team:t.team,owner:t.owner,sync:t.sync,replace:t.replace})}catch(x){}refresh()}
-document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(function(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(i&&authSession&&Date.now()-(lastPub[i.topic]||0)>6*3600000)publish(false)},3000)});
-function startup(){setTimeout(storeRename,5000);var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i||!authSession){setTimeout(startup,4000);return}if(Date.now()-(lastPub[i.topic]||0)>6*3600000)publish(false)}
+document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(function(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(i&&authSession&&Date.now()-(lastPub[i.topic]||0)>2.5*3600000)publish(false)},3000)});
+function startup(){setTimeout(storeRename,5000);var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i||!authSession){setTimeout(startup,4000);return}if(Date.now()-(lastPub[i.topic]||0)>2.5*3600000)publish(false)}
 /* ---------- página de perfil ---------- */
 function actsOf(names){var since=new Date(Date.now()-30*864e5).toISOString().slice(0,10),done=[],todo=0,today=iso();var ns=names.map(norm);
   (state.plans||[]).forEach(function(pl){(pl.activities||[]).forEach(function(a){var mine1=ns.indexOf(norm(a.owner))>=0||norm(a.owner)==='todos';if(a.done&&ns.indexOf(norm(a.doneBy))>=0&&pl.date>=since)done.push({t:a.title,p:pl.title,at:a.doneAt||pl.date});else if(!a.done&&mine1&&pl.date===today)todo++})});
