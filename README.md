@@ -216,6 +216,11 @@ O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/rob
 
 O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza como o resto do site.
 
+## Animações
+
+- Em todas as telas: brilho de vidro passando pelos cartões de tempos em tempos, pulso vermelho nos botões principais, na palavra vermelha do título e no menu ativo, o S de partículas no topo de cada tela e entrada animada dos cartões ao trocar de tela.
+- O botão **Efeitos: desligados** para tudo.
+
 ## Puxar para atualizar (celular)
 
 - No topo de qualquer tela, arraste para baixo e solte: aparece a bolinha que gira e o app sincroniza a equipe, procura versão nova do site e redesenha a tela.
