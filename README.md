@@ -224,6 +224,8 @@ O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza 
 
 ## Perfis
 
+- Se você muda o perfil no celular, o PC com a mesma conta recebe a mudança sozinho (foto, nome, @usuário, cargo e recado). Pessoas que entram depois na equipe também recebem os perfis dos outros pelos aparelhos que já estão com o site aberto.
+
 - Toda conta (gestor, estoque e auxiliar) tem um perfil em **Perfil** no menu: foto, capa, nome, **@usuário** (único na equipe), cargo e recado.
 - Toque em **Editar perfil** para trocar foto e capa (a imagem é recortada e reduzida no próprio aparelho) e os textos. O nome do perfil também é o nome usado no chat e em "feita por".
 - A foto aparece nas mensagens do chat, nos cartões da Equipe, em "feita por" no plano e no botão Minha conta. Tocar numa foto ou nome abre o perfil da pessoa, com as atividades feitas nos últimos 30 dias.
