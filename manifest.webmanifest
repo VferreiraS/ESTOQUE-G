@@ -1,6 +1,6 @@
 {
-  "name": "Estoque 99 · Lojas G",
-  "short_name": "Estoque 99",
+  "name": "Stok · Estoque 99 Lojas G",
+  "short_name": "Stok",
   "description": "Gestão de estoque, planos de ação e notas fiscais das Lojas G.",
   "lang": "pt-BR",
   "id": "./",
@@ -8,8 +8,8 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "icons": [
     {
       "src": "icons/icon-192.png",

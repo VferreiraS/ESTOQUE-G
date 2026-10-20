@@ -216,9 +216,20 @@ O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/rob
 
 O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza como o resto do site.
 
+## Perfis
+
+- Toda conta (gestor, estoque e auxiliar) tem um perfil em **Perfil** no menu: foto, capa, nome, **@usuário** (único na equipe), cargo e recado.
+- Toque em **Editar perfil** para trocar foto e capa (a imagem é recortada e reduzida no próprio aparelho) e os textos. O nome do perfil também é o nome usado no chat e em "feita por".
+- A foto aparece nas mensagens do chat, nos cartões da Equipe, em "feita por" no plano e no botão Minha conta. Tocar numa foto ou nome abre o perfil da pessoa, com as atividades feitas nos últimos 30 dias.
+- Os perfis vão para a equipe pelo mesmo canal cifrado da sincronização. Quem entra depois recebe os perfis quando os outros aparelhos estiverem com o site aberto.
+
+## Marca
+
+- A logo agora é o **S da Stok** (vermelho). Ícones do app, favicon e partículas do Início e do login usam o novo símbolo.
+
 ## Visual escuro
 
-- O site abre no tema escuro: fundo preto estrelado, títulos grandes em Oswald (fonte livre, em `vendor/fonts`) e o "G" da Lojas G feito de partículas vermelhas no login e no Início.
+- O site abre no tema escuro: fundo preto estrelado, títulos grandes em Oswald (fonte livre, em `vendor/fonts`) e o "S" da Stok feito de partículas vermelhas no login e no Início.
 - Detalhes em vermelho com brilho: palavra final dos títulos, botões principais, item ativo do menu (em pílula) e o primeiro cartão do Início. Cartões de vidro translúcido e bolhas de luz vermelha no fundo.
 - O "G" gira devagar e se afasta do dedo ou do mouse. Ele pausa quando sai da tela ou o app fica em segundo plano, e fica parado se o aparelho pede menos movimento.
 - O botão de tema volta para o modo claro, que continua em preto e branco e sem partículas.
