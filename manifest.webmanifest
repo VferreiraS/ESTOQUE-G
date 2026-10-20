@@ -1,7 +1,7 @@
 {
   "name": "Estoque 99 · Lojas G",
   "short_name": "Estoque 99",
-  "description": "Gestão de estoque, tarefas e notas fiscais das Lojas G.",
+  "description": "Gestão de estoque, planos de ação e notas fiscais das Lojas G.",
   "lang": "pt-BR",
   "id": "./",
   "start_url": "./",

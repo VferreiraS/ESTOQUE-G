@@ -224,6 +224,13 @@ Em cada aba com lista (Notas fiscais, Agenda, Equipe, Corredores e Planos de aç
 
 As notas respeitam a busca e a aba de status que estão na tela.
 
+## Atualizações do site
+- **Quando procura:** o site procura versão nova ao abrir, ao voltar para o app (inclusive o instalado na tela inicial do iPhone), quando a internet volta e a cada 30 minutos.
+- **Recarga:** se nada estiver sendo editado, a página se atualiza sozinha e continua na conta, sem pedir senha. Se houver algo aberto (rascunho de plano, mensagem digitada, código de recuperação na tela…), aparece a barra **Nova versão do site pronta · Atualizar agora**.
+- **Internet lenta:** o site abre a cópia salva em até 6 segundos, termina de baixar a versão nova em segundo plano e então atualiza.
+- **Conferir a versão:** em **Mais** (ou **Minha conta**) → **↻ Procurar atualização · versão N**.
+- **Se um aparelho ainda tiver uma versão anterior à 24:** feche o app de vez (arraste para cima) e abra de novo; no Safari, puxe a página para baixo para recarregar. Depois disso as atualizações chegam sozinhas.
+
 ## Importante sobre os dados
 
 - Os cadastros ficam **só no aparelho e navegador** onde foram feitos. Celular e computador **não sincronizam sozinhos**.
