@@ -216,6 +216,10 @@ O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/rob
 
 O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza como o resto do site.
 
+## Corredores dos cartazes
+
+- Em **Corredores → Cadastrar corredores dos cartazes (15)**, o app cadastra os 15 corredores dos cartazes impressos (01 a 14 e o Novo setor), com setor, linha de produtos e responsável (Leonardo, Thomaz DSL, Augusto, TODOS no 13). Corredor que já existe com o mesmo número é atualizado e mantém as ligações. Só gestor e conta do estoque veem o botão.
+
 ## Planilha no Google
 
 O app pode manter uma planilha do Google Sheets sempre atualizada com planos, atividades, NFs, corredores e equipe (sem fotos).
