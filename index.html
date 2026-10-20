@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="42"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="43"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -3050,6 +3050,12 @@ window.auxOpen=async function(ev){ev.preventDefault();if(invBusy)return;invBusy=
 window.auxCreate=async function(ev){ev.preventDefault();if(invBusy||!invite)return;var v=readForm(ev.target);invBusy=true;invErr='';renderAuth();
   try{authPasswordCheck(v.password,v.confirmation);var login=authLoginName(v.login);if(login.length<3)throw Error('O login precisa ter pelo menos 3 letras.');if(login==='estoque 99')throw Error('Login reservado. Escolha outro.');
     var session=await authCreate(login,String(invite.store||'Estoque').slice(0,80),v.password,authEmpty(),'auxiliar');
+    /* a ligação com a equipe e o chat fica gravada na conta já agora (cifrada), e não só nesta aba:
+       mesmo que ele feche antes de confirmar o código, ao entrar de novo o chat já está pronto */
+    try{var ccfg={code:invite.code,name:String(invite.name||'').slice(0,40),team:invite.team||'Equipe',owner:false,sync:true,replace:true};var civ=crypto.getRandomValues(new Uint8Array(12));
+      var cct=await crypto.subtle.encrypt({name:'AES-GCM',iv:civ,additionalData:authBytes('chat|'+authLoginName(session.record.login))},session.key,authBytes(JSON.stringify(ccfg)));
+      localStorage.setItem('lojasg.estoque99.chat:'+session.storeKey,JSON.stringify({iv:authB64(civ),cipher:authB64(new Uint8Array(cct))}));
+      localStorage.setItem('lojasg.estoque99.aux-profile:'+session.storeKey,JSON.stringify({name:ccfg.name,cargo:String(invite.role||'Auxiliar de estoque').slice(0,40)}))}catch(x){}
     sessionStorage.setItem('e99-aux-join',JSON.stringify({code:invite.code,name:invite.name,team:invite.team,inviteId:invite.inviteId||'',role:String(invite.role||'Auxiliar de estoque').slice(0,40)}));try{localStorage.setItem('lojasg.estoque99.announce-created',JSON.stringify({inviteId:invite.inviteId||''}))}catch(x){}sessionStorage.removeItem('e99-aux-invite');invite=null;
     authRecoveryShow={code:session.recoveryCode,session:session,legacy:false};invBusy=false;renderAuth()}
   catch(x){invErr=x.message||'Não foi possível criar a conta.';invBusy=false;renderAuth()}};
@@ -3419,7 +3425,7 @@ async function saveMine(p){p.at=Date.now();mine=p;await put('me|'+authSession.st
 var pubTimer=0;
 function publish(now){clearTimeout(pubTimer);pubTimer=setTimeout(async function(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i||!authSession)return;var p=mine||blank();if(!mine){mine=p;mine.at=Date.now();await put('me|'+authSession.storeKey,mine)}
     var ok=await window.e99SyncSend('profile',{pat:p.at,user:p.user,login:authSession.record.login},p);if(ok){lastPub[i.topic]=Date.now();try{localStorage.setItem('lojasg.estoque99.profile-pub:'+authSession.storeKey,JSON.stringify(lastPub))}catch(x){}}},now?600:2000+Math.random()*6000)}
-window.e99OnHello=function(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i)return;if(Date.now()-(lastPub[i.topic]||0)>10*60000)publish(false);
+window.e99OnHello=function(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i)return;if(Date.now()-(lastPub[i.topic]||0)>2*60000)publish(false);
   /* quem acabou de entrar recebe também os perfis de quem já está na equipe (com o aparelho de origem) */
   var hk='lojasg.estoque99.profile-relay:'+i.topic;var last=+(localStorage.getItem(hk)||0);if(Date.now()-last<10*60000)return;try{localStorage.setItem(hk,String(Date.now()))}catch(x){}
   setTimeout(function(){Object.keys(team).forEach(function(k,n){var r=team[k];if(!r||!r.p||!r.p.user)return;setTimeout(function(){window.e99SyncSend('profile',{pat:r.p.at,user:r.p.user,login:r.login||'',orig:k,r:r.role==='auxiliar'?'auxiliar':'gestor'},r.p)},300*n)})},1500)};
@@ -3434,7 +3440,8 @@ async function storeRename(){if(!isStore())return;var k='lojasg.estoque99.store-
   if(!clash&&!(mine===null||!mine.at))return;var NAME='Computador do estoque';try{localStorage.setItem(k,'1')}catch(x){}
   if(!mine||!mine.at){var b=blank();await saveMine(b)}else if(clash){mine.names=[mine.name].concat(mine.names||[]).slice(0,6);mine.name=NAME;await saveMine(mine)}
   if(t.name!==NAME&&window.e99ChatReload)try{await window.e99ChatReload({code:t.code,name:NAME,team:t.team,owner:t.owner,sync:t.sync,replace:t.replace})}catch(x){}refresh()}
-function startup(){setTimeout(storeRename,5000);var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i||!authSession){setTimeout(startup,4000);return}if(Date.now()-(lastPub[i.topic]||0)>24*3600000)publish(false)}
+document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(function(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(i&&authSession&&Date.now()-(lastPub[i.topic]||0)>6*3600000)publish(false)},3000)});
+function startup(){setTimeout(storeRename,5000);var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i||!authSession){setTimeout(startup,4000);return}if(Date.now()-(lastPub[i.topic]||0)>6*3600000)publish(false)}
 /* ---------- página de perfil ---------- */
 function actsOf(names){var since=new Date(Date.now()-30*864e5).toISOString().slice(0,10),done=[],todo=0,today=iso();var ns=names.map(norm);
   (state.plans||[]).forEach(function(pl){(pl.activities||[]).forEach(function(a){var mine1=ns.indexOf(norm(a.owner))>=0||norm(a.owner)==='todos';if(a.done&&ns.indexOf(norm(a.doneBy))>=0&&pl.date>=since)done.push({t:a.title,p:pl.title,at:a.doneAt||pl.date});else if(!a.done&&mine1&&pl.date===today)todo++})});
@@ -3806,6 +3813,51 @@ var rr=render;render=function(){var r=rr.apply(this,arguments);try{var v=documen
   var items=v.querySelectorAll('.panel,.card,.stat,.plan-card,.pn-card');items.forEach(function(el,i){el.style.setProperty('--fx-delay',((i*1.3)%7).toFixed(1)+'s')});
   var cur=typeof page!=='undefined'?page:'';if(cur!==last){last=cur;if(!off()){var blocks=v.querySelectorAll('.hero,.stat,.panel,.card,.plan-card');for(var j=0;j<blocks.length&&j<12;j++){if(typeof blocks[j].animate==='function')blocks[j].animate([{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:380,delay:j*40,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'})}}}
   var ac=document.querySelector('.alert-count');if(ac)ac.classList.toggle('has',+ac.textContent>0)}catch(x){}return r};
+})();
+</script>
+<style id="intro-css">
+/* Abertura Stok: o S se desenha em vermelho, acende e "entra" na tela; o nome aparece por baixo. */
+.entry-splash{display:none!important}
+#stok-intro{position:fixed;inset:0;z-index:100001;background:#000;display:grid;place-content:center;justify-items:center;gap:14px;overflow:hidden;pointer-events:none;animation:si-out .5s ease 2.05s forwards}
+#stok-intro::before{content:"";position:absolute;inset:-30%;background:radial-gradient(circle at 50% 46%,#ff2a1f33,transparent 38%);opacity:0;animation:si-halo 1.6s ease .5s forwards}
+#stok-intro svg{width:min(34vw,170px);height:auto;overflow:visible;animation:si-zoom .75s cubic-bezier(.7,0,.84,0) 1.6s forwards;filter:drop-shadow(0 0 18px #ff2a1f88)}
+#stok-intro .si-stroke{fill:none;stroke:#ff3a24;stroke-width:1.8;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100;animation:si-draw .9s cubic-bezier(.65,0,.35,1) .1s forwards}
+#stok-intro .si-fill{opacity:0;transform-origin:50% 50%;animation:si-fill .45s ease .85s forwards}
+#stok-intro .si-word{font:700 clamp(26px,7vw,44px)/1 'Oswald','Arial Narrow',system-ui,sans-serif;color:#fff;letter-spacing:.7em;margin-right:-.7em;opacity:0;animation:si-word .7s cubic-bezier(.22,1,.36,1) 1s forwards}
+#stok-intro .si-sub{font:600 11px/1 system-ui,sans-serif;letter-spacing:.32em;color:#ff8a7a;opacity:0;animation:si-word .6s ease 1.2s forwards}
+@keyframes si-draw{to{stroke-dashoffset:0}}
+@keyframes si-fill{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+@keyframes si-word{from{opacity:0;letter-spacing:.7em;transform:translateY(8px)}to{opacity:1;letter-spacing:.18em;transform:none}}
+@keyframes si-halo{0%{opacity:0;transform:scale(.6)}60%{opacity:1}100%{opacity:.7;transform:scale(1)}}
+@keyframes si-zoom{to{transform:scale(16);opacity:0;filter:drop-shadow(0 0 40px #ff2a1f)}}
+@keyframes si-out{to{opacity:0;visibility:hidden}}
+</style>
+<script id="intro-js">
+(function(){
+'use strict';
+var S='M42 14h30.5a7.5 7.5 0 0 1 0 15H42a3.5 3.5 0 0 0 0 7H58a21 21 0 0 1 0 42H27.5a7.5 7.5 0 0 1 0-15H58a6 6 0 0 0 0-12H42a18.5 18.5 0 0 1 0-37z';
+var lastShow=0;
+function off(){try{return localStorage.getItem('lojasg.estoque99.visual-effects')==='off'}catch(x){return false}}
+function show(){if(off()||Date.now()-lastShow<3000)return;lastShow=Date.now();var old=document.getElementById('stok-intro');if(old)old.remove();
+  var d=document.createElement('div');d.id='stok-intro';d.setAttribute('aria-hidden','true');
+  d.innerHTML='<svg viewBox="0 0 100 100"><defs><linearGradient id="si-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7a5a"/><stop offset=".5" stop-color="#ff2a1f"/><stop offset="1" stop-color="#b80f08"/></linearGradient></defs><path class="si-fill" fill="url(#si-g)" d="'+S+'"/><path class="si-stroke" pathLength="100" d="'+S+'"/></svg><div class="si-word">STOK</div><div class="si-sub">LOJAS G · ESTOQUE 99</div>';
+  document.body.appendChild(d);setTimeout(function(){if(d.parentNode)d.remove()},2700)}
+/* Som de entrada: duas batidas graves e um acorde que cresce (sintetizado aqui, sem arquivo) */
+function tudum(ctx){var t=ctx.currentTime+.02,out=ctx.createGain();out.gain.value=.75;out.connect(ctx.destination);
+  function thud(at,f0,f1,len,vol){var o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(f0,at);o.frequency.exponentialRampToValueAtTime(f1,at+len);g.gain.setValueAtTime(0.0001,at);g.gain.exponentialRampToValueAtTime(vol,at+.012);g.gain.exponentialRampToValueAtTime(0.0001,at+len);o.connect(g);g.connect(out);o.start(at);o.stop(at+len+.05);
+    var n=ctx.createBufferSource(),b=ctx.createBuffer(1,ctx.sampleRate*.05,ctx.sampleRate),dd=b.getChannelData(0);for(var i=0;i<dd.length;i++)dd[i]=(Math.random()*2-1)*(1-i/dd.length);n.buffer=b;var lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=900;var ng=ctx.createGain();ng.gain.value=vol*.35;n.connect(lp);lp.connect(ng);ng.connect(out);n.start(at)}
+  thud(t,78,42,.32,.9);thud(t+.3,64,30,.75,1);
+  var lp=ctx.createBiquadFilter();lp.type='lowpass';lp.Q.value=4;lp.frequency.setValueAtTime(260,t+.32);lp.frequency.exponentialRampToValueAtTime(2600,t+1.6);
+  var cg=ctx.createGain();cg.gain.setValueAtTime(0.0001,t+.32);cg.gain.exponentialRampToValueAtTime(.16,t+1.2);cg.gain.exponentialRampToValueAtTime(0.0001,t+2.4);lp.connect(cg);cg.connect(out);
+  [110,164.81,220.5,261.63,329.63].forEach(function(f,i){var o=ctx.createOscillator();o.type=i<3?'sawtooth':'triangle';o.frequency.setValueAtTime(f,t+.32);o.detune.value=(i%2?7:-7);o.connect(lp);o.start(t+.32);o.stop(t+2.5)})}
+function play(){try{if(typeof siteSoundEnabled!=='undefined'&&!siteSoundEnabled)return;var ctx=typeof unlockSiteAudio==='function'?unlockSiteAudio():null;if(!ctx)return;if(ctx.state==='running')tudum(ctx);else ctx.resume().then(function(){if(ctx.state==='running')tudum(ctx)}).catch(function(){})}catch(x){}}
+window.playStokIntro=function(withSound){show();if(withSound)play()};
+/* o som de "login" antigo vira o som de entrada */
+var ps=playSiteSound;playSiteSound=function(kind){if(kind==='login'){play();return}return ps.apply(this,arguments)};
+var en=authEnter;authEnter=function(){var r=en.apply(this,arguments);show();return r};
+window.replayEntrySplash=function(){show()};
+/* ao abrir o app/site: abertura uma vez por sessão (o som só toca se o aparelho já permitir) */
+try{if(!sessionStorage.getItem('e99-intro')){sessionStorage.setItem('e99-intro','1');show();play()}}catch(x){show()}
 })();
 </script>
 <script>

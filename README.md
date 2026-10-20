@@ -216,6 +216,10 @@ O robô fica numa página própria: **https://vferreiras.github.io/ESTOQUE-G/rob
 
 O robô do estoque aparece na tela de login e na Visão geral, em tons de cinza como o resto do site.
 
+## Abertura
+
+- Ao abrir o app (uma vez por sessão) e ao entrar na conta: o S da Stok se desenha em vermelho, acende com o nome STOK e entra na tela, com um som de entrada (duas batidas graves e um acorde), sintetizado no próprio app. O som segue o botão de som; a animação segue o botão Efeitos. No iPhone o som só toca depois de um toque na tela (regra do aparelho).
+
 ## Animações
 
 - Em todas as telas: brilho de vidro passando pelos cartões de tempos em tempos, pulso vermelho nos botões principais, na palavra vermelha do título e no menu ativo, o S de partículas no topo de cada tela e entrada animada dos cartões ao trocar de tela.
