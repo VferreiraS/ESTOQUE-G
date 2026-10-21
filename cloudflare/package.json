@@ -1,0 +1,12 @@
+{
+  "name": "stok-ia",
+  "private": true,
+  "scripts": { "deploy": "wrangler deploy" },
+  "cloudflare": {
+    "bindings": {
+      "NVIDIA_API_KEY": { "description": "Sua chave da NVIDIA (build.nvidia.com → API Keys). Fica só na Cloudflare." },
+      "SENHA": { "description": "Uma senha que você inventar. É a mesma que vai no Stok." }
+    }
+  },
+  "devDependencies": { "wrangler": "^4.0.0" }
+}
