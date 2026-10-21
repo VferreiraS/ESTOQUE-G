@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="47"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="48"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -2419,6 +2419,25 @@ window.addEventListener('online',flush);setTimeout(flush,4000);
 .chat-msg .when{display:block;font-size:11px;opacity:.7;margin-top:3px;text-align:right}
 .chat-msg img{display:block;width:260px;max-width:100%;height:auto;border-radius:10px;margin:4px 0;cursor:zoom-in;filter:none!important}
 .chat-msg .img-wait{font-size:12.5px;opacity:.75}
+.chat-msg{position:relative;touch-action:pan-y;transition:transform .18s ease}
+.chat-msg.swiping{transition:none}
+.chat-msg .chat-re-btn{position:absolute;top:50%;transform:translateY(-50%);right:-38px;width:30px;height:30px;min-height:0;padding:0;border-radius:50%;border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-ink);font-size:15px;line-height:1;opacity:0;transition:opacity .15s;cursor:pointer}
+.chat-msg.mine .chat-re-btn{right:auto;left:-38px}
+.chat-msg:hover .chat-re-btn,.chat-msg .chat-re-btn:focus-visible{opacity:1}
+@media (hover:none){.chat-msg .chat-re-btn{display:none}}
+.chat-msg .swipe-ico{position:absolute;left:-30px;top:50%;transform:translateY(-50%);font-size:18px;opacity:0}
+.chat-quote{display:block;width:100%;text-align:left;margin:2px 0 6px;padding:6px 10px;border:0;border-left:3px solid #ff2a1f;border-radius:8px;background:rgba(127,127,127,.18);color:inherit;font:inherit;font-size:13px;line-height:1.3;cursor:pointer;min-height:0;white-space:normal}
+.chat-quote b{display:block;font-size:12px;color:#ff6a55}
+.chat-msg.mine .chat-quote b{color:#c41a10}
+.chat-quote span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;opacity:.85}
+.chat-reply{display:flex;align-items:center;gap:10px;margin:0 0 8px;padding:8px 10px;border-left:3px solid #ff2a1f;border-radius:10px;background:var(--ds-accent-soft)}
+.chat-reply[hidden]{display:none}
+.chat-reply div{flex:1;min-width:0;font-size:13px}
+.chat-reply b{display:block;font-size:12px;color:#ff6a55}
+.chat-reply span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85}
+.chat-reply button{min-height:0;width:32px;height:32px;padding:0;border-radius:50%;flex:none}
+.chat-msg.flash{animation:chat-flash 1.4s ease}
+@keyframes chat-flash{0%,60%{box-shadow:0 0 0 3px #ff2a1f}100%{box-shadow:0 0 0 0 transparent}}
 .chat-day{align-self:center;font-size:12px;color:var(--ds-muted);margin:6px 0}
 #chat-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}
 #chat-form textarea{min-height:46px;max-height:140px;resize:none;width:100%}
@@ -2471,7 +2490,8 @@ async function makeTeam(code){var n=norm(code);var h=new Uint8Array(await crypto
 async function enc(bytes){var iv=crypto.getRandomValues(new Uint8Array(12));var ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},team.key,bytes));var out=new Uint8Array(12+ct.length);out.set(iv);out.set(ct,12);return out}
 async function dec(bytes){bytes=new Uint8Array(bytes);return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes.slice(0,12)},team.key,bytes.slice(12)))}
 async function encMsg(obj){return 'E99:'+b64(await enc(authBytes(JSON.stringify(obj))))}
-async function decMsg(str){if(typeof str!=='string'||str.indexOf('E99:')!==0)return null;try{var o=JSON.parse(new TextDecoder().decode(await dec(un64(str.slice(4)))));if(!o||o.v!==1||typeof o.id!=='string'||!/^[a-zA-Z0-9_-]{1,60}$/.test(o.id))return null;return {id:o.id,from:String(o.from||'?').slice(0,60),at:String(o.at||''),text:String(o.text||'').slice(0,1000),img:!!o.img,audio:okAudio(o.audio)}}catch(e){return null}}
+async function decMsg(str){if(typeof str!=='string'||str.indexOf('E99:')!==0)return null;try{var o=JSON.parse(new TextDecoder().decode(await dec(un64(str.slice(4)))));if(!o||o.v!==1||typeof o.id!=='string'||!/^[a-zA-Z0-9_-]{1,60}$/.test(o.id))return null;return {id:o.id,from:String(o.from||'?').slice(0,60),at:String(o.at||''),text:String(o.text||'').slice(0,1000),img:!!o.img,audio:okAudio(o.audio),re:okRe(o.re)}}catch(e){return null}}
+function okRe(r){if(!r||typeof r!=='object'||typeof r.id!=='string'||!/^[a-zA-Z0-9_-]{1,60}$/.test(r.id))return null;return {id:r.id,from:String(r.from||'?').slice(0,60),t:String(r.t||'').slice(0,140)}}
 function okAudio(a){if(!a||typeof a!=='object'||typeof a.mime!=='string'||!/^audio\/(mp4|webm|ogg|aac|mpeg|x-m4a)$/.test(a.mime)||!Number.isFinite(a.dur)||a.dur<0||a.dur>130)return null;return {mime:a.mime,dur:Math.round(a.dur)}}
 function mmss(s){s=Math.max(0,Math.round(s||0));return Math.floor(s/60)+':'+('0'+s%60).slice(-2)}
 /* ---------- histórico local (IndexedDB, guardado ainda criptografado com o código da equipe) ---------- */
@@ -2518,14 +2538,14 @@ function badges(){unread().then(function(n){document.querySelectorAll('[onclick=
 function msgId(){return Date.now().toString(36)+'-'+b64(crypto.getRandomValues(new Uint8Array(6))).replace(/[^a-zA-Z0-9]/g,'').slice(0,8)}
 function failMsg(status){return status===429?'Limite grátis do ntfy.sh atingido nesta internet (250 mensagens por dia). Tente pelos dados móveis ou amanhã.':status===413?'Foto grande demais (máximo 2 MB).':'Não foi possível enviar ('+(status||'sem internet')+'). Tente de novo.'}
 window.chatSend=async function(text,photoData,audio){if(!team||sending)return false;text=String(text||'').trim().slice(0,1000);if(!text&&!photoData&&!audio)return false;sending=true;var btn=document.getElementById('chat-send');if(btn)btn.disabled=true;
-  try{var obj={v:1,id:msgId(),from:cfg.name,at:new Date().toISOString(),text:text,img:!!photoData};if(audio)obj.audio={mime:audio.mime,dur:Math.round(audio.dur)};own[obj.id]=1;var payload=await encMsg(obj);var r;
+  try{var obj={v:1,id:msgId(),from:cfg.name,at:new Date().toISOString(),text:text,img:!!photoData};var sentRe=replyTo;if(sentRe)obj.re={id:sentRe.id,from:sentRe.from,t:sentRe.t};if(audio)obj.audio={mime:audio.mime,dur:Math.round(audio.dur)};own[obj.id]=1;var payload=await encMsg(obj);var r;
     if(audio){var abytes=new Uint8Array(await audio.blob.arrayBuffer());var aenc=await enc(abytes);if(aenc.length>1900000){notify('Áudio grande demais. Grave mensagens mais curtas.');return false}
       r=await fetch(NTFY+'/'+team.topic,{method:'PUT',headers:{'X-Message':payload,'X-Filename':'audio.bin'},body:aenc});if(r.ok){await putImg(obj.id,aenc.buffer);if(audio.url)audioURL[team.topic+'|'+obj.id]=audio.url}}
     else if(photoData){var bytes=Uint8Array.from(atob(photoData.split(',')[1]),function(c){return c.charCodeAt(0)});var encd=await enc(bytes);
       r=await fetch(NTFY+'/'+team.topic,{method:'PUT',headers:{'X-Message':payload,'X-Filename':'foto.bin'},body:encd});if(r.ok){await putImg(obj.id,encd.buffer)}}
     else r=await fetch(NTFY+'/'+team.topic,{method:'POST',body:payload});
     if(!r.ok){notify(failMsg(r.status));return false}
-    await putMsg({topic:team.topic,id:obj.id,at:obj.at,payload:payload,mine:true,hasImg:!!(photoData||audio)});chatPing();markRead();if(page==='chat')paint(true);return true}
+    await putMsg({topic:team.topic,id:obj.id,at:obj.at,payload:payload,mine:true,hasImg:!!(photoData||audio)});if(sentRe&&replyTo===sentRe)window.chatReplyCancel();chatPing();markRead();if(page==='chat')paint(true);return true}
   catch(e){notify(failMsg(0));return false}finally{sending=false;if(btn)btn.disabled=false}};
 /* ---------- áudio ---------- */
 var MAXREC=120;
@@ -2559,7 +2579,8 @@ function day(at){var d=new Date(at);if(isNaN(d))return '';var t=new Date();var s
 async function paint(scroll){var box=document.getElementById('chat-list');if(!box||!team)return;var keepBottom=scroll||box.scrollHeight-box.scrollTop-box.clientHeight<80;var l=await allMsgs();l.sort(function(a,b){return String(a.at).localeCompare(String(b.at))});
   var html='',lastDay='',people={};
   for(var i=0;i<l.length;i++){var r=l[i];var m=mem[r.topic+'|'+r.id]||(mem[r.topic+'|'+r.id]=await decMsg(r.payload));if(!m)continue;people[m.from]=1;var dd=day(m.at);if(dd!==lastDay){html+='<div class="chat-day">'+esc2(dd)+'</div>';lastDay=dd}
-    html+='<div class="chat-msg'+(r.mine?' mine':'')+'">'+(r.mine?'':'<span class="who">'+esc2(m.from)+'</span>')+(m.img?(r.hasImg?'<img data-chat-img="'+esc2(r.id)+'" alt="Foto enviada por '+esc2(m.from)+'">':'<span class="img-wait">📷 Foto (baixando… fotos ficam no servidor só por 3 horas)</span>'):'')+(m.audio?(r.hasImg?'<span class="chat-audio"><audio data-chat-audio="'+esc2(r.id)+'" data-mime="'+esc2(m.audio.mime)+'" controls preload="metadata" aria-label="Áudio de '+esc2(m.from)+'"></audio><span class="dur">'+mmss(m.audio.dur)+'</span></span>':'<span class="img-wait">🎤 Áudio de '+mmss(m.audio.dur)+' (baixando… áudios ficam no servidor só por 3 horas)</span>'):'')+(m.text?esc2(m.text):'')+'<span class="when">'+time(m.at)+'</span></div>'}
+    snip[r.id]={from:m.from,t:m.text?m.text.slice(0,140):(m.img?'📷 Foto':m.audio?'🎤 Áudio':'')};
+    html+='<div class="chat-msg'+(r.mine?' mine':'')+'" data-id="'+esc2(r.id)+'">'+(r.mine?'':'<span class="who">'+esc2(m.from)+'</span>')+(m.re?'<button type="button" class="chat-quote" onclick="chatJump(\''+esc2(m.re.id)+'\')"><b>'+esc2(m.re.from===cfg.name?'Você':m.re.from)+'</b><span>'+esc2(m.re.t||'Mensagem')+'</span></button>':'')+(m.img?(r.hasImg?'<img data-chat-img="'+esc2(r.id)+'" alt="Foto enviada por '+esc2(m.from)+'">':'<span class="img-wait">📷 Foto (baixando… fotos ficam no servidor só por 3 horas)</span>'):'')+(m.audio?(r.hasImg?'<span class="chat-audio"><audio data-chat-audio="'+esc2(r.id)+'" data-mime="'+esc2(m.audio.mime)+'" controls preload="metadata" aria-label="Áudio de '+esc2(m.from)+'"></audio><span class="dur">'+mmss(m.audio.dur)+'</span></span>':'<span class="img-wait">🎤 Áudio de '+mmss(m.audio.dur)+' (baixando… áudios ficam no servidor só por 3 horas)</span>'):'')+(m.text?esc2(m.text):'')+'<span class="when">'+time(m.at)+'</span><button type="button" class="chat-re-btn" aria-label="Responder" title="Responder" onclick="chatReply(\''+esc2(r.id)+'\')">↩</button><span class="swipe-ico" aria-hidden="true">↩</span></div>'}
   var keep={};box.querySelectorAll('audio[data-chat-audio]').forEach(function(a){if(a.src)keep[a.getAttribute('data-chat-audio')]=a});
   box.innerHTML=html||'<p class="small" style="text-align:center;margin:auto">Nenhuma mensagem ainda. Diga oi para a equipe!</p>';
   var cnt=document.getElementById('chat-people');if(cnt)cnt.textContent=Object.keys(people).length+' pessoa(s) já falaram';
@@ -2574,18 +2595,35 @@ window.renderChat=function(){if(!cfg){return hero('Chat da equipe','')+'<div cla
    +'<div><h2>Criar equipe</h2><form onsubmit="chatCreate(event)"><label>Seu nome no chat<input name="name" required maxlength="40" value="'+esc2(authSession.payload.store==='Estoque 99'?'Gestor':authSession.record.login)+'"></label><button class="primary">Criar equipe e gerar código</button></form></div>'
    +'<div><h2>Entrar com código</h2><form onsubmit="chatJoin(event)"><label>Código da equipe<input name="code" required maxlength="20" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX" value="'+esc2(pendingInvite?fmt(pendingInvite):'')+'"></label><label>Seu nome no chat<input name="name" required maxlength="40" value="'+esc2(authSession.record.login)+'"></label><label class="chat-check"><input type="checkbox" name="sync" checked> Compartilhar NFs, planos de ação, equipe e corredores com a equipe</label><label class="chat-check"><input type="checkbox" name="replace" checked> Usar só os dados da equipe neste aparelho <span class="small">(desmarque para juntar o que já existe aqui)</span></label><button class="primary">Entrar no chat</button></form></div>'
    +'<p class="small">As mensagens e fotos são criptografadas com o código da equipe e entregues pelo serviço gratuito ntfy.sh. Limites: 250 mensagens por dia por internet; fotos ficam no servidor por 3 horas e mensagens por 12 horas (o histórico fica salvo em cada aparelho).</p></div>'}
-  setTimeout(function(){paint(true);markRead();setStatus(connected);recBar()},0);
+  setTimeout(function(){paint(true);markRead();setStatus(connected);recBar();replyBar()},0);
   return '<div class="panel chat-wrap"><div class="chat-head"><div><h2>Chat · '+esc2(cfg.team||'Equipe')+'</h2><span class="chat-status" id="chat-status">Conectando…</span> <span class="small" id="chat-people"></span></div><div class="row toolbar"><button type="button" onclick="chatInvite()">Convidar</button><button type="button" onclick="chatLeave()">Sair da equipe</button></div></div>'
    +'<div id="chat-list" role="log" aria-live="polite"></div>'
    +'<div id="chat-rec" class="chat-rec" role="status"'+(rec?'':' hidden')+'><span class="dot" aria-hidden="true"></span><span class="t">Gravando 0:00</span><span class="lim">máx. 2:00</span><button type="button" onclick="chatRecCancel()">Cancelar</button><button type="button" class="primary" id="chat-rec-send" onclick="chatRecSend()">Enviar áudio</button></div>'
+   +'<div id="chat-reply" class="chat-reply" hidden></div>'
    +'<form id="chat-form" onsubmit="chatSubmit(event)"><textarea id="chat-text" rows="1" maxlength="1000" placeholder="Mensagem para a equipe…" aria-label="Mensagem" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey&&!event.isComposing){event.preventDefault();chatSubmit(event)}"></textarea><div class="chat-btns"><label title="Câmera" aria-label="Tirar foto">📷<input type="file" accept="image/*" capture="environment" hidden onchange="chatPhoto(this)"></label><label title="Galeria" aria-label="Enviar foto da galeria">🖼<input type="file" accept="image/*" hidden onchange="chatPhoto(this)"></label><button type="button" id="chat-mic" aria-label="Gravar áudio" title="Gravar áudio" aria-pressed="false" onclick="chatMic()"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg></button><button type="submit" class="primary" id="chat-send">Enviar</button></div></form></div>'};
+/* ---------- responder mensagem (como no WhatsApp) ---------- */
+var replyTo=null,snip={};
+function replyBar(){var b=document.getElementById('chat-reply');if(!b)return;if(!replyTo){b.hidden=true;b.innerHTML='';return}b.hidden=false;
+  b.innerHTML='<div><b>Respondendo a '+esc2(replyTo.from===cfg.name?'você':replyTo.from)+'</b><span>'+esc2(replyTo.t||'Mensagem')+'</span></div><button type="button" aria-label="Cancelar resposta" onclick="chatReplyCancel()">✕</button>'}
+window.chatReply=function(id){var s=snip[id];if(!s)return;replyTo={id:id,from:s.from,t:s.t};replyBar();var t=document.getElementById('chat-text');if(t)t.focus();try{if(navigator.vibrate)navigator.vibrate(12)}catch(e){}};
+window.chatReplyCancel=function(){replyTo=null;replyBar()};
+window.chatJump=function(id){var box=document.getElementById('chat-list');if(!box)return;var el=box.querySelector('.chat-msg[data-id="'+id.replace(/[^a-zA-Z0-9_-]/g,'')+'"]');if(!el){notify('A mensagem original não está mais neste aparelho.');return}el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash')};
+/* arrastar para a direita responde (celular); clique duplo responde (computador) */
+(function(){var sw=null;
+  document.addEventListener('touchstart',function(ev){var el=ev.target.closest&&ev.target.closest('#chat-list .chat-msg');if(!el||ev.touches.length!==1||ev.target.closest('audio,button,img'))return;sw={el:el,x:ev.touches[0].clientX,y:ev.touches[0].clientY,dx:0,on:false}},{passive:true});
+  document.addEventListener('touchmove',function(ev){if(!sw)return;var dx=ev.touches[0].clientX-sw.x,dy=ev.touches[0].clientY-sw.y;if(!sw.on){if(Math.abs(dy)>14&&Math.abs(dy)>Math.abs(dx)){sw=null;return}if(dx>10&&dx>Math.abs(dy)){sw.on=true;sw.el.classList.add('swiping')}}
+    if(sw&&sw.on){sw.dx=Math.max(0,Math.min(dx,80));sw.el.style.transform='translateX('+sw.dx+'px)';var ic=sw.el.querySelector('.swipe-ico');if(ic)ic.style.opacity=String(Math.min(1,sw.dx/60))}},{passive:true});
+  function end(){if(!sw)return;var s=sw;sw=null;s.el.classList.remove('swiping');s.el.style.transform='';var ic=s.el.querySelector('.swipe-ico');if(ic)ic.style.opacity='0';if(s.on&&s.dx>=55)window.chatReply(s.el.getAttribute('data-id'))}
+  document.addEventListener('touchend',end,{passive:true});document.addEventListener('touchcancel',end,{passive:true});
+  document.addEventListener('dblclick',function(ev){var el=ev.target.closest&&ev.target.closest('#chat-list .chat-msg');if(el&&!ev.target.closest('audio,img,button')){try{getSelection().removeAllRanges()}catch(e){}window.chatReply(el.getAttribute('data-id'))}});
+  document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&replyTo&&document.getElementById('chat-reply'))window.chatReplyCancel()})})();
 window.chatSubmit=async function(e){if(e)e.preventDefault();var t=document.getElementById('chat-text');if(!t||!t.value.trim())return;var v=t.value;t.value='';var ok=await window.chatSend(v);if(!ok)t.value=v;t.focus()};
 window.chatPhoto=async function(input){var f=input.files&&input.files[0];input.value='';if(!f)return;try{notify('Preparando foto…');var p=await compressPlanPhoto(f);var t=document.getElementById('chat-text');var cap=t?t.value:'';if(await window.chatSend(cap,p.data)&&t)t.value=''}catch(e){notify(e.message||'Não foi possível ler a foto.')}};
 async function alertTopic(code){var h=new Uint8Array(await crypto.subtle.digest('SHA-256',authBytes('avisos|'+norm(code))));return 'e99a-'+Array.from(h).map(function(x){return ('0'+x.toString(16)).slice(-2)}).join('').slice(0,24)}
 function siteURL(){return location.origin+location.pathname.replace(/(robo|index)\.html$/,'')}
 window.e99AlertPing=function(text,tags){if(!team||!team.atopic)return Promise.resolve(false);return fetch(NTFY+'/'+team.atopic,{method:'POST',headers:{'Title':'Estoque 99','Tags':tags||'bell','Click':siteURL()},body:String(text).slice(0,200)}).then(function(r){return r.ok}).catch(function(){return false})};
 function chatPing(){try{var k='lojasg.estoque99.chat-ping',last=+localStorage.getItem(k)||0;if(Date.now()-last<120000)return;localStorage.setItem(k,String(Date.now()))}catch(e){}window.e99AlertPing('Nova mensagem de '+cfg.name+' no chat da equipe','speech_balloon')}
-async function start(c){cancelRec();cfg=c;team=c?await makeTeam(c.code):null;if(team)team.atopic=await alertTopic(c.code);mem={};Object.keys(audioURL).forEach(function(k){URL.revokeObjectURL(audioURL[k])});audioURL={};if(team)connect();else disconnect();badges();listeners.forEach(function(fn){try{fn()}catch(e){}})}
+async function start(c){cancelRec();replyTo=null;cfg=c;team=c?await makeTeam(c.code):null;if(team)team.atopic=await alertTopic(c.code);mem={};Object.keys(audioURL).forEach(function(k){URL.revokeObjectURL(audioURL[k])});audioURL={};if(team)connect();else disconnect();badges();listeners.forEach(function(fn){try{fn()}catch(e){}})}
 var listeners=[];
 window.e99Team={get:function(){return cfg&&team?{code:cfg.code,name:cfg.name,owner:!!cfg.owner,team:cfg.team,sync:cfg.sync===true,replace:cfg.replace===true,topic:team.topic,atopic:team.atopic}:null},onChange:function(fn){listeners.push(fn)},ntfy:function(){return NTFY},
   join:async function(code,name,o){var c={code:norm(code),name:String(name||'').slice(0,40),team:(o&&o.team)||'Equipe',owner:false,sync:true,replace:true};await saveCfg(c);await start(c)},
@@ -4022,7 +4060,7 @@ window.e99CloudLink=async function(ev){ev.preventDefault();if(linkBusy||!authSes
 /* ao entrar na conta */
 async function onEnter(){if(!authSession)return;var s=authSession,c;try{c=await load()}catch(x){return}if(authSession!==s)return;var u=c.auth.currentUser,em=myEmail(),pw=freshPw();
   if(u&&em&&u.email===em){if(pw){try{var d=await derive(s.record.login,pw),h=(await sha(d)).slice(0,16);if(ls('lojasg.estoque99.cloud-pw:'+s.storeKey)!==h){await u.updatePassword(d);ls('lojasg.estoque99.cloud-pw:'+s.storeKey,h)}}catch(x){}}after(false);return}
-  if(em&&pw){try{await link(em,pw);return}catch(x){linkErr=msg(x);linkSoft=soft(x)}}
+  if(em&&pw){try{await link(em,pw);return}catch(x){if(soft(x))return;linkErr=msg(x);linkSoft=false}}
   else if(u&&!em){try{await c.auth.signOut()}catch(x){}}
   try{if(sessionStorage.getItem('e99-cloud-later'))return}catch(x){}showLink()}
 var enterBefore=authEnter;authEnter=function(){var r=enterBefore.apply(this,arguments);linkErr='';linkSoft=false;setTimeout(onEnter,700);return r};

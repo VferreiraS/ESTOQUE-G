@@ -3,6 +3,10 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 48
+- Chat: responder uma mensagem específica, como no WhatsApp. No celular, arraste a mensagem para a direita; no PC, passe o mouse e toque em ↩ (ou dê dois cliques). A citação aparece em cima da resposta; tocar nela leva até a mensagem original.
+- Nuvem: sem internet, o aviso "Vincule seu e-mail" não aparece mais (tenta de novo depois).
+
 ## Versão 47
 - Contas com e-mail na nuvem (Firebase): cada pessoa entra com o próprio e-mail; o Firebase manda o e-mail de confirmação.
 - Contas antigas e convites já enviados: no próximo login aparece "Vincule seu e-mail" (uma vez).
