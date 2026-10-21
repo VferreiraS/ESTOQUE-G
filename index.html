@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="60"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="61"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -4342,7 +4342,9 @@ function base(u){return String(u||'').trim().replace(/\/+$/,'').replace(/\/v1$/,
 function name(k){return k==='local'?'Agente Local':'Agente Nuvem'}
 /* chama o agente (API compatível com OpenAI: Ollama e OmniRoute) */
 async function call(k,messages,max){var a=cfg[k];if(!a||!a.on||!a.url)throw Error('desligado');var ctl=new AbortController(),t=setTimeout(function(){ctl.abort()},k==='local'?90000:45000);
-  try{var h={'Content-Type':'application/json'};if(a.key)h.Authorization='Bearer '+a.key;var r=await fetch(base(a.url)+'/v1/chat/completions',{method:'POST',headers:h,signal:ctl.signal,body:JSON.stringify({model:a.model||'llama3.2',messages:messages,temperature:.3,max_tokens:max||700,stream:false})});
+  try{/* intermediário no Google Apps Script (Ollama Cloud pelo celular): chave fica no Google */
+    if(/script\.google(usercontent)?\.com/.test(a.url)){var rr=await fetch(String(a.url).trim(),{method:'POST',signal:ctl.signal,body:JSON.stringify({senha:a.key||'',model:a.model||'gemma4:31b',messages:messages})});if(!rr.ok)throw Error('HTTP '+rr.status);var dj=await rr.json();if(dj.erro)throw Error(dj.erro);if(!dj.text)throw Error('resposta vazia');status[k]='ok';return {text:String(dj.text).trim(),by:name(k)+' · '+(a.model||'gemma4:31b')}}
+    var h={'Content-Type':'application/json'};if(a.key)h.Authorization='Bearer '+a.key;var r=await fetch(base(a.url)+'/v1/chat/completions',{method:'POST',headers:h,signal:ctl.signal,body:JSON.stringify({model:a.model||'llama3.2',messages:messages,temperature:.3,max_tokens:max||700,stream:false})});
     if(!r.ok)throw Error('HTTP '+r.status);var d=await r.json();var txt=d&&d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content;if(!txt)throw Error('resposta vazia');status[k]='ok';return {text:String(txt).trim(),by:name(k)+' · '+(a.model||'')}}
   catch(x){status[k]='bad';throw x}finally{clearTimeout(t)}}
 var SYS='Você é um agente do app Stok (gestão de estoque das Lojas G). Responda em português do Brasil, curto, prático e em tópicos simples. Use só os dados enviados; não invente números.';
@@ -4404,7 +4406,7 @@ async function paintCfg(){var box=document.getElementById('ag-cfg');if(!box||!au
     +(key?'<label>Chave (fica cifrada só neste aparelho)<input name="'+k+'_key" type="password" value="'+e(a.key)+'" autocomplete="off"></label>':'')
     +'<p class="small" style="margin:0">'+hint+'</p><button type="button" class="ag-btn" onclick="agTest(\''+k+'\')">Testar '+(k==='local'?'Local':'Nuvem')+'</button></fieldset>'}
   box.innerHTML='<form onsubmit="agSave(event)" class="ag-cfg">'+f('local','Agente Local · Ollama','No PC, abra o Ollama liberando este site: <code>OLLAMA_ORIGINS='+e(o)+' ollama serve</code> e baixe um modelo (<code>ollama pull llama3.2</code>). Funciona no computador onde o Ollama roda.',false)
-   +f('cloud','Agente Nuvem · OmniRoute','Use o endereço público do seu OmniRoute (compatível com OpenAI) e a chave dele. Funciona no celular, no PC e nos auxiliares.',true)
+   +f('cloud','Agente Nuvem · OmniRoute','Use o endereço do OmniRoute e a chave dele, <b>ou</b> o intermediário do Google (Ollama Cloud, só pelo celular): endereço terminando em <code>/exec</code>, modelo <code>gemma4:31b</code> e, em Chave, a SENHA do script (passo a passo em <code>apps-script/ia.gs</code>). Funciona no celular, no PC e nos auxiliares.',true)
    +'<button class="primary">Salvar agentes</button></form>'}
 window.agSave=async function(ev){ev.preventDefault();var v=readForm(ev.target);['local','cloud'].forEach(function(k){cfg[k].on=!!v[k+'_on'];cfg[k].url=String(v[k+'_url']||'').trim().slice(0,300);cfg[k].model=String(v[k+'_model']||'').trim().slice(0,120);if(k==='cloud')cfg[k].key=String(v[k+'_key']||'').trim().slice(0,400)});
   if(cfg.cloud.url&&!/^https:\/\//.test(cfg.cloud.url)&&!/^http:\/\/(localhost|127\.0\.0\.1)/.test(cfg.cloud.url)){notify('O endereço da Nuvem precisa começar com https://');return}
