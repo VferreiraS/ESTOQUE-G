@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="53"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="54"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -3880,7 +3880,7 @@ var last=null;
 function off(){return document.body.classList.contains('fx-user-off')}
 var rr=render;render=function(){var r=rr.apply(this,arguments);try{var v=document.getElementById('view');if(!v)return r;
   var items=v.querySelectorAll('.panel,.card,.stat,.plan-card,.pn-card,.prof-stats>div,.prof-people button');items.forEach(function(el,i){el.style.setProperty('--fx-delay',((i*1.3)%7).toFixed(1)+'s')});
-  var cur=typeof page!=='undefined'?page:'';if(cur!==last){last=cur;if(!off()){var blocks=v.querySelectorAll('.hero,.stat,.panel,.card,.plan-card,.prof-cover,.prof-head,.prof-bio,.prof-meta,.prof-stats>div,.prof-list>div,.prof-people button');for(var j=0;j<blocks.length&&j<16;j++){if(typeof blocks[j].animate==='function')blocks[j].animate([{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:380,delay:j*40,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'})}}}
+  var cur=typeof page!=='undefined'?page:'';if(cur!==last){last=cur;if(!off()){var blocks=v.querySelectorAll('.hero,.stat,.panel,.card,.plan-card,.prof-cover,.prof-head,.prof-bio,.prof-meta,.prof-stats>div,.prof-list>div,.prof-people button');for(var j=0;j<blocks.length&&j<16;j++){if(typeof blocks[j].animate==='function')blocks[j].animate(window.e99EntryKF||[{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:window.e99EntryMs||380,delay:j*(window.e99EntryGap||40),easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'})}}}
   var ac=document.querySelector('.alert-count');if(ac)ac.classList.toggle('has',+ac.textContent>0)}catch(x){}return r};
 })();
 </script>
@@ -3930,7 +3930,10 @@ function soundOn(){return !(typeof siteSoundEnabled!=='undefined'&&!siteSoundEna
 function gate(){var g=document.createElement('div');g.id='stok-gate';g.innerHTML='<svg viewBox="0 0 100 100"><path fill="#ff2a1f" d="'+S+'"/></svg><div class="sg-t">Toque para abrir</div>';document.body.appendChild(g);
   function go(){g.removeEventListener('pointerdown',go);g.removeEventListener('keydown',go);document.removeEventListener('keydown',go);g.remove();lastShow=0;show();play()}
   g.addEventListener('pointerdown',go);document.addEventListener('keydown',go)}
-function first(){if(off()){return}if(!soundOn()){show();return}var ctx=null;try{ctx=typeof unlockSiteAudio==='function'?unlockSiteAudio():null}catch(x){}
+function first(){if(off()){return}if(!soundOn()){show();return}
+  /* iPhone/Android: o navegador pode dizer que o som está liberado, mas ele fica mudo até o primeiro toque. Sem toque ainda, pede o toque e toca junto. */
+  var noTouch=navigator.userActivation?!navigator.userActivation.hasBeenActive:/iP(hone|ad|od)|Android/.test(navigator.userAgent);if(noTouch&&(/iP(hone|ad|od)|Android/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1))){if(document.body)gate();else document.addEventListener('DOMContentLoaded',gate);return}
+  var ctx=null;try{ctx=typeof unlockSiteAudio==='function'?unlockSiteAudio():null}catch(x){}
   if(ctx&&ctx.state==='running'){show();play();return}
   var done=false;if(ctx)ctx.resume().then(function(){if(!done&&ctx.state==='running'){done=true;show();play()}}).catch(function(){});
   setTimeout(function(){if(!done){done=true;if(document.body)gate();else show()}},250)}
@@ -4506,6 +4509,38 @@ function pageA(){if(!authSession)return '';var o=st(),issues=boss()?health():[];
 window.extraPages=window.extraPages||{};window.extraPages.agentes=pageA;labels.agentes='Agentes';icons.agentes='✨';
 window.apOpt=function(k,v){var o=st();o.opt[k]=!!v;save(o);notify('Piloto: '+(v?'ligado':'desligado')+'.')};
 window.apRun=async function(){var o=st();o.day='';o.lastHealth='';save(o);notify('Agentes trabalhando…');await run(true);notify('Pronto. Veja o que os agentes fizeram.');render()};
+})();
+</script>
+<style id="theme-anim-css">
+/* Tema de animação único por conta (escolhido pelos agentes) */
+html body.dark #view .panel::after,html body.dark #view .card::after,html body.dark #view .stat::after,html body.dark #view .plan-card::after,html body.dark #view .pn-card::after,html body.dark button.primary::after,html body.dark #view .prof-stats>div::after,html body.dark #view .prof-people button::after{animation-duration:var(--fx-shine,7s)!important}
+html body.dark button.primary,html body.dark .nav button.active,html body.dark #mobile-bottom button.active{animation-duration:var(--fx-pulse,3s)!important}
+.fx-g{filter:hue-rotate(var(--fx-hue,0deg)) saturate(var(--fx-sat,1))}
+body:not(.fx-user-off) .prof-head .av.av-l{animation-duration:var(--fx-ring,3.2s)!important}
+</style>
+<script id="theme-anim-js">
+(function(){
+'use strict';
+var ENTRY={subir:[{opacity:0,transform:'translateY(16px)'},{opacity:1,transform:'none'}],zoom:[{opacity:0,transform:'scale(.92)'},{opacity:1,transform:'none'}],girar:[{opacity:0,transform:'perspective(700px) rotateX(14deg) translateY(10px)'},{opacity:1,transform:'none'}],lado:[{opacity:0,transform:'translateX(-22px)'},{opacity:1,transform:'none'}],desfoque:[{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'none'}]};
+var NAMES={subir:'subindo',zoom:'zoom suave',girar:'virando em 3D',lado:'deslizando de lado',desfoque:'saindo do desfoque'};
+function K(){return 'lojasg.estoque99.anim-theme:'+authSession.storeKey}
+function seedTheme(login){var h=0;for(var i=0;i<login.length;i++)h=(h*31+login.charCodeAt(i))>>>0;var keys=Object.keys(ENTRY);function r(n){h=(h*1103515245+12345)>>>0;return h%n}
+  return {entrada:keys[r(keys.length)],brilho:5+r(5),pulso:2+r(3)+(r(2)?.5:0),matiz:r(51)-25,saturacao:1+r(4)/10,anel:2.4+r(15)/10,ms:320+r(5)*40,por:'combinação da conta'}}
+function clean(t){var o={};o.entrada=ENTRY[t.entrada]?t.entrada:'subir';o.brilho=Math.min(12,Math.max(4,+t.brilho||7));o.pulso=Math.min(5,Math.max(1.5,+t.pulso||3));o.matiz=Math.min(40,Math.max(-40,+t.matiz||0));o.saturacao=Math.min(1.6,Math.max(.7,+t.saturacao||1));o.anel=Math.min(5,Math.max(1.8,+t.anel||3.2));o.ms=Math.min(700,Math.max(240,+t.ms||380));o.por=String(t.por||'agente').slice(0,40);return o}
+function apply(t){var b=document.body.style;b.setProperty('--fx-shine',t.brilho+'s');b.setProperty('--fx-pulse',t.pulso+'s');b.setProperty('--fx-hue',t.matiz+'deg');b.setProperty('--fx-sat',String(t.saturacao));b.setProperty('--fx-ring',t.anel+'s');window.e99EntryKF=ENTRY[t.entrada];window.e99EntryMs=t.ms;window.e99EntryGap=Math.round(t.ms/9)}
+function get(){if(!authSession)return null;var t=null;try{t=JSON.parse(localStorage.getItem(K())||'null')}catch(x){}return t?clean(t):null}
+function put(t){try{localStorage.setItem(K(),JSON.stringify(t))}catch(x){}}
+async function ensure(force){if(!authSession)return;var t=get();if(!t||force){var base=seedTheme(authLoginName(authSession.record.login)+(force?Date.now():''));t=base;
+    try{if(window.e99Agent){var nm=(window.e99Team&&window.e99Team.get()&&window.e99Team.get().name)||authSession.record.login;var r=await window.e99Agent('Crie um tema de animação ÚNICO para a conta de '+nm+' no app Stok (tema escuro, vermelho). Responda SÓ um JSON com: entrada (uma de: subir, zoom, girar, lado, desfoque), brilho (segundos 4-12), pulso (segundos 1.5-5), matiz (graus -40 a 40), saturacao (0.7-1.6), anel (segundos 1.8-5), ms (240-700).','Sugestão inicial: '+JSON.stringify(base),200);
+      var m=r.text.match(/\{[\s\S]*\}/);if(m){var j=JSON.parse(m[0]);j.por=r.by.split(' · ')[0];t=clean(Object.assign({},base,j))}}}catch(x){}
+    put(t)}apply(t);return t}
+window.e99AnimTheme=function(){return get()};window.e99AnimNew=async function(){var t=await ensure(true);notify('Animação nova para esta conta: entrada '+NAMES[t.entrada]+' ('+t.por+').');render()};
+var en=authEnter;authEnter=function(){var r=en.apply(this,arguments);setTimeout(function(){ensure(false)},0);return r};
+if(typeof authSession!=='undefined'&&authSession)ensure(false);
+var lo=authLogout;authLogout=async function(){var r=await lo.apply(this,arguments);if(!authSession){['--fx-shine','--fx-pulse','--fx-hue','--fx-sat','--fx-ring'].forEach(function(p){document.body.style.removeProperty(p)});window.e99EntryKF=null}return r};
+/* aparece na tela Agentes */
+if(window.extraPages&&window.extraPages.agentes){var pa=window.extraPages.agentes;window.extraPages.agentes=function(){var h=pa.apply(this,arguments),t=get();if(!t)return h;
+  return h+'<div class="panel help"><h2>🎨 Animação desta conta</h2><p>Entrada <b>'+NAMES[t.entrada]+'</b> · brilho a cada '+t.brilho+'s · pulso '+t.pulso+'s · tom das partículas '+(t.matiz>0?'+':'')+t.matiz+'° · criada por: '+t.por+'.</p><p class="small">Cada conta tem a sua. Os agentes criam o tema; sem IA configurada, ele é uma combinação única da conta.</p><button onclick="e99AnimNew()">Pedir outra animação aos agentes</button></div>'}}
 })();
 </script>
 <script>

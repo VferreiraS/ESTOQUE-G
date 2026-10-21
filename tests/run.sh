@@ -9,7 +9,7 @@ node tests/fake_ntfy.js 20130 >/dev/null 2>&1 & P2=$!
 npx -y firebase-tools@latest emulators:start --only auth,firestore --project gen-lang-client-0167474823 >/tmp/stok-emu.log 2>&1 & P3=$!
 for i in $(seq 1 120); do curl -s localhost:8080 >/dev/null && curl -s localhost:9099 >/dev/null && break; sleep 2; done
 fail=0
-for t in ${@:-cloud_test social_test agents_test autopilot_test reply_test auxpersist_test profile_test cartazes_test latejoin_test}; do
+for t in ${@:-cloud_test social_test agents_test autopilot_test theme_sound_test reply_test auxpersist_test profile_test cartazes_test latejoin_test}; do
   echo "== $t"; out=$(timeout 400 node "tests/$t.js" 2>&1); echo "$out" | grep -E "PASS|FAIL|errors|Error"
   echo "$out" | grep -qE "FAIL|Error" && fail=1
 done

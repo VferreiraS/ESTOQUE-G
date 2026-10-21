@@ -3,6 +3,10 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 54
+- Animação única por conta: os agentes criam o tema (entrada na tela, velocidade do brilho e do pulso, tom das partículas, anel da foto). Sem IA, é uma combinação única da conta. Na tela Agentes: "Pedir outra animação".
+- Som da abertura no celular: o navegador do iPhone/Android dizia que o som estava liberado, mas ficava mudo até o primeiro toque. Agora, sem toque ainda, aparece "Toque para abrir" e o som toca junto com a animação.
+
 ## Versão 53
 - Piloto automático dos agentes (tela ✨ Agentes): acham erros de todos os aparelhos e verificam os dados; mandam bom dia no chat marcando cada pessoa; aviso personalizado no celular (ntfy); e-mail personalizado por dia (fila do robô); lembrete de atraso para o responsável. Cada ação tem chave liga/desliga e fica registrada.
 - Sem IA configurada, os agentes usam textos prontos.
