@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="54"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="55"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -3493,7 +3493,7 @@ var VUID='TConyCsDQfPWBZ2MuGhVQTy7Mmz1',vLogin='';
 function isV(r){if(!r)return false;var u=window.e99Cloud&&window.e99Cloud.user&&window.e99Cloud.user();if(r.me)return !!(u&&u.uid===VUID)||(!!vLogin&&myLogin()===vLogin);return r.uid===VUID||(!!vLogin&&!!r.login&&authLoginName(r.login)===vLogin)}
 var VB='<svg class="vbadge" viewBox="0 0 40 40" role="img" aria-label="Verificado"><path fill="#1d9bf0" d="M19.998 3.094 14.638 0l-2.972 5.15H5.432v6.354L0 14.64 3.094 20 0 25.359l5.432 3.137v5.905h5.975L14.638 40l5.36-3.094L25.358 40l3.232-5.6h6.162v-6.01L40 25.359 36.905 20 40 14.641l-5.248-3.03v-6.46h-6.419L25.358 0l-5.36 3.094Zm7.415 11.225 2.254 2.287-11.43 11.5-6.835-6.93 2.244-2.258 4.587 4.581 9.18-9.18Z"/></svg>';
 function vb(r){return isV(r)?VB:''}
-window.profBadge=function(name){return vb(find(name))};window.profByLogin=function(lg){lg=authLoginName(String(lg||''));if(!lg)return null;if(lg===myLogin())return {key:'me',p:mine||blank(),me:true};return all().find(function(r){return r.login&&authLoginName(r.login)===lg})||null};
+window.e99ProfilesAll=function(){return all()};window.profBadge=function(name){return vb(find(name))};window.profByLogin=function(lg){lg=authLoginName(String(lg||''));if(!lg)return null;if(lg===myLogin())return {key:'me',p:mine||blank(),me:true};return all().find(function(r){return r.login&&authLoginName(r.login)===lg})||null};
 /* ---------- página de perfil ---------- */
 function actsOf(names){var since=new Date(Date.now()-30*864e5).toISOString().slice(0,10),done=[],todo=0,today=iso();var ns=names.map(norm);
   (state.plans||[]).forEach(function(pl){(pl.activities||[]).forEach(function(a){var mine1=ns.indexOf(norm(a.owner))>=0||norm(a.owner)==='todos';if(a.done&&ns.indexOf(norm(a.doneBy))>=0&&pl.date>=since)done.push({t:a.title,p:pl.title,at:a.doneAt||pl.date});else if(!a.done&&mine1&&pl.date===today)todo++})});
@@ -4278,10 +4278,13 @@ if(typeof savePlan==='function'){var spBefore=savePlan;savePlan=async function(e
     Object.keys(by).forEach(function(n){var lg=loginOf(n);if(lg)pushTo(lg,'Nova atividade para você',by[n].slice(0,3).join(' · ')+(by[n].length>3?' e mais '+(by[n].length-3):''),'plans')})}}catch(x){}return r}}
 
 /* ---------- contas confirmadas entram na Equipe e recebem corredores (só no aparelho do gestor) ---------- */
-var linkT=0;window.e99OnMembers=function(){clearTimeout(linkT);linkT=setTimeout(linkAccounts,1500)};
+var linkT=0;window.e99OnMembers=function(){clearTimeout(linkT);linkT=setTimeout(linkAccounts,1500)};setInterval(function(){if(authSession&&!document.hidden)linkAccounts()},60000);setTimeout(function(){if(authSession)linkAccounts()},12000);
 function invitesList(){try{return JSON.parse(localStorage.getItem('lojasg.estoque99.aux-invites:'+authSession.storeKey)||'[]')||[]}catch(x){return []}}
-function confirmed(){return (window.e99CloudMembers?window.e99CloudMembers():[]).filter(function(m){return m.verificado&&m.login&&authLoginName(m.login)!==myLogin()&&authLoginName(m.login)!=='estoque 99'})}
-async function linkAccounts(){var t=T();if(!authSession||!t||!t.owner||!state||!Array.isArray(state.team))return;var ms=confirmed();if(!ms.length)return;var inv=invitesList(),added=[],linked=0;
+function confirmed(){var out=[],seen={};function add(m){if(!m.login)return;var lg=authLoginName(m.login);if(lg===myLogin()||lg==='estoque 99'||seen[lg])return;seen[lg]=1;out.push(m)}
+  (window.e99CloudMembers?window.e99CloudMembers():[]).forEach(add);
+  (window.e99ProfilesAll?window.e99ProfilesAll():[]).forEach(function(r){if(r.me||!r.login||!r.p)return;add({login:r.login,nome:r.p.name,role:r.role==='auxiliar'?'auxiliar':'gestor',uid:r.uid||'',verificado:false,inviteId:''})});
+  try{var mem=window.syncMembers?window.syncMembers():{};Object.keys(mem).forEach(function(d){var m=mem[d];if(m&&m.login)add({login:m.login,nome:m.name,role:m.role,uid:'',verificado:false,inviteId:m.inviteId||''})})}catch(x){}return out}
+async function linkAccounts(){var t=T();if(!authSession||!t||!(t.owner||authSession.payload.role!=='auxiliar')||!state||!Array.isArray(state.team))return;var ms=confirmed();if(!ms.length)return;var inv=invitesList(),added=[],linked=0;
   ms.forEach(function(m){var lg=authLoginName(m.login);var per=state.team.find(function(x){return x.login&&authLoginName(x.login)===lg});if(per)return;
     var pr=window.profByLogin?window.profByLogin(m.login):null,iv=inv.find(function(i){return i.inviteId&&i.inviteId===m.inviteId})||inv.find(function(i){return i.login&&authLoginName(i.login)===lg});
     var names=[iv&&iv.name,m.nome,pr&&pr.p&&pr.p.name].concat(pr&&pr.p&&pr.p.names||[]).filter(Boolean).map(normalText);
@@ -4297,9 +4300,9 @@ function distribute(all){var ps=auxConfirmed();if(!ps.length||!Array.isArray(sta
   var list=state.corridors.filter(function(c){var o=normalText(c.owner||'');if(o==='todos')return false;return all||!o||!ids[c.owner]}).sort(function(a,b){return corNum(a)-corNum(b)});if(!list.length)return 0;
   if(all){var per=Math.ceil(list.length/ps.length);list.forEach(function(c,i){c.owner=ps[Math.min(ps.length-1,Math.floor(i/per))].id});return list.length}
   var load={};ps.forEach(function(p){load[p.id]=state.corridors.filter(function(c){return c.owner===p.id}).length});list.forEach(function(c){var p=ps.slice().sort(function(a,b){return load[a.id]-load[b.id]})[0];c.owner=p.id;load[p.id]++});return list.length}
-window.e99Distribute=async function(){var ps=auxConfirmed();if(!ps.length){notify('Nenhum auxiliar com e-mail confirmado ainda.');return}if(!confirm('Distribuir os corredores (menos os de TODOS) em blocos entre: '+ps.map(function(p){return p.name}).join(', ')+'?'))return;var n=distribute(true);await save();render();notify(n+' corredor(es) distribuído(s).')};
+window.e99Distribute=async function(){var ps=auxConfirmed();if(!ps.length){notify('Nenhum auxiliar com conta ainda.');return}if(!confirm('Distribuir os corredores (menos os de TODOS) em blocos entre: '+ps.map(function(p){return p.name}).join(', ')+'?'))return;var n=distribute(true);await save();render();notify(n+' corredor(es) distribuído(s).')};
 var rBefore=render;render=function(){var r=rBefore.apply(this,arguments);try{if(page==='corridors'&&T()&&T().owner){var v=document.getElementById('view'),h=v&&v.querySelector('.hero');if(h&&!v.querySelector('.cor-dist')){var ps=auxConfirmed();var d=document.createElement('div');d.className='panel help cor-dist';
-  d.innerHTML='<span><b>⚖️ Corredores por conta confirmada</b><br><span class="small">'+(ps.length?ps.length+' auxiliar(es) com e-mail confirmado: '+e(ps.map(function(p){return p.name}).join(', ')):'Quando os auxiliares confirmarem o e-mail, eles entram aqui.')+'</span></span><button type="button" class="primary" onclick="e99Distribute()" '+(ps.length?'':'disabled')+'>Distribuir corredores</button>';h.after(d)}}}catch(x){}return r};
+  d.innerHTML='<span><b>⚖️ Corredores por conta</b><br><span class="small">'+(ps.length?ps.length+' auxiliar(es) com conta: '+e(ps.map(function(p){return p.name}).join(', ')):'Quando os auxiliares criarem a conta, eles entram aqui.')+'</span></span><button type="button" class="primary" onclick="e99Distribute()" '+(ps.length?'':'disabled')+'>Distribuir corredores</button>';h.after(d)}}}catch(x){}return r};
 })();
 </script>
 <style id="agents-css">
