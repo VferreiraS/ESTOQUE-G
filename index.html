@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="55"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="56"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -4278,7 +4278,7 @@ if(typeof savePlan==='function'){var spBefore=savePlan;savePlan=async function(e
     Object.keys(by).forEach(function(n){var lg=loginOf(n);if(lg)pushTo(lg,'Nova atividade para você',by[n].slice(0,3).join(' · ')+(by[n].length>3?' e mais '+(by[n].length-3):''),'plans')})}}catch(x){}return r}}
 
 /* ---------- contas confirmadas entram na Equipe e recebem corredores (só no aparelho do gestor) ---------- */
-var linkT=0;window.e99OnMembers=function(){clearTimeout(linkT);linkT=setTimeout(linkAccounts,1500)};setInterval(function(){if(authSession&&!document.hidden)linkAccounts()},60000);setTimeout(function(){if(authSession)linkAccounts()},12000);
+var linkT=0;window.e99OnMembers=function(){clearTimeout(linkT);linkT=setTimeout(linkAccounts,1500)};setInterval(function(){if(authSession&&!document.hidden)linkAccounts()},60000);setTimeout(function(){if(authSession)linkAccounts()},12000);var goL=go;go=function(p){var r=goL.apply(this,arguments);if(p==='team'||p==='corridors'||p==='profile')setTimeout(linkAccounts,300);return r};
 function invitesList(){try{return JSON.parse(localStorage.getItem('lojasg.estoque99.aux-invites:'+authSession.storeKey)||'[]')||[]}catch(x){return []}}
 function confirmed(){var out=[],seen={};function add(m){if(!m.login)return;var lg=authLoginName(m.login);if(lg===myLogin()||lg==='estoque 99'||seen[lg])return;seen[lg]=1;out.push(m)}
   (window.e99CloudMembers?window.e99CloudMembers():[]).forEach(add);
