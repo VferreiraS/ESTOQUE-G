@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="59"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="60"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -4019,6 +4019,7 @@ async function after(fresh,perm){var u=user();if(!u||!authSession)return;try{awa
   if(loja&&(fresh||now-lastVisto>30*60000)){lastVisto=now;try{var mref=c.db.collection('lojas').doc(loja).collection('membros').doc(u.uid),mo=null;try{mo=(await mref.get()).data()}catch(x){}
     var inv=ls('lojasg.estoque99.invite-id:'+me.storeKey)||'';var m={login:me.record.login.slice(0,80),nome:nome(),role:role(),criado:mo&&Number.isInteger(mo.criado)?mo.criado:now,visto:now,verificado:!!u.emailVerified};if(inv)m.inviteId=inv.slice(0,40);
     await mref.set(m)}catch(x){try{console.warn('Stok nuvem membros:',x.code||x)}catch(y){}}}
+  try{var tq=window.e99Team&&window.e99Team.get();if(tq&&tq.code){var sig=tq.code+'|'+tq.name+'|'+tq.team+'|'+tq.owner;if(ls('lojasg.estoque99.team-saved:'+me.storeKey)!==sig){await c.db.collection('equipes').doc(u.uid).set({code:String(tq.code).slice(0,20),name:String(tq.name||'').slice(0,40),team:String(tq.team||'Equipe').slice(0,80),owner:!!tq.owner,sync:!!tq.sync,at:now});ls('lojasg.estoque99.team-saved:'+me.storeKey,sig)}}}catch(x){}
   listen(loja);if(window.e99ProfileCloud)try{window.e99ProfileCloud()}catch(x){}
   var tm=null;try{tm=window.e99Team&&window.e99Team.get()}catch(x){}if(role()==='gestor'||(tm&&tm.owner))daily(loja).catch(function(){});
   if(perm)setTimeout(function(){permStep(false)},900)}
@@ -4602,11 +4603,12 @@ window.mrGo=async function(ev){ev.preventDefault();if(busy)return;var v=readForm
       /* traz o perfil (nome, foto, capa, cargo) da nuvem antes de entrar */
       var prof=null;try{if(ud&&/^[0-9a-f]{32}$/.test(ud.loja||'')){var pd=(await c.db.collection('lojas').doc(ud.loja).collection('perfis').doc(u.uid).get()).data();if(pd&&pd.p)prof=Object.assign({},pd.p,{at:Number(pd.at)||Date.now()})}}catch(x){}
       var session=await authCreate(login,login==='estoque 99'?'Estoque 99':(prof&&prof.name?String(prof.name).slice(0,80):'Estoque'),v.password,authEmpty(),role);
+      try{var eq=(await c.db.collection('equipes').doc(u.uid).get()).data();if(eq&&eq.code){var cc={code:eq.code,name:eq.name||'',team:eq.team||'Equipe',owner:!!eq.owner,sync:!!eq.sync,replace:true};var civ=crypto.getRandomValues(new Uint8Array(12));var cct=await crypto.subtle.encrypt({name:'AES-GCM',iv:civ,additionalData:authBytes('chat|'+authLoginName(session.record.login))},session.key,authBytes(JSON.stringify(cc)));localStorage.setItem('lojasg.estoque99.chat:'+session.storeKey,JSON.stringify({iv:authB64(civ),cipher:authB64(new Uint8Array(cct))}))}}catch(x){}
       if(prof)try{await new Promise(function(res){var rq=indexedDB.open('estoque99-profiles',1);rq.onupgradeneeded=function(){rq.result.createObjectStore('p')};rq.onsuccess=function(){var db=rq.result,tx=db.transaction('p','readwrite');tx.objectStore('p').put(prof,'me|'+session.storeKey);tx.oncomplete=function(){db.close();res()};tx.onerror=function(){db.close();res()}};rq.onerror=function(){res()}})}catch(x){}
       localStorage.setItem(session.storeKey,JSON.stringify(session.record));authEnter({key:session.key,record:session.record,storeKey:session.storeKey,payload:session.payload});authShownCode=session.recoveryCode}
     ls('lojasg.estoque99.cloud-email:'+storeKey,email);var d2=await derive(login,v.password);try{await u.updatePassword(d2);ls('lojasg.estoque99.cloud-pw:'+storeKey,(await sha(d2)).slice(0,16))}catch(x){}
     grab(login,v.password);vault();var dd=document.getElementById('mail-rec');if(dd)dd.close();busy=false;
-    notify(record&&vd&&vd.salt===record.salt?'Conta recuperada com todos os dados! Anote o novo código em Minha conta.':'Conta recuperada! Para voltar à equipe, peça o convite (Chat → Convidar) a quem está na equipe. Anote o novo código em Minha conta.');try{go('account')}catch(x){}}
+    notify(record&&vd&&vd.salt===record.salt?'Conta recuperada com todos os dados! Anote o novo código em Minha conta.':(localStorage.getItem('lojasg.estoque99.chat:'+storeKey)?'Conta recuperada e de volta à equipe! Anote o novo código em Minha conta.':'Conta recuperada! Para voltar à equipe, peça o convite (Chat → Convidar) a quem está na equipe. Anote o novo código em Minha conta.'));try{go('account')}catch(x){}}
   catch(x){busy=false;err=code(x);paint()}};
 /* link na tela de entrar */
 var raB=renderAuth;renderAuth=function(){raB.apply(this,arguments);try{var f=document.getElementById('auth-form');if(f&&!authRecoveryShow&&!authPending&&(authMode==='login'||authMode==='recover')&&!document.getElementById('mr-link')){var b=document.createElement('button');b.type='button';b.id='mr-link';b.className='mr-link';b.textContent='Esqueci a senha e o código · recuperar pelo e-mail';b.onclick=window.mrOpen;f.after(b)}}catch(x){}};

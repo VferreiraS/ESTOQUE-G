@@ -170,6 +170,11 @@ service cloud.firestore {
         isStr(d.login, 1, 80) && isStr(d.salt, 16, 40) && isStr(d.bits, 40, 60) && isValidTime(d.at);
     }
 
+    function isValidEquipe(d) {
+      return hasOnlyAllowedFields(['code', 'name', 'team', 'owner', 'sync', 'at']) && hasRequiredFields(['code', 'name', 'team', 'owner', 'sync', 'at']) &&
+        isStr(d.code, 8, 20) && isStr(d.name, 0, 40) && isStr(d.team, 0, 80) && d.owner is bool && d.sync is bool && isValidTime(d.at);
+    }
+
     function isValidCorreio(d) {
       return hasOnlyAllowedFields(['de', 'para', 'assunto', 'texto', 'tipo', 'loja', 'criado']) &&
         hasRequiredFields(['de', 'para', 'assunto', 'texto', 'tipo', 'loja', 'criado']) &&
@@ -194,6 +199,13 @@ service cloud.firestore {
     match /cofre/{uid} {
       allow get: if isOwner(uid);
       allow create, update: if isOwner(uid) && isValidCofre(request.resource.data);
+      allow delete: if isOwner(uid);
+    }
+
+    // Equipe da conta (para voltar ao chat ao recuperar pelo e-mail): só o dono.
+    match /equipes/{uid} {
+      allow get: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isValidEquipe(request.resource.data);
       allow delete: if isOwner(uid);
     }
 
