@@ -3,6 +3,16 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 47
+- Contas com e-mail na nuvem (Firebase): cada pessoa entra com o próprio e-mail; o Firebase manda o e-mail de confirmação.
+- Contas antigas e convites já enviados: no próximo login aparece "Vincule seu e-mail" (uma vez).
+- Convite de auxiliar pode ir por e-mail; o e-mail já vem preenchido na criação da conta.
+- Status dos convites ("✓ Conta criada", e-mail confirmado) e perfis chegam pela nuvem, mesmo com o celular fechado.
+- Passo "Ativar no aparelho": notificações, som e câmera (também na tela Conta).
+- Resumo diário de cada auxiliar (atividades e corredores) vai para a fila `correio`; o robô diário envia por e-mail.
+- Testes em `tests/` (`bash tests/run.sh`, com emulador do Firebase).
+- Site também no Firebase Hosting: https://gen-lang-client-0167474823-295e1.web.app
+
 ## Versão 46
 - Nuvem (Firebase): os perfis de todas as contas da loja ficam no mesmo lugar e aparecem em todos os aparelhos; contas antigas sobem sozinhas ao abrir o app.
 

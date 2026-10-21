@@ -1,13 +1,56 @@
 {
   "hosting": {
+    "site": "gen-lang-client-0167474823-295e1",
     "public": ".",
-    "ignore": ["firebase.json", ".firebaserc", "firestore.rules", "firestore.indexes.json", "**/.*", "**/node_modules/**", "CLAUDE.md", "README.md", "apps-script/**"],
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "firestore.rules",
+      "firestore.indexes.json",
+      "**/.*",
+      "**/node_modules/**",
+      "CLAUDE.md",
+      "README.md",
+      "apps-script/**",
+      "tests/**"
+    ],
     "headers": [
-      {"source": "/sw.js", "headers": [{"key": "Cache-Control", "value": "no-cache"}]},
-      {"source": "/index.html", "headers": [{"key": "Cache-Control", "value": "no-cache"}]},
-      {"source": "/robo.html", "headers": [{"key": "Cache-Control", "value": "no-cache"}]}
+      {
+        "source": "/sw.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      },
+      {
+        "source": "/index.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      },
+      {
+        "source": "/robo.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      }
     ]
   },
-  "firestore": {"rules": "firestore.rules", "indexes": "firestore.indexes.json"},
-  "auth": {"providers": {"emailPassword": true}}
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "auth": {
+    "providers": {
+      "emailPassword": true
+    }
+  }
 }

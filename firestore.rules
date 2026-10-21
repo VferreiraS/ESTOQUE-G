@@ -1,11 +1,175 @@
 rules_version = '2';
+
+// ===============================================================
+// Modelo de dados (Stok · Estoque 99)
+// ===============================================================
+//
+// Coleção: usuarios            Documento: {uid} (uid do Firebase Auth)
+//   Dados particulares da pessoa (tem e-mail = dado pessoal): só o dono lê/grava.
+//   - email: string (obrigatório, = e-mail do login)
+//   - login: string (1..80)       - nome: string (0..40)
+//   - role: 'gestor'|'auxiliar'|'estoque'  (informativo, não dá permissão)
+//   - loja: string (0..64)        - criado, visto: int
+//   - verificado: bool (= e-mail confirmado no token)
+//
+// Coleção: lojas/{loja}/perfis  Documento: {uid}
+//   Perfil público dentro da equipe. {loja} = id secreto de 32 hex, só a equipe sabe.
+//   - login: string (1..80)   - role   - at: int
+//   - p: map { v, user, name, cargo, bio, photo, cover, names[], at }
+//
+// Coleção: lojas/{loja}/membros Documento: {uid}
+//   Status da conta na loja (sem e-mail).
+//   - login, nome, role, inviteId: string   - criado, visto: int
+//   - verificado: bool (= e-mail confirmado no token)
+//
+// Coleção: correio              Documento: id automático
+//   Fila de e-mails que o robô (tarefa agendada) envia. Só o robô lê e apaga.
+//   - de: uid de quem criou    - para: uid do destinatário (o robô busca o e-mail)
+//   - assunto, texto: string
+//   - tipo: 'resumo'|'aviso'   - loja: 32 hex     - criado: int
+//
+// Nenhum papel (role) gravado pelo cliente dá permissão nas regras.
+// ===============================================================
+
 service cloud.firestore {
-  match /databases/{db}/documents {
-    // Perfis da loja: o caminho (id da loja) só é conhecido por quem está na equipe.
-    match /lojas/{loja}/perfis/{id} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
-        && request.resource.data.keys().hasOnly(['login','role','p','at']);
+  match /databases/{database}/documents {
+
+    // ---------- Funções de apoio ----------
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    function isRobot() {
+      return isAuthenticated() && request.auth.uid == 'YVRBgV80TiNIBRXuoB5uP9qZNeY2';
+    }
+    function emailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+    function isStr(v, minLen, maxLen) {
+      return v is string && v.size() >= minLen && v.size() <= maxLen;
+    }
+    function isValidEmail(email) {
+      return email is string && email.size() <= 120 &&
+        email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$');
+    }
+    function isValidRole(r) {
+      return r in ['gestor', 'auxiliar', 'estoque'];
+    }
+    function isValidTime(t) {
+      return t is int && t >= 0 && t <= 99999999999999;
+    }
+    function isLojaId(id) {
+      return id is string && id.matches('^[0-9a-f]{32}$');
+    }
+    // lista de nomes: até 6 textos de até 40 letras
+    function isValidNames(l) {
+      return l is list && l.size() <= 6 &&
+        (l.size() < 1 || isStr(l[0], 0, 40)) &&
+        (l.size() < 2 || isStr(l[1], 0, 40)) &&
+        (l.size() < 3 || isStr(l[2], 0, 40)) &&
+        (l.size() < 4 || isStr(l[3], 0, 40)) &&
+        (l.size() < 5 || isStr(l[4], 0, 40)) &&
+        (l.size() < 6 || isStr(l[5], 0, 40));
+    }
+
+    // ---------- Validadores (usados no create E no update) ----------
+    function isValidUsuario(d) {
+      return hasOnlyAllowedFields(['email', 'login', 'nome', 'role', 'loja', 'criado', 'visto', 'verificado']) &&
+        hasRequiredFields(['email', 'login', 'role', 'criado', 'visto', 'verificado']) &&
+        isValidEmail(d.email) && d.email == request.auth.token.email &&
+        isStr(d.login, 1, 80) &&
+        (!('nome' in d) || isStr(d.nome, 0, 40)) &&
+        isValidRole(d.role) &&
+        (!('loja' in d) || isStr(d.loja, 0, 64)) &&
+        isValidTime(d.criado) && isValidTime(d.visto) &&
+        d.verificado == emailVerified();
+    }
+
+    function isValidPerfilMap(p) {
+      return p is map &&
+        p.keys().hasOnly(['v', 'user', 'name', 'cargo', 'bio', 'photo', 'cover', 'names', 'at']) &&
+        p.keys().hasAll(['user', 'name']) &&
+        isStr(p.user, 3, 20) && isStr(p.name, 1, 40) &&
+        (!('v' in p) || p.v is int) &&
+        (!('cargo' in p) || isStr(p.cargo, 0, 40)) &&
+        (!('bio' in p) || isStr(p.bio, 0, 160)) &&
+        (!('photo' in p) || isStr(p.photo, 0, 250000)) &&
+        (!('cover' in p) || isStr(p.cover, 0, 450000)) &&
+        (!('names' in p) || isValidNames(p.names)) &&
+        (!('at' in p) || isValidTime(p.at));
+    }
+    function isValidPerfil(d) {
+      return hasOnlyAllowedFields(['login', 'role', 'at', 'p']) &&
+        hasRequiredFields(['login', 'role', 'at', 'p']) &&
+        isStr(d.login, 1, 80) && isValidRole(d.role) && isValidTime(d.at) &&
+        isValidPerfilMap(d.p);
+    }
+
+    function isValidMembro(d) {
+      return hasOnlyAllowedFields(['login', 'nome', 'role', 'inviteId', 'criado', 'visto', 'verificado']) &&
+        hasRequiredFields(['login', 'role', 'criado', 'visto', 'verificado']) &&
+        isStr(d.login, 1, 80) &&
+        (!('nome' in d) || isStr(d.nome, 0, 40)) &&
+        isValidRole(d.role) &&
+        (!('inviteId' in d) || isStr(d.inviteId, 0, 40)) &&
+        isValidTime(d.criado) && isValidTime(d.visto) &&
+        d.verificado == emailVerified();
+    }
+
+    function isValidCorreio(d) {
+      return hasOnlyAllowedFields(['de', 'para', 'assunto', 'texto', 'tipo', 'loja', 'criado']) &&
+        hasRequiredFields(['de', 'para', 'assunto', 'texto', 'tipo', 'loja', 'criado']) &&
+        d.de == request.auth.uid &&
+        d.para is string && d.para.matches('^[A-Za-z0-9]{10,128}$') &&
+        isStr(d.assunto, 1, 150) && isStr(d.texto, 1, 8000) &&
+        d.tipo in ['resumo', 'aviso'] &&
+        isLojaId(d.loja) && isValidTime(d.criado);
+    }
+
+    // ---------- Regras ----------
+
+    // Dados particulares: só o dono; o robô só lê (para achar o e-mail de quem confirmou).
+    match /usuarios/{uid} {
+      allow get: if isOwner(uid) || isRobot();
+      allow create, update: if isOwner(uid) && isValidUsuario(request.resource.data) &&
+        (request.method == 'create' || request.resource.data.criado == resource.data.criado);
+      allow delete: if isOwner(uid);
+    }
+
+    match /lojas/{loja} {
+      // O documento da loja em si não é usado: ninguém lê nem lista lojas.
+
+      match /perfis/{uid} {
+        allow read: if isAuthenticated() && isLojaId(loja);
+        allow create, update: if isOwner(uid) && isLojaId(loja) && isValidPerfil(request.resource.data);
+        allow delete: if isOwner(uid);
+      }
+
+      match /membros/{uid} {
+        allow read: if isAuthenticated() && isLojaId(loja);
+        allow create, update: if isOwner(uid) && isLojaId(loja) && isValidMembro(request.resource.data) &&
+          (request.method == 'create' || request.resource.data.criado == resource.data.criado);
+        allow delete: if isOwner(uid);
+      }
+    }
+
+    // O robô lista os membros de todas as lojas (para saber quem confirmou o e-mail).
+    match /{path=**}/membros/{uid} {
+      allow read: if isRobot();
+    }
+
+    // Fila de e-mails: quem tem e-mail confirmado cria; só o robô lê e apaga; ninguém altera.
+    match /correio/{id} {
+      allow create: if isAuthenticated() && emailVerified() && isValidCorreio(request.resource.data);
+      allow read, delete: if isRobot();
     }
   }
 }
