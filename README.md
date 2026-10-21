@@ -3,6 +3,10 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 71
+- Agente Nuvem pela Cloudflare + NVIDIA (`cloudflare/ia-worker.js`): a chave fica só nos segredos do Worker.
+- Corrigido erro do contador do chat logo depois de sair da conta.
+
 ## Versão 70
 - Agente Nuvem pode usar a NVIDIA (Nemotron) pelo intermediário do Google (`apps-script/ia.gs`, propriedade `NVIDIA_API_KEY`). A chave fica só no Apps Script.
 
