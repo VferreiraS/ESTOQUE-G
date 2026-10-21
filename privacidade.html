@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Política de Privacidade · Stok</title>
+<meta name="description" content="Política de Privacidade do Stok · Estoque 99, app interno das Lojas G, conforme a LGPD (Lei 13.709/2018).">
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="icons/favicon-v36.png">
+<style>
+@font-face{font-family:'Oswald';font-style:normal;font-weight:400 700;font-display:swap;src:url(vendor/fonts/oswald-latin.woff2) format('woff2')}
+:root{--bg:#000;--surface:#0c0c0e;--ink:#f2f2f2;--ink-2:#cfcfcf;--muted:#a6a6a6;--line:#26262a;--accent:#ff2a1f;--link:#ff7a5c;--focus:#ffd34d;color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;overflow-wrap:anywhere}
+.wrap{max-width:780px;margin:0 auto;padding:20px 16px 48px}
+.back{display:inline-block;margin:4px 0 18px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);text-decoration:none;font-weight:600}
+.back:hover{border-color:var(--accent)}
+h1,h2,h3{font-family:'Oswald','Arial Narrow',system-ui,sans-serif;line-height:1.15;letter-spacing:.01em}
+h1{font-size:clamp(30px,7vw,46px);text-transform:uppercase;margin:6px 0 8px}
+h2{font-size:23px;margin:36px 0 10px;padding-top:12px;border-top:1px solid var(--line)}
+h3{font-size:18px;margin:22px 0 6px;color:var(--ink-2)}
+p,li{color:var(--ink-2)}
+strong{color:var(--ink)}
+.lead{color:var(--ink);font-size:17px}
+.meta{color:var(--muted);font-size:14px;margin:0}
+a{color:var(--link);text-underline-offset:3px}
+a:focus-visible,.back:focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:6px}
+nav.toc{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 18px;margin:22px 0}
+nav.toc h2{border:0;margin:0 0 6px;padding:0;font-size:19px}
+nav.toc ol{margin:0;padding-left:22px}
+nav.toc li{margin:3px 0}
+.box{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:12px 16px;margin:14px 0}
+.box p{margin:6px 0}
+.table{width:100%;overflow-x:auto;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:15px;min-width:0}
+th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--ink);font-weight:700;background:var(--surface)}
+td{color:var(--ink-2)}
+ul,ol{padding-left:22px}
+li{margin:4px 0}
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+@media (max-width:560px){
+  table,thead,tbody,tr,th,td{display:block}
+  thead{position:absolute;left:-9999px}
+  tr{border:1px solid var(--line);border-radius:12px;margin:0 0 10px;padding:6px 0;background:var(--surface)}
+  td{border:0;padding:4px 12px}
+  td::before{content:attr(data-th);display:block;font-weight:700;color:var(--ink);font-size:13px}
+}
+@media print{body{background:#fff;color:#000}p,li,td{color:#000}.back{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="./index.html">← Voltar ao app</a>
+
+<header>
+<h1>Política de Privacidade</h1>
+<p class="lead">Stok · Estoque 99 — app interno das Lojas G</p>
+<p class="meta">Vigente desde 21/10/2026 · Lei Geral de Proteção de Dados Pessoais (LGPD, Lei 13.709/2018)</p>
+</header>
+
+<div class="box">
+<p><strong>Resumo em poucas linhas:</strong> o Stok é um app interno e gratuito, usado só por funcionários autorizados das Lojas G para organizar o estoque. Ele não vende nada, não mostra anúncios e não usa cookies de rastreamento. A maior parte dos dados fica cifrada no seu próprio aparelho. Alguns dados vão para serviços de terceiros (Google/Firebase, ntfy.sh e outros listados abaixo) só para o app funcionar. Dúvidas ou pedidos: <a href="mailto:99.estoque@lojasg.com.br">99.estoque@lojasg.com.br</a>.</p>
+</div>
+
+<nav class="toc" aria-labelledby="toc-title">
+<h2 id="toc-title">Sumário</h2>
+<ol>
+<li><a href="#controlador">Quem cuida dos seus dados</a></li>
+<li><a href="#dados">Quais dados o app usa</a></li>
+<li><a href="#finalidades">Para que usamos e com qual base legal</a></li>
+<li><a href="#compartilhamento">Com quem os dados são compartilhados</a></li>
+<li><a href="#internacional">Transferência para fora do Brasil</a></li>
+<li><a href="#retencao">Por quanto tempo guardamos e como apagar</a></li>
+<li><a href="#direitos">Seus direitos (art. 18 da LGPD)</a></li>
+<li><a href="#seguranca">Segurança</a></li>
+<li><a href="#armazenamento">Cookies e armazenamento no aparelho</a></li>
+<li><a href="#permissoes">Câmera, microfone e notificações</a></li>
+<li><a href="#criancas">Crianças e adolescentes</a></li>
+<li><a href="#mudancas">Mudanças nesta política</a></li>
+<li><a href="#contato">Contato</a></li>
+</ol>
+</nav>
+
+<main>
+<section id="controlador">
+<h2>1. Quem cuida dos seus dados</h2>
+<p><strong>Controlador:</strong> Lojas G — Estoque 99 (loja 99). CNPJ: [CNPJ a preencher]. Endereço: [endereço a preencher].</p>
+<p><strong>Encarregado (canal de contato para assuntos de dados pessoais):</strong> <a href="mailto:99.estoque@lojasg.com.br">99.estoque@lojasg.com.br</a>.</p>
+<p>O Stok é uma ferramenta de trabalho interna. Só gestores e auxiliares autorizados pelas Lojas G devem usá-lo. Ele é gratuito e não tem nenhuma forma de pagamento.</p>
+</section>
+
+<section id="dados">
+<h2>2. Quais dados o app usa</h2>
+
+<h3>2.1 Conta no aparelho</h3>
+<ul>
+<li>Login, nome do estoque/loja e tipo de conta (gestor, auxiliar ou estoque).</li>
+<li>A <strong>senha nunca sai do aparelho</strong> e não é guardada em texto: ela serve para gerar a chave que cifra os seus dados (PBKDF2 + AES-GCM).</li>
+<li>Os cadastros de trabalho (notas fiscais, planos de ação e atividades, corredores, equipe com nome e cargo, fotos anexadas) ficam cifrados no armazenamento do navegador (localStorage e IndexedDB).</li>
+<li>Opcional: “Manter conectado” guarda neste aparelho uma chave não exportável para entrar sem digitar a senha.</li>
+<li>Opcional: recuperação pelo app autenticador (código de 6 números), guardada na própria conta.</li>
+</ul>
+
+<h3>2.2 Conta na nuvem (Google Firebase)</h3>
+<p>Para as contas pessoais, o app pede o seu <strong>e-mail</strong> e cria uma conta no Firebase Authentication (Google). A conta do “PC do estoque” não precisa de e-mail. No banco Firestore (região São Paulo) ficam:</p>
+<ul>
+<li><strong>usuarios</strong>: e-mail, login, nome, tipo de conta, loja, datas de criação e último acesso, e se o e-mail foi confirmado — só você lê;</li>
+<li><strong>cofre</strong>: dados para recuperar a conta pelo e-mail (protegidos; só você lê);</li>
+<li><strong>equipes</strong>: a equipe da sua conta, para voltar ao chat ao recuperar a conta — só você lê;</li>
+<li><strong>perfis</strong> da equipe: @usuário, nome, cargo, recado (bio), foto e capa — a sua equipe vê;</li>
+<li><strong>membros</strong> da equipe: login, nome, tipo de conta, datas e se o e-mail foi confirmado (sem o e-mail) — a sua equipe vê;</li>
+<li><strong>chat</strong>: aviso “digitando”, até onde cada um leu (“visto”), reações e a mensagem fixada;</li>
+<li><strong>erros técnicos</strong> vistos nos aparelhos da equipe (mensagem do erro, tela, versão e o nome de quem estava usando), para corrigirmos falhas;</li>
+<li><strong>correio</strong>: fila de resumos e avisos por e-mail para pessoas da equipe com e-mail confirmado; os itens são apagados depois do envio.</li>
+</ul>
+
+<h3>2.3 Chat e sincronização da equipe (ntfy.sh)</h3>
+<p>As mensagens, fotos e áudios do chat e a sincronização de NFs, planos, equipe, corredores e perfis entre os aparelhos passam pelo serviço gratuito <strong>ntfy.sh</strong>. O conteúdo é <strong>cifrado com o código da equipe</strong> antes de sair do aparelho. No servidor do ntfy, as mensagens ficam cerca de 12 horas e os anexos (fotos e áudios) cerca de 3 horas; o histórico fica guardado em cada aparelho.</p>
+
+<h3>2.4 Fotos</h3>
+<p>Fotos que você tira ou escolhe (atividades do plano de ação, perfil e capa, chat). Ficam no aparelho; as do perfil vão também para a equipe pela nuvem e as do chat pelo canal cifrado.</p>
+
+<h3>2.5 Aviso de conta nova</h3>
+<p>Quando uma conta é criada fora do ambiente de teste, o app envia ao responsável técnico pelo site, pelo serviço <strong>FormSubmit</strong> (formsubmit.co), um e-mail com o nome do estoque, o login, o tipo de conta, a data e o tipo de aparelho e navegador (ex.: “Android · Chrome”). Um contador anônimo (serviço <strong>Abacus</strong>, abacus.jasoncameron.dev) soma o total de contas. A tela de criar conta mostra esse aviso. A senha e os cadastros não são enviados.</p>
+
+<h3>2.6 Itens opcionais que você liga</h3>
+<ul>
+<li><strong>Relatório por e-mail</strong>: envia pelo FormSubmit, nos horários escolhidos, um resumo de NFs pendentes e atividades do dia (com nomes dos responsáveis) para os e-mails que o gestor indicar.</li>
+<li><strong>Planilha no Google</strong>: gestor ou conta do estoque pode ligar o envio de uma cópia dos dados (equipe com nome e cargo, corredores, NFs, planos; sem fotos) para uma planilha Google Sheets própria, por meio de um Google Apps Script. Na planilha, os dados ficam sem cifra.</li>
+<li><strong>Agentes de IA</strong>: desligados por padrão. Se você ligar, o app envia ao serviço escolhido só os dados do estoque necessários para a tarefa (por exemplo, NFs, atividades e nomes de responsáveis): Ollama no próprio computador (Agente Local) ou um serviço na internet (Agente Nuvem: OmniRoute, ou Ollama Cloud / NVIDIA por um intermediário no Google Apps Script ou no Cloudflare Worker). A configuração e a chave ficam cifradas no aparelho.</li>
+<li><strong>Consulta de CEP e CNPJ</strong>: ao pedir, o app consulta ViaCEP e BrasilAPI (dados de endereço/empresa, sem dados seus).</li>
+<li><strong>Compartilhar</strong>: ao tocar em “Compartilhar” ou “WhatsApp”, o texto vai para o app que você escolher.</li>
+</ul>
+</section>
+
+<section id="finalidades">
+<h2>3. Para que usamos e com qual base legal</h2>
+<div class="table">
+<table>
+<thead><tr><th scope="col">Finalidade</th><th scope="col">Dados</th><th scope="col">Base legal (LGPD)</th></tr></thead>
+<tbody>
+<tr><td data-th="Finalidade">Entrar no app e proteger a conta</td><td data-th="Dados">Login, senha (só no aparelho), e-mail, tipo de conta</td><td data-th="Base legal (LGPD)">Execução do contrato de trabalho (art. 7º, V) e legítimo interesse do empregador (art. 7º, IX)</td></tr>
+<tr><td data-th="Finalidade">Organizar o estoque, NFs e planos de ação</td><td data-th="Dados">Cadastros de trabalho, nome e cargo da equipe, fotos de atividades</td><td data-th="Base legal (LGPD)">Execução do contrato de trabalho e legítimo interesse</td></tr>
+<tr><td data-th="Finalidade">Chat, perfis e sincronização da equipe</td><td data-th="Dados">Mensagens, fotos, áudios, perfil, “digitando/visto”, reações</td><td data-th="Base legal (LGPD)">Legítimo interesse (comunicação de trabalho); perfil e foto são opcionais</td></tr>
+<tr><td data-th="Finalidade">Recuperar a conta</td><td data-th="Dados">E-mail, cofre de recuperação, autenticador</td><td data-th="Base legal (LGPD)">Execução do contrato e legítimo interesse</td></tr>
+<tr><td data-th="Finalidade">Aviso de conta nova e contagem</td><td data-th="Dados">Estoque, login, tipo de conta, data, aparelho/navegador</td><td data-th="Base legal (LGPD)">Legítimo interesse (controle de acesso a uma ferramenta interna)</td></tr>
+<tr><td data-th="Finalidade">Corrigir erros do app</td><td data-th="Dados">Erros técnicos e nome de quem usava</td><td data-th="Base legal (LGPD)">Legítimo interesse</td></tr>
+<tr><td data-th="Finalidade">Relatório por e-mail, planilha, IA, notificações, câmera e microfone</td><td data-th="Dados">Os dados descritos em cada item</td><td data-th="Base legal (LGPD)">Consentimento (art. 7º, I): só funciona se você ligar; pode desligar quando quiser</td></tr>
+</tbody>
+</table>
+</div>
+<p>Não usamos os dados para publicidade, não vendemos dados e não fazemos perfis de comportamento. Os agentes de IA não tomam decisões sobre pessoas: só sugerem textos e listas para alguém revisar.</p>
+</section>
+
+<section id="compartilhamento">
+<h2>4. Com quem os dados são compartilhados</h2>
+<p>Só com serviços necessários para o app funcionar (operadores) e, no caso dos itens opcionais, com os serviços que você escolher:</p>
+<ul>
+<li><strong>Google (Firebase Authentication, Cloud Firestore e Firebase Hosting)</strong> — contas, perfis e dados da equipe na nuvem; também hospeda uma das cópias do site.</li>
+<li><strong>GitHub Pages</strong> — hospeda a outra cópia do site (recebe dados técnicos de acesso, como o endereço IP).</li>
+<li><strong>ntfy.sh</strong> — entrega do chat e da sincronização (conteúdo cifrado).</li>
+<li><strong>FormSubmit</strong> — envio dos e-mails de conta nova e do relatório por e-mail.</li>
+<li><strong>Abacus</strong> — contador anônimo de contas criadas.</li>
+<li><strong>Google Sheets / Apps Script</strong> — planilha, se ligada.</li>
+<li><strong>Provedores de IA escolhidos</strong> — OmniRoute, Ollama Cloud, NVIDIA, Google Apps Script ou Cloudflare (intermediários), se ligados.</li>
+<li><strong>ViaCEP e BrasilAPI</strong> — consultas de CEP e CNPJ, quando você pede.</li>
+<li><strong>Autoridades</strong> — quando a lei exigir.</li>
+</ul>
+<p>Cada um desses serviços recebe também dados técnicos da conexão, como o endereço IP, e segue a própria política de privacidade.</p>
+</section>
+
+<section id="internacional">
+<h2>5. Transferência para fora do Brasil</h2>
+<p>O banco Firestore fica em São Paulo. Porém alguns serviços podem tratar dados em servidores fora do Brasil (por exemplo, o login do Firebase, GitHub Pages, ntfy.sh, FormSubmit, Abacus e os provedores de IA). Essas transferências acontecem só para executar o serviço que você usa (art. 33 da LGPD) e com o mínimo de dados possível; no chat e na sincronização o conteúdo vai cifrado.</p>
+</section>
+
+<section id="retencao">
+<h2>6. Por quanto tempo guardamos e como apagar</h2>
+<ul>
+<li><strong>No aparelho:</strong> até você apagar. Em <strong>Dados e ajuda → Apagar tudo neste aparelho</strong> (digite APAGAR) o app remove contas, equipe, cadastros, perfis e chats daquele aparelho. Cada aparelho precisa ser limpo separadamente. Um gestor também pode excluir uma conta antiga do navegador em <strong>Administração → Excluir conta antiga</strong>.</li>
+<li><strong>No ntfy.sh:</strong> mensagens cerca de 12 horas; fotos e áudios cerca de 3 horas.</li>
+<li><strong>Na nuvem (Firebase):</strong> enquanto a conta estiver em uso. Hoje o app não apaga sozinho a conta da nuvem: para apagar a conta do Firebase e os dados ligados a ela, peça pelo e-mail <a href="mailto:99.estoque@lojasg.com.br">99.estoque@lojasg.com.br</a>. Os itens da fila de e-mails são apagados depois do envio.</li>
+<li><strong>Planilha e e-mails enviados:</strong> ficam com quem recebeu (a planilha do gestor e as caixas de e-mail), até serem apagados lá.</li>
+<li>Ao fim do vínculo de trabalho, os dados podem ser guardados pelo tempo exigido por lei ou para defesa em processos, e depois apagados.</li>
+</ul>
+</section>
+
+<section id="direitos">
+<h2>7. Seus direitos (art. 18 da LGPD)</h2>
+<p>Você pode pedir, de graça:</p>
+<ul>
+<li>confirmação de que tratamos seus dados e acesso a eles;</li>
+<li>correção de dados incompletos, errados ou desatualizados (o perfil você mesmo edita no app);</li>
+<li>anonimização, bloqueio ou eliminação de dados desnecessários ou tratados em desacordo com a lei;</li>
+<li>portabilidade (o próprio app tem o botão <strong>Exportar backup</strong>, que baixa uma cópia dos dados em arquivo);</li>
+<li>eliminação dos dados tratados com consentimento;</li>
+<li>informação sobre com quem compartilhamos os dados;</li>
+<li>informação sobre a possibilidade de não consentir e as consequências;</li>
+<li>revogação do consentimento (basta desligar o recurso no app);</li>
+<li>revisão de decisões automatizadas (o app não toma decisões automatizadas sobre pessoas).</li>
+</ul>
+<p><strong>Como pedir:</strong> mande um e-mail para <a href="mailto:99.estoque@lojasg.com.br">99.estoque@lojasg.com.br</a> do e-mail ligado à sua conta, dizendo o seu login e o que deseja. Respondemos no prazo da lei. Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD).</p>
+</section>
+
+<section id="seguranca">
+<h2>8. Segurança</h2>
+<ul>
+<li>Dados de trabalho cifrados no aparelho com AES-GCM; chave derivada da sua senha (PBKDF2).</li>
+<li>Chat e sincronização cifrados com o código da equipe antes de sair do aparelho.</li>
+<li>Regras de acesso no Firestore: dados particulares (como o e-mail) só o dono lê; dados da equipe só quem conhece o identificador secreto da equipe.</li>
+<li>Conexões sempre por HTTPS.</li>
+<li>Chaves de serviços de IA nunca ficam no código do site.</li>
+</ul>
+<p>Nenhum sistema é 100% seguro. Proteja sua senha, não a compartilhe e use o bloqueio de tela do aparelho. Se suspeitar de acesso indevido, avise o encarregado.</p>
+</section>
+
+<section id="armazenamento">
+<h2>9. Cookies e armazenamento no aparelho</h2>
+<p>O Stok <strong>não usa cookies de rastreamento, não tem anúncios e não usa ferramentas de análise de comportamento</strong> (como Google Analytics). Ele usa só o armazenamento do navegador necessário para funcionar:</p>
+<ul>
+<li><strong>localStorage e IndexedDB</strong>: contas e cadastros cifrados, preferências (efeitos, som), histórico do chat e fotos;</li>
+<li><strong>sessionStorage</strong>: informações temporárias da sessão aberta;</li>
+<li><strong>Cache do service worker</strong>: cópia das páginas e ícones para abrir sem internet.</li>
+</ul>
+<p>O login na nuvem é feito pela biblioteca do Firebase (Google), que também guarda a sessão no armazenamento do navegador.</p>
+</section>
+
+<section id="permissoes">
+<h2>10. Câmera, microfone e notificações</h2>
+<ul>
+<li><strong>Câmera</strong>: só para tirar fotos e ler códigos de barras, quando você toca no botão e permite.</li>
+<li><strong>Microfone</strong>: só para gravar áudio no chat, quando você toca para gravar e permite.</li>
+<li><strong>Notificações</strong>: só se você permitir, para avisos do estoque e do chat.</li>
+</ul>
+<p>Você pode retirar essas permissões a qualquer momento nas configurações do navegador ou do aparelho.</p>
+</section>
+
+<section id="criancas">
+<h2>11. Crianças e adolescentes</h2>
+<p>O Stok é uma ferramenta de trabalho para funcionários das Lojas G e não é destinado a crianças. Se houver jovem aprendiz autorizado a usar o app, os dados dele são tratados no seu melhor interesse e conforme o art. 14 da LGPD e a legislação trabalhista.</p>
+</section>
+
+<section id="mudancas">
+<h2>12. Mudanças nesta política</h2>
+<p>Esta política pode mudar quando o app mudar. A data de vigência no topo sempre mostra a versão atual. Quando houver mudança importante, avisaremos pelos canais internos da loja ou no próprio app.</p>
+</section>
+
+<section id="contato">
+<h2>13. Contato</h2>
+<p>Lojas G — Estoque 99 · Encarregado: <a href="mailto:99.estoque@lojasg.com.br">99.estoque@lojasg.com.br</a></p>
+<p>Leia também os <a href="./termos.html">Termos de Uso</a>.</p>
+</section>
+</main>
+
+<footer>
+<a class="back" href="./index.html">← Voltar ao app</a>
+<p>Vigente desde 21/10/2026 · Lojas G — Estoque 99</p>
+</footer>
+</div>
+</body>
+</html>
