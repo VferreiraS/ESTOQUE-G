@@ -3,6 +3,9 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 51
+- Robô e IA removidos: sem página Robô, sem item no menu, sem botão "Conversar com o robô" e sem mascote no login e no Início. O endereço robo.html só leva para o app.
+
 ## Versão 50
 - Perfil no celular: a capa não cobre mais o nome nem a foto; o nome fica inteiro abaixo da capa (como no Instagram).
 - Avisos na tela ("Perfil salvo", "Sincronizando"): fundo escuro, texto legível.

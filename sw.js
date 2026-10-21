@@ -1,16 +1,14 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
-const CACHE = 'estoque99-v50';
+const CACHE = 'estoque99-v51';
 const VERSION = (CACHE.match(/-v(\d+)$/) || [])[1] || '';
 const CORE = [
   './index.html',
-  './robo.html',
   './manifest.webmanifest',
   './icons/apple-touch-v36.png',
   './icons/icon-192-v36.png',
   './icons/icon-512-v36.png',
   './icons/icon-maskable-v36.png',
-  './icons/favicon-v36.png',
-  './icons/mascote.png'
+  './icons/favicon-v36.png'
 ];
 
 self.addEventListener('install', (event) => {
