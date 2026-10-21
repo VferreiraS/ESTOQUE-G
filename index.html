@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="65"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="66"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -4049,15 +4049,16 @@ function summary(name){var n=normalText(name),p=(state.team||[]).find(function(x
     +'Abra o app: https://vferreiras.github.io/ESTOQUE-G/\n\nPara não receber estes e-mails, avise o gestor.'}
 
 /* tela "Vincule seu e-mail" */
-function dlg(id){var d=document.getElementById(id);if(!d){d=document.createElement('dialog');d.id=id;document.body.appendChild(d);d.addEventListener('cancel',function(ev){if(id==='cloud-link'&&!linkSoft)ev.preventDefault()})}return d}
+function dlg(id){var d=document.getElementById(id);if(!d){d=document.createElement('dialog');d.id=id;document.body.appendChild(d);d.addEventListener('cancel',function(){try{sessionStorage.setItem('e99-cloud-later','1')}catch(x){}})}return d}
 function showLink(){if(!authSession)return;var d=dlg('cloud-link'),pw=freshPw(),em=myEmail();
   d.innerHTML='<form class="cl-body" onsubmit="e99CloudLink(event)"><h2>📧 Vincule seu e-mail</h2><p>Agora cada conta do Stok fica guardada na nuvem com o e-mail da pessoa. Assim seu perfil aparece em todos os aparelhos da equipe e você recebe avisos e resumos por e-mail.</p>'
    +'<label>Seu e-mail<input name="email" type="email" required maxlength="120" autocomplete="email" inputmode="email" value="'+e(em)+'" placeholder="voce@gmail.com"></label>'
    +(pw?'':'<label>Sua senha do app (a mesma do login)<input name="password" type="password" inputmode="numeric" required autocomplete="current-password"></label>')
    +(linkErr?'<p class="cl-err" role="alert">'+e(linkErr)+'</p>':'')
    +'<button class="primary" '+(linkBusy?'disabled':'')+'>'+(linkBusy?'Vinculando…':'Vincular e-mail')+'</button>'
-   +(linkSoft?'<button type="button" onclick="e99CloudLater()">Tentar depois</button>':'')+'<p class="small">Você vai receber um e-mail de confirmação. Seus dados do estoque continuam protegidos pela sua senha.</p></form>';
+   +'<button type="button" onclick="e99CloudLater()">Agora não</button><button type="button" onclick="e99CloudForgot()">Esqueci a senha</button><button type="button" onclick="e99CloudLater();authLogout()">Sair da conta</button>'+'<p class="small">Você vai receber um e-mail de confirmação. Seus dados do estoque continuam protegidos pela sua senha.</p></form>';
   if(!d.open)try{d.showModal()}catch(x){d.setAttribute('open','')}}
+window.e99CloudForgot=function(){var d=document.getElementById('cloud-link');if(d)d.close();try{sessionStorage.setItem('e99-cloud-later','1')}catch(x){}notify('Abra Minha conta e use “Trocar senha” com a senha atual. Se não lembrar, toque em Sair da conta e, na tela de entrar, use “Esqueci a senha e o código · recuperar pelo e-mail”.')};
 window.e99CloudLater=function(){var d=document.getElementById('cloud-link');if(d)d.close();try{sessionStorage.setItem('e99-cloud-later','1')}catch(x){}};
 window.e99CloudLink=async function(ev){ev.preventDefault();if(linkBusy||!authSession)return;var v=readForm(ev.target),pw=freshPw()||String(v.password||'');linkErr='';
   if(!pw){linkErr='Digite sua senha.';showLink();return}
