@@ -3,6 +3,11 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 52
+- Dois agentes de IA dentro do site (sem chatbot): Agente Local (Ollama, no PC, privado e grátis) e Agente Nuvem (OmniRoute, em qualquer aparelho). O site tenta o Local e, se não responder, usa a Nuvem.
+- Funções: resumo do dia no Início; ✨ Sugerir atividades no plano (já com responsável); ✨ O que fazer primeiro (Alertas); ✨ Analisar NFs pendentes; ✨ melhorar o texto no chat; ✨ Resumir a conversa.
+- Configuração em Minha conta → Agentes de IA (endereço, modelo e chave), cifrada só no aparelho.
+
 ## Versão 51
 - Robô e IA removidos: sem página Robô, sem item no menu, sem botão "Conversar com o robô" e sem mascote no login e no Início. O endereço robo.html só leva para o app.
 
