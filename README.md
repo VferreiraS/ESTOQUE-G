@@ -3,6 +3,11 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 50
+- Perfil no celular: a capa não cobre mais o nome nem a foto; o nome fica inteiro abaixo da capa (como no Instagram).
+- Avisos na tela ("Perfil salvo", "Sincronizando"): fundo escuro, texto legível.
+- Arrastar para atualizar: se houver versão nova, o app recarrega já com ela.
+
 ## Versão 49
 - Perfis: a mesma pessoa não aparece mais duas vezes (Equipe + perfil ficam ligados pelo login); animações na tela de perfil (entrada, brilho, anel no avatar); selo azul de verificado só na conta do Vitor.
 - Chat (ideias do WhatsApp, Instagram e Facebook): "fulano está digitando…", "✓✓ Visto por", reações (segurar a mensagem ou botão direito; dois toques = ❤️), mensagem fixada no topo, @menções com sugestões, encaminhar.

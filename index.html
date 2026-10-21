@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="49"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="50"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -3398,7 +3398,11 @@ html body.dark #view .prof-people button:hover{transform:translateY(-3px);border
 .prof{max-width:880px;margin:0 auto}
 .prof-cover{height:clamp(130px,24vw,230px);border-radius:24px;background:linear-gradient(135deg,#ff5a3c,#7a0905 60%,#140303);background-size:cover;background-position:center;border:1px solid var(--ds-line,#ddd)}
 .prof-head{display:flex;align-items:flex-end;gap:16px;margin:-56px 0 0 22px;flex-wrap:wrap;position:relative;z-index:2}
-.prof-head .who{flex:1;min-width:180px;padding-bottom:0}
+.prof-head .who{flex:1;min-width:160px;padding-bottom:0;align-self:flex-start;padding-top:64px}
+.prof-head h1{text-shadow:0 2px 14px rgba(0,0,0,.55)}
+html body #toast,html body .toast{background:#1b1b1d!important;color:#fff!important;border:1px solid rgba(255,42,31,.55)!important;box-shadow:0 12px 32px rgba(0,0,0,.6)!important;filter:none!important}
+@media (min-width:601px){.prof-head .actions{align-self:flex-start;padding-top:64px}}
+@media (max-width:600px){.prof-head .who{padding-top:62px}.prof-head .actions{width:100%;margin:4px 14px 0 0}}
 .prof-head h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.05}
 .prof-user{color:var(--ds-muted,#666);font-weight:600;margin-top:2px}
 .prof-user b{color:#ff2a1f}
@@ -3863,6 +3867,8 @@ addEventListener('touchend',async function(){if(y0==null)return;y0=null;if(dy*.6
     var jobs=[];if(window.syncNow)jobs.push(Promise.resolve(window.syncNow()).catch(function(){}));
     if(navigator.serviceWorker)jobs.push(navigator.serviceWorker.getRegistration().then(function(r){return r&&r.update()}).catch(function(){}));
     await Promise.race([Promise.all(jobs),new Promise(function(r){setTimeout(r,4000)})]);
+    /* versão nova publicada? recarrega já com ela */
+    try{var sv=await (await fetch('./sw.js?'+Date.now(),{cache:'no-store'})).text();var nv=(sv.match(/estoque99-v(\d+)/)||[])[1];var cv=String(window.SITE_VERSION||((document.querySelector('meta[name="estoque99-version"]')||{}).content)||'');if(nv&&cv&&Number(nv)>Number(cv)){el.classList.remove('spin');location.reload();return}}catch(x){}
     await new Promise(function(r){setTimeout(r,500)});
     try{render()}catch(x){}
   }finally{busy=false;hide()}});
