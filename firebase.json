@@ -11,7 +11,6 @@
       "**/node_modules/**",
       "CLAUDE.md",
       "README.md",
-      "apps-script/**",
       "tests/**"
     ],
     "headers": [

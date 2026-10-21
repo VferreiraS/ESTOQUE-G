@@ -11,7 +11,7 @@ async function verifyAll(){const r=await (await fetch(`${AU}/emulator/v1/project
  await verifyAll();await B.evaluate(()=>e99Cloud.after(true));await A.evaluate(()=>e99Cloud.after(true));
  ok(await until(A,()=>{const a=state.team.find(t=>t.id==='ana');return !!(a&&a.login)},null,40000),'Ana ligada à conta');
  // agente local de IA
- await A.evaluate(()=>go('account'));await A.waitForSelector('#ag-cfg form');await A.check('#ag-cfg input[name=local_on]');await A.fill('#ag-cfg input[name=local_url]','http://localhost:20142');await A.click('#ag-cfg button.primary');await A.waitForTimeout(500);
+ await A.evaluate(()=>go('account'));await A.waitForSelector('#ag-cfg form');await A.evaluate(()=>document.querySelector('.ag-adv').open=true);await A.check('#ag-cfg input[name=local_on]');await A.fill('#ag-cfg input[name=local_url]','http://localhost:20142');await A.click('.ag-adv form button.primary');await A.waitForTimeout(500);
  // erro num aparelho
  await B.evaluate(()=>{setTimeout(()=>{throw new Error('teste-erro-stok')},10)});await B.waitForTimeout(5000);
  await A.evaluate(()=>go('agentes'));await A.waitForTimeout(500);ok(/Piloto automático/.test(await A.textContent('#view')),'tela Agentes');

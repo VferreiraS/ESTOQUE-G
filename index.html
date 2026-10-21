@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="61"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="63"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -4314,6 +4314,13 @@ var rBefore=render;render=function(){var r=rBefore.apply(this,arguments);try{if(
 .ag-card .ag-out{white-space:pre-wrap;line-height:1.5;margin:8px 0 0}
 .ag-by{font-size:11.5px;opacity:.7;margin-top:6px}
 .ag-cfg{display:grid;gap:10px}
+.ag-wiz{display:grid;gap:12px}.ag-wiz h3{margin:4px 0 0}
+.ag-step{display:grid;gap:8px;padding:12px;border:1px solid var(--ds-line);border-radius:14px;background:rgba(255,42,31,.05)}
+.ag-step ol{margin:0;padding-left:18px;display:grid;gap:4px}
+.ag-step label{display:grid;gap:6px;font-weight:650}
+.ag-step a.button{display:flex;align-items:center;justify-content:center;min-height:46px;padding:10px 16px;border-radius:999px;border:1px solid rgba(255,42,31,.7);background:rgba(255,42,31,.14);color:#fff;font-weight:750;text-decoration:none;text-align:center}
+.ag-step .toolbar{display:grid;gap:8px;grid-template-columns:1fr}
+.ag-adv{margin-top:12px}.ag-adv summary{cursor:pointer;font-weight:700;padding:8px 0}
 .ag-cfg fieldset{border:1px solid var(--ds-line);border-radius:14px;padding:12px;display:grid;gap:8px;margin:0}
 .ag-cfg legend{font-weight:750;padding:0 6px}
 .ag-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#666;margin-right:6px;vertical-align:1px}
@@ -4398,20 +4405,30 @@ async function decorate(){if(!authSession)return;await load();if(!on())return;va
     var tb=document.querySelector('.chat-wrap .chat-head .toolbar');if(tb&&!tb.querySelector('.ag-sum')){var b5=document.createElement('button');b5.type='button';b5.className='ag-btn ag-sum';b5.textContent='✨ Resumir';b5.onclick=window.agChatSum;tb.insertBefore(b5,tb.firstChild)}}}
 
 /* ---------- configuração em Minha conta ---------- */
-var raB=renderAccount;renderAccount=function(){var h=raB.apply(this,arguments);setTimeout(paintCfg,0);return h+'<div class="grid2"><div class="panel help" id="ag-cfg-panel"><h2>🤖 Agentes de IA</h2><p class="small">Dois agentes trabalham dentro do site: resumo do dia, sugestão de atividades, prioridade dos alertas, análise das NFs, texto do chat e resumo da conversa. O <b>Local</b> (Ollama) roda no seu computador, privado e grátis; o <b>Nuvem</b> (OmniRoute) funciona em qualquer aparelho. O site tenta o Local e, se não responder, usa a Nuvem.</p><div id="ag-cfg" class="ag-cfg"></div></div></div>'};
-async function paintCfg(){var box=document.getElementById('ag-cfg');if(!box||!authSession)return;await load();var o=location.origin;
+var raB=renderAccount;renderAccount=function(){var h=raB.apply(this,arguments);setTimeout(paintCfg,0);return h+'<div class="grid2"><div class="panel help" id="ag-cfg-panel"><h2>🤖 Agentes de IA</h2><p class="small">A IA faz o resumo do dia, sugere atividades, prioriza alertas, analisa NFs, melhora textos e resume o chat. Siga os 3 passos abaixo uma vez e pronto.</p><div id="ag-cfg" class="ag-cfg"></div></div></div>'};
+async function paintCfg(){var box=document.getElementById('ag-cfg');if(!box||!authSession)return;var advOpen=!!(box.querySelector('.ag-adv')&&box.querySelector('.ag-adv').open);await load();var o=location.origin;
   function f(k,leg,hint,key){var a=cfg[k];return '<fieldset><legend><span class="ag-dot '+(status[k]||'')+'"></span>'+leg+'</legend><label class="chat-check"><input type="checkbox" name="'+k+'_on" '+(a.on?'checked':'')+'> Ligado neste aparelho</label>'
     +'<label>Endereço<input name="'+k+'_url" value="'+e(a.url)+'" placeholder="'+(k==='local'?'http://localhost:11434':'https://seu-omniroute…')+'" autocomplete="off" spellcheck="false"></label>'
     +'<label>Modelo<input name="'+k+'_model" value="'+e(a.model)+'" placeholder="'+(k==='local'?'llama3.2':'ex.: gpt-4o-mini')+'" autocomplete="off" spellcheck="false"></label>'
     +(key?'<label>Chave (fica cifrada só neste aparelho)<input name="'+k+'_key" type="password" value="'+e(a.key)+'" autocomplete="off"></label>':'')
     +'<p class="small" style="margin:0">'+hint+'</p><button type="button" class="ag-btn" onclick="agTest(\''+k+'\')">Testar '+(k==='local'?'Local':'Nuvem')+'</button></fieldset>'}
-  box.innerHTML='<form onsubmit="agSave(event)" class="ag-cfg">'+f('local','Agente Local · Ollama','No PC, abra o Ollama liberando este site: <code>OLLAMA_ORIGINS='+e(o)+' ollama serve</code> e baixe um modelo (<code>ollama pull llama3.2</code>). Funciona no computador onde o Ollama roda.',false)
+  var ok=cfg.cloud.on&&/script\.google/.test(cfg.cloud.url);
+  var wiz='<div class="ag-wiz">'+(ok?'<p class="ap-ok">✓ IA ligada pelo Ollama Cloud neste aparelho.</p><button type="button" class="ag-btn" onclick="agTest(\'cloud\')">Testar agora</button>':'')
+   +'<h3>✨ Ligar a IA em 3 passos (só pelo celular, grátis)</h3>'
+   +'<div class="ag-step"><b>1. Pegue sua chave do Ollama</b><p class="small">Entre (ou crie a conta) e toque em <b>Add API Key</b>. Copie a chave. Não mande para ninguém.</p><a class="button" href="https://ollama.com/settings/keys" target="_blank" rel="noopener">Abrir Ollama · chaves ↗</a></div>'
+   +'<div class="ag-step"><b>2. Crie o intermediário no seu Google</b><p class="small">Ele guarda a chave com segurança e conversa com o Stok.</p><ol class="small"><li>Toque em <b>Copiar o código</b>.</li><li>Toque em <b>Abrir Google Apps Script</b>, apague o que estiver lá, cole e toque em 💾.</li><li>Na ⚙️ (Configurações do projeto) → <b>Propriedades do script</b>, crie: <code>OLLAMA_API_KEY</code> = sua chave · <code>SENHA</code> = uma senha que você inventar.</li><li><b>Implantar → Nova implantação → App da Web</b> · Executar como: <b>Eu</b> · Acesso: <b>Qualquer pessoa</b> → Implantar → Autorizar (Avançado → Acessar) → copie o link que termina em <b>/exec</b>.</li></ol><div class="toolbar"><button type="button" class="primary" onclick="agCopyCode()">Copiar o código</button><a class="button" href="https://script.new" target="_blank" rel="noopener">Abrir Google Apps Script ↗</a></div><p class="small">Dica: no Chrome do celular, use ⋮ → <b>Site para computador</b> no Apps Script.</p></div>'
+   +'<form class="ag-step" onsubmit="agWizSave(event)"><b>3. Cole aqui e pronto</b><label>Link que termina em /exec<input name="url" required inputmode="url" placeholder="https://script.google.com/macros/s/…/exec" value="'+e(/script\.google/.test(cfg.cloud.url)?cfg.cloud.url:'')+'"></label><label>A SENHA que você inventou no passo 2<input name="senha" type="password" required autocomplete="off" value="'+e(/script\.google/.test(cfg.cloud.url)?cfg.cloud.key:'')+'"></label><button class="primary">Ligar a IA e testar</button></form></div>';
+  box.innerHTML=wiz+'<details class="ag-adv"'+(advOpen?' open':'')+'><summary>Avançado (Ollama no computador ou OmniRoute)</summary><form onsubmit="agSave(event)" class="ag-cfg">'+f('local','Agente Local · Ollama','No PC, abra o Ollama liberando este site: <code>OLLAMA_ORIGINS='+e(o)+' ollama serve</code> e baixe um modelo (<code>ollama pull llama3.2</code>). Funciona no computador onde o Ollama roda.',false)
    +f('cloud','Agente Nuvem · OmniRoute','Use o endereço do OmniRoute e a chave dele, <b>ou</b> o intermediário do Google (Ollama Cloud, só pelo celular): endereço terminando em <code>/exec</code>, modelo <code>gemma4:31b</code> e, em Chave, a SENHA do script (passo a passo em <code>apps-script/ia.gs</code>). Funciona no celular, no PC e nos auxiliares.',true)
-   +'<button class="primary">Salvar agentes</button></form>'}
+   +'<button class="primary">Salvar agentes</button></form></details>'}
+window.agCopyCode=async function(){try{var t=await (await fetch('apps-script/ia.gs?'+Date.now(),{cache:'no-store'})).text();if(!/doPost/.test(t))throw 0;await navigator.clipboard.writeText(t);notify('Código copiado! Agora toque em Abrir Google Apps Script e cole.')}catch(x){window.open('https://raw.githubusercontent.com/VferreiraS/ESTOQUE-G/claude/mobile-desktop-compatibility-tkbd2w/apps-script/ia.gs','_blank','noopener');notify('Abri o código em outra aba: segure o dedo → Selecionar tudo → Copiar.')}};
+window.agWizSave=async function(ev){ev.preventDefault();var v=readForm(ev.target),u=String(v.url||'').trim();if(!/^https:\/\/script\.google(usercontent)?\.com\/.+\/exec/.test(u)){notify('O link precisa começar com https://script.google.com e terminar em /exec.');return}
+  await load();cfg.cloud={on:true,url:u,key:String(v.senha||'').trim().slice(0,400),model:cfg.cloud.model&&!/gpt|claude/i.test(cfg.cloud.model)?cfg.cloud.model:'gemma4:31b'};await store();notify('Salvo! Testando a IA…');
+  try{var r=await call('cloud',[{role:'user',content:'Responda apenas: OK'}],20);notify('Tudo certo! A IA respondeu: '+r.text.slice(0,30)+' 🎉')}catch(x){notify('Ainda não funcionou: '+(x.message==='senha incorreta'?'a SENHA não bate com a do passo 2.':/falta OLLAMA_API_KEY/.test(x.message)?'falta a OLLAMA_API_KEY no passo 2.':x.message+'. Confira o passo 2 (Implantar como App da Web, acesso Qualquer pessoa).'))}paintCfg()};
 window.agSave=async function(ev){ev.preventDefault();var v=readForm(ev.target);['local','cloud'].forEach(function(k){cfg[k].on=!!v[k+'_on'];cfg[k].url=String(v[k+'_url']||'').trim().slice(0,300);cfg[k].model=String(v[k+'_model']||'').trim().slice(0,120);if(k==='cloud')cfg[k].key=String(v[k+'_key']||'').trim().slice(0,400)});
   if(cfg.cloud.url&&!/^https:\/\//.test(cfg.cloud.url)&&!/^http:\/\/(localhost|127\.0\.0\.1)/.test(cfg.cloud.url)){notify('O endereço da Nuvem precisa começar com https://');return}
   await store();notify('Agentes salvos neste aparelho.');paintCfg()};
-window.agTest=async function(k){await load();var f=document.querySelector('#ag-cfg form');if(f){var v=readForm(f);cfg[k].url=String(v[k+'_url']||'').trim();cfg[k].model=String(v[k+'_model']||'').trim();if(k==='cloud')cfg[k].key=String(v.cloud_key||'').trim()}var was=cfg[k].on;cfg[k].on=true;
+window.agTest=async function(k){await load();var f=document.querySelector('#ag-cfg .ag-adv form');if(f&&!f.closest('details').open)f=null;if(f){var v=readForm(f);cfg[k].url=String(v[k+'_url']||'').trim();cfg[k].model=String(v[k+'_model']||'').trim();if(k==='cloud')cfg[k].key=String(v.cloud_key||'').trim()}var was=cfg[k].on;cfg[k].on=true;
   notify('Testando '+name(k)+'…');try{var r=await call(k,[{role:'user',content:'Responda apenas: OK'}],20);notify(name(k)+' respondeu: '+r.text.slice(0,40))}catch(x){notify(name(k)+' não respondeu ('+x.message+'). '+(k==='local'?'Confira se o Ollama está aberto com OLLAMA_ORIGINS.':'Confira endereço, modelo e chave.'))}cfg[k].on=was;paintCfg()};
 var lo=authLogout;authLogout=async function(){var r=await lo.apply(this,arguments);if(!authSession){cfg=null;cfgSk=''}return r};
 })();
