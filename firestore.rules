@@ -26,6 +26,7 @@ rules_version = '2';
 //   digitando/{uid}: nome (0..40), at (int)          — "fulano está digitando"
 //   lidos/{uid}:     nome (0..40), at (string <=40)  — até onde a pessoa leu
 //   reacoes/{msg_uid}: msg (id), uid (= dono), emoji (1..16), nome (0..40), at (int)
+//   erros/{id}:      msg (1..300), onde (0..200), pagina (0..40), ver (0..10), por (0..40), n (int), at (int) — erros vistos nos aparelhos
 //   fixada/atual:    msg (id), t (0..140), from (0..60), por (0..40), at (int)
 //
 // Coleção: correio              Documento: id automático
@@ -153,6 +154,13 @@ service cloud.firestore {
         isMsgId(d.msg) && isStr(d.t, 0, 140) && isStr(d.from, 0, 60) && isStr(d.por, 0, 40) && isValidTime(d.at);
     }
 
+    function isValidErro(d) {
+      return hasOnlyAllowedFields(['msg', 'onde', 'pagina', 'ver', 'por', 'n', 'at']) &&
+        hasRequiredFields(['msg', 'onde', 'pagina', 'ver', 'por', 'n', 'at']) &&
+        isStr(d.msg, 1, 300) && isStr(d.onde, 0, 200) && isStr(d.pagina, 0, 40) && isStr(d.ver, 0, 10) &&
+        isStr(d.por, 0, 40) && d.n is int && d.n >= 1 && d.n <= 1000000 && isValidTime(d.at);
+    }
+
     function isValidCorreio(d) {
       return hasOnlyAllowedFields(['de', 'para', 'assunto', 'texto', 'tipo', 'loja', 'criado']) &&
         hasRequiredFields(['de', 'para', 'assunto', 'texto', 'tipo', 'loja', 'criado']) &&
@@ -210,6 +218,15 @@ service cloud.firestore {
       allow read: if isAuthenticated() && isLojaId(loja);
       allow create, update: if isAuthenticated() && isLojaId(loja) && doc == 'atual' && isValidFixada(request.resource.data);
       allow delete: if isAuthenticated() && isLojaId(loja) && doc == 'atual';
+    }
+
+    // Erros vistos nos aparelhos da equipe (para os agentes e o robô diário acharem e corrigirem).
+    match /lojas/{loja}/erros/{id} {
+      allow read: if isAuthenticated() && isLojaId(loja);
+      allow create, update: if isAuthenticated() && isLojaId(loja) && id.matches('^[a-z0-9]{8,40}$') && isValidErro(request.resource.data);
+    }
+    match /{path=**}/erros/{id} {
+      allow read: if isRobot();
     }
 
     // O robô lista os membros de todas as lojas (para saber quem confirmou o e-mail).

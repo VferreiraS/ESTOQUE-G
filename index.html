@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="52"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="53"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -4031,7 +4031,7 @@ window.e99CloudMember=function(login){return cloudMem[authLoginName(String(login
 
 /* gestor: uma vez por dia prepara o resumo de cada auxiliar com e-mail confirmado; o robô envia */
 function day(){var d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')}
-async function daily(loja){var u=user();if(!u||!u.emailVerified||!loja||!authSession)return;var k='lojasg.estoque99.cloud-daily:'+loja;if(ls(k)===day())return;var c=await load(),list=Object.keys(cloudMem).map(function(l){return cloudMem[l]}).filter(function(m){return m.role==='auxiliar'&&m.verificado&&m.uid!==u.uid});
+async function daily(loja){if(window.e99Autopilot)return;/* o piloto dos agentes cuida dos e-mails */var u=user();if(!u||!u.emailVerified||!loja||!authSession)return;var k='lojasg.estoque99.cloud-daily:'+loja;if(ls(k)===day())return;var c=await load(),list=Object.keys(cloudMem).map(function(l){return cloudMem[l]}).filter(function(m){return m.role==='auxiliar'&&m.verificado&&m.uid!==u.uid});
   if(!list.length)return;var ok=0;for(var i=0;i<list.length;i++){var m=list[i];var t=summary(m.nome||'');try{await c.db.collection('correio').doc(loja+'_'+m.uid+'_'+day()).set({de:u.uid,para:m.uid,assunto:('Stok · seu resumo de '+new Date().toLocaleDateString('pt-BR')).slice(0,150),texto:t.slice(0,8000),tipo:'resumo',loja:loja,criado:Date.now()});ok++}catch(x){}}
   if(ok)ls(k,day())}
 function summary(name){var n=normalText(name),p=(state.team||[]).find(function(x){return normalText(x.name)===n||normalText(x.id)===n})||null,id=p?normalText(p.id):'';
@@ -4171,7 +4171,7 @@ function mentionedIn(text){var t=normalText(text);return persons().filter(functi
 function ntfyBase(){try{return (window.e99Team&&window.e99Team.ntfy())||'https://ntfy.sh'}catch(x){return 'https://ntfy.sh'}}
 async function personalTopic(login){var t=T();if(!t||!login)return '';return 'e99p-'+(await sha('pessoal|'+String(t.code).toUpperCase().replace(/[^A-Z0-9]/g,'')+'|'+authLoginName(login))).slice(0,24)}
 function site(){return location.origin+location.pathname.replace(/(robo|index)\.html$/,'')}
-async function pushTo(login,title,body,page){try{if(!login||authLoginName(login)===myLogin())return false;var tp=await personalTopic(login);if(!tp)return false;
+async function pushTo(login,title,body,page,self){try{if(!login||(authLoginName(login)===myLogin()&&!self))return false;var tp=await personalTopic(login);if(!tp)return false;
   var u=ntfyBase()+'/'+tp+'?title='+encodeURIComponent(title)+'&tags=bell&click='+encodeURIComponent(site()+'#abrir='+(page||'chat'));
   var r=await fetch(u,{method:'POST',body:String(body).slice(0,240)});return r.ok}catch(x){return false}}
 window.e99PushTo=pushTo;
@@ -4405,6 +4405,107 @@ window.agSave=async function(ev){ev.preventDefault();var v=readForm(ev.target);[
 window.agTest=async function(k){await load();var f=document.querySelector('#ag-cfg form');if(f){var v=readForm(f);cfg[k].url=String(v[k+'_url']||'').trim();cfg[k].model=String(v[k+'_model']||'').trim();if(k==='cloud')cfg[k].key=String(v.cloud_key||'').trim()}var was=cfg[k].on;cfg[k].on=true;
   notify('Testando '+name(k)+'…');try{var r=await call(k,[{role:'user',content:'Responda apenas: OK'}],20);notify(name(k)+' respondeu: '+r.text.slice(0,40))}catch(x){notify(name(k)+' não respondeu ('+x.message+'). '+(k==='local'?'Confira se o Ollama está aberto com OLLAMA_ORIGINS.':'Confira endereço, modelo e chave.'))}cfg[k].on=was;paintCfg()};
 var lo=authLogout;authLogout=async function(){var r=await lo.apply(this,arguments);if(!authSession){cfg=null;cfgSk=''}return r};
+})();
+</script>
+<style id="autopilot-css">
+.ap-grid{display:grid;gap:12px}
+.ap-sw{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--ds-line)}
+.ap-sw:last-child{border-bottom:0}
+.ap-sw input{width:22px;height:22px;flex:none}
+.ap-log{display:grid;gap:6px;max-height:420px;overflow:auto}
+.ap-log div{display:flex;gap:10px;justify-content:space-between;border:1px solid var(--ds-line);border-radius:12px;padding:8px 10px;font-size:13px}
+.ap-log time{opacity:.65;white-space:nowrap;font-size:12px}
+.ap-issue{border-left:3px solid #ff2a1f!important}
+.ap-ok{color:#3ddc84;font-weight:750}
+</style>
+<script id="autopilot-js">
+(function(){
+'use strict';
+/* Piloto automático dos agentes: acha erros, escreve mensagens e e-mails personalizados e avisa cada pessoa.
+   Roda no aparelho do gestor (dono da equipe) enquanto o app está aberto. Sem IA configurada, usa textos prontos. */
+function e(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function T(){try{return window.e99Team&&window.e99Team.get()}catch(x){return null}}
+function day(){var d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')}
+function SK(){return 'lojasg.estoque99.autopilot:'+authSession.storeKey}
+function st(){var o=null;try{o=JSON.parse(localStorage.getItem(SK())||'null')}catch(x){}o=o||{};o.opt=Object.assign({chat:true,push:true,mail:true,errors:true,late:true},o.opt||{});o.log=o.log||[];o.late=o.late||{};o.err=o.err||{};return o}
+function save(o){o.log=o.log.slice(-80);try{localStorage.setItem(SK(),JSON.stringify(o))}catch(x){}}
+function log(o,txt,kind){o.log.push({t:Date.now(),txt:String(txt).slice(0,300),k:kind||''});save(o)}
+function boss(){var t=T();return !!(authSession&&t&&(t.owner||authSession.payload.role==='gestor'))}
+async function ai(task,data,fallback){try{if(window.e99Agent){var r=await window.e99Agent(task,data,400);if(r&&r.text)return {text:r.text,by:r.by.split(' · ')[0]}}}catch(x){}return {text:fallback,by:'texto pronto'}}
+
+/* ---------- 1. erros: todos os aparelhos guardam; o gestor vê e os agentes explicam ---------- */
+var errQ=[];function capture(msg,where){msg=String(msg||'').slice(0,300);if(!msg||/ResizeObserver|Script error\.?$/.test(msg))return;errQ.push({msg:msg,onde:String(where||'').slice(0,200),pagina:String(typeof page!=='undefined'?page:'').slice(0,40)});setTimeout(flushErr,3000)}
+window.addEventListener('error',function(ev){capture(ev.message,(ev.filename||'').split('/').pop()+':'+(ev.lineno||0))});
+window.addEventListener('unhandledrejection',function(ev){var r=ev.reason;capture(r&&r.message?r.message:String(r),'promessa')});
+async function flushErr(){if(!errQ.length||!window.e99Cloud||!window.e99Cloud.user())return;var c,sid;try{c=await window.e99Cloud.load();sid=await window.e99Cloud.sid()}catch(x){return}if(!sid)return;var q=errQ.splice(0,10),ver=String(window.SITE_VERSION||'').slice(0,10);
+  for(var i=0;i<q.length;i++){var x=q[i];var h=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(ver+'|'+x.msg)));var id=Array.from(h).map(function(b){return b.toString(16).padStart(2,'0')}).join('').slice(0,24);
+    var k='lojasg.estoque99.err-n:'+id,n=(+localStorage.getItem(k)||0)+1;try{localStorage.setItem(k,String(n))}catch(y){}
+    try{await c.db.collection('lojas').doc(sid).collection('erros').doc(id).set({msg:x.msg,onde:x.onde,pagina:x.pagina,ver:ver,por:(T()&&T().name||'').slice(0,40),n:Math.min(n,1000000),at:Date.now()})}catch(y){}}}
+/* verificação dos dados do estoque (o que está faltando ou atrasado) */
+function health(){var out=[],ids={};(state.team||[]).forEach(function(t){ids[t.id]=1});
+  var noOwner=(state.corridors||[]).filter(function(c){return !c.owner||(!ids[c.owner]&&normalText(c.owner)!=='todos')});if(noOwner.length)out.push(noOwner.length+' corredor(es) sem responsável: '+noOwner.slice(0,6).map(function(c){return c.number}).join(', '));
+  var nfNo=(state.nfs||[]).filter(function(n){return n.status!=='Conferida'&&(!n.owner||!ids[n.owner])});if(nfNo.length)out.push(nfNo.length+' NF(s) sem responsável');
+  var today=iso(),actNo=0,late=0;(state.plans||[]).forEach(function(p){(p.activities||[]).forEach(function(a){if(a.done)return;if(!a.owner)actNo++;try{if(actLate(p,a))late++}catch(x){}})});if(actNo)out.push(actNo+' atividade(s) sem responsável');if(late)out.push(late+' atividade(s) atrasada(s)');
+  var names={};(state.team||[]).forEach(function(t){var n=normalText(t.name);names[n]=(names[n]||0)+1});var dup=Object.keys(names).filter(function(n){return names[n]>1});if(dup.length)out.push('Nomes repetidos na Equipe: '+dup.join(', '));
+  try{var inv=JSON.parse(localStorage.getItem('lojasg.estoque99.aux-invites:'+authSession.storeKey)||'[]');var mem=window.e99CloudMembers?window.e99CloudMembers():[];var pend=inv.filter(function(i){return !mem.some(function(m){return (i.inviteId&&m.inviteId===i.inviteId)||(i.login&&authLoginName(m.login||'')===authLoginName(i.login))})});if(pend.length)out.push(pend.length+' convite(s) ainda sem conta: '+pend.slice(0,5).map(function(i){return i.name}).join(', '))}catch(x){}
+  var nv=(window.e99CloudMembers?window.e99CloudMembers():[]).filter(function(m){return !m.verificado});if(nv.length)out.push(nv.length+' conta(s) com e-mail não confirmado: '+nv.slice(0,5).map(function(m){return m.nome||m.login}).join(', '));
+  return out}
+async function cloudErrors(){try{var c=await window.e99Cloud.load(),sid=await window.e99Cloud.sid();if(!sid)return [];var q=await c.db.collection('lojas').doc(sid).collection('erros').orderBy('at','desc').limit(20).get();var l=[];q.forEach(function(d){l.push(Object.assign({id:d.id},d.data()))});return l}catch(x){return []}}
+
+/* ---------- 2. dados de cada pessoa ---------- */
+function linked(){var mem=window.e99CloudMembers?window.e99CloudMembers():[];return (state.team||[]).filter(function(t){return t.login}).map(function(t){var m=mem.find(function(x){return x.login&&authLoginName(x.login)===authLoginName(t.login)});return {id:t.id,name:t.name,login:t.login,uid:m?m.uid:'',ok:!!(m&&m.verificado)}}).filter(function(p){return authLoginName(p.login)!==authLoginName(authSession.record.login)})}
+function personData(p){var n=normalText(p.name),today=iso(),acts=[],lateA=[];(state.plans||[]).forEach(function(pl){(pl.activities||[]).forEach(function(a){if(a.done)return;var o=normalText(a.owner||'');if(o!==n&&o!=='todos')return;var l=false;try{l=actLate(pl,a)}catch(x){}if(pl.date===today||l)(l?lateA:acts).push(a.title+(a.time?' (até '+a.time+')':''))})});
+  var cor=(state.corridors||[]).filter(function(c){return c.owner===p.id}).map(function(c){return c.number+(c.sector?' '+c.sector:'')});
+  var nfs=(state.nfs||[]).filter(function(x){return x.owner===p.id&&x.status!=='Conferida'}).map(function(x){return 'NF '+x.number+' ('+(x.supplier||'')+')'});
+  return {acts:acts,late:lateA,cor:cor,nfs:nfs}}
+function plain(p,d){return 'Bom dia, '+p.name.split(' ')[0]+'! '+(d.late.length?'Atrasadas: '+d.late.slice(0,3).join('; ')+'. ':'')+(d.acts.length?'Para hoje: '+d.acts.slice(0,4).join('; ')+'. ':'Nenhuma atividade sua para hoje. ')+(d.nfs.length?'NFs para conferir: '+d.nfs.slice(0,3).join(', ')+'. ':'')+(d.cor.length?'Seus corredores: '+d.cor.slice(0,8).join(', ')+'.':'')}
+function txt(d){return 'Atrasadas: '+(d.late.join('; ')||'nenhuma')+'\nPara hoje: '+(d.acts.join('; ')||'nenhuma')+'\nNFs para conferir: '+(d.nfs.join(', ')||'nenhuma')+'\nCorredores: '+(d.cor.join(', ')||'nenhum')}
+
+/* ---------- 3. o piloto ---------- */
+var busy=false;
+async function run(force){if(busy||!authSession||!boss()||!state)return;busy=true;var o=st();try{
+  var h=new Date().getHours(),today=day(),ppl=linked(),me=(T()&&T().name)||'Gestor';
+  /* bom dia: uma vez por dia, a partir das 6h */
+  if((force||h>=6)&&o.day!==today){o.day=today;save(o);var sent=0,mails=0,c=null,loja='',myUid='';try{if(window.e99Cloud&&window.e99Cloud.user()){c=await window.e99Cloud.load();loja=await window.e99Cloud.sid();myUid=window.e99Cloud.user().uid}}catch(x){}
+    for(var i=0;i<ppl.length;i++){var p=ppl[i],d=personData(p);var m=await ai('Escreva uma mensagem curta e calorosa de bom dia para '+p.name+', do estoque, com as tarefas dele hoje e o que está atrasado. Máximo 3 frases, sem inventar nada.',txt(d),plain(p,d));
+      if(o.opt.push&&window.e99PushTo){if(await window.e99PushTo(p.login,'Bom dia, '+p.name.split(' ')[0]+' · Stok',m.text,'home'))sent++}
+      if(o.opt.mail&&c&&loja&&p.uid&&p.ok&&window.e99Cloud.user().emailVerified){var mm=await ai('Escreva um e-mail curto e personalizado para '+p.name+' com o resumo do dia dele no estoque: o que está atrasado, o que fazer hoje, NFs e corredores. Termine com "Equipe Stok". Só o texto do e-mail.',txt(d),m.text+'\n\nAbra o app: https://vferreiras.github.io/ESTOQUE-G/\n\nEquipe Stok');
+        try{await c.db.collection('correio').doc(loja+'_'+p.uid+'_'+today).set({de:myUid,para:p.uid,assunto:('Stok · seu dia '+new Date().toLocaleDateString('pt-BR')).slice(0,150),texto:mm.text.slice(0,8000),tipo:'resumo',loja:loja,criado:Date.now()});mails++}catch(x){log(o,'E-mail para '+p.name+' não entrou na fila ('+(x&&x.code||x)+').','err')}}}
+    if(loja)try{localStorage.setItem('lojasg.estoque99.cloud-daily:'+loja,new Date().getFullYear()+String(new Date().getMonth()+1).padStart(2,'0')+String(new Date().getDate()).padStart(2,'0'))}catch(x){}
+    if(o.opt.chat&&window.chatSend&&ppl.length){var all=ppl.map(function(p){var d=personData(p);return p.name+': '+(d.late.length?d.late.length+' atrasada(s), ':'')+d.acts.length+' para hoje'}).join('\n');
+      var g=await ai('Escreva uma mensagem de bom dia para o chat da equipe do estoque, curta, motivadora, marcando cada pessoa com @Nome e dizendo quantas tarefas cada uma tem. Máximo 5 linhas.',all,'☀️ Bom dia, equipe! '+ppl.map(function(p){var d=personData(p);return '@'+p.name+' '+d.acts.length+' tarefa(s)'+(d.late.length?' (+'+d.late.length+' atrasada)':'')}).join(' · '));
+      if(await window.chatSend('🤖 '+g.text.slice(0,950)))log(o,'Bom dia enviado no chat da equipe ('+g.by+').','chat')}
+    log(o,'Bom dia: '+sent+' aviso(s) no celular, '+mails+' e-mail(s) na fila.','push')}
+  /* atrasos: avisa o responsável no máximo a cada 3 horas */
+  if(o.opt.late&&o.opt.push&&window.e99PushTo){var al=[];try{al=collectAlerts().filter(function(a){return a.late})}catch(x){}
+    for(var j=0;j<al.length&&j<15;j++){var a=al[j],key=a.key||a.title;if(Date.now()-(o.late[key]||0)<3*3600000)continue;var who=ppl.find(function(p){var s=normalText([a.title,a.message,a.detail].join(' '));return s.indexOf(normalText(p.name))>=0});if(!who)continue;
+      var mt=await ai('Escreva um lembrete curto, educado e direto (1 frase) para '+who.name+' sobre este atraso no estoque.',[a.title,a.message,a.detail].filter(Boolean).join(' · '),'Lembrete: '+[a.title,a.message].filter(Boolean).join(' — '));
+      if(await window.e99PushTo(who.login,'Atraso no estoque',mt.text,'alerts')){o.late[key]=Date.now();log(o,'Lembrete de atraso para '+who.name+': '+(a.title||''),'late')}}save(o)}
+  /* erros e verificação: avisa o gestor quando aparece algo novo */
+  if(o.opt.errors){var issues=health(),errs=await cloudErrors(),fresh=errs.filter(function(x){return !o.err[x.id]||o.err[x.id]<x.n});var sig=issues.join('|');
+    if(fresh.length||(sig&&sig!==o.lastHealth)){o.lastHealth=sig;fresh.forEach(function(x){o.err[x.id]=x.n});
+      var dg=await ai('Você é o agente que acha erros no app Stok. Explique em tópicos curtos o que está errado e o que o gestor deve fazer, por ordem de importância.','Erros nos aparelhos:\n'+(fresh.map(function(x){return '- '+x.msg+' ('+x.onde+', tela '+x.pagina+', v'+x.ver+', '+x.n+'x, por '+x.por+')'}).join('\n')||'nenhum')+'\nProblemas nos dados:\n'+(issues.map(function(s){return '- '+s}).join('\n')||'nenhum'),(fresh.length?fresh.length+' erro(s) novo(s) no app. ':'')+issues.slice(0,4).join(' · '));
+      o.diag={t:Date.now(),text:dg.text,by:dg.by};log(o,'Verificação: '+(fresh.length?fresh.length+' erro(s) novo(s); ':'')+issues.length+' ponto(s) de atenção.','err');
+      if(o.opt.push&&window.e99PushTo&&(fresh.length||issues.length))window.e99PushTo(authSession.record.login,'Stok · os agentes acharam algo',dg.text.slice(0,220),'agentes',true);}
+    save(o)}
+}catch(x){try{log(o,'Falha no piloto: '+(x&&x.message||x),'err')}catch(y){}}finally{busy=false;if(page==='agentes')render()}}
+window.e99Autopilot=run;window.e99APPeople=function(){return linked()};
+setInterval(function(){if(!document.hidden)run(false)},10*60000);setTimeout(function(){run(false)},25000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(function(){run(false)},4000)});
+
+/* ---------- 4. tela "Agentes": o que fizeram, chaves e diagnóstico ---------- */
+function pageA(){if(!authSession)return '';var o=st(),issues=boss()?health():[];
+  var sw=function(k,t,d){return '<label class="ap-sw"><span><b>'+t+'</b><br><span class="small">'+d+'</span></span><input type="checkbox" '+(o.opt[k]?'checked':'')+' onchange="apOpt(\''+k+'\',this.checked)"></label>'};
+  return hero('Agentes','Os agentes cuidam do estoque sozinhos: acham erros, escrevem mensagens e e-mails personalizados e avisam cada pessoa.')
+   +'<div class="grid2"><div class="panel help"><h2>✨ Piloto automático</h2>'+(boss()?'':'<p class="small">O piloto roda no aparelho do gestor (quem criou a equipe).</p>')
+   +sw('chat','Bom dia no chat','Uma mensagem por dia marcando cada pessoa com as tarefas dela.')+sw('push','Avisos no celular','Mensagem personalizada para cada pessoa (app ntfy, mesmo com o Stok fechado).')+sw('mail','E-mails personalizados','Um e-mail por dia para quem confirmou o e-mail (enviado pelo robô diário).')+sw('late','Lembretes de atraso','Avisa o responsável quando algo atrasa (no máximo a cada 3 horas).')+sw('errors','Achar erros','Junta os erros de todos os aparelhos e verifica os dados do estoque.')
+   +'<div class="toolbar" style="margin-top:10px"><button class="primary" onclick="apRun()" '+(boss()?'':'disabled')+'>Rodar agora</button><button onclick="go(\'account\')">Configurar agentes de IA</button></div></div>'
+   +'<div class="panel help"><h2>🔎 Diagnóstico</h2>'+(o.diag?'<div class="ag-out">'+e(o.diag.text)+'</div><div class="ag-by">'+e(o.diag.by)+' · '+new Date(o.diag.t).toLocaleString('pt-BR')+'</div>':'<p class="small">Ainda sem diagnóstico. Toque em Rodar agora.</p>')
+   +'<h3 style="margin:14px 0 6px">Pontos de atenção agora</h3>'+(issues.length?'<div class="ap-log">'+issues.map(function(s){return '<div class="ap-issue">'+e(s)+'</div>'}).join('')+'</div>':'<p class="ap-ok">✓ Nada pendente nos dados.</p>')+'</div></div>'
+   +'<div class="panel help"><h2>📋 O que os agentes fizeram</h2>'+(o.log.length?'<div class="ap-log">'+o.log.slice().reverse().slice(0,40).map(function(l){return '<div><span>'+e(l.txt)+'</span><time>'+new Date(l.t).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+'</time></div>'}).join('')+'</div>':'<p class="small">Nada ainda.</p>')+'</div>'}
+window.extraPages=window.extraPages||{};window.extraPages.agentes=pageA;labels.agentes='Agentes';icons.agentes='✨';
+window.apOpt=function(k,v){var o=st();o.opt[k]=!!v;save(o);notify('Piloto: '+(v?'ligado':'desligado')+'.')};
+window.apRun=async function(){var o=st();o.day='';o.lastHealth='';save(o);notify('Agentes trabalhando…');await run(true);notify('Pronto. Veja o que os agentes fizeram.');render()};
 })();
 </script>
 <script>

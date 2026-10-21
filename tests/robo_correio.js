@@ -1,5 +1,6 @@
 /* Robô do correio: entra com a conta do robô (ROBO_EMAIL / ROBO_SENHA no ambiente, nunca no repositório),
-   lista os resumos na fila e mostra para quem enviar (só e-mails confirmados).
+   lista os resumos na fila e mostra para quem enviar (só e-mails confirmados)
+   e os últimos erros vistos nos aparelhos da equipe (errosDosAparelhos).
    Uso:  node tests/robo_correio.js              -> imprime JSON [{id, para, assunto, texto}]
          node tests/robo_correio.js --apagar id1,id2   -> apaga da fila os já enviados */
 const KEY='AIzaSyBy72TCofmFQGsaiC72TWKkwT8fsMXfxLI',P='gen-lang-client-0167474823';
@@ -13,4 +14,5 @@ async function j(u,o={}){const r=await fetch(u,o);const t=await r.text();let b;t
  for(const d of list.slice(0,50)){const f=d.fields||{},id=d.name.split('/').pop(),para=f.para&&f.para.stringValue,loja=f.loja&&f.loja.stringValue;
   try{const m=await j(`${FS}/lojas/${loja}/membros/${para}`,{headers:H});if(!(m.fields&&m.fields.verificado&&m.fields.verificado.booleanValue)){skip.push({id,motivo:'e-mail não confirmado'});continue}
    const u=await j(`${FS}/usuarios/${para}`,{headers:H});out.push({id,para:u.fields.email.stringValue,assunto:f.assunto.stringValue,texto:f.texto.stringValue})}catch(e){skip.push({id,motivo:String(e.message).slice(0,120)})}}
- console.log(JSON.stringify({enviar:out,pulados:skip,naFila:list.length},null,1))})().catch(e=>{console.error('ERRO',e.message);process.exit(1)});
+ let erros=[];try{const r=await j(`${FS}:runQuery`,{method:'POST',headers:H,body:JSON.stringify({structuredQuery:{from:[{collectionId:'erros',allDescendants:true}],orderBy:[{field:{fieldPath:'at'},direction:'DESCENDING'}],limit:30}})});erros=r.filter(x=>x.document).map(x=>{const f=x.document.fields;return {msg:f.msg.stringValue,onde:f.onde.stringValue,pagina:f.pagina.stringValue,versao:f.ver.stringValue,vezes:+f.n.integerValue,quando:new Date(+f.at.integerValue).toISOString()}})}catch(e){erros=[{msg:'não consegui ler os erros: '+e.message}]}
+ console.log(JSON.stringify({enviar:out,pulados:skip,naFila:list.length,errosDosAparelhos:erros},null,1))})().catch(e=>{console.error('ERRO',e.message);process.exit(1)});

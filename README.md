@@ -3,6 +3,11 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 53
+- Piloto automático dos agentes (tela ✨ Agentes): acham erros de todos os aparelhos e verificam os dados; mandam bom dia no chat marcando cada pessoa; aviso personalizado no celular (ntfy); e-mail personalizado por dia (fila do robô); lembrete de atraso para o responsável. Cada ação tem chave liga/desliga e fica registrada.
+- Sem IA configurada, os agentes usam textos prontos.
+- O robô diário também lê os erros dos aparelhos (`node tests/robo_correio.js`).
+
 ## Versão 52
 - Dois agentes de IA dentro do site (sem chatbot): Agente Local (Ollama, no PC, privado e grátis) e Agente Nuvem (OmniRoute, em qualquer aparelho). O site tenta o Local e, se não responder, usa a Nuvem.
 - Funções: resumo do dia no Início; ✨ Sugerir atividades no plano (já com responsável); ✨ O que fazer primeiro (Alertas); ✨ Analisar NFs pendentes; ✨ melhorar o texto no chat; ✨ Resumir a conversa.
