@@ -11,16 +11,16 @@ const L=require('./lib.js');const {ok,until}=L;const path=require('path');
  await A.click('#prof-edit button[type=submit]');await A.waitForTimeout(1500);
  const pa=await A.evaluate(()=>document.querySelector('#view .prof').innerText);ok(/@vitor.gestor/.test(pa)&&/Tudo no seu lugar/.test(pa),'profile saved');
  ok(await A.evaluate(()=>!!document.querySelector('#view .prof-head img.av')),'photo shown');
- await A.screenshot({path:'../space/prof-desktop.png'});
+ await A.screenshot({path:require('os').tmpdir()+'/stok-prof-desktop.png'});
  // B receives
  let got=false;for(let i=0;i<20&&!got;i++){await B.waitForTimeout(1000);got=await B.evaluate(()=>{go('profile');return /vitor\.gestor/.test(document.getElementById('view').innerText)})}
  ok(got,'aux sees gestor in people list');
  await B.evaluate(()=>{const b=[...document.querySelectorAll('.prof-people button')].find(x=>/vitor/.test(x.innerText));b&&b.click()});await B.waitForTimeout(800);
- ok(/Tudo no seu lugar/.test(await B.textContent('#view')),'aux opens gestor profile');await B.screenshot({path:'../space/prof-iphone.png'});
+ ok(/Tudo no seu lugar/.test(await B.textContent('#view')),'aux opens gestor profile');await B.screenshot({path:require('os').tmpdir()+'/stok-prof-iphone.png'});
  // chat avatar
  await A.evaluate(()=>go('chat'));await A.waitForTimeout(500);await A.fill('#chat-text','oi equipe');await A.press('#chat-text','Enter');
  await B.evaluate(()=>go('chat'));let av=false;for(let i=0;i<15&&!av;i++){await B.waitForTimeout(1000);av=await B.evaluate(()=>!!document.querySelector('#chat-list .who img.av'))}
- ok(av,'chat shows photo of sender');await B.screenshot({path:'../space/prof-chat.png'});
+ ok(av,'chat shows photo of sender');await B.screenshot({path:require('os').tmpdir()+'/stok-prof-chat.png'});
  // aux edits own profile; A sees
  await B.evaluate(()=>go('profile'));await B.waitForTimeout(500);await B.click('text=Editar perfil');await B.fill('#prof-edit input[name=user]','@vitor.gestor');await B.click('#prof-edit button[type=submit]');await B.waitForTimeout(500);
  ok(/já é de/.test(await B.textContent('#prof-edit')),'duplicate username refused');
