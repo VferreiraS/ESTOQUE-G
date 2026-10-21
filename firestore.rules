@@ -29,6 +29,10 @@ rules_version = '2';
 //   erros/{id}:      msg (1..300), onde (0..200), pagina (0..40), ver (0..10), por (0..40), n (int), at (int) — erros vistos nos aparelhos
 //   fixada/atual:    msg (id), t (0..140), from (0..60), por (0..40), at (int)
 //
+// Coleção: cofre            Documento: {uid}
+//   Chave para recuperar a conta pelo e-mail (só o dono lê e grava).
+//   - login (1..80), salt (16..40), bits (40..60), at (int)
+//
 // Coleção: correio              Documento: id automático
 //   Fila de e-mails que o robô (tarefa agendada) envia. Só o robô lê e apaga.
 //   - de: uid de quem criou    - para: uid do destinatário (o robô busca o e-mail)
@@ -161,6 +165,11 @@ service cloud.firestore {
         isStr(d.por, 0, 40) && d.n is int && d.n >= 1 && d.n <= 1000000 && isValidTime(d.at);
     }
 
+    function isValidCofre(d) {
+      return hasOnlyAllowedFields(['login', 'salt', 'bits', 'at']) && hasRequiredFields(['login', 'salt', 'bits', 'at']) &&
+        isStr(d.login, 1, 80) && isStr(d.salt, 16, 40) && isStr(d.bits, 40, 60) && isValidTime(d.at);
+    }
+
     function isValidCorreio(d) {
       return hasOnlyAllowedFields(['de', 'para', 'assunto', 'texto', 'tipo', 'loja', 'criado']) &&
         hasRequiredFields(['de', 'para', 'assunto', 'texto', 'tipo', 'loja', 'criado']) &&
@@ -178,6 +187,13 @@ service cloud.firestore {
       allow get: if isOwner(uid) || isRobot();
       allow create, update: if isOwner(uid) && isValidUsuario(request.resource.data) &&
         (request.method == 'create' || request.resource.data.criado == resource.data.criado);
+      allow delete: if isOwner(uid);
+    }
+
+    // Cofre de recuperação pelo e-mail: só o dono.
+    match /cofre/{uid} {
+      allow get: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isValidCofre(request.resource.data);
       allow delete: if isOwner(uid);
     }
 
