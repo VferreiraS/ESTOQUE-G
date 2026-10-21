@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="57"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="58"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -4606,6 +4606,74 @@ window.mrGo=async function(ev){ev.preventDefault();if(busy)return;var v=readForm
   catch(x){busy=false;err=code(x);paint()}};
 /* link na tela de entrar */
 var raB=renderAuth;renderAuth=function(){raB.apply(this,arguments);try{var f=document.getElementById('auth-form');if(f&&!authRecoveryShow&&!authPending&&(authMode==='login'||authMode==='recover')&&!document.getElementById('mr-link')){var b=document.createElement('button');b.type='button';b.id='mr-link';b.className='mr-link';b.textContent='Esqueci a senha e o código · recuperar pelo e-mail';b.onclick=window.mrOpen;f.after(b)}}catch(x){}};
+if(typeof authSession!=='undefined'&&!authSession&&document.getElementById('auth-form'))renderAuth();
+})();
+</script>
+<style id="totp-css">
+.totp-qr{background:#fff;border-radius:14px;padding:10px;width:200px;max-width:100%;margin:6px 0}
+.totp-qr svg{display:block;width:100%;height:auto}
+.totp-secret{font:600 15px/1.4 ui-monospace,monospace;letter-spacing:.08em;word-break:break-all}
+#totp-rec{border:0;padding:0;background:var(--ds-surface,#111);color:var(--ds-ink,#fff);border-radius:20px;width:min(440px,calc(100% - 24px))}
+#totp-rec::backdrop{background:rgba(0,0,0,.75)}
+#totp-rec form{padding:20px;display:grid;gap:12px}
+#totp-rec label{display:grid;gap:6px;font-weight:650}
+#totp-rec input{min-height:46px}
+</style>
+<script id="totp-js">
+(function(){
+'use strict';
+/* Recuperar a conta com o código do Authenticator (Google/Microsoft Authenticator, Authy…).
+   Ao ativar, a chave da conta fica guardada na própria conta, protegida pela chave secreta do Authenticator.
+   Esqueceu a senha? Login + código de 6 números do app → senha nova, sem perder dados (neste aparelho). */
+function e(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+var B32='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+function b32(bytes){var bits='',out='';bytes.forEach(function(b){bits+=b.toString(2).padStart(8,'0')});for(var i=0;i+5<=bits.length;i+=5)out+=B32[parseInt(bits.slice(i,i+5),2)];return out}
+function unb32(s){s=String(s).toUpperCase().replace(/[^A-Z2-7]/g,'');var bits='';for(var i=0;i<s.length;i++)bits+=B32.indexOf(s[i]).toString(2).padStart(5,'0');var o=[];for(var j=0;j+8<=bits.length;j+=8)o.push(parseInt(bits.slice(j,j+8),2));return new Uint8Array(o)}
+async function hotp(secret,counter){var k=await crypto.subtle.importKey('raw',unb32(secret),{name:'HMAC',hash:'SHA-1'},false,['sign']);var c=new ArrayBuffer(8),v=new DataView(c);v.setUint32(0,Math.floor(counter/4294967296));v.setUint32(4,counter>>>0);
+  var h=new Uint8Array(await crypto.subtle.sign('HMAC',k,c)),o=h[19]&15;var n=((h[o]&127)<<24|h[o+1]<<16|h[o+2]<<8|h[o+3])%1e6;return String(n).padStart(6,'0')}
+async function check(secret,code){code=String(code||'').replace(/\D/g,'');if(code.length!==6)return false;var t=Math.floor(Date.now()/30000);for(var d=-1;d<=1;d++)if(await hotp(secret,t+d)===code)return true;return false}
+window.e99Totp=function(secret,at){return hotp(secret,Math.floor((at||Date.now())/30000))};
+async function wrapKey(secret,login){var base=await crypto.subtle.importKey('raw',unb32(secret),'HKDF',false,['deriveKey']);return crypto.subtle.deriveKey({name:'HKDF',hash:'SHA-256',salt:authBytes('e99-totp'),info:authBytes(authLoginName(login))},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function wrap(secret,bits,login){var iv=crypto.getRandomValues(new Uint8Array(12));var c=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:authBytes('totp|'+authLoginName(login))},await wrapKey(secret,login),bits);return {iv:authB64(iv),cipher:authB64(new Uint8Array(c))}}
+async function unwrap(secret,w,login){return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:authUn64(w.iv),additionalData:authBytes('totp|'+authLoginName(login))},await wrapKey(secret,login),authUn64(w.cipher)))}
+function K(sk){return 'lojasg.estoque99.totp:'+sk}
+function get(sk){try{return JSON.parse(localStorage.getItem(K(sk))||'null')}catch(x){return null}}
+/* guarda a chave da conta protegida pelo Authenticator (precisa da senha atual, que só existe logo após entrar) */
+var pw=null;var dB=authDecrypt;authDecrypt=async function(rec,p){var r=await dB.apply(this,arguments);if(rec&&typeof p==='string')pw={l:authLoginName(rec.login),p:p,t:Date.now()};return r};
+var rB=authResetWithBits;authResetWithBits=async function(record,raw,storeKey,payload,p){pw={l:authLoginName(record.login),p:String(p),t:Date.now()};var r=await rB.apply(this,arguments);setTimeout(refresh,500);return r};
+var chB=authChangePassword;authChangePassword=async function(ev){var v=readForm(ev.target),s=authSession,rev=s&&s.record.revision;var r=await chB.apply(this,arguments);if(s&&authSession===s&&s.record.revision!==rev&&v.password){pw={l:authLoginName(s.record.login),p:v.password,t:Date.now()};refresh()}return r};
+async function refresh(){if(!authSession||!pw||pw.l!==authLoginName(authSession.record.login))return;var t=get(authSession.storeKey);if(!t||!t.secret||t.salt===authSession.record.salt)return;try{var bits=await authKeyBits(pw.p,authSession.record.salt);t.w=await wrap(t.secret,bits,authSession.record.login);t.salt=authSession.record.salt;localStorage.setItem(K(authSession.storeKey),JSON.stringify(t))}catch(x){}}
+var eB=authEnter;authEnter=function(){var r=eB.apply(this,arguments);setTimeout(refresh,300);return r};
+/* ---------- Minha conta: ativar ---------- */
+var draft=null;
+window.totpStart=function(){var s=new Uint8Array(20);crypto.getRandomValues(s);draft=b32(s);render()};
+window.totpCancel=function(){draft=null;render()};
+window.totpConfirm=async function(ev){ev.preventDefault();var v=readForm(ev.target);if(!(await check(draft,v.code))){notify('Código errado. Confira a hora do celular e digite o código atual do Authenticator.');return}
+  var p=String(v.password||'');try{await dB(authSession.record,p)}catch(x){notify('Senha atual incorreta.');return}
+  var bits=await authKeyBits(p,authSession.record.salt);var t={secret:draft,w:await wrap(draft,bits,authSession.record.login),salt:authSession.record.salt,at:Date.now()};localStorage.setItem(K(authSession.storeKey),JSON.stringify(t));draft=null;notify('Authenticator ativado! Se esquecer a senha, entre com o código dele.');render()};
+window.totpOff=function(){if(!confirm('Desativar a recuperação pelo Authenticator neste aparelho?'))return;localStorage.removeItem(K(authSession.storeKey));render()};
+function qr(uri){try{var w=new ZXing.BrowserQRCodeSvgWriter();var svg=w.write(uri,200,200);return svg.outerHTML}catch(x){return ''}}
+function panel(){if(!authSession)return '';var t=get(authSession.storeKey);var h='<div class="panel help" id="totp-panel"><h2>🔐 Authenticator</h2>';
+  if(t&&t.secret)return h+'<p><span class="perm-ok">✓ Ativado</span> neste aparelho. Esqueceu a senha? Na tela de entrar, toque em "Entrar com o código do Authenticator".</p><button onclick="totpOff()">Desativar</button></div>';
+  if(!draft)return h+'<p>Use o Google Authenticator, Microsoft Authenticator ou Authy para recuperar a conta se esquecer a senha e o código.</p><button class="primary" onclick="totpStart()">Ativar Authenticator</button></div>';
+  var uri='otpauth://totp/'+encodeURIComponent('Stok:'+authSession.record.login)+'?secret='+draft+'&issuer=Stok&digits=6&period=30';
+  return h+'<p>1. No app Authenticator, toque em <b>+</b> e leia o QR code (ou toque no botão no celular).</p><div class="totp-qr">'+qr(uri)+'</div><p><a class="button" href="'+e(uri)+'">Abrir no Authenticator</a></p><p class="small">Ou digite a chave: <span class="totp-secret">'+e(draft.replace(/(.{4})/g,'$1 ').trim())+'</span></p>'
+   +'<form onsubmit="totpConfirm(event)" class="fields"><label>2. Código de 6 números do app<input name="code" inputmode="numeric" maxlength="6" required autocomplete="one-time-code"></label><label>Sua senha atual<input name="password" type="password" inputmode="numeric" required autocomplete="current-password"></label><button class="primary">Confirmar e ativar</button><button type="button" onclick="totpCancel()">Cancelar</button></form></div>'}
+var raB=renderAccount;renderAccount=function(){return raB.apply(this,arguments)+'<div class="grid2">'+panel()+'</div>'};
+/* ---------- tela de entrar: recuperar com o código ---------- */
+var tries=0,waitUntil=0;
+function dlg(){var d=document.getElementById('totp-rec');if(!d){d=document.createElement('dialog');d.id='totp-rec';document.body.appendChild(d)}return d}
+window.totpRecOpen=function(){var d=dlg();d.innerHTML='<form onsubmit="totpRecGo(event)"><h2 style="margin:0">🔐 Entrar com o Authenticator</h2><p class="small" style="margin:0">Funciona no aparelho onde você ativou o Authenticator.</p><label>Login<input name="login" required maxlength="80" autocomplete="username"></label><label>Código de 6 números do Authenticator<input name="code" inputmode="numeric" maxlength="6" required autocomplete="one-time-code"></label><label>Nova senha do app (4 a 8 números)<input name="password" type="password" inputmode="numeric" required autocomplete="new-password"></label><label>Repita a nova senha<input name="confirmation" type="password" inputmode="numeric" required autocomplete="new-password"></label><p id="totp-err" class="cl-err" role="alert"></p><button class="primary">Entrar e trocar a senha</button><button type="button" onclick="this.closest(\'dialog\').close()">Cancelar</button></form>';try{d.showModal()}catch(x){d.setAttribute('open','')}};
+window.totpRecGo=async function(ev){ev.preventDefault();var v=readForm(ev.target),er=document.getElementById('totp-err');function fail(m){if(er)er.textContent=m}
+  if(Date.now()<waitUntil){fail('Muitas tentativas. Espere 30 segundos.');return}
+  try{authPasswordCheck(v.password,v.confirmation)}catch(x){fail(x.message);return}
+  var login=authLoginName(v.login),sk=await authStorageKey(login),raw=localStorage.getItem(sk),t=get(sk);
+  if(!raw||!t||!t.secret){fail('O Authenticator não foi ativado para este login neste aparelho. Use "recuperar pelo e-mail".');return}
+  if(!(await check(t.secret,v.code))){if(++tries>=5){tries=0;waitUntil=Date.now()+30000}fail('Código errado. Use o código atual do Authenticator.');return}
+  try{var record=authCheckRecord(JSON.parse(raw));if(t.salt!==record.salt)throw Error('desatualizado');var bits=await unwrap(t.secret,t.w,record.login);var opened=await authOpenWithBits(record,bits);var code=authNewRecoveryCode();
+    var d=document.getElementById('totp-rec');if(d)d.close();await authResetWithBits(record,raw,sk,opened.payload,v.password,code,null);authShownCode=code;notify('Senha trocada com o Authenticator. Anote o novo código de recuperação em Minha conta.');try{go('account')}catch(x){}}
+  catch(x){fail('Não deu para abrir a conta com o Authenticator (a senha mudou em outro aparelho?). Use "recuperar pelo e-mail".')}};
+var rA=renderAuth;renderAuth=function(){rA.apply(this,arguments);try{var f=document.getElementById('auth-form');if(f&&!authRecoveryShow&&!authPending&&(authMode==='login'||authMode==='recover')&&!document.getElementById('totp-link')){var b=document.createElement('button');b.type='button';b.id='totp-link';b.className='mr-link';b.textContent='Entrar com o código do Authenticator';b.onclick=window.totpRecOpen;var m=document.getElementById('mr-link');(m||f).after(b)}}catch(x){}};
 if(typeof authSession!=='undefined'&&!authSession&&document.getElementById('auth-form'))renderAuth();
 })();
 </script>
