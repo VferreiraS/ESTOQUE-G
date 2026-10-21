@@ -3,6 +3,9 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 69
+- Conta já criada pode virar a conta do PC (sem e-mail) pelo aviso "Vincule seu e-mail" ou em Minha conta. Só uma conta por aparelho.
+
 ## Versão 68
 - Esqueci a senha com a conta aberta (Manter conectado): troca a senha pelo e-mail sem perder dados e religa a nuvem.
 

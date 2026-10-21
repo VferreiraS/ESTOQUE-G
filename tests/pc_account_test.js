@@ -20,4 +20,9 @@ const L=require('./lib.js');const {ok,until}=L;
  // conta normal continua exigindo e-mail
  const M=await (await b.newContext()).newPage();await M.goto('http://localhost:8000/index.html?ntfy='+L.N);await M.waitForTimeout(1500);await M.click('text=Criar conta de outro estoque');ok(await M.evaluate(()=>document.querySelector('#auth-screen input[name=email]').required),'conta normal continua exigindo e-mail');
  await M.reload();await M.waitForTimeout(1500);await L.signup(M,'normal'+Date.now());ok(await M.evaluate(()=>!localStorage.getItem('lojasg.estoque99.pc-account:'+authSession.storeKey)&&!!localStorage.getItem('lojasg.estoque99.cloud-email:'+authSession.storeKey)),'conta normal NÃO vira conta PC');
+ // conta comum já criada vira a conta do PC (só uma)
+ const Q=await (await b.newContext()).newPage();Q.on('dialog',d=>d.accept());await Q.goto('http://localhost:8000/index.html?ntfy='+L.N);await Q.waitForTimeout(1500);await L.signup(Q,'virapc'+Date.now());
+ await Q.evaluate(()=>e99CloudOpen());await Q.waitForTimeout(400);ok(!!(await Q.$('#cloud-link button[onclick="e99MakePc()"]')),'aviso de e-mail oferece "conta do PC"');
+ await Q.click('#cloud-link button[onclick="e99MakePc()"]');await Q.waitForTimeout(1500);ok(await Q.evaluate(()=>!!localStorage.getItem('lojasg.estoque99.pc-account:'+authSession.storeKey)&&!(document.getElementById('cloud-link')||{}).open),'virou conta do PC e não pede e-mail');
+ await Q.evaluate(()=>{window.confirm=()=>true;return authLogout()});await Q.waitForTimeout(1000);await L.signup(Q,'outra'+Date.now());await Q.evaluate(()=>e99CloudOpen());await Q.waitForTimeout(400);ok(!(await Q.$('#cloud-link button[onclick="e99MakePc()"]')),'segunda conta no mesmo aparelho não pode ser PC');
  console.log('errors',errs);await b.close()})();

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="68"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="69"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -4058,8 +4058,10 @@ function showLink(){if(!authSession||ls('lojasg.estoque99.pc-account:'+authSessi
    +(pw?'':'<label>Sua senha do app (a mesma do login)<input name="password" type="password" inputmode="numeric" required autocomplete="current-password"></label>')
    +(linkErr?'<p class="cl-err" role="alert">'+e(linkErr)+'</p>':'')
    +'<button class="primary" '+(linkBusy?'disabled':'')+'>'+(linkBusy?'Vinculando…':'Vincular e-mail')+'</button>'
-   +'<button type="button" onclick="e99CloudLater()">Agora não</button><button type="button" onclick="e99CloudForgot()">Esqueci a senha</button><button type="button" onclick="e99CloudLater();authLogout()">Sair da conta</button>'+'<p class="small">Você vai receber um e-mail de confirmação. Seus dados do estoque continuam protegidos pela sua senha.</p></form>';
+   +(pcFree()?'<button type="button" onclick="e99MakePc()">🖥️ Esta é a conta do PC (sem e-mail)</button>':'')+'<button type="button" onclick="e99CloudLater()">Agora não</button><button type="button" onclick="e99CloudForgot()">Esqueci a senha</button><button type="button" onclick="e99CloudLater();authLogout()">Sair da conta</button>'+'<p class="small">Você vai receber um e-mail de confirmação. Seus dados do estoque continuam protegidos pela sua senha.</p></form>';
   if(!d.open)try{d.showModal()}catch(x){d.setAttribute('open','')}}
+function pcFree(){if(!authSession)return false;for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('lojasg.estoque99.pc-account:')===0&&k!=='lojasg.estoque99.pc-account:'+authSession.storeKey)return false}return true}
+window.e99MakePc=async function(){if(!authSession||!pcFree())return;if(!confirm('Marcar esta conta como a conta do PC do estoque? Ela não vai usar e-mail. Só uma conta pode ser a do PC.'))return;ls('lojasg.estoque99.pc-account:'+authSession.storeKey,'1');var d=document.getElementById('cloud-link');if(d)d.close();try{var c=await load(),u=c.auth.currentUser;if(u&&!/@pc\.stok-e99\.app$/.test(u.email||''))await c.auth.signOut()}catch(x){}notify('Pronto: esta é a conta do PC. Ela não pede e-mail.');if(freshPw())onEnter();if(page==='account')render()};
 window.e99CloudForgot=function(){var d=document.getElementById('cloud-link');if(d)d.close();try{sessionStorage.setItem('e99-cloud-later','1')}catch(x){}if(window.mrOpen){window.mrOpen();return}notify('Abra Minha conta e use “Trocar senha” com a senha atual. Se não lembrar, toque em Sair da conta e, na tela de entrar, use “Esqueci a senha e o código · recuperar pelo e-mail”.')};
 window.e99CloudLater=function(){var d=document.getElementById('cloud-link');if(d)d.close();try{sessionStorage.setItem('e99-cloud-later','1')}catch(x){}};
 window.e99CloudLink=async function(ev){ev.preventDefault();if(linkBusy||!authSession)return;var v=readForm(ev.target),pw=freshPw()||String(v.password||'');linkErr='';
@@ -4102,7 +4104,7 @@ window.e99Perm=async function(key){try{
 
 /* tela Conta: nuvem e permissões */
 var raBefore=renderAccount;renderAccount=function(){var h=raBefore.apply(this,arguments),u=user(),em=myEmail();
-  var box='<div class="panel help"><h2>☁️ Nuvem e e-mail</h2>'+(ls('lojasg.estoque99.pc-account:'+authSession.storeKey)?'<p>🖥️ Conta do PC do estoque: não usa e-mail. Para recuperar, use o código de recuperação ou o Authenticator.</p>':u&&em&&u.email===em?'<p>Conectado como <b>'+e(u.email)+'</b> · '+(u.emailVerified?'<span class="perm-ok">e-mail confirmado ✓</span>':'confirmação pendente')+'</p>'+(u.emailVerified?'':'<button onclick="e99CloudVerify()">Reenviar e-mail de confirmação</button>'):'<p>Esta conta ainda não está ligada a um e-mail.</p><button class="primary" onclick="e99CloudOpen()">Vincular e-mail</button>')
+  var box='<div class="panel help"><h2>☁️ Nuvem e e-mail</h2>'+(ls('lojasg.estoque99.pc-account:'+authSession.storeKey)?'<p>🖥️ Conta do PC do estoque: não usa e-mail. Para recuperar, use o código de recuperação ou o Authenticator.</p>':u&&em&&u.email===em?'<p>Conectado como <b>'+e(u.email)+'</b> · '+(u.emailVerified?'<span class="perm-ok">e-mail confirmado ✓</span>':'confirmação pendente')+'</p>'+(u.emailVerified?'':'<button onclick="e99CloudVerify()">Reenviar e-mail de confirmação</button>'):'<p>Esta conta ainda não está ligada a um e-mail.</p><button class="primary" onclick="e99CloudOpen()">Vincular e-mail</button>'+(pcFree()?' <button onclick="e99MakePc()">🖥️ É a conta do PC (sem e-mail)</button>':''))
     +'<h2 style="margin-top:14px">📲 Permissões do aparelho</h2><p class="small">Notificações, som e câmera.</p><button onclick="e99PermStep()">Ativar no aparelho</button>'+(window.e99PushCardHTML?'<div style="margin-top:12px">'+window.e99PushCardHTML()+'</div>':'')+'</div>';
   return h.replace('<div class="grid2">','<div class="grid2">'+box)};
 window.e99CloudVerify=function(){var u=user();if(u)verify(u,true)};
