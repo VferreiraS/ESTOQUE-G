@@ -18,4 +18,11 @@ async function recover(A,email,cloud,pw){await A.click('#mr-link');await A.fill(
  ok(await until(A,(u)=>!!(window.e99Cloud&&e99Cloud.user()&&e99Cloud.user().uid===u),uid,20000),'mesma conta da nuvem (perfil e selo voltam)');
  await A.evaluate(()=>{window.confirm=()=>true;return authLogout()});await A.waitForTimeout(1200);await L.login(A,l,'2468');ok(await A.evaluate(()=>!!authSession),'entra com a senha nova (2)');
  ok(await until(A,(u)=>!!(window.e99Cloud&&e99Cloud.user()&&e99Cloud.user().uid===u),uid,20000),'nuvem continua ligada depois');
+ // conta aberta (sem saber a senha): troca pelo e-mail sem perder dados
+ await A.evaluate(async()=>{state.team.push({id:'yy',name:'Marcador Aberto',role:'x'});await save()});await A.evaluate(()=>go('account'));await A.waitForTimeout(600);
+ await A.click('#forgot-panel button');ok(await A.inputValue('#mail-rec input[name=email]')===email,'e-mail já preenchido');await A.click('#mail-rec button.primary');await A.waitForSelector('#mail-rec input[name=cloud]');ok(await resetPw(email,'nuvem-789'),'link chegou (conta aberta)');
+ await A.fill('#mail-rec input[name=cloud]','nuvem-789');await A.fill('#mail-rec input[name=password]','1357');await A.fill('#mail-rec input[name=confirmation]','1357');await A.click('#mail-rec button.primary');
+ ok(await until(A,()=>!!authShownCode,null,20000),'senha trocada com a conta aberta');ok(await A.evaluate(()=>state.team.some(t=>t.name==='Marcador Aberto')),'dados continuam');
+ await A.evaluate(()=>{window.confirm=()=>true;return authLogout()});await A.waitForTimeout(1200);await L.login(A,l,'1357');ok(await A.evaluate(()=>!!authSession&&state.team.some(t=>t.name==='Marcador Aberto')),'entra com a senha nova e os dados');
+ ok(await until(A,(u)=>!!(window.e99Cloud&&e99Cloud.user()&&e99Cloud.user().uid===u),uid,20000),'nuvem ligada com a senha nova');
  console.log('errors',errs);await b.close()})();

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="67"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="68"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -4060,7 +4060,7 @@ function showLink(){if(!authSession||ls('lojasg.estoque99.pc-account:'+authSessi
    +'<button class="primary" '+(linkBusy?'disabled':'')+'>'+(linkBusy?'Vinculando…':'Vincular e-mail')+'</button>'
    +'<button type="button" onclick="e99CloudLater()">Agora não</button><button type="button" onclick="e99CloudForgot()">Esqueci a senha</button><button type="button" onclick="e99CloudLater();authLogout()">Sair da conta</button>'+'<p class="small">Você vai receber um e-mail de confirmação. Seus dados do estoque continuam protegidos pela sua senha.</p></form>';
   if(!d.open)try{d.showModal()}catch(x){d.setAttribute('open','')}}
-window.e99CloudForgot=function(){var d=document.getElementById('cloud-link');if(d)d.close();try{sessionStorage.setItem('e99-cloud-later','1')}catch(x){}notify('Abra Minha conta e use “Trocar senha” com a senha atual. Se não lembrar, toque em Sair da conta e, na tela de entrar, use “Esqueci a senha e o código · recuperar pelo e-mail”.')};
+window.e99CloudForgot=function(){var d=document.getElementById('cloud-link');if(d)d.close();try{sessionStorage.setItem('e99-cloud-later','1')}catch(x){}if(window.mrOpen){window.mrOpen();return}notify('Abra Minha conta e use “Trocar senha” com a senha atual. Se não lembrar, toque em Sair da conta e, na tela de entrar, use “Esqueci a senha e o código · recuperar pelo e-mail”.')};
 window.e99CloudLater=function(){var d=document.getElementById('cloud-link');if(d)d.close();try{sessionStorage.setItem('e99-cloud-later','1')}catch(x){}};
 window.e99CloudLink=async function(ev){ev.preventDefault();if(linkBusy||!authSession)return;var v=readForm(ev.target),pw=freshPw()||String(v.password||'');linkErr='';
   if(!pw){linkErr='Digite sua senha.';showLink();return}
@@ -4609,7 +4609,8 @@ function paint(){var d=dlg();d.innerHTML='<form class="mr" onsubmit="mrGo(event)
     +'<label>Senha da nuvem que você criou no link<input name="cloud" type="password" required autocomplete="off"></label><label>Nova senha do app (4 a 8 números)<input name="password" type="password" inputmode="numeric" required autocomplete="new-password"></label><label>Repita a nova senha<input name="confirmation" type="password" inputmode="numeric" required autocomplete="new-password"></label>')
   +(err?'<p class="cl-err" role="alert">'+e(err)+'</p>':'')+'<button class="primary" '+(busy?'disabled':'')+'>'+(busy?'Aguarde…':step===1?'Enviar link para o e-mail':'Recuperar minha conta')+'</button>'
   +(step===2?'<button type="button" onclick="mrBack()">Reenviar o link</button>':'')+'<button type="button" onclick="document.getElementById(\'mail-rec\').close()">Cancelar</button></form>';if(!d.open)try{d.showModal()}catch(x){d.setAttribute('open','')}}
-window.mrOpen=function(){step=1;err='';busy=false;paint()};window.mrBack=function(){step=1;err='';paint()};
+window.mrOpen=function(){step=1;err='';busy=false;if(authSession&&!email)email=ls('lojasg.estoque99.cloud-email:'+authSession.storeKey)||'';paint()};
+var raM=renderAccount;renderAccount=function(){return raM.apply(this,arguments)+'<div class="grid2"><div class="panel help" id="forgot-panel"><h2>🔑 Esqueci a senha atual</h2><p>Troque a senha provando pelo seu e-mail. Seus dados continuam.</p><button onclick="mrOpen()">Trocar a senha pelo e-mail</button></div></div>'};window.mrBack=function(){step=1;err='';paint()};
 function code(x){var c=x&&x.code||'';return c==='auth/invalid-credential'||c==='auth/wrong-password'||c==='auth/user-not-found'?'E-mail ou senha da nuvem incorretos. Use a senha que você criou no link do e-mail.':c==='auth/too-many-requests'?'Muitas tentativas. Espere alguns minutos.':c==='auth/network-request-failed'?'Sem internet.':(x&&x.message)||'Não foi possível recuperar.'}
 window.mrGo=async function(ev){ev.preventDefault();if(busy)return;var v=readForm(ev.target);err='';busy=true;paint();
   try{var c=await window.e99Cloud.load();
@@ -4618,7 +4619,8 @@ window.mrGo=async function(ev){ev.preventDefault();if(busy)return;var v=readForm
     var vd=null,ud=null;try{vd=(await c.db.collection('cofre').doc(u.uid).get()).data()}catch(x){}try{ud=(await c.db.collection('usuarios').doc(u.uid).get()).data()}catch(x){}
     var login=authLoginName((vd&&vd.login)||(ud&&ud.login)||'');if(!login)throw Error('Não encontrei uma conta do Stok ligada a este e-mail.');
     var storeKey=await authStorageKey(login),raw=localStorage.getItem(storeKey),record=raw?authCheckRecord(JSON.parse(raw)):null,newCode=authNewRecoveryCode();
-    if(record&&vd&&vd.salt===record.salt){var opened=await authOpenWithBits(record,authUn64(vd.bits));await authResetWithBits(record,raw,storeKey,opened.payload,v.password,newCode,null);authShownCode=newCode}
+    if(record&&authSession&&authSession.storeKey===storeKey&&authLoginName(authSession.record.login)===login){/* conta já aberta (Manter conectado): troca a senha sem perder nada */await authResetWithBits(record,raw,storeKey,authSession.payload,v.password,newCode,null);authShownCode=newCode}
+    else if(record&&vd&&vd.salt===record.salt){var opened=await authOpenWithBits(record,authUn64(vd.bits));await authResetWithBits(record,raw,storeKey,opened.payload,v.password,newCode,null);authShownCode=newCode}
     else{var msg=record?'Esta conta foi criada antes da recuperação por e-mail existir, então os dados guardados só neste aparelho não podem ser abertos. Recomeçar a conta com o mesmo login e e-mail? Seu perfil, selo, equipe e dados da equipe voltam pela nuvem e pela sincronização.':'Não há cópia desta conta neste aparelho. Criar a conta aqui com o mesmo login e e-mail? Seu perfil e os dados da equipe voltam pela nuvem e pela sincronização.';
       if(!confirm(msg)){busy=false;err='';paint();return}
       if(raw){localStorage.removeItem(storeKey);['lojasg.estoque99.chat:','lojasg.estoque99.agents:','lojasg.estoque99.totp:','lojasg.estoque99.vault:'].forEach(function(p){try{localStorage.removeItem(p+storeKey)}catch(x){}})}/* conta antiga excluída do aparelho */

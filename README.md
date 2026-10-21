@@ -3,6 +3,9 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 68
+- Esqueci a senha com a conta aberta (Manter conectado): troca a senha pelo e-mail sem perder dados e religa a nuvem.
+
 ## Versão 67
 - Conta do PC entra na nuvem com um e-mail interno automático (sem digitar e-mail): vê os perfis da equipe e o selo azul.
 - Chat encerrado pelo administrador (`encerradas/{loja}`) some dos aparelhos e o app sai da equipe.
