@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="48"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="49"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -371,8 +371,8 @@ function sectorSymbol(sector){
 function render(){if(!authSession){renderAuth();return}if(page==='assistant'||page==='consultas')page='home';renderStorage();$('breadcrumb').textContent=authSession.payload.store+' / '+(page==='mobile-menu'?'Mais opções':labels[page]);$('nav').innerHTML=Object.keys(labels).map(p=>`<button class="${page===p?'active':''}" aria-current="${page===p?'page':'false'}" onclick="go('${p}')"><span aria-hidden="true">${icons[p]}</span>${labels[p]}</button>`).join('');let html='';
  if(page==='home'){const aux=window.isAux&&isAux();const acts=todayActs();html=hero('Tudo no seu lugar.',new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),aux?'':'<button class="primary" onclick="openPlan()">＋ Novo plano</button>')+stats()+`<div class="panel"><div class="panelhead"><h2>Plano de ação de hoje</h2><button onclick="go('plans')">Ver planos →</button></div>${acts.length?'<ol class="plan-activities home-acts">'+acts.map(x=>planActivityRow(x.p,x.a)).join('')+'</ol>':`<div class="empty"><h3>Nenhum plano para hoje.</h3><p>${aux?'Quando o gestor montar o plano do dia, ele aparece aqui.':'Monte o plano de ação do dia para a equipe.'}</p>${aux?'':'<button class="primary" onclick="openPlan()">＋ Novo plano</button>'}</div>`}</div>`+(aux?'':`<div class="grid2"><div class="card"><div class="eyebrow">EQUIPE</div><h3>${state.team.length} colaboradores, um objetivo.</h3><p class="small">${esc(state.team.map(x=>x.name).join(' · '))} · TODOS para atividades em conjunto.</p><button onclick="go('team')">Gerenciar equipe →</button></div><div class="card"><div class="eyebrow">MAPA DO ESTOQUE</div><h3>${state.corridors.length} corredores organizados.</h3><p class="small">${state.corridors.filter(c=>!c.owner).length} corredores ainda precisam de responsável.</p><button onclick="go('corridors')">Ver corredores →</button></div></div>`)}
  if(page==='team'){html=hero('Gente que faz acontecer.','Atividades do plano para TODOS contam para cada integrante da equipe.',newButton('person','Colaborador')+shareReportButton('team'))+`<div class="cards">${[...state.team,{id:'todos',name:'TODOS',role:'Atividade em conjunto'}].map(p=>{const tasks=planActsFor(p.name),done=tasks.filter(t=>t.done).length;return `<div class="card"><div class="cardtop"><div class="avatar">${esc(p.name.slice(0,1))}</div>${p.id==='todos'?'<span class="pill">Coletivo</span>':`<button onclick="openEditor('person','${esc(p.id)}')">Editar</button>`}</div><h3>${esc(p.name)}</h3><div class="small">${esc(p.role)}</div><p>${tasks.length-done} atividades a fazer · ${done} feitas (últimos 30 dias)</p><div class="progress"><i style="width:${tasks.length?done/tasks.length*100:0}%"></i></div></div>`}).join('')}</div>`}
- if(page==='corridors'){html=hero('Cada corredor, um endereço.','Cores e símbolos para identificar cada setor de relance.',newButton('corridor','Corredor')+'<button type="button" onclick="corridorImportPick()">⇪ Importar mapa (Excel)</button>'+shareReportButton('corridors'))+`<div class="cards">${state.corridors.map(c=>{const theme=corridorTheme(c);return `<div class="card corridor-card" style="--sector-color:${theme.color};--sector-soft:${theme.soft};--sector-border:${theme.border}"><div class="cardtop"><div class="eyebrow">CORREDOR ${esc(c.number)}</div><button onclick="openEditor('corridor','${esc(c.id)}')">Editar</button></div><div class="sector-heading"><span class="sector-symbol" aria-hidden="true">${sectorSymbol(c.sector)}</span><h3>${esc(c.sector)}</h3></div>${c.products?`<div class="small corridor-products">${esc(c.products)}</div>`:''}<div class="small">Responsável: <b>${esc(owner(c.owner))}</b></div></div>`}).join('')}</div>`}
- if(page==='nfs'){html=hero('Recebeu? Conferiu? Registrou.','Acompanhe as notas fiscais da chegada à conclusão.',`<div class="toolbar"><button class="primary" onclick="openNFScanner()">▥ Bipar NF</button><button onclick="openNFImport()">Importar XML</button>${newButton('nf','Nova NF')}</div>`)+`<div class="panel"><div class="panelhead"><h2>Notas fiscais</h2><button onclick="window.print()">Imprimir</button></div>${state.nfs.length?`<div class="tablewrap"><table><thead><tr><th>NF / Fornecedor</th><th>Recebimento</th><th>Volumes</th><th>Responsável</th><th>Status</th><th>Ações</th></tr></thead><tbody>${state.nfs.map(n=>`<tr><td><b>${esc(n.number)}</b>${n.series?`<div class="small">Série ${esc(n.series)}</div>`:''}<div class="small">${esc(n.supplier)}</div>${n.items?`<div class="small">${n.items.length} itens importados</div>`:''}${n.notes?`<div class="small">${n.status==='Em divergência'?'Divergência: ':''}${esc(n.notes)}</div>`:''}</td><td>${date(n.date)}${n.arrivalTime?`<div class="small">${esc(n.arrivalTime)}</div>`:''}</td><td>${esc((n.volumes==null?0:n.volumes))}</td><td>${esc(owner(n.owner))}</td><td>${badge(n.status)}</td><td><button onclick="openEditor('nf','${esc(n.id)}')">Editar</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhuma NF cadastrada.</div>'}</div>`}
+ if(page==='corridors'){html=hero('Cada corredor, um endereço.','Cores e símbolos para identificar cada setor de relance.',newButton('corridor','Corredor')+'<button type="button" onclick="corridorImportPick()">⇪ Importar mapa (Excel)</button>'+shareReportButton('corridors'))+`<div class="cards">${state.corridors.map(c=>{const theme=corridorTheme(c);return `<div class="card corridor-card" style="--sector-color:${theme.color};--sector-soft:${theme.soft};--sector-border:${theme.border}"><div class="cardtop"><div class="eyebrow">CORREDOR ${esc(c.number)}</div><button onclick="openEditor('corridor','${esc(c.id)}')">Editar</button></div><div class="sector-heading"><span class="sector-symbol" aria-hidden="true">${sectorSymbol(c.sector)}</span><h3>${esc(c.sector)}</h3></div>${c.products?`<div class="small corridor-products">${esc(c.products)}</div>`:''}<div class="small">Responsável: <b>${esc(owner(c.owner))}</b> <button type="button" class="fwd-btn" onclick="event.stopPropagation();e99Forward('cor','${esc(c.id)}')" title="Encaminhar no chat">💬</button></div></div>`}).join('')}</div>`}
+ if(page==='nfs'){html=hero('Recebeu? Conferiu? Registrou.','Acompanhe as notas fiscais da chegada à conclusão.',`<div class="toolbar"><button class="primary" onclick="openNFScanner()">▥ Bipar NF</button><button onclick="openNFImport()">Importar XML</button>${newButton('nf','Nova NF')}</div>`)+`<div class="panel"><div class="panelhead"><h2>Notas fiscais</h2><button onclick="window.print()">Imprimir</button></div>${state.nfs.length?`<div class="tablewrap"><table><thead><tr><th>NF / Fornecedor</th><th>Recebimento</th><th>Volumes</th><th>Responsável</th><th>Status</th><th>Ações</th></tr></thead><tbody>${state.nfs.map(n=>`<tr><td><b>${esc(n.number)}</b>${n.series?`<div class="small">Série ${esc(n.series)}</div>`:''}<div class="small">${esc(n.supplier)}</div>${n.items?`<div class="small">${n.items.length} itens importados</div>`:''}${n.notes?`<div class="small">${n.status==='Em divergência'?'Divergência: ':''}${esc(n.notes)}</div>`:''}</td><td>${date(n.date)}${n.arrivalTime?`<div class="small">${esc(n.arrivalTime)}</div>`:''}</td><td>${esc((n.volumes==null?0:n.volumes))}</td><td>${esc(owner(n.owner))}</td><td>${badge(n.status)}</td><td><button onclick="openEditor('nf','${esc(n.id)}')">Editar</button> <button class="fwd-btn" onclick="e99Forward('nf','${esc(n.id)}')" title="Encaminhar no chat">💬</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhuma NF cadastrada.</div>'}</div>`}
  if(page==='data'){html=hero('Seus dados, no seu controle.','Os cadastros ficam locais. Consultas opcionais enviam somente CEP ou CNPJ ao serviço escolhido. Use cópias de segurança.')+`<div class="grid2"><div class="panel help"><h2>Backup e restauração</h2><div class="toolbar"><button class="primary" onclick="backup()">Exportar backup</button><button onclick="$('restore').click()">Restaurar backup</button></div><p>Última alteração: ${state.updated?esc(new Date(state.updated).toLocaleString('pt-BR')):'Ainda sem alterações'}</p></div><div class="panel help"><h2>Salvar direto em arquivo</h2><button onclick="connectFile()">Conectar arquivo local</button><p id="filehelp">Em navegadores sem esse recurso, use Exportar backup. Para dividir os dados com outros aparelhos da equipe, use Chat → Equipe sincronizada.</p></div></div>`}
  if(page==='mobile-menu')html=renderMobileMenu();
  if(page==='plans')html=renderPlans();  if(page==='chat')html=typeof renderChat==='function'?renderChat():'';  if(window.extraPages&&typeof window.extraPages[page]==='function')html=window.extraPages[page]();
@@ -611,7 +611,7 @@ function planRemovePhoto(index,photo){if(!planDraft||planPhotoBusy||!confirm('Re
 function planCancel(){if(planPhotoBusy)return;if(planDraftDirty&&!confirm('Descartar as alterações não salvas?'))return;planDraft=null;planDraftDirty=false;render()}
 async function savePlan(event){event.preventDefault();if(!authSession||!planDraft||planPhotoBusy)return;try{const next=JSON.parse(JSON.stringify(planDraft));next.title=next.title.trim();const old=planById(next.id);if(old)for(const a of next.activities){const o=old.activities.find(x=>x.id===a.id);if(!o)continue;if(o.done){a.done=true;a.doneBy=o.doneBy;a.doneAt=o.doneAt}else{delete a.done;delete a.doneBy;delete a.doneAt}}for(const a of next.activities){a.title=a.title.trim();a.notes=a.notes.trim()}if(!next.activities.length)throw Error('Adicione pelo menos uma atividade.');const plans=(state.plans||[]).filter(p=>p.id!==next.id).concat(next);validatePlans(plans);state.plans=plans;await save();if(!storageOK){notify('Plano em memória. Exporte uma cópia protegida em Minha conta antes de fechar.');return}planDraft=null;planDraftDirty=false;render();notify('Plano de ação salvo com as fotos.')}catch(e){notify(e.message)}}
 async function deletePlan(id){if(!authSession||!confirm('Excluir este plano e suas fotos?'))return;state.plans=(state.plans||[]).filter(p=>p.id!==id);await save();render()}
-function renderPlans(){if(planDraft)return renderPlanEditor();const rows=(state.plans||[]).filter(p=>!planFilter||p.date===planFilter).slice().sort((a,b)=>b.date.localeCompare(a.date));return hero('Plano de ação','Defina o dia, descreva as atividades e mostre o que precisa ser feito.',`<button class="primary" onclick="openPlan()">＋ Novo plano</button>${shareReportButton('plans')}`)+`<div class="panel"><div class="panelhead"><h2>Planos por dia</h2><label>Filtrar data <input type="date" aria-label="Filtrar planos por data" value="${esc(planFilter)}" onchange="planFilter=this.value;render()"></label><button onclick="planFilter='';render()">Todos os dias</button></div><div class="help">${rows.length?rows.map(p=>`<article class="plan-card"><div class="cardtop"><div><span class="pill">${date(p.date)}</span><h2>${esc(p.title)}</h2></div><button onclick="openPlan('${p.id}')">Editar plano</button></div><p class="small">${p.activities.filter(a=>a.done).length} de ${p.activities.length} atividades feitas · ${p.activities.reduce((n,a)=>n+a.photos.length,0)} fotos</p><ol class="plan-activities">${p.activities.map(a=>`<li class="${a.done?'act-done':''}">${planDoneBtn(p,a)}<b>${esc(a.title)}</b>${a.time?` <span class="act-time">até ${esc(a.time)}</span>`:''}${actLate(p,a)?' <span class="act-late">Atrasada</span>':''}<div class="small">Responsável: ${esc(a.owner||'A definir')}</div>${a.notes?`<p class="plan-notes">${esc(a.notes)}</p>`:''}${planPhotosMarkup(a,p.id)}</li>`).join('')}</ol><div class="toolbar"><button class="primary" onclick="copyPlan('${p.id}')">Copiar para WhatsApp / Outlook</button><button onclick="sharePlan('${p.id}')">Compartilhar com fotos</button><button onclick="downloadPlanEml('${p.id}')">E-mail para Outlook (.eml)</button><button onclick="downloadPlanHtml('${p.id}')">Baixar plano com fotos</button><button class="danger" onclick="deletePlan('${p.id}')">Excluir plano</button></div></article>`).join(''):'<div class="empty"><h3>Nenhum plano nesta seleção.</h3><p>Crie um plano e escolha o dia em que as atividades serão realizadas.</p><button onclick="openPlan()">Criar plano de ação</button></div>'}</div></div>`}
+function renderPlans(){if(planDraft)return renderPlanEditor();const rows=(state.plans||[]).filter(p=>!planFilter||p.date===planFilter).slice().sort((a,b)=>b.date.localeCompare(a.date));return hero('Plano de ação','Defina o dia, descreva as atividades e mostre o que precisa ser feito.',`<button class="primary" onclick="openPlan()">＋ Novo plano</button>${shareReportButton('plans')}`)+`<div class="panel"><div class="panelhead"><h2>Planos por dia</h2><label>Filtrar data <input type="date" aria-label="Filtrar planos por data" value="${esc(planFilter)}" onchange="planFilter=this.value;render()"></label><button onclick="planFilter='';render()">Todos os dias</button></div><div class="help">${rows.length?rows.map(p=>`<article class="plan-card"><div class="cardtop"><div><span class="pill">${date(p.date)}</span><h2>${esc(p.title)}</h2></div><button onclick="openPlan('${p.id}')">Editar plano</button></div><p class="small">${p.activities.filter(a=>a.done).length} de ${p.activities.length} atividades feitas · ${p.activities.reduce((n,a)=>n+a.photos.length,0)} fotos</p><ol class="plan-activities">${p.activities.map(a=>`<li class="${a.done?'act-done':''}">${planDoneBtn(p,a)}<b>${esc(a.title)}</b>${a.time?` <span class="act-time">até ${esc(a.time)}</span>`:''}${actLate(p,a)?' <span class="act-late">Atrasada</span>':''}<div class="small">Responsável: ${esc(a.owner||'A definir')} <button type="button" class="fwd-btn" onclick="e99Forward('act','${p.id}','${a.id}')" title="Encaminhar no chat">💬 Encaminhar</button></div>${a.notes?`<p class="plan-notes">${esc(a.notes)}</p>`:''}${planPhotosMarkup(a,p.id)}</li>`).join('')}</ol><div class="toolbar"><button class="primary" onclick="copyPlan('${p.id}')">Copiar para WhatsApp / Outlook</button><button onclick="sharePlan('${p.id}')">Compartilhar com fotos</button><button onclick="downloadPlanEml('${p.id}')">E-mail para Outlook (.eml)</button><button onclick="downloadPlanHtml('${p.id}')">Baixar plano com fotos</button><button class="danger" onclick="deletePlan('${p.id}')">Excluir plano</button></div></article>`).join(''):'<div class="empty"><h3>Nenhum plano nesta seleção.</h3><p>Crie um plano e escolha o dia em que as atividades serão realizadas.</p><button onclick="openPlan()">Criar plano de ação</button></div>'}</div></div>`}
 function planPhotosMarkup(a,planId){return `<div class="plan-photos">${a.photos.map((ph,i)=>`<figure><img src="${ph.data}" alt="Foto ${i+1} da atividade ${esc(a.title)}" width="170" height="120" loading="lazy"><button onclick="downloadPlanPhoto('${planId}','${a.id}','${ph.id}')">Baixar foto ${i+1}</button></figure>`).join('')}</div>`}
 function renderPlanEditor(){const p=planDraft;return hero('Montar plano de ação','As fotos e atividades são salvas ao clicar em Salvar plano.')+`<form class="panel help" id="plan-editor" onsubmit="savePlan(event)"><div class="fields"><div class="pair"><label>Nome do plano<input name="title" required maxlength="200" value="${esc(p.title)}" oninput="planChange('title',this.value)"></label><label>Dia da realização<input type="date" name="date" required value="${esc(p.date)}" onchange="planChange('date',this.value)"></label></div></div><p class="small">Até 5 fotos por atividade. Fotos são reduzidas para caber no armazenamento local; guarde os originais se precisar de mais detalhes.</p>${p.activities.map((a,i)=>`<section class="plan-edit-item"><div class="cardtop"><h2>Atividade ${i+1}</h2><button type="button" class="danger" onclick="planRemoveItem(${i})" ${planPhotoBusy?'disabled':''}>Remover atividade</button></div><div class="fields"><label>O que será feito?<textarea required maxlength="500" oninput="planChange('title',this.value,${i})">${esc(a.title)}</textarea></label><label>Responsável<input list="plan-owners" maxlength="200" value="${esc(a.owner)}" oninput="planChange('owner',this.value,${i})" placeholder="Nome ou TODOS"></label><label>Até que horas? (opcional)<input type="time" value="${esc(a.time||'')}" onchange="planChange('time',this.value,${i})"></label><label>Orientações / local / observações<textarea maxlength="3000" oninput="planChange('notes',this.value,${i})">${esc(a.notes)}</textarea></label><label>Selecionar fotos da galeria<input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple onchange="planAttachPhotos(event,${i})" ${planPhotoBusy?'disabled':''}></label><label>Tirar foto da atividade<input type="file" accept="image/*" capture="environment" onchange="planAttachPhotos(event,${i})" ${planPhotoBusy?'disabled':''}></label></div><div class="plan-photos">${a.photos.map((ph,j)=>`<figure><img src="${ph.data}" alt="Foto ${j+1} da atividade ${i+1}" width="170" height="120"><button type="button" onclick="planRemovePhoto(${i},${j})" ${planPhotoBusy?'disabled':''}>Remover foto</button></figure>`).join('')}</div></section>`).join('')}<datalist id="plan-owners"><option value="TODOS">${state.team.map(p=>`<option value="${esc(p.name)}">`).join('')}</datalist><p role="status">${planPhotoBusy?'Preparando fotos… Aguarde antes de sair.':''}</p><div class="toolbar"><button type="button" onclick="planAddItem()" ${planPhotoBusy?'disabled':''}>＋ Adicionar atividade</button><button type="submit" class="primary" ${planPhotoBusy?'disabled':''}>Salvar plano</button><button type="button" onclick="planCancel()" ${planPhotoBusy?'disabled':''}>Cancelar</button></div></form>`}
 function compressPlanPhoto(file){return new Promise((resolve,reject)=>{if(file.size>20*1024*1024){reject(Error('A foto ultrapassa 20 MB. Escolha uma versão menor.'));return}const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{URL.revokeObjectURL(url);try{const canvas=document.createElement('canvas');let size=1200,data='';for(let attempt=0;attempt<5;attempt++){const scale=Math.min(1,size/Math.max(img.naturalWidth,img.naturalHeight));canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);data=canvas.toDataURL('image/jpeg',0.72-attempt*0.07);if(data.length<=200000)break;size=Math.round(size*0.78)}if(data.length>200000)throw Error('Esta imagem ainda está grande. Escolha uma versão menor.');resolve({id:uid(),data})}catch(e){reject(e)}};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Formato não suportado pelo navegador. Exporte a foto como JPG ou PNG e tente novamente.'))};img.src=url})}
@@ -2580,7 +2580,7 @@ async function paint(scroll){var box=document.getElementById('chat-list');if(!bo
   var html='',lastDay='',people={};
   for(var i=0;i<l.length;i++){var r=l[i];var m=mem[r.topic+'|'+r.id]||(mem[r.topic+'|'+r.id]=await decMsg(r.payload));if(!m)continue;people[m.from]=1;var dd=day(m.at);if(dd!==lastDay){html+='<div class="chat-day">'+esc2(dd)+'</div>';lastDay=dd}
     snip[r.id]={from:m.from,t:m.text?m.text.slice(0,140):(m.img?'📷 Foto':m.audio?'🎤 Áudio':'')};
-    html+='<div class="chat-msg'+(r.mine?' mine':'')+'" data-id="'+esc2(r.id)+'">'+(r.mine?'':'<span class="who">'+esc2(m.from)+'</span>')+(m.re?'<button type="button" class="chat-quote" onclick="chatJump(\''+esc2(m.re.id)+'\')"><b>'+esc2(m.re.from===cfg.name?'Você':m.re.from)+'</b><span>'+esc2(m.re.t||'Mensagem')+'</span></button>':'')+(m.img?(r.hasImg?'<img data-chat-img="'+esc2(r.id)+'" alt="Foto enviada por '+esc2(m.from)+'">':'<span class="img-wait">📷 Foto (baixando… fotos ficam no servidor só por 3 horas)</span>'):'')+(m.audio?(r.hasImg?'<span class="chat-audio"><audio data-chat-audio="'+esc2(r.id)+'" data-mime="'+esc2(m.audio.mime)+'" controls preload="metadata" aria-label="Áudio de '+esc2(m.from)+'"></audio><span class="dur">'+mmss(m.audio.dur)+'</span></span>':'<span class="img-wait">🎤 Áudio de '+mmss(m.audio.dur)+' (baixando… áudios ficam no servidor só por 3 horas)</span>'):'')+(m.text?esc2(m.text):'')+'<span class="when">'+time(m.at)+'</span><button type="button" class="chat-re-btn" aria-label="Responder" title="Responder" onclick="chatReply(\''+esc2(r.id)+'\')">↩</button><span class="swipe-ico" aria-hidden="true">↩</span></div>'}
+    html+='<div class="chat-msg'+(r.mine?' mine':'')+(m.text&&window.e99IsMention&&window.e99IsMention(m.text)&&!r.mine?' mentioned':'')+'" data-id="'+esc2(r.id)+'" data-at="'+esc2(m.at)+'" data-from="'+esc2(m.from)+'">'+(r.mine?'':'<span class="who">'+esc2(m.from)+'</span>')+(m.re?'<button type="button" class="chat-quote" onclick="chatJump(\''+esc2(m.re.id)+'\')"><b>'+esc2(m.re.from===cfg.name?'Você':m.re.from)+'</b><span>'+esc2(m.re.t||'Mensagem')+'</span></button>':'')+(m.img?(r.hasImg?'<img data-chat-img="'+esc2(r.id)+'" alt="Foto enviada por '+esc2(m.from)+'">':'<span class="img-wait">📷 Foto (baixando… fotos ficam no servidor só por 3 horas)</span>'):'')+(m.audio?(r.hasImg?'<span class="chat-audio"><audio data-chat-audio="'+esc2(r.id)+'" data-mime="'+esc2(m.audio.mime)+'" controls preload="metadata" aria-label="Áudio de '+esc2(m.from)+'"></audio><span class="dur">'+mmss(m.audio.dur)+'</span></span>':'<span class="img-wait">🎤 Áudio de '+mmss(m.audio.dur)+' (baixando… áudios ficam no servidor só por 3 horas)</span>'):'')+(m.text?(window.e99Mentions?window.e99Mentions(esc2(m.text)):esc2(m.text)):'')+'<span class="when">'+time(m.at)+'</span><button type="button" class="chat-re-btn" aria-label="Responder" title="Responder" onclick="chatReply(\''+esc2(r.id)+'\')">↩</button><span class="swipe-ico" aria-hidden="true">↩</span></div>'}
   var keep={};box.querySelectorAll('audio[data-chat-audio]').forEach(function(a){if(a.src)keep[a.getAttribute('data-chat-audio')]=a});
   box.innerHTML=html||'<p class="small" style="text-align:center;margin:auto">Nenhuma mensagem ainda. Diga oi para a equipe!</p>';
   var cnt=document.getElementById('chat-people');if(cnt)cnt.textContent=Object.keys(people).length+' pessoa(s) já falaram';
@@ -2606,7 +2606,7 @@ var replyTo=null,snip={};
 function replyBar(){var b=document.getElementById('chat-reply');if(!b)return;if(!replyTo){b.hidden=true;b.innerHTML='';return}b.hidden=false;
   b.innerHTML='<div><b>Respondendo a '+esc2(replyTo.from===cfg.name?'você':replyTo.from)+'</b><span>'+esc2(replyTo.t||'Mensagem')+'</span></div><button type="button" aria-label="Cancelar resposta" onclick="chatReplyCancel()">✕</button>'}
 window.chatReply=function(id){var s=snip[id];if(!s)return;replyTo={id:id,from:s.from,t:s.t};replyBar();var t=document.getElementById('chat-text');if(t)t.focus();try{if(navigator.vibrate)navigator.vibrate(12)}catch(e){}};
-window.chatReplyCancel=function(){replyTo=null;replyBar()};
+window.chatReplyCancel=function(){replyTo=null;replyBar()};window.e99ChatReplyTo=function(){return replyTo};window.e99ChatSnip=function(id){return snip[id]||null};
 window.chatJump=function(id){var box=document.getElementById('chat-list');if(!box)return;var el=box.querySelector('.chat-msg[data-id="'+id.replace(/[^a-zA-Z0-9_-]/g,'')+'"]');if(!el){notify('A mensagem original não está mais neste aparelho.');return}el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash')};
 /* arrastar para a direita responde (celular); clique duplo responde (computador) */
 (function(){var sw=null;
@@ -2615,7 +2615,7 @@ window.chatJump=function(id){var box=document.getElementById('chat-list');if(!bo
     if(sw&&sw.on){sw.dx=Math.max(0,Math.min(dx,80));sw.el.style.transform='translateX('+sw.dx+'px)';var ic=sw.el.querySelector('.swipe-ico');if(ic)ic.style.opacity=String(Math.min(1,sw.dx/60))}},{passive:true});
   function end(){if(!sw)return;var s=sw;sw=null;s.el.classList.remove('swiping');s.el.style.transform='';var ic=s.el.querySelector('.swipe-ico');if(ic)ic.style.opacity='0';if(s.on&&s.dx>=55)window.chatReply(s.el.getAttribute('data-id'))}
   document.addEventListener('touchend',end,{passive:true});document.addEventListener('touchcancel',end,{passive:true});
-  document.addEventListener('dblclick',function(ev){var el=ev.target.closest&&ev.target.closest('#chat-list .chat-msg');if(el&&!ev.target.closest('audio,img,button')){try{getSelection().removeAllRanges()}catch(e){}window.chatReply(el.getAttribute('data-id'))}});
+  document.addEventListener('dblclick',function(ev){var el=ev.target.closest&&ev.target.closest('#chat-list .chat-msg');if(el&&!ev.target.closest('audio,img,button')){try{getSelection().removeAllRanges()}catch(e){}if(window.e99React)window.e99React(el.getAttribute('data-id'),'❤️',true);else window.chatReply(el.getAttribute('data-id'))}});
   document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&replyTo&&document.getElementById('chat-reply'))window.chatReplyCancel()})})();
 window.chatSubmit=async function(e){if(e)e.preventDefault();var t=document.getElementById('chat-text');if(!t||!t.value.trim())return;var v=t.value;t.value='';var ok=await window.chatSend(v);if(!ok)t.value=v;t.focus()};
 window.chatPhoto=async function(input){var f=input.files&&input.files[0];input.value='';if(!f)return;try{notify('Preparando foto…');var p=await compressPlanPhoto(f);var t=document.getElementById('chat-text');var cap=t?t.value:'';if(await window.chatSend(cap,p.data)&&t)t.value=''}catch(e){notify(e.message||'Não foi possível ler a foto.')}};
@@ -3384,10 +3384,20 @@ try{decorate(document.getElementById('view'));decorate(document.getElementById('
 .av.av-s{width:20px;height:20px;font-size:10px}
 .av.av-l{width:112px;height:112px;font-size:40px;border:4px solid var(--ds-bg,#fff)}
 .prof-chip{display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-weight:600}
+.vbadge{display:inline-block;width:.82em;height:.82em;min-width:14px;min-height:14px;margin-left:.28em;vertical-align:-.08em;flex:none}
+.prof-head .av.av-l{box-shadow:0 0 0 3px #000,0 0 0 6px #ff2a1f}
+body:not(.fx-user-off) .prof-head .av.av-l{animation:prof-ring 3.2s ease-in-out infinite}
+@keyframes prof-ring{0%,100%{box-shadow:0 0 0 3px #000,0 0 0 6px #ff2a1f,0 0 18px 4px #ff2a1f44}50%{box-shadow:0 0 0 3px #000,0 0 0 6px #ff6a3c,0 0 34px 10px #ff2a1f88}}
+body:not(.fx-user-off) .vbadge{animation:vb-pop 4s ease-in-out infinite}
+@keyframes vb-pop{0%,88%,100%{transform:scale(1)}92%{transform:scale(1.25)}96%{transform:scale(.95)}}
+html body.dark #view .prof-stats>div,html body.dark #view .prof-list>div,html body.dark #view .prof-people button{position:relative;overflow:hidden}
+html body.dark #view .prof-stats>div::after,html body.dark #view .prof-people button::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.09),transparent);transform:skewX(-18deg);pointer-events:none;animation:fx-shine 7s ease-in-out infinite;animation-delay:var(--fx-delay,0s)}
+html body.dark #view .prof-people button{transition:transform .18s ease,border-color .18s ease}
+html body.dark #view .prof-people button:hover{transform:translateY(-3px);border-color:#ff2a1f}
 .prof-chip:hover{text-decoration:underline}
 .prof{max-width:880px;margin:0 auto}
 .prof-cover{height:clamp(130px,24vw,230px);border-radius:24px;background:linear-gradient(135deg,#ff5a3c,#7a0905 60%,#140303);background-size:cover;background-position:center;border:1px solid var(--ds-line,#ddd)}
-.prof-head{display:flex;align-items:flex-end;gap:16px;margin:-56px 0 0 22px;flex-wrap:wrap}
+.prof-head{display:flex;align-items:flex-end;gap:16px;margin:-56px 0 0 22px;flex-wrap:wrap;position:relative;z-index:2}
 .prof-head .who{flex:1;min-width:180px;padding-bottom:0}
 .prof-head h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.05}
 .prof-user{color:var(--ds-muted,#666);font-weight:600;margin-top:2px}
@@ -3451,7 +3461,7 @@ function myLogin(){return authSession?authLoginName(authSession.record.login):''
 /* a mesma conta em vários aparelhos (celular e PC) aparece como uma pessoa só */
 function all(){var l=[],byLogin={};if(mine)l.push({key:'me',p:mine,role:authSession&&authSession.payload.role,me:true});
   Object.keys(team).forEach(function(k){var r=team[k];if(!r||!r.p)return;var lg=r.login?authLoginName(r.login):'';if(lg&&lg===myLogin())return;
-    if(lg&&byLogin[lg]){var o=byLogin[lg];o.devices++;if(r.p.at>o.p.at){o.key=k;o.p=r.p;o.seen=r.seen}return}var it={key:k,p:r.p,role:r.role,seen:r.seen,devices:1,login:lg};if(lg)byLogin[lg]=it;l.push(it)});return l}
+    if(lg&&byLogin[lg]){var o=byLogin[lg];o.devices++;if(r.uid)o.uid=r.uid;if(r.p.at>o.p.at){o.key=k;o.p=r.p;o.seen=r.seen}return}var it={key:k,p:r.p,role:r.role,seen:r.seen,devices:1,login:lg,uid:r.uid||''};if(lg)byLogin[lg]=it;l.push(it)});return l}
 function find(name){var n=norm(name);if(!n)return null;var l=all();for(var i=0;i<l.length;i++){var p=l[i].p;if(norm(p.name)===n||norm('@'+p.user)===n||norm(p.user)===n||p.names.some(function(x){return norm(x)===n}))return l[i]}
   if(mine&&n===norm(chatName()))return {key:'me',p:mine,me:true,role:authSession&&authSession.payload.role};return null}
 function initial(n){return e((String(n||'?').trim()[0]||'?').toUpperCase())}
@@ -3460,14 +3470,14 @@ window.profAvatar=function(name,cls){return avatar(find(name),name,cls)};
 window.profChip=function(name){var r=find(name);return '<span class="prof-chip" role="link" tabindex="0" onclick="event.stopPropagation();openProfile(\''+e(String(r?r.key:'n:'+name).replace(/'/g,''))+'\')">'+avatar(r,name,'av-s')+e(r?r.p.name:name)+'</span>'};
 window.openProfile=function(key){view=key||'me';go('profile')};
 /* ---------- carregar e guardar ---------- */
-async function load(){if(!authSession)return;var sk=authSession.storeKey;var m=await get('me|'+sk);mine=clean(m);if(mine&&m&&m.at)mine.at=m.at;
+var loadedSk='';async function load(){if(!authSession)return;var sk=authSession.storeKey;loadedSk='';var m=await get('me|'+sk);mine=clean(m);if(mine&&m&&m.at)mine.at=m.at;
   try{var seed=JSON.parse(localStorage.getItem('lojasg.estoque99.aux-profile:'+sk)||'null');if(seed&&!mine){var b=blank();b.name=String(seed.name||b.name).slice(0,40);b.user=suggestUser(b.name);b.cargo=String(seed.cargo||'').slice(0,40);var c=clean(b);if(c){mine=c;await saveMine(c)}localStorage.removeItem('lojasg.estoque99.aux-profile:'+sk)}}catch(x){}team={};var t=topic();if(t){var idx=await get('idx|'+t)||[];for(var i=0;i<idx.length;i++){var r=await get('tm|'+t+'|'+idx[i]);if(r&&r.p){r.p=clean(r.p);if(r.p)team[idx[i]]=r}}}
-  try{lastPub=JSON.parse(localStorage.getItem('lojasg.estoque99.profile-pub:'+sk)||'{}')||{}}catch(x){lastPub={}}refresh()}
+  try{lastPub=JSON.parse(localStorage.getItem('lojasg.estoque99.profile-pub:'+sk)||'{}')||{}}catch(x){lastPub={}}if(authSession&&authSession.storeKey===sk)loadedSk=sk;refresh()}
 function refresh(){if(!authSession)return;if(page==='profile'||page==='team'||page==='plans'||page==='home')render();decorateChat();decorateHeader()}
 async function saveMine(p){p.at=Date.now();mine=p;await put('me|'+authSession.storeKey,p);publish(true)}
 /* ---------- equipe: enviar e receber ---------- */
 var pubTimer=0;
-function publish(now){clearTimeout(pubTimer);pubTimer=setTimeout(async function(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i||!authSession)return;var p=mine||blank();if(!mine){mine=p;mine.at=Date.now();await put('me|'+authSession.storeKey,mine)}
+function publish(now){clearTimeout(pubTimer);pubTimer=setTimeout(async function(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i||!authSession)return;if(loadedSk!==authSession.storeKey){publish(now);return}var p=mine||blank();if(!mine){mine=p;mine.at=Date.now();await put('me|'+authSession.storeKey,mine)}
     var ok=await window.e99SyncSend('profile',{pat:p.at,user:p.user,login:authSession.record.login,pt:{name:p.name,user:p.user,cargo:p.cargo,bio:String(p.bio||'').slice(0,160),names:(p.names||[]).slice(0,3)}},p);if(ok){lastPub[i.topic]=Date.now();try{localStorage.setItem('lojasg.estoque99.profile-pub:'+authSession.storeKey,JSON.stringify(lastPub))}catch(x){}}},now?600:2000+Math.random()*6000)}
 var askAt={};function askResend(dev){if(Date.now()-(askAt[dev]||0)<10*60000)return;askAt[dev]=Date.now();setTimeout(function(){if(window.e99SyncSend)window.e99SyncSend('profreq',{want:dev})},1500)}
 var replyAt=0;window.e99OnProfReq=function(o){var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i||typeof o.want!=='string')return;
@@ -3493,23 +3503,29 @@ async function storeRename(){if(!isStore())return;var k='lojasg.estoque99.store-
   if(t.name!==NAME&&window.e99ChatReload)try{await window.e99ChatReload({code:t.code,name:NAME,team:t.team,owner:t.owner,sync:t.sync,replace:t.replace})}catch(x){}refresh()}
 document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(function(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(i&&authSession&&Date.now()-(lastPub[i.topic]||0)>2.5*3600000)publish(false)},3000)});
 function startup(){setTimeout(storeRename,5000);var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i||!authSession){setTimeout(startup,4000);return}if(Date.now()-(lastPub[i.topic]||0)>2.5*3600000)publish(false)}
+/* ---------- selo verificado: só a conta do Vitor (uid fixo do Firebase; o documento só pode ser gravado por ele) ---------- */
+var VUID='TConyCsDQfPWBZ2MuGhVQTy7Mmz1',vLogin='';
+function isV(r){if(!r)return false;var u=window.e99Cloud&&window.e99Cloud.user&&window.e99Cloud.user();if(r.me)return !!(u&&u.uid===VUID)||(!!vLogin&&myLogin()===vLogin);return r.uid===VUID||(!!vLogin&&!!r.login&&authLoginName(r.login)===vLogin)}
+var VB='<svg class="vbadge" viewBox="0 0 40 40" role="img" aria-label="Verificado"><path fill="#1d9bf0" d="M19.998 3.094 14.638 0l-2.972 5.15H5.432v6.354L0 14.64 3.094 20 0 25.359l5.432 3.137v5.905h5.975L14.638 40l5.36-3.094L25.358 40l3.232-5.6h6.162v-6.01L40 25.359 36.905 20 40 14.641l-5.248-3.03v-6.46h-6.419L25.358 0l-5.36 3.094Zm7.415 11.225 2.254 2.287-11.43 11.5-6.835-6.93 2.244-2.258 4.587 4.581 9.18-9.18Z"/></svg>';
+function vb(r){return isV(r)?VB:''}
+window.profBadge=function(name){return vb(find(name))};window.profByLogin=function(lg){lg=authLoginName(String(lg||''));if(!lg)return null;if(lg===myLogin())return {key:'me',p:mine||blank(),me:true};return all().find(function(r){return r.login&&authLoginName(r.login)===lg})||null};
 /* ---------- página de perfil ---------- */
 function actsOf(names){var since=new Date(Date.now()-30*864e5).toISOString().slice(0,10),done=[],todo=0,today=iso();var ns=names.map(norm);
   (state.plans||[]).forEach(function(pl){(pl.activities||[]).forEach(function(a){var mine1=ns.indexOf(norm(a.owner))>=0||norm(a.owner)==='todos';if(a.done&&ns.indexOf(norm(a.doneBy))>=0&&pl.date>=since)done.push({t:a.title,p:pl.title,at:a.doneAt||pl.date});else if(!a.done&&mine1&&pl.date===today)todo++})});
   done.sort(function(a,b){return String(b.at).localeCompare(String(a.at))});return {done:done,todo:todo}}
 function targetRec(){if(view==='me')return {key:'me',p:mine||blank(),me:true,role:authSession.payload.role};if(view.indexOf('n:')===0){var n=view.slice(2);return find(n)||{key:view,p:null,name:n}}var r=team[view];return r?{key:view,p:r.p,role:r.role,seen:r.seen}:{key:'me',p:mine||blank(),me:true,role:authSession.payload.role}}
-function people(){var seen={},out=[];all().forEach(function(r){seen[norm(r.p.name)]=1;out.push({key:r.key,name:r.p.name,user:r.p.user,rec:r})});
-  (state.team||[]).forEach(function(t){if(!seen[norm(t.name)]&&!find(t.name)){seen[norm(t.name)]=1;out.push({key:'n:'+t.name,name:t.name,user:'',rec:null,role:t.role})}});return out}
+function people(){var seen={},out=[],logins={};all().forEach(function(r){seen[norm(r.p.name)]=1;var lg=r.me?myLogin():(r.login?authLoginName(r.login):'');if(lg)logins[lg]=1;out.push({key:r.key,name:r.p.name,user:r.p.user,rec:r})});
+  (state.team||[]).forEach(function(t){if(t.login&&logins[authLoginName(t.login)])return;if(!seen[norm(t.name)]&&!find(t.name)){seen[norm(t.name)]=1;out.push({key:'n:'+t.name,name:t.name,user:'',rec:null,role:t.role})}});return out}
 function page1(){if(!authSession)return '';var r=targetRec(),p=r.p,name=p?p.name:r.name,member=(state.team||[]).find(function(t){return norm(t.name)===norm(name)});
   var names=[name].concat(p?p.names:[]),st=actsOf(names),cover=p&&p.cover?' style="background-image:url(\''+e(url(p.cover))+'\')"':'';
   var tags=[];if(p&&p.cargo)tags.push(p.cargo);else if(member&&member.role)tags.push(member.role);if(r.me&&isStore())tags.push('Conta do estoque');else if(r.role)tags.push(roleName(r.role));if(r.devices>1)tags.push(r.devices+' aparelhos');if(r.seen)tags.push('ativo '+new Date(r.seen).toLocaleDateString('pt-BR'));if(!p)tags.push('ainda sem conta no app');
-  var h='<div class="prof"><div class="prof-cover"'+cover+'></div><div class="prof-head">'+avatar(r,name,'av-l')+'<div class="who"><h1>'+e(name)+'</h1>'+(p?'<div class="prof-user"><b>@</b>'+e(p.user)+'</div>':'')+'</div>'
+  var h='<div class="prof"><div class="prof-cover"'+cover+'></div><div class="prof-head">'+avatar(r,name,'av-l')+'<div class="who"><h1>'+e(name)+vb(r)+'</h1>'+(p?'<div class="prof-user"><b>@</b>'+e(p.user)+'</div>':'')+'</div>'
    +'<div class="actions">'+(r.me?'<button class="primary" type="button" onclick="profEdit()">Editar perfil</button>':(view!=='me'?'<button type="button" onclick="openProfile(\'me\')">Meu perfil</button>':''))+'</div></div>'
    +(p&&p.bio?'<p class="prof-bio">'+e(p.bio)+'</p>':(r.me?'<p class="prof-bio small">Escreva um recado no seu perfil: toque em Editar perfil.</p>':''))
    +'<div class="prof-meta">'+tags.map(function(t){return '<span>'+e(t)+'</span>'}).join('')+'</div>'
    +'<div class="prof-stats"><div><strong>'+st.done.length+'</strong><span>atividades feitas (30 dias)</span></div><div><strong>'+st.todo+'</strong><span>a fazer hoje</span></div><div><strong>'+people().length+'</strong><span>pessoas na equipe</span></div></div>'
    +'<h2>Atividades feitas</h2><div class="prof-list">'+(st.done.slice(0,12).map(function(a){return '<div><span><b>'+e(a.t)+'</b><br><span class="small">'+e(a.p)+'</span></span><span class="small">'+e(String(a.at).length>10?new Date(a.at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):a.at.split('-').reverse().join('/'))+'</span></div>'}).join('')||'<p class="small">Nenhuma atividade marcada como feita nos últimos 30 dias.</p>')+'</div>'
-   +'<h2>Pessoas da equipe</h2><div class="prof-people">'+people().map(function(x){return '<button type="button" onclick="openProfile(\''+e(String(x.key).replace(/'/g,''))+'\')">'+avatar(x.rec,x.name)+'<b>'+e(x.name)+'</b><small>'+(x.user?'@'+e(x.user):e(x.role||'sem conta'))+'</small></button>'}).join('')+'</div>'
+   +'<h2>Pessoas da equipe</h2><div class="prof-people">'+people().map(function(x){return '<button type="button" onclick="openProfile(\''+e(String(x.key).replace(/'/g,''))+'\')">'+avatar(x.rec,x.name)+'<b>'+e(x.name)+vb(x.rec)+'</b><small>'+(x.user?'@'+e(x.user):e(x.role||'sem conta'))+'</small></button>'}).join('')+'</div>'
    +(window.e99SyncInfo&&window.e99SyncInfo()?'':'<p class="small">Para ver os perfis da equipe, entre numa equipe no Chat com a sincronização ligada.</p>')+'</div>';
   return h}
 window.extraPages=window.extraPages||{};window.extraPages.profile=page1;
@@ -3545,7 +3561,7 @@ window.profSave=async function(ev){ev.preventDefault();keepForm();var p=editing,
   dlg().close();notify('Perfil salvo.'+(window.e99SyncInfo&&window.e99SyncInfo()?' A equipe vê a atualização em instantes.':''));view='me';render()};
 /* ---------- fotos no chat, na equipe e no topo ---------- */
 function decorateChat(){var box=document.getElementById('chat-list');if(!box)return;box.querySelectorAll('.chat-msg .who').forEach(function(w){var n=w.getAttribute('data-name')||w.textContent;if(w.getAttribute('data-av')===n+'|'+(find(n)?find(n).p.at:0))return;var r=find(n);w.setAttribute('data-name',n);w.setAttribute('data-av',n+'|'+(r?r.p.at:0));
-  w.innerHTML=avatar(r,n,'av-s')+'<span>'+e(r?r.p.name:n)+'</span>'+(r?'<span class="small">@'+e(r.p.user)+'</span>':'');w.onclick=function(){openProfile(r?r.key:'n:'+n)}})}
+  w.innerHTML=avatar(r,n,'av-s')+'<span>'+e(r?r.p.name:n)+vb(r)+'</span>'+(r?'<span class="small">@'+e(r.p.user)+'</span>':'');w.onclick=function(){openProfile(r?r.key:'n:'+n)}})}
 var mo=null;function watchChat(){var box=document.getElementById('chat-list');if(!box||box.__profWatch)return;box.__profWatch=1;new MutationObserver(function(){decorateChat()}).observe(box,{childList:true});decorateChat()}
 function decorateTeam(){if(page!=='team')return;document.querySelectorAll('#view .cards .card').forEach(function(c){var h=c.querySelector('h3'),a=c.querySelector('.avatar');if(!h||!a)return;var n=h.textContent;if(n==='TODOS')return;var r=find(n);if(r&&r.p.photo){a.classList.add('has-photo');a.innerHTML='<img src="'+e(url(r.p.photo))+'" alt="">'}a.title='Ver perfil';a.onclick=function(){openProfile(r?r.key:'n:'+n)};
   if(r&&!c.querySelector('.prof-handle')){var s=document.createElement('div');s.className='small prof-handle';s.textContent='@'+r.p.user;h.after(s)}})}
@@ -3562,11 +3578,11 @@ async function sha(t){var h=await crypto.subtle.digest('SHA-256',new TextEncoder
 async function fb(){if(!window.e99Cloud)throw Error('nuvem indisponível');var c=await window.e99Cloud.load(),u=c.auth.currentUser;if(!u)throw Error('sem login na nuvem');if(u.uid!==cloudUid){cloudUid=u.uid;cloudAt=0;if(cloudUnsub){cloudUnsub();cloudUnsub=null}cloudSid=''}return c.db}
 async function cloudStart(){if(!authSession)return;var t=topic();if(!t)return;var sid=await sha('loja|'+t);if(sid===cloudSid&&cloudUnsub)return;var d;try{d=await fb()}catch(x){return}
   if(cloudUnsub){cloudUnsub();cloudUnsub=null}cloudSid=sid;
-  cloudUnsub=d.collection('lojas').doc(sid).collection('perfis').onSnapshot(function(q){q.forEach(function(doc){cloudIn(doc.data()).catch(function(){})})},function(e){try{console.warn('Stok nuvem:',e&&e.code)}catch(x){}});cloudPut()}
-async function cloudIn(x){if(!x||!authSession||typeof x.login!=='string')return;var p=clean(x.p);if(!p)return;p.at=Number(x.at)||0;var lg=x.login.slice(0,80);
+  cloudUnsub=d.collection('lojas').doc(sid).collection('perfis').onSnapshot(function(q){q.forEach(function(doc){cloudIn(doc.data(),doc.id).catch(function(){})})},function(e){try{console.warn('Stok nuvem:',e&&e.code)}catch(x){}});cloudPut()}
+async function cloudIn(x,id){if(!x||!authSession||typeof x.login!=='string')return;var p=clean(x.p);if(!p)return;p.at=Number(x.at)||0;var lg=x.login.slice(0,80);if(id===VUID&&vLogin!==authLoginName(lg)){vLogin=authLoginName(lg);setTimeout(refresh,50)}
   if(authLoginName(lg)===myLogin()){if(!mine||!mine.at||p.at>mine.at){mine=p;await put('me|'+authSession.storeKey,mine);refresh()}return}
-  var key='fb'+(await sha('p|'+authLoginName(lg))).slice(0,30);var cur=team[key];if(cur&&cur.p&&cur.p.at>=p.at)return;
-  team[key]={p:p,role:x.role==='auxiliar'?'auxiliar':'gestor',seen:p.at,login:lg};var t=topic();await put('tm|'+t+'|'+key,team[key]);var idx=await get('idx|'+t)||[];if(idx.indexOf(key)<0){idx.push(key);await put('idx|'+t,idx.slice(-200))}refresh()}
+  var key='fb'+(await sha('p|'+authLoginName(lg))).slice(0,30);var cur=team[key];if(cur&&cur.p&&cur.p.at>=p.at){if(id&&cur.uid!==id){cur.uid=id;refresh()}return}
+  team[key]={p:p,role:x.role==='auxiliar'?'auxiliar':'gestor',seen:p.at,login:lg,uid:id||''};var t=topic();await put('tm|'+t+'|'+key,team[key]);var idx=await get('idx|'+t)||[];if(idx.indexOf(key)<0){idx.push(key);await put('idx|'+t,idx.slice(-200))}refresh()}
 async function cloudPut(){if(!authSession||!mine||!mine.at||!cloudSid||mine.at<=cloudAt)return;var d;try{d=await fb()}catch(x){return}var p=clean(mine);if(!p)return;
   try{await d.collection('lojas').doc(cloudSid).collection('perfis').doc(cloudUid).set({login:authSession.record.login.slice(0,80),role:authSession.payload.role==='auxiliar'?'auxiliar':authSession.payload.role==='gestor'?'gestor':'estoque',p:p,at:mine.at});cloudAt=mine.at}catch(e){try{console.warn('Stok nuvem:',e&&e.code)}catch(x){}}}
 var _pub=publish;publish=function(now){_pub(now);setTimeout(function(){cloudStart().then(cloudPut)},400)};
@@ -3876,8 +3892,8 @@ body.fx-user-off *,body.fx-user-off *::after{animation:none!important}
 var last=null;
 function off(){return document.body.classList.contains('fx-user-off')}
 var rr=render;render=function(){var r=rr.apply(this,arguments);try{var v=document.getElementById('view');if(!v)return r;
-  var items=v.querySelectorAll('.panel,.card,.stat,.plan-card,.pn-card');items.forEach(function(el,i){el.style.setProperty('--fx-delay',((i*1.3)%7).toFixed(1)+'s')});
-  var cur=typeof page!=='undefined'?page:'';if(cur!==last){last=cur;if(!off()){var blocks=v.querySelectorAll('.hero,.stat,.panel,.card,.plan-card');for(var j=0;j<blocks.length&&j<12;j++){if(typeof blocks[j].animate==='function')blocks[j].animate([{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:380,delay:j*40,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'})}}}
+  var items=v.querySelectorAll('.panel,.card,.stat,.plan-card,.pn-card,.prof-stats>div,.prof-people button');items.forEach(function(el,i){el.style.setProperty('--fx-delay',((i*1.3)%7).toFixed(1)+'s')});
+  var cur=typeof page!=='undefined'?page:'';if(cur!==last){last=cur;if(!off()){var blocks=v.querySelectorAll('.hero,.stat,.panel,.card,.plan-card,.prof-cover,.prof-head,.prof-bio,.prof-meta,.prof-stats>div,.prof-list>div,.prof-people button');for(var j=0;j<blocks.length&&j<16;j++){if(typeof blocks[j].animate==='function')blocks[j].animate([{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:380,delay:j*40,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'})}}}
   var ac=document.querySelector('.alert-count');if(ac)ac.classList.toggle('has',+ac.textContent>0)}catch(x){}return r};
 })();
 </script>
@@ -4019,10 +4035,11 @@ async function after(fresh,perm){var u=user();if(!u||!authSession)return;try{awa
 
 /* status dos membros da loja (chega na hora, mesmo que o celular estivesse fechado) */
 function listen(loja){if(!loja||(memSid===loja&&memUnsub))return;load().then(function(c){if(memUnsub)memUnsub();memSid=loja;
-  memUnsub=c.db.collection('lojas').doc(loja).collection('membros').onSnapshot(function(q){q.forEach(function(doc){var x=doc.data()||{};var key=authLoginName(String(x.login||''));cloudMem[key]={uid:doc.id,nome:x.nome,role:x.role,inviteId:x.inviteId||'',criado:x.criado,visto:x.visto,verificado:!!x.verificado};
+  memUnsub=c.db.collection('lojas').doc(loja).collection('membros').onSnapshot(function(q){q.forEach(function(doc){var x=doc.data()||{};var key=authLoginName(String(x.login||''));cloudMem[key]={uid:doc.id,login:String(x.login||''),nome:x.nome,role:x.role,inviteId:x.inviteId||'',criado:x.criado,visto:x.visto,verificado:!!x.verificado};if(window.e99OnMembers)try{window.e99OnMembers()}catch(y){}
       if(window.e99MemTouch){var dev=('u'+doc.id.toLowerCase().replace(/[^a-z0-9]/g,'')).slice(0,40);window.e99MemTouch(dev,{name:x.nome||x.login,role:x.role==='auxiliar'?'auxiliar':'gestor',login:x.login,inviteId:x.inviteId,created:x.criado,seen:x.visto})}});
     var box=document.getElementById('aux-box');if(box&&window.e99AuxCardHTML&&!box.contains(document.activeElement)){var open=box.open,h=window.e99AuxCardHTML();if(h){box.outerHTML=h;var nb=document.getElementById('aux-box');if(nb)nb.open=open}}},
     function(x){try{console.warn('Stok nuvem ouvir membros:',x.code||x)}catch(y){}})}).catch(function(){})}
+window.e99CloudMembers=function(){return Object.keys(cloudMem).map(function(k){return cloudMem[k]})};
 window.e99CloudMember=function(login){return cloudMem[authLoginName(String(login||''))]||null};
 
 /* gestor: uma vez por dia prepara o resumo de cada auxiliar com e-mail confirmado; o robô envia */
@@ -4080,7 +4097,7 @@ async function permStep(force){if(!authSession)return;var k='lojasg.estoque99.pe
   function row(key,icon,title,desc,st){var ok=st==='granted',bad=st==='denied'||st==='none';return '<div class="perm-row"><span><b>'+icon+' '+title+'</b><span class="small">'+desc+(bad?'<br>'+(st==='none'?'Este navegador não oferece este recurso'+(key==='notif'&&isIOS()&&!standalone()?': no iPhone, instale o app na Tela de Início (Compartilhar → Adicionar à Tela de Início) e abra por lá.':'.'):'Bloqueado. Libere nas configurações do navegador/aparelho para este site.'):'')+'</span></span>'+(ok?'<span class="perm-ok">✓ Ativo</span>':'<button type="button" class="primary" onclick="e99Perm(\''+key+'\')" '+(st==='none'?'disabled':'')+'>Permitir</button>')+'</div>'}
   d.innerHTML='<div class="cl-body"><h2>📲 Ativar no aparelho</h2><p>Para receber os avisos do estoque, ouvir os sons e ler códigos e fotos, permita estes recursos:</p>'
    +row('notif','🔔','Notificações','Chat, alertas e tarefas.',n)+row('sound','🔊','Som','Sons de aviso e de abertura.',snd)+row('camera','📷','Câmera','Fotos de ruptura e leitura de código de barras.',cam)
-   +'<button type="button" onclick="document.getElementById(\'perm-step\').close()">Pronto</button></div>';
+   +(window.e99PushCardHTML?window.e99PushCardHTML():'')+'<button type="button" onclick="document.getElementById(\'perm-step\').close()">Pronto</button></div>';
   if(!d.open)try{d.showModal()}catch(x){d.setAttribute('open','')}}
 window.e99PermStep=function(){permStep(true)};
 window.e99Perm=async function(key){try{
@@ -4091,7 +4108,7 @@ window.e99Perm=async function(key){try{
 /* tela Conta: nuvem e permissões */
 var raBefore=renderAccount;renderAccount=function(){var h=raBefore.apply(this,arguments),u=user(),em=myEmail();
   var box='<div class="panel help"><h2>☁️ Nuvem e e-mail</h2>'+(u&&em&&u.email===em?'<p>Conectado como <b>'+e(u.email)+'</b> · '+(u.emailVerified?'<span class="perm-ok">e-mail confirmado ✓</span>':'confirmação pendente')+'</p>'+(u.emailVerified?'':'<button onclick="e99CloudVerify()">Reenviar e-mail de confirmação</button>'):'<p>Esta conta ainda não está ligada a um e-mail.</p><button class="primary" onclick="e99CloudOpen()">Vincular e-mail</button>')
-    +'<h2 style="margin-top:14px">📲 Permissões do aparelho</h2><p class="small">Notificações, som e câmera.</p><button onclick="e99PermStep()">Ativar no aparelho</button></div>';
+    +'<h2 style="margin-top:14px">📲 Permissões do aparelho</h2><p class="small">Notificações, som e câmera.</p><button onclick="e99PermStep()">Ativar no aparelho</button>'+(window.e99PushCardHTML?'<div style="margin-top:12px">'+window.e99PushCardHTML()+'</div>':'')+'</div>';
   return h.replace('<div class="grid2">','<div class="grid2">'+box)};
 window.e99CloudVerify=function(){var u=user();if(u)verify(u,true)};
 window.e99CloudOpen=function(){try{sessionStorage.removeItem('e99-cloud-later')}catch(x){}linkErr='';linkSoft=false;showLink()};
@@ -4099,6 +4116,200 @@ window.e99CloudOpen=function(){try{sessionStorage.removeItem('e99-cloud-later')}
 var lastSid='';setInterval(function(){if(!authSession||!user())return;sid().then(function(s){if(s&&s!==lastSid){lastSid=s;after(true)}})},15000);
 window.e99Cloud={load:load,user:user,sid:sid,after:after,relisten:function(){if(memUnsub){memUnsub();memUnsub=null}var s=memSid;memSid='';listen(s)}};
 if(typeof authSession!=='undefined'&&authSession)setTimeout(onEnter,1500);
+})();
+</script>
+<style id="social-css">
+/* Chat estilo WhatsApp/Instagram/Facebook: digitando, visto, reações, fixada, menções; encaminhar; avisos com app fechado */
+#chat-typing{min-height:18px;font-size:12.5px;color:#ff8a7a;margin:2px 0 6px;display:flex;align-items:center;gap:6px}
+#chat-typing:empty{display:none}
+#chat-typing .dots{display:inline-flex;gap:3px}
+#chat-typing .dots i{width:5px;height:5px;border-radius:50%;background:currentColor;animation:typing-dot 1.2s infinite ease-in-out}
+#chat-typing .dots i:nth-child(2){animation-delay:.15s}#chat-typing .dots i:nth-child(3){animation-delay:.3s}
+@keyframes typing-dot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+.chat-msg .seen-by{display:block;font-size:11px;opacity:.75;margin-top:2px;text-align:right}
+.chat-msg .seen-by b{color:#34b7f1;font-weight:800}
+.chat-msg .reacts{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.chat-msg .reacts button{min-height:0;height:24px;padding:0 8px;border-radius:999px;border:1px solid var(--ds-line);background:rgba(127,127,127,.18);color:inherit;font-size:12.5px;line-height:1;cursor:pointer}
+.chat-msg .reacts button.me{border-color:#ff2a1f;background:rgba(255,42,31,.18)}
+.chat-msg.mentioned{box-shadow:inset 3px 0 0 #ff2a1f}
+.mention{color:#ff6a55;font-weight:750}
+.chat-msg.mine .mention{color:#c41a10}
+.heart-pop{position:absolute;left:50%;top:50%;font-size:46px;transform:translate(-50%,-50%) scale(0);pointer-events:none;animation:heart-pop .9s ease forwards;z-index:3}
+@keyframes heart-pop{0%{transform:translate(-50%,-50%) scale(0);opacity:0}25%{transform:translate(-50%,-50%) scale(1.25);opacity:1}55%{transform:translate(-50%,-50%) scale(1)}100%{transform:translate(-50%,-80%) scale(1);opacity:0}}
+#chat-pin{display:flex;align-items:center;gap:10px;margin:0 0 8px;padding:8px 12px;border-radius:12px;border:1px solid var(--ds-line);background:var(--ds-surface);cursor:pointer}
+#chat-pin[hidden]{display:none}
+#chat-pin div{flex:1;min-width:0;font-size:13px}
+#chat-pin b{display:block;font-size:12px;color:#ff6a55}
+#chat-pin span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#chat-pin button{min-height:0;width:30px;height:30px;padding:0;border-radius:50%;flex:none}
+#msg-menu{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center}
+#msg-menu .mm{width:min(420px,100%);margin:12px;padding:12px;border-radius:20px;background:var(--ds-surface,#111);border:1px solid var(--ds-line);display:grid;gap:8px;animation:mm-up .2s ease}
+@keyframes mm-up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+#msg-menu .emo{display:flex;justify-content:space-between;gap:4px}
+#msg-menu .emo button{font-size:26px;min-height:0;height:48px;width:48px;padding:0;border-radius:50%;border:0;background:transparent;transition:transform .12s}
+#msg-menu .emo button:hover,#msg-menu .emo button:focus-visible{transform:scale(1.25)}
+#msg-menu .act{display:grid;gap:6px}
+#msg-menu .act button{text-align:left}
+#mention-box{display:grid;gap:4px;margin:0 0 6px;padding:6px;border-radius:12px;border:1px solid var(--ds-line);background:var(--ds-surface)}
+#mention-box[hidden]{display:none}
+#mention-box button{text-align:left;min-height:38px}
+.fwd-btn{min-height:0;padding:3px 10px;font-size:12.5px;border-radius:999px;margin-left:6px}
+.push-card{display:grid;gap:8px;padding:12px;border-radius:14px;border:1px solid var(--ds-line);background:rgba(255,42,31,.06)}
+.push-card code{font-size:12.5px;word-break:break-all}
+.push-card .row{display:flex;gap:8px;flex-wrap:wrap}
+.cor-dist{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+</style>
+<script id="social-js">
+(function(){
+'use strict';
+function e(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function T(){try{return window.e99Team&&window.e99Team.get()}catch(x){return null}}
+function myName(){var t=T();return t&&t.name?String(t.name).slice(0,40):''}
+function myLogin(){return authSession?authLoginName(authSession.record.login):''}
+async function sha(t){var h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(h)).map(function(b){return b.toString(16).padStart(2,'0')}).join('')}
+async function cdb(){var c=window.e99Cloud;if(!c||!c.user())return null;var k=await c.load(),sid=await c.sid();if(!sid||!c.user())return null;return {sid:sid,uid:c.user().uid,col:function(n){return k.db.collection('lojas').doc(sid).collection(n)}}}
+
+/* ---------- pessoas: nomes para @menção e o login de cada uma ---------- */
+function persons(){var out=[],seen={};function add(n,lg){n=String(n||'').trim();if(!n||normalText(n)==='todos'||seen[normalText(n)])return;seen[normalText(n)]=1;out.push({name:n,login:lg||''})}
+  (state.team||[]).forEach(function(t){add(t.name,t.login)});(window.e99CloudMembers?window.e99CloudMembers():[]).forEach(function(m){add(m.nome,m.login)});return out}
+function loginOf(name){var n=normalText(name),p=persons().find(function(x){return normalText(x.name)===n});if(p&&p.login)return p.login;var m=(window.e99CloudMembers?window.e99CloudMembers():[]).find(function(x){return normalText(x.nome)===n});return m?m.login:''}
+function rx(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
+window.e99Mentions=function(html){var ps=persons().map(function(p){return e(p.name)}).sort(function(a,b){return b.length-a.length});if(!ps.length||html.indexOf('@')<0)return html;
+  return html.replace(new RegExp('@('+ps.map(rx).join('|')+')','gi'),'<span class="mention">@$1</span>')};
+function myNames(){var l=[myName()];try{var me=window.profByLogin&&window.profByLogin(myLogin());if(me&&me.p){l.push(me.p.name);l.push(me.p.user)}}catch(x){}return l.filter(Boolean).map(function(x){return normalText(x)})}
+window.e99IsMention=function(text){var t=normalText(text);return myNames().some(function(n){return n&&t.indexOf('@'+n)>=0})};
+function mentionedIn(text){var t=normalText(text);return persons().filter(function(p){return t.indexOf('@'+normalText(p.name))>=0})}
+
+/* ---------- avisos com o app fechado, grátis: app ntfy (Android/iPhone) ou ntfy.sh/app no PC ---------- */
+function ntfyBase(){try{return (window.e99Team&&window.e99Team.ntfy())||'https://ntfy.sh'}catch(x){return 'https://ntfy.sh'}}
+async function personalTopic(login){var t=T();if(!t||!login)return '';return 'e99p-'+(await sha('pessoal|'+String(t.code).toUpperCase().replace(/[^A-Z0-9]/g,'')+'|'+authLoginName(login))).slice(0,24)}
+function site(){return location.origin+location.pathname.replace(/(robo|index)\.html$/,'')}
+async function pushTo(login,title,body,page){try{if(!login||authLoginName(login)===myLogin())return false;var tp=await personalTopic(login);if(!tp)return false;
+  var u=ntfyBase()+'/'+tp+'?title='+encodeURIComponent(title)+'&tags=bell&click='+encodeURIComponent(site()+'#abrir='+(page||'chat'));
+  var r=await fetch(u,{method:'POST',body:String(body).slice(0,240)});return r.ok}catch(x){return false}}
+window.e99PushTo=pushTo;
+window.e99PushCardHTML=function(){return '<div class="push-card" id="push-card"><b>🔔 Avisos com o app fechado (grátis)</b><span class="small">Instale o app gratuito <b>ntfy</b> e assine seus canais. Você recebe marcações, tarefas e mensagens mesmo com o Stok fechado.</span><div id="push-topics" class="small">Carregando seus canais…</div></div>'};
+async function fillPush(){var box=document.getElementById('push-topics');if(!box)return;var t=T();if(!t||!authSession){box.textContent='Entre numa equipe no Chat para ativar os avisos.';return}
+  var mine=await personalTopic(authSession.record.login),host=ntfyBase().replace(/^https?:\/\//,'');
+  box.innerHTML='<p style="margin:0 0 6px">1. Instale: <a href="https://play.google.com/store/apps/details?id=io.heckel.ntfy" target="_blank" rel="noopener">Android</a> · <a href="https://apps.apple.com/app/ntfy/id1625396347" target="_blank" rel="noopener">iPhone</a> · no PC use <a href="'+e(ntfyBase())+'/app" target="_blank" rel="noopener">ntfy.sh/app</a></p>'
+   +'<p style="margin:0 0 6px">2. No ntfy, toque em <b>+</b> e assine estes canais (servidor <code>'+e(host)+'</code>):</p>'
+   +'<div class="row"><code>'+e(mine)+'</code><button type="button" onclick="e99CopyTopic(\''+e(mine)+'\')">Copiar · seus avisos</button></div>'
+   +(t.atopic?'<div class="row"><code>'+e(t.atopic)+'</code><button type="button" onclick="e99CopyTopic(\''+e(t.atopic)+'\')">Copiar · equipe</button></div>':'')
+   +'<div class="row"><a class="button" href="ntfy://'+e(host)+'/'+e(mine)+'">Abrir no app ntfy</a><button type="button" onclick="e99PushTest()">Enviar aviso de teste</button></div>'}
+window.e99CopyTopic=function(t){try{navigator.clipboard.writeText(t);notify('Canal copiado: '+t)}catch(x){prompt('Copie o canal:',t)}};
+window.e99PushTest=async function(){var tp=await personalTopic(authSession.record.login);try{var r=await fetch(ntfyBase()+'/'+tp+'?title='+encodeURIComponent('Stok · teste')+'&tags=white_check_mark&click='+encodeURIComponent(site()),{method:'POST',body:'Seus avisos estão funcionando! 🎉'});notify(r.ok?'Aviso de teste enviado. Se apareceu no ntfy, está tudo certo.':'Não foi possível enviar o teste.')}catch(x){notify('Sem internet para enviar o teste.')}};
+new MutationObserver(function(){var b=document.getElementById('push-topics');if(b&&!b.__f){b.__f=1;fillPush()}}).observe(document.documentElement,{childList:true,subtree:true});
+
+/* ---------- enviar: avisa quem foi marcado (@) e quem recebeu resposta ---------- */
+var sendBefore=window.chatSend;if(typeof sendBefore==='function')window.chatSend=async function(text){var re=window.e99ChatReplyTo?window.e99ChatReplyTo():null;var ok=await sendBefore.apply(this,arguments);
+  try{if(ok){typing(true);var me=myName(),t=String(text||'').trim(),done={};
+    mentionedIn(t).forEach(function(p){var lg=p.login||loginOf(p.name);if(lg&&!done[lg]){done[lg]=1;pushTo(lg,me+' marcou você no Stok',t.slice(0,200))}});
+    if(re&&re.from&&re.from!==me){var lg=loginOf(re.from);if(lg&&!done[lg]){done[lg]=1;pushTo(lg,me+' respondeu você',(t||'📎 mídia').slice(0,200))}}}}catch(x){}return ok};
+
+/* ---------- digitando… ---------- */
+var tyAt=0,typers={},tyUnsub=null,rdUnsub=null,rcUnsub=null,pinUnsub=null,subSid='',readers={},reacts={},pinned=null,lastRead='',lastReadAt=0;
+async function typing(stop){var c=await cdb();if(!c)return;var now=Date.now();if(!stop&&now-tyAt<3000)return;tyAt=stop?0:now;try{await c.col('digitando').doc(c.uid).set({nome:myName(),at:stop?0:now})}catch(x){}}
+document.addEventListener('input',function(ev){if(ev.target&&ev.target.id==='chat-text'){if(ev.target.value.trim())typing(false);mentionSuggest(ev.target)}});
+function paintTyping(){var el=document.getElementById('chat-typing');if(!el){var h=document.querySelector('.chat-wrap .chat-head');if(!h)return;el=document.createElement('div');el.id='chat-typing';el.setAttribute('aria-live','polite');h.after(el)}
+  var now=Date.now(),names=Object.keys(typers).filter(function(u){return typers[u].at>now-7000}).map(function(u){return typers[u].nome||'Alguém'});
+  el.innerHTML=names.length?'<span class="dots"><i></i><i></i><i></i></span>'+e(names.length>2?names.length+' pessoas estão digitando…':names.join(' e ')+(names.length>1?' estão':' está')+' digitando…'):''}
+setInterval(function(){if(page==='chat')paintTyping()},1500);
+
+/* ---------- ouvir a nuvem da equipe ---------- */
+async function subscribe(){var c=await cdb();if(!c){return}if(subSid===c.sid&&tyUnsub)return;[tyUnsub,rdUnsub,rcUnsub,pinUnsub].forEach(function(f){if(f)f()});subSid=c.sid;
+  tyUnsub=c.col('digitando').onSnapshot(function(q){typers={};q.forEach(function(d){if(d.id!==c.uid)typers[d.id]=d.data()});if(page==='chat')paintTyping()},function(){});
+  rdUnsub=c.col('lidos').onSnapshot(function(q){readers={};q.forEach(function(d){if(d.id!==c.uid)readers[d.id]=d.data()});decorate()},function(){});
+  rcUnsub=c.col('reacoes').orderBy('at','desc').limit(600).onSnapshot(function(q){reacts={};q.forEach(function(d){var x=d.data();(reacts[x.msg]=reacts[x.msg]||[]).push({uid:x.uid,emoji:x.emoji,nome:x.nome})});decorate()},function(){});
+  pinUnsub=c.col('fixada').doc('atual').onSnapshot(function(d){pinned=d.exists?d.data():null;paintPin()},function(){})}
+setInterval(function(){if(authSession&&T()&&window.e99Cloud&&window.e99Cloud.user())subscribe()},5000);
+
+/* ---------- visto, reações e menções em cada mensagem ---------- */
+var decT=0;function decorate(){clearTimeout(decT);decT=setTimeout(decorateNow,40)}
+function decorateNow(){var box=document.getElementById('chat-list');if(!box)return;var uid=window.e99Cloud&&window.e99Cloud.user()?window.e99Cloud.user().uid:'';
+  box.querySelectorAll('.chat-msg').forEach(function(m){var id=m.getAttribute('data-id'),l=reacts[id]||[];var old=m.querySelector('.reacts');if(old)old.remove();if(!l.length)return;var g={};l.forEach(function(r){(g[r.emoji]=g[r.emoji]||[]).push(r)});
+    var d=document.createElement('div');d.className='reacts';d.innerHTML=Object.keys(g).map(function(k){var mine=g[k].some(function(r){return r.uid===uid});return '<button type="button" class="'+(mine?'me':'')+'" title="'+e(g[k].map(function(r){return r.nome}).join(', '))+'" onclick="e99React(\''+e(id)+'\',\''+e(k)+'\')">'+e(k)+' '+g[k].length+'</button>'}).join('');
+    var when=m.querySelector('.when');m.insertBefore(d,when)});
+  box.querySelectorAll('.seen-by').forEach(function(s){s.remove()});var mine=box.querySelectorAll('.chat-msg.mine');var last=mine[mine.length-1];
+  if(last){var at=last.getAttribute('data-at')||'';var who=Object.keys(readers).filter(function(u){return String(readers[u].at||'')>=at}).map(function(u){return readers[u].nome||'?'});
+    var s=document.createElement('span');s.className='seen-by';s.innerHTML=who.length?'<b>✓✓</b> Visto por '+e(who.slice(0,4).join(', '))+(who.length>4?' e mais '+(who.length-4):''):'✓ Enviada';last.appendChild(s)}
+  markRead(box)}
+async function markRead(box){if(page!=='chat'||document.hidden)return;var all=box.querySelectorAll('.chat-msg[data-at]');if(!all.length)return;var at=all[all.length-1].getAttribute('data-at');if(!at||at<=lastRead||Date.now()-lastReadAt<4000)return;
+  var c=await cdb();if(!c)return;lastRead=at;lastReadAt=Date.now();try{await c.col('lidos').doc(c.uid).set({nome:myName(),at:String(at).slice(0,40)})}catch(x){}}
+function watch(){var box=document.getElementById('chat-list');if(!box||box.__social)return;box.__social=1;new MutationObserver(decorate).observe(box,{childList:true});decorate()}
+setInterval(function(){if(page==='chat'){watch();paintPin()}},700);
+
+/* ---------- reações (❤️ com dois toques, como no Instagram) ---------- */
+window.e99React=async function(id,emoji,heart){var c=await cdb();if(!c){notify('Vincule seu e-mail (tela Conta) para reagir às mensagens.');return}
+  var ref=c.col('reacoes').doc(id+'_'+c.uid),cur=(reacts[id]||[]).find(function(r){return r.uid===c.uid});
+  if(heart){var el=document.querySelector('.chat-msg[data-id="'+id+'"]');if(el){var h=document.createElement('span');h.className='heart-pop';h.textContent='❤️';el.appendChild(h);setTimeout(function(){h.remove()},950)}if(cur&&cur.emoji==='❤️')return}
+  try{if(cur&&cur.emoji===emoji)await ref.delete();else await ref.set({msg:id,uid:c.uid,emoji:emoji,nome:myName(),at:Date.now()});
+    var sn=window.e99ChatSnip&&window.e99ChatSnip(id);if(sn&&sn.from&&sn.from!==myName()&&!(cur&&cur.emoji===emoji)){var lg=loginOf(sn.from);if(lg)pushTo(lg,myName()+' reagiu '+emoji,(sn.t||'à sua mensagem').slice(0,120))}}catch(x){notify('Não foi possível reagir agora.')}};
+/* dois toques no celular */
+var tap={id:'',t:0,x:0,y:0};document.addEventListener('touchend',function(ev){var m=ev.target.closest&&ev.target.closest('#chat-list .chat-msg');if(!m||ev.target.closest('button,audio,a'))return;var id=m.getAttribute('data-id'),now=Date.now(),t0=ev.changedTouches&&ev.changedTouches[0];if(!t0)return;
+  if(tap.id===id&&now-tap.t<320&&Math.abs(t0.clientX-tap.x)<24&&Math.abs(t0.clientY-tap.y)<24){tap.id='';window.e99React(id,'❤️',true)}else tap={id:id,t:now,x:t0.clientX,y:t0.clientY}},{passive:true});
+/* segurar a mensagem (ou botão direito no PC): reações e ações, como no WhatsApp/Facebook */
+var lp=null;document.addEventListener('touchstart',function(ev){var m=ev.target.closest&&ev.target.closest('#chat-list .chat-msg');if(!m||ev.target.closest('button,audio'))return;var t0=ev.touches[0];lp={x:t0.clientX,y:t0.clientY,tm:setTimeout(function(){lp=null;menu(m.getAttribute('data-id'))},480)}},{passive:true});
+document.addEventListener('touchmove',function(ev){if(!lp)return;var t0=ev.touches[0];if(Math.abs(t0.clientX-lp.x)>8||Math.abs(t0.clientY-lp.y)>8){clearTimeout(lp.tm);lp=null}},{passive:true});
+document.addEventListener('touchend',function(){if(lp){clearTimeout(lp.tm);lp=null}},{passive:true});
+document.addEventListener('contextmenu',function(ev){var m=ev.target.closest&&ev.target.closest('#chat-list .chat-msg');if(!m||ev.target.closest('audio'))return;ev.preventDefault();menu(m.getAttribute('data-id'))});
+function menu(id){if(!id)return;try{if(navigator.vibrate)navigator.vibrate(15)}catch(x){}var old=document.getElementById('msg-menu');if(old)old.remove();var sn=window.e99ChatSnip&&window.e99ChatSnip(id)||{};
+  var d=document.createElement('div');d.id='msg-menu';d.setAttribute('role','dialog');d.setAttribute('aria-label','Opções da mensagem');
+  d.innerHTML='<div class="mm"><div class="emo">'+['👍','❤️','😂','😮','😢','🙏'].map(function(k){return '<button type="button" data-emo="'+k+'" aria-label="Reagir '+k+'">'+k+'</button>'}).join('')+'</div><div class="act"><button type="button" data-a="reply">↩ Responder</button><button type="button" data-a="pin">📌 Fixar no topo</button><button type="button" data-a="fwd">↪ Encaminhar</button><button type="button" data-a="copy">📋 Copiar texto</button><button type="button" data-a="close">Fechar</button></div></div>';
+  d.addEventListener('click',function(ev){var b=ev.target.closest('button');if(ev.target===d){d.remove();return}if(!b)return;d.remove();var k=b.getAttribute('data-emo'),a=b.getAttribute('data-a');
+    if(k)window.e99React(id,k);else if(a==='reply')window.chatReply(id);else if(a==='pin')pin(id,sn);else if(a==='copy'){try{navigator.clipboard.writeText(sn.t||'');notify('Texto copiado.')}catch(x){}}
+    else if(a==='fwd'){var t=document.getElementById('chat-text');if(t){t.value='↪ Encaminhada de '+(sn.from||'?')+': '+(sn.t||'');t.focus()}}});
+  document.body.appendChild(d);var f=d.querySelector('.emo button');if(f)f.focus()}
+
+/* ---------- mensagem fixada ---------- */
+async function pin(id,sn){var c=await cdb();if(!c){notify('Vincule seu e-mail para fixar mensagens.');return}try{await c.col('fixada').doc('atual').set({msg:id,t:String(sn.t||'Mensagem').slice(0,140),from:String(sn.from||'').slice(0,60),por:myName(),at:Date.now()});notify('Mensagem fixada no topo do chat.')}catch(x){notify('Não foi possível fixar agora.')}}
+function paintPin(){var list=document.getElementById('chat-list');if(!list)return;var b=document.getElementById('chat-pin');if(!b){b=document.createElement('div');b.id='chat-pin';b.hidden=true;list.before(b)}
+  if(!pinned){b.hidden=true;return}var html='<span aria-hidden="true">📌</span><div><b>Fixada por '+e(pinned.por||'?')+'</b><span>'+e(pinned.from?pinned.from+': ':'')+e(pinned.t)+'</span></div><button type="button" aria-label="Desafixar" data-unpin="1">✕</button>';
+  if(b.__h!==html){b.__h=html;b.innerHTML=html;b.onclick=async function(ev){if(ev.target.closest('[data-unpin]')){var c=await cdb();if(c)try{await c.col('fixada').doc('atual').delete()}catch(x){}return}window.chatJump(pinned.msg)}}b.hidden=false}
+
+/* ---------- @menção com sugestões ---------- */
+function mentionSuggest(ta){var box=document.getElementById('mention-box');var form=document.getElementById('chat-form');if(!form)return;if(!box){box=document.createElement('div');box.id='mention-box';box.hidden=true;form.before(box)}
+  var pos=ta.selectionStart||ta.value.length,before=ta.value.slice(0,pos),m=before.match(/(^|\s)@([^\s@]{0,20})$/);if(!m){box.hidden=true;return}
+  var q=normalText(m[2]),l=persons().filter(function(p){return normalText(p.name).indexOf(q)===0||normalText(p.name).split(' ').some(function(w){return w.indexOf(q)===0})}).slice(0,6);
+  if(!l.length){box.hidden=true;return}box.innerHTML=l.map(function(p){return '<button type="button" data-n="'+e(p.name)+'">@'+e(p.name)+'</button>'}).join('');box.hidden=false;
+  box.onclick=function(ev){var b=ev.target.closest('button');if(!b)return;var n=b.getAttribute('data-n');var start=pos-m[2].length-1;ta.value=ta.value.slice(0,start)+'@'+n+' '+ta.value.slice(pos);var c=start+n.length+2;ta.focus();ta.setSelectionRange(c,c);box.hidden=true}}
+
+/* ---------- encaminhar atividade, NF ou corredor no chat (marcando o responsável) ---------- */
+function ownerName(id){if(!id)return '';if(normalText(id)==='todos')return 'TODOS';var t=(state.team||[]).find(function(x){return x.id===id});return t?t.name:''}
+window.e99Forward=function(kind,id,aid){var txt='';
+  if(kind==='act'){var p=(state.plans||[]).find(function(x){return x.id===id});var a=p&&(p.activities||[]).find(function(x){return x.id===aid});if(!a)return;var who=a.owner&&normalText(a.owner)!=='todos'?'@'+a.owner:'@TODOS';
+    txt='📌 Atividade para '+who+': '+a.title+(a.time?' (até '+a.time+')':'')+' — '+(p.title||'Plano de ação')+' · '+String(p.date||'').split('-').reverse().join('/')+(a.done?' ✅ feita':'')}
+  else if(kind==='nf'){var n=(state.nfs||[]).find(function(x){return x.id===id});if(!n)return;var w=ownerName(n.owner);txt='📦 NF '+n.number+' · '+(n.supplier||'')+' — '+(n.status||'')+(w?' · responsável @'+w:'')}
+  else if(kind==='cor'){var c=(state.corridors||[]).find(function(x){return x.id===id});if(!c)return;var w2=ownerName(c.owner);txt='🧭 Corredor '+c.number+(c.sector?' · '+c.sector:'')+(w2?' — responsável @'+w2:'')}
+  if(!T()){notify('Entre numa equipe no Chat para encaminhar.');return}go('chat');setTimeout(function(){var t=document.getElementById('chat-text');if(t){t.value=txt+' ';t.focus();t.setSelectionRange(t.value.length,t.value.length)}notify('Revise e toque em Enviar. Quem foi marcado recebe o aviso.')},150)};
+
+/* ---------- plano salvo: avisa quem recebeu atividade nova ---------- */
+if(typeof savePlan==='function'){var spBefore=savePlan;savePlan=async function(ev){var d=planDraft?JSON.parse(JSON.stringify(planDraft)):null,old=d&&(state.plans||[]).find(function(x){return x.id===d.id});var r=await spBefore.apply(this,arguments);
+  try{if(d&&!planDraft){var by={};(d.activities||[]).forEach(function(a){var o=old&&(old.activities||[]).find(function(x){return x.id===a.id});if(!a.owner||normalText(a.owner)==='todos'||(o&&normalText(o.owner)===normalText(a.owner)))return;(by[a.owner]=by[a.owner]||[]).push(a.title)});
+    Object.keys(by).forEach(function(n){var lg=loginOf(n);if(lg)pushTo(lg,'Nova atividade para você',by[n].slice(0,3).join(' · ')+(by[n].length>3?' e mais '+(by[n].length-3):''),'plans')})}}catch(x){}return r}}
+
+/* ---------- contas confirmadas entram na Equipe e recebem corredores (só no aparelho do gestor) ---------- */
+var linkT=0;window.e99OnMembers=function(){clearTimeout(linkT);linkT=setTimeout(linkAccounts,1500)};
+function invitesList(){try{return JSON.parse(localStorage.getItem('lojasg.estoque99.aux-invites:'+authSession.storeKey)||'[]')||[]}catch(x){return []}}
+function confirmed(){return (window.e99CloudMembers?window.e99CloudMembers():[]).filter(function(m){return m.verificado&&m.login&&authLoginName(m.login)!==myLogin()&&authLoginName(m.login)!=='estoque 99'})}
+async function linkAccounts(){var t=T();if(!authSession||!t||!t.owner||!state||!Array.isArray(state.team))return;var ms=confirmed();if(!ms.length)return;var inv=invitesList(),added=[],linked=0;
+  ms.forEach(function(m){var lg=authLoginName(m.login);var per=state.team.find(function(x){return x.login&&authLoginName(x.login)===lg});if(per)return;
+    var pr=window.profByLogin?window.profByLogin(m.login):null,iv=inv.find(function(i){return i.inviteId&&i.inviteId===m.inviteId})||inv.find(function(i){return i.login&&authLoginName(i.login)===lg});
+    var names=[iv&&iv.name,m.nome,pr&&pr.p&&pr.p.name].concat(pr&&pr.p&&pr.p.names||[]).filter(Boolean).map(normalText);
+    per=state.team.find(function(x){return !x.login&&names.indexOf(normalText(x.name))>=0});
+    if(per){per.login=m.login.slice(0,80);linked++;return}
+    var id='c'+String(m.uid||lg).replace(/[^a-zA-Z0-9]/g,'').slice(0,14);if(state.team.some(function(x){return x.id===id}))id+=Date.now().toString(36).slice(-4);
+    state.team.push({id:id,name:String((pr&&pr.p&&pr.p.name)||m.nome||m.login).slice(0,60),role:String((pr&&pr.p&&pr.p.cargo)||(m.role==='auxiliar'?'Auxiliar de estoque':'Estoque')).slice(0,60),login:m.login.slice(0,80)});added.push(state.team[state.team.length-1].name)});
+  var dist=distribute(false);if(added.length||linked||dist){await save();render();notify((added.length?'Na Equipe agora: '+added.join(', ')+'. ':'')+(linked?linked+' pessoa(s) ligada(s) à conta. ':'')+(dist?dist+' corredor(es) distribuído(s) entre as contas confirmadas.':''))}}
+function auxConfirmed(){var lgs={};confirmed().forEach(function(m){if(m.role==='auxiliar')lgs[authLoginName(m.login)]=1});return state.team.filter(function(x){return x.login&&lgs[authLoginName(x.login)]})}
+function corNum(c){var n=parseInt(String(c.number).replace(/\D/g,''),10);return isNaN(n)?999:n}
+/* all=false: só corredores sem responsável; all=true: redistribui todos (menos os de TODOS) em blocos seguidos */
+function distribute(all){var ps=auxConfirmed();if(!ps.length||!Array.isArray(state.corridors))return 0;var ids={};state.team.forEach(function(x){ids[x.id]=1});
+  var list=state.corridors.filter(function(c){var o=normalText(c.owner||'');if(o==='todos')return false;return all||!o||!ids[c.owner]}).sort(function(a,b){return corNum(a)-corNum(b)});if(!list.length)return 0;
+  if(all){var per=Math.ceil(list.length/ps.length);list.forEach(function(c,i){c.owner=ps[Math.min(ps.length-1,Math.floor(i/per))].id});return list.length}
+  var load={};ps.forEach(function(p){load[p.id]=state.corridors.filter(function(c){return c.owner===p.id}).length});list.forEach(function(c){var p=ps.slice().sort(function(a,b){return load[a.id]-load[b.id]})[0];c.owner=p.id;load[p.id]++});return list.length}
+window.e99Distribute=async function(){var ps=auxConfirmed();if(!ps.length){notify('Nenhum auxiliar com e-mail confirmado ainda.');return}if(!confirm('Distribuir os corredores (menos os de TODOS) em blocos entre: '+ps.map(function(p){return p.name}).join(', ')+'?'))return;var n=distribute(true);await save();render();notify(n+' corredor(es) distribuído(s).')};
+var rBefore=render;render=function(){var r=rBefore.apply(this,arguments);try{if(page==='corridors'&&T()&&T().owner){var v=document.getElementById('view'),h=v&&v.querySelector('.hero');if(h&&!v.querySelector('.cor-dist')){var ps=auxConfirmed();var d=document.createElement('div');d.className='panel help cor-dist';
+  d.innerHTML='<span><b>⚖️ Corredores por conta confirmada</b><br><span class="small">'+(ps.length?ps.length+' auxiliar(es) com e-mail confirmado: '+e(ps.map(function(p){return p.name}).join(', ')):'Quando os auxiliares confirmarem o e-mail, eles entram aqui.')+'</span></span><button type="button" class="primary" onclick="e99Distribute()" '+(ps.length?'':'disabled')+'>Distribuir corredores</button>';h.after(d)}}}catch(x){}return r};
 })();
 </script>
 <script>

@@ -3,6 +3,13 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 49
+- Perfis: a mesma pessoa não aparece mais duas vezes (Equipe + perfil ficam ligados pelo login); animações na tela de perfil (entrada, brilho, anel no avatar); selo azul de verificado só na conta do Vitor.
+- Chat (ideias do WhatsApp, Instagram e Facebook): "fulano está digitando…", "✓✓ Visto por", reações (segurar a mensagem ou botão direito; dois toques = ❤️), mensagem fixada no topo, @menções com sugestões, encaminhar.
+- Contas com e-mail confirmado entram sozinhas na Equipe (ligadas ao convite) e recebem os corredores sem responsável; botão "Distribuir corredores" em Corredores.
+- Atividades do plano, NFs e corredores: botão 💬 Encaminhar no chat, marcando o responsável.
+- Avisos com o app fechado, grátis: app ntfy (Android/iPhone) ou ntfy.sh/app no PC, com canal pessoal (marcações, respostas, tarefas novas, reações) e canal da equipe. Na tela Conta e no passo "Ativar no aparelho".
+
 ## Versão 48
 - Chat: responder uma mensagem específica, como no WhatsApp. No celular, arraste a mensagem para a direita; no PC, passe o mouse e toque em ↩ (ou dê dois cliques). A citação aparece em cima da resposta; tocar nela leva até a mensagem original.
 - Nuvem: sem internet, o aviso "Vincule seu e-mail" não aparece mais (tenta de novo depois).

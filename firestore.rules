@@ -22,6 +22,12 @@ rules_version = '2';
 //   - login, nome, role, inviteId: string   - criado, visto: int
 //   - verificado: bool (= e-mail confirmado no token)
 //
+// Coleções do chat (dentro de lojas/{loja}, só a equipe sabe o caminho):
+//   digitando/{uid}: nome (0..40), at (int)          — "fulano está digitando"
+//   lidos/{uid}:     nome (0..40), at (string <=40)  — até onde a pessoa leu
+//   reacoes/{msg_uid}: msg (id), uid (= dono), emoji (1..16), nome (0..40), at (int)
+//   fixada/atual:    msg (id), t (0..140), from (0..60), por (0..40), at (int)
+//
 // Coleção: correio              Documento: id automático
 //   Fila de e-mails que o robô (tarefa agendada) envia. Só o robô lê e apaga.
 //   - de: uid de quem criou    - para: uid do destinatário (o robô busca o e-mail)
@@ -124,6 +130,29 @@ service cloud.firestore {
         d.verificado == emailVerified();
     }
 
+    function isMsgId(v) {
+      return v is string && v.matches('^[a-zA-Z0-9_-]{1,60}$');
+    }
+    function isValidDigitando(d) {
+      return hasOnlyAllowedFields(['nome', 'at']) && hasRequiredFields(['nome', 'at']) &&
+        isStr(d.nome, 0, 40) && isValidTime(d.at);
+    }
+    function isValidLido(d) {
+      return hasOnlyAllowedFields(['nome', 'at']) && hasRequiredFields(['nome', 'at']) &&
+        isStr(d.nome, 0, 40) && isStr(d.at, 0, 40);
+    }
+    function isValidReacao(d, id) {
+      return hasOnlyAllowedFields(['msg', 'uid', 'emoji', 'nome', 'at']) &&
+        hasRequiredFields(['msg', 'uid', 'emoji', 'nome', 'at']) &&
+        isMsgId(d.msg) && d.uid == request.auth.uid && id == d.msg + '_' + d.uid &&
+        isStr(d.emoji, 1, 16) && isStr(d.nome, 0, 40) && isValidTime(d.at);
+    }
+    function isValidFixada(d) {
+      return hasOnlyAllowedFields(['msg', 't', 'from', 'por', 'at']) &&
+        hasRequiredFields(['msg', 't', 'from', 'por', 'at']) &&
+        isMsgId(d.msg) && isStr(d.t, 0, 140) && isStr(d.from, 0, 60) && isStr(d.por, 0, 40) && isValidTime(d.at);
+    }
+
     function isValidCorreio(d) {
       return hasOnlyAllowedFields(['de', 'para', 'assunto', 'texto', 'tipo', 'loja', 'criado']) &&
         hasRequiredFields(['de', 'para', 'assunto', 'texto', 'tipo', 'loja', 'criado']) &&
@@ -159,6 +188,28 @@ service cloud.firestore {
           (request.method == 'create' || request.resource.data.criado == resource.data.criado);
         allow delete: if isOwner(uid);
       }
+    }
+
+    // Chat: digitando, lidos, reações e mensagem fixada (equipe lê; cada um grava o seu).
+    match /lojas/{loja}/digitando/{uid} {
+      allow read: if isAuthenticated() && isLojaId(loja);
+      allow create, update: if isOwner(uid) && isLojaId(loja) && isValidDigitando(request.resource.data);
+      allow delete: if isOwner(uid);
+    }
+    match /lojas/{loja}/lidos/{uid} {
+      allow read: if isAuthenticated() && isLojaId(loja);
+      allow create, update: if isOwner(uid) && isLojaId(loja) && isValidLido(request.resource.data);
+      allow delete: if isOwner(uid);
+    }
+    match /lojas/{loja}/reacoes/{id} {
+      allow read: if isAuthenticated() && isLojaId(loja);
+      allow create, update: if isAuthenticated() && isLojaId(loja) && isValidReacao(request.resource.data, id);
+      allow delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
+    }
+    match /lojas/{loja}/fixada/{doc} {
+      allow read: if isAuthenticated() && isLojaId(loja);
+      allow create, update: if isAuthenticated() && isLojaId(loja) && doc == 'atual' && isValidFixada(request.resource.data);
+      allow delete: if isAuthenticated() && isLojaId(loja) && doc == 'atual';
     }
 
     // O robô lista os membros de todas as lojas (para saber quem confirmou o e-mail).
