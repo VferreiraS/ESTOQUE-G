@@ -3,6 +3,10 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 67
+- Conta do PC entra na nuvem com um e-mail interno automático (sem digitar e-mail): vê os perfis da equipe e o selo azul.
+- Chat encerrado pelo administrador (`encerradas/{loja}`) some dos aparelhos e o app sai da equipe.
+
 ## Versão 55
 - Equipe: toda conta criada (mesmo sem e-mail confirmado) e todo perfil da equipe entram sozinhos na aba Equipe, ligados ao convite; recebem os corredores sem responsável. Funciona em qualquer aparelho de gestor.
 

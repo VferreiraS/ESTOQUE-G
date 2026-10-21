@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="66"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="67"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -2608,6 +2608,7 @@ async function start(c){cancelRec();replyTo=null;cfg=c;team=c?await makeTeam(c.c
 var listeners=[];
 window.e99Team={get:function(){return cfg&&team?{code:cfg.code,name:cfg.name,owner:!!cfg.owner,team:cfg.team,sync:cfg.sync===true,replace:cfg.replace===true,topic:team.topic,atopic:team.atopic}:null},onChange:function(fn){listeners.push(fn)},ntfy:function(){return NTFY},
   join:async function(code,name,o){var c={code:norm(code),name:String(name||'').slice(0,40),team:(o&&o.team)||'Equipe',owner:false,sync:true,replace:true};await saveCfg(c);await start(c)},
+  close:async function(){if(!team)return;var tp=team.topic+'|';function del(st){var r=st.openCursor();r.onsuccess=function(){var c=r.result;if(!c)return;if(String(c.key).indexOf(tp)===0)c.delete();c.continue()};return null}try{await cop('msgs','readwrite',del);await cop('imgs','readwrite',del)}catch(e){}await saveCfg(null);await start(null);try{render()}catch(e){}},
   setSync:async function(on,extra){if(!cfg)return;cfg.sync=!!on;if(extra)Object.assign(cfg,extra);await saveCfg(cfg);listeners.forEach(function(fn){try{fn()}catch(e){}})}};
 window.chatCreate=async function(e){e.preventDefault();var v=readForm(e.target);var name=String(v.name||'').trim().slice(0,40);if(!name)return;var code=newCode();var c={code:code,name:name,team:authSession.payload.store||'Equipe',owner:true,sync:true,replace:false};await saveCfg(c);await start(c);render();notify('Equipe criada. Toque em Convidar para chamar os auxiliares.')};
 window.chatJoin=async function(e){e.preventDefault();var v=readForm(e.target);var code=norm(v.code);var name=String(v.name||'').trim().slice(0,40);if(code.length!==12){notify('O código tem 12 letras e números.');return}if(!name)return;var c={code:code,name:name,team:'Equipe',owner:false,sync:!!(e.target.elements.sync&&e.target.elements.sync.checked),replace:!!(e.target.elements.replace&&e.target.elements.replace.checked)};await saveCfg(c);pendingInvite='';await start(c);render();notify('Você entrou no chat da equipe.')};
@@ -4008,12 +4009,13 @@ async function link(email,pw){var s=authSession;if(!s)throw Error('Entre na cont
   if(!u){try{u=(await c.auth.createUserWithEmailAndPassword(email,d)).user}catch(x){if(x.code!=='auth/email-already-in-use')throw x;try{u=(await c.auth.signInWithEmailAndPassword(email,d)).user}catch(y){if(y.code==='auth/network-request-failed'||y.code==='auth/too-many-requests')throw y;throw Error('Este e-mail já está ligado a outra conta do Stok, com outra senha. Use a mesma senha daquela conta ou outro e-mail.')}}}
   else if(ls('lojasg.estoque99.cloud-pw:'+s.storeKey)!==(await sha(d)).slice(0,16)){try{await u.updatePassword(d)}catch(x){}}
   if(authSession!==s)return;setMyEmail(email);ls('lojasg.estoque99.cloud-pw:'+s.storeKey,(await sha(d)).slice(0,16));
-  if(!u.emailVerified)verify(u,false);await after(true,true)}
+  if(!u.emailVerified&&!/@pc\.stok-e99\.app$/.test(email))verify(u,false);await after(true,true)}
 async function verify(u,force){var k='lojasg.estoque99.cloud-verify:'+u.uid;if(!force&&Date.now()-Number(ls(k)||0)<6*3600000)return;try{await u.sendEmailVerification();ls(k,String(Date.now()));if(force)notify('Enviamos um novo e-mail de confirmação para '+u.email+'.')}catch(x){if(force)notify(msg(x))}}
 
 /* depois de conectado: grava a conta, o status na loja e começa a ouvir a equipe */
 async function after(fresh,perm){var u=user();if(!u||!authSession)return;try{await u.reload()}catch(x){}u=user();if(!u)return;if(u.emailVerified)try{await u.getIdToken(true)}catch(x){}
   var c=await load(),now=Date.now(),loja=await sid(),me=authSession;if(!me||!user())return;
+  if(loja)try{if((await c.db.collection('encerradas').doc(loja).get()).exists&&window.e99Team){await window.e99Team.close();try{c.db.collection('equipes').doc(u.uid).delete().catch(function(){})}catch(x){}ls('lojasg.estoque99.team-saved:'+me.storeKey,'');notify('O gestor encerrou este chat. Peça um convite para a equipe nova.');loja=await sid()}}catch(x){}
   try{var ref=c.db.collection('usuarios').doc(u.uid),old=null;try{old=(await ref.get()).data()}catch(x){}
     await ref.set({email:u.email,login:me.record.login.slice(0,80),nome:nome(),role:role(),loja:loja,criado:old&&Number.isInteger(old.criado)?old.criado:now,visto:now,verificado:!!u.emailVerified})}catch(x){try{console.warn('Stok nuvem usuarios:',x.code||x)}catch(y){}}
   if(loja&&(fresh||now-lastVisto>30*60000)){lastVisto=now;try{var mref=c.db.collection('lojas').doc(loja).collection('membros').doc(u.uid),mo=null;try{mo=(await mref.get()).data()}catch(x){}
@@ -4050,7 +4052,7 @@ function summary(name){var n=normalText(name),p=(state.team||[]).find(function(x
 
 /* tela "Vincule seu e-mail" */
 function dlg(id){var d=document.getElementById(id);if(!d){d=document.createElement('dialog');d.id=id;document.body.appendChild(d);d.addEventListener('cancel',function(){try{sessionStorage.setItem('e99-cloud-later','1')}catch(x){}})}return d}
-function showLink(){if(!authSession)return;var d=dlg('cloud-link'),pw=freshPw(),em=myEmail();
+function showLink(){if(!authSession||ls('lojasg.estoque99.pc-account:'+authSession.storeKey))return;var d=dlg('cloud-link'),pw=freshPw(),em=myEmail();
   d.innerHTML='<form class="cl-body" onsubmit="e99CloudLink(event)"><h2>📧 Vincule seu e-mail</h2><p>Agora cada conta do Stok fica guardada na nuvem com o e-mail da pessoa. Assim seu perfil aparece em todos os aparelhos da equipe e você recebe avisos e resumos por e-mail.</p>'
    +'<label>Seu e-mail<input name="email" type="email" required maxlength="120" autocomplete="email" inputmode="email" value="'+e(em)+'" placeholder="voce@gmail.com"></label>'
    +(pw?'':'<label>Sua senha do app (a mesma do login)<input name="password" type="password" inputmode="numeric" required autocomplete="current-password"></label>')
@@ -4067,7 +4069,8 @@ window.e99CloudLink=async function(ev){ev.preventDefault();if(linkBusy||!authSes
   catch(x){linkBusy=false;linkErr=msg(x);linkSoft=soft(x);showLink()}};
 
 /* ao entrar na conta */
-async function onEnter(){if(!authSession)return;if(ls('lojasg.estoque99.pc-account:'+authSession.storeKey))return;/* conta do PC do estoque: sem e-mail */var s=authSession,c;try{c=await load()}catch(x){return}if(authSession!==s)return;var u=c.auth.currentUser,em=myEmail(),pw=freshPw();
+async function onEnter(){if(!authSession)return;var pc=!!ls('lojasg.estoque99.pc-account:'+authSession.storeKey);/* conta do PC do estoque: e-mail interno automático */var s=authSession,c;try{c=await load()}catch(x){return}if(authSession!==s)return;var u=c.auth.currentUser,em=pc?'pc-'+(await sha('pc|'+authLoginName(s.record.login))).slice(0,24)+'@pc.stok-e99.app':myEmail(),pw=freshPw();
+  if(pc){if(u&&u.email===em){after(false);return}if(pw)try{await link(em,pw)}catch(x){try{console.warn('Stok nuvem PC:',x.code||x)}catch(y){}}return}
   if(u&&em&&u.email===em){if(pw){try{var d=await derive(s.record.login,pw),h=(await sha(d)).slice(0,16);if(ls('lojasg.estoque99.cloud-pw:'+s.storeKey)!==h){await u.updatePassword(d);ls('lojasg.estoque99.cloud-pw:'+s.storeKey,h)}}catch(x){}}after(false);return}
   if(em&&pw){try{await link(em,pw);return}catch(x){if(soft(x))return;linkErr=msg(x);linkSoft=false}}
   else if(u&&!em){try{await c.auth.signOut()}catch(x){}}

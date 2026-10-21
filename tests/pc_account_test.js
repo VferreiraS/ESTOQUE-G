@@ -10,6 +10,7 @@ const L=require('./lib.js');const {ok,until}=L;
  await P.fill('#recovery-last4',(await P.textContent('.recovery-code')).replace(/[^A-Z0-9]/gi,'').slice(-4));await P.click('#recovery-enter');await P.waitForTimeout(4000);
  ok(await P.evaluate(()=>!!authSession),'conta PC criada sem e-mail');ok(await P.evaluate(()=>!(document.getElementById('cloud-link')||{}).open),'não pede para vincular e-mail');
  ok(await until(P,()=>!!(window.e99Team&&e99Team.get()),null,20000),'conta PC entra na equipe e no chat');
+ ok(await until(P,()=>!!(window.e99Cloud&&e99Cloud.user()&&/@pc\.stok-e99\.app$/.test(e99Cloud.user().email)),null,20000),'conta PC entra na nuvem com e-mail interno (vê perfis e selo)');
  const lg=await P.evaluate(()=>authSession.record.login);await P.evaluate(()=>{window.confirm=()=>true;return authLogout()});await P.waitForTimeout(1000);await L.login(P,lg,'2580');await P.waitForTimeout(2500);
  ok(await P.evaluate(()=>!!authSession&&!(document.getElementById('cloud-link')||{}).open),'sai e entra de novo sem pedir e-mail');
  await P.evaluate(()=>go('account'));await P.waitForTimeout(500);ok(/Conta do PC do estoque: não usa e-mail/.test(await P.textContent('#view')),'tela Conta explica');

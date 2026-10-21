@@ -203,6 +203,12 @@ service cloud.firestore {
     }
 
     // Equipe da conta (para voltar ao chat ao recuperar pelo e-mail): só o dono.
+    // Chats encerrados pelo administrador: o app só lê.
+    match /encerradas/{loja} {
+      allow get: if isAuthenticated();
+      allow write: if false;
+    }
+
     match /equipes/{uid} {
       allow get: if isOwner(uid);
       allow create, update: if isOwner(uid) && isValidEquipe(request.resource.data);
