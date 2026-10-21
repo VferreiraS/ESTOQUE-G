@@ -8,4 +8,11 @@ const L=require('./lib.js');const {ok,until}=L;
  await A.fill('.ag-wiz input[name=senha]','minha-senha');await A.click('text=Ligar a IA e testar');ok(await until(A,()=>/Tudo certo/.test(document.getElementById('toast').textContent),null,8000),'passo 3 liga e testa');
  ok(got&&got.model==='gemma4:31b'&&!('OLLAMA_API_KEY' in got),'manda só senha, modelo e mensagens');
  await A.evaluate(()=>go('home'));ok(await until(A,()=>/Ollama Cloud/.test((document.getElementById('ag-brief-out')||{}).textContent||''),null,10000),'resumo do dia pelo Ollama Cloud no celular');
+ await A.evaluate(()=>go('account'));await A.waitForSelector('.ag-wiz select[name=ia]');ok(!!(await A.$('a[href="https://build.nvidia.com/settings/api-keys"]')),'link das chaves da NVIDIA');
+ await A.selectOption('.ag-wiz select[name=ia]','nvidia');await A.click('text=Ligar a IA e testar');ok(await until(A,()=>/Tudo certo/.test(document.getElementById('toast').textContent),null,8000),'NVIDIA liga e testa');
+ ok(got&&got.model==='nvidia/nemotron-3-ultra-550b-a55b','manda o modelo da NVIDIA ao intermediário');
+ // intermediário (ia.gs) chama a NVIDIA com a chave guardada nas propriedades
+ const fs=require('fs'),vm=require('vm');let call=null;const sb={PropertiesService:{getScriptProperties:()=>({getProperty:k=>({SENHA:'s',NVIDIA_API_KEY:'nv-teste'})[k]||null})},UrlFetchApp:{fetch:(u,o)=>{call={u,o};return {getResponseCode:()=>200,getContentText:()=>JSON.stringify({choices:[{message:{content:'OK nvidia'}}]})}}},ContentService:{createTextOutput:t=>({setMimeType:()=>t}),MimeType:{JSON:1}}};
+ vm.createContext(sb);vm.runInContext(fs.readFileSync('apps-script/ia.gs','utf8'),sb);const res=JSON.parse(sb.doPost({postData:{contents:JSON.stringify({senha:'s',model:'nvidia/nemotron-3-ultra-550b-a55b',messages:[{role:'user',content:'oi'}]})}}));
+ ok(res.text==='OK nvidia'&&/integrate\.api\.nvidia\.com\/v1\/chat\/completions/.test(call.u)&&call.o.headers.Authorization==='Bearer nv-teste'&&JSON.parse(call.o.payload).chat_template_kwargs.enable_thinking===false,'ia.gs fala com a NVIDIA');
  console.log('errors',errs);await b.close()})();

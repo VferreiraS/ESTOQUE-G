@@ -3,6 +3,9 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 70
+- Agente Nuvem pode usar a NVIDIA (Nemotron) pelo intermediário do Google (`apps-script/ia.gs`, propriedade `NVIDIA_API_KEY`). A chave fica só no Apps Script.
+
 ## Versão 69
 - Conta já criada pode virar a conta do PC (sem e-mail) pelo aviso "Vincule seu e-mail" ou em Minha conta. Só uma conta por aparelho.
 
