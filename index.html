@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="79"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="80"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -3004,7 +3004,7 @@ if(labels.plans){var ks=Object.keys(labels),pos=ks.indexOf('home');ks.slice(pos+
 var FULL=null;function snapshot(){FULL={labels:Object.assign({},labels),icons:Object.assign({},icons)}}
 var ALLOWED={home:1,nfs:1,plans:1,chat:1,account:1,profile:1,'mobile-menu':1};
 function applyRole(){if(!FULL)snapshot();if(isAux()){Object.keys(labels).forEach(function(k){if(!ALLOWED[k]){delete labels[k];delete icons[k]}})}else{var extra={};Object.keys(labels).forEach(function(k){if(!(k in FULL.labels))extra[k]=[labels[k],icons[k]]});Object.keys(labels).forEach(function(k){delete labels[k];delete icons[k]});
-    Object.keys(FULL.labels).forEach(function(k){if(k!=='admin'){labels[k]=FULL.labels[k];icons[k]=FULL.icons[k]}});Object.keys(extra).forEach(function(k){labels[k]=extra[k][0];icons[k]=extra[k][1]})}document.body.classList.toggle('role-aux',isAux())}
+    Object.keys(FULL.labels).forEach(function(k){labels[k]=FULL.labels[k];icons[k]=FULL.icons[k]});Object.keys(extra).forEach(function(k){labels[k]=extra[k][0];icons[k]=extra[k][1]})}document.body.classList.toggle('role-aux',isAux())}
 var logoutRole=authLogout;authLogout=async function(){var r=await logoutRole.apply(this,arguments);if(!authSession)document.body.classList.remove('role-aux');return r};
 var goBefore=go;go=function(p){if(p==='tasks'||p==='ruptures'||p==='expiry')p='plans';if(isAux()&&!ALLOWED[p])p='home';return goBefore.call(this,p)};
 var renderBefore=render;render=function(){if(authSession&&(page==='tasks'||page==='ruptures'||page==='expiry'))page='plans';if(authSession&&isAux()&&!ALLOWED[page])page='home';return renderBefore.apply(this,arguments)};
@@ -3842,76 +3842,130 @@ if(_hyAdm){
 }
 })();
 </script>
-<script id="badge-s-js">
+
+<script id="fix-admin-badge-js">
 (function(){
 'use strict';
-/* Selo verificado: S vermelho (logo) com efeito vivo — v79 */
+/* v80: Administração sempre no menu do gestor + selo S da logo (vermelho, vivo) */
 
-var VB_S = '<svg class="vbadge vbadge-s" viewBox="0 0 40 40" role="img" aria-label="Verificado Stok">'
+var VB_S = '<svg class="vbadge vbadge-s" viewBox="0 0 100 100" role="img" aria-label="Verificado Stok">'
   + '<defs>'
-  + '<linearGradient id="stok-s-g" x1="0" y1="0" x2="1" y2="1">'
-  + '<stop offset="0%" stop-color="#ff6a48"/><stop offset="55%" stop-color="#e01810"/><stop offset="100%" stop-color="#a80c08"/>'
+  + '<linearGradient id="stokSg" x1="0" y1="0" x2="1" y2="1">'
+  + '<stop offset="0" stop-color="#ff6a48"/><stop offset="1" stop-color="#d9140b"/>'
   + '</linearGradient>'
-  + '<filter id="stok-s-glow" x="-40%" y="-40%" width="180%" height="180%">'
-  + '<feGaussianBlur in="SourceGraphic" stdDeviation="1.2" result="b"/>'
+  + '<filter id="stokGlow" x="-50%" y="-50%" width="200%" height="200%">'
+  + '<feGaussianBlur stdDeviation="2.5" result="b"/>'
   + '<feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>'
   + '</filter>'
   + '</defs>'
-  + '<circle cx="20" cy="20" r="18.5" fill="url(#stok-s-g)" filter="url(#stok-s-glow)"/>'
-  + '<circle cx="20" cy="20" r="18.5" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.2"/>'
-  + '<text x="20" y="26.5" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-weight="800" font-size="22" fill="#fff" letter-spacing="-1">S</text>'
+  + '<circle cx="50" cy="50" r="48" fill="#1a0505" opacity=".35"/>'
+  + '<circle cx="50" cy="50" r="46" fill="url(#stokSg)" filter="url(#stokGlow)"/>'
+  + '<circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2"/>'
+  + '<path fill="#fff" transform="translate(8,6) scale(0.84)" d="M42 14h30.5a7.5 7.5 0 0 1 0 15H42a3.5 3.5 0 0 0 0 7H58a21 21 0 0 1 0 42H27.5a7.5 7.5 0 0 1 0-15H58a6 6 0 0 0 0-12H42a18.5 18.5 0 0 1 0-37z"/>'
   + '</svg>';
 
-function patchBadge(){
+function ensureAdminNav(){
   try{
-    if(typeof VB !== 'undefined'){ VB = VB_S; }
-    window.VB = VB_S;
-  }catch(e){}
-  try{
-    var _isV = typeof isV === 'function' ? isV : null;
-    window.isV = function(r){
-      if(!r) return false;
-      try{
-        if(_isV && _isV(r)) return true;
-      }catch(e){}
-      try{
-        var login = '';
-        if(r.me && authSession && authSession.record) login = authSession.record.login;
-        else if(r.login) login = r.login;
-        login = typeof authLoginName === 'function' ? authLoginName(login) : String(login||'').toLowerCase();
-        if(login === 'vferreiras') return true;
-        if(r.me && authSession && authSession.payload && authSession.payload.role === 'gestor' && login === 'vferreiras') return true;
-      }catch(e){}
-      return false;
-    };
-    if(typeof vb === 'function'){
-      window.vb = function(r){ return window.isV(r) ? VB_S : ''; };
+    if(!authSession || !authSession.payload) return;
+    if(authSession.payload.role !== 'gestor') {
+      try{ delete labels.admin; delete icons.admin; }catch(e){}
+      return;
     }
+    labels.admin = 'Administração';
+    icons.admin = '⚙';
+    try{
+      if(typeof FULL === 'object' && FULL && FULL.labels){
+        FULL.labels.admin = 'Administração';
+        if(FULL.icons) FULL.icons.admin = '⚙';
+      }
+    }catch(e){}
   }catch(e){}
 }
 
-if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', patchBadge);
-else patchBadge();
-setTimeout(patchBadge, 0);
-setTimeout(patchBadge, 500);
+function patchApplyRole(){
+  if(typeof applyRole !== 'function') return;
+  if(applyRole.__stokPatched) return;
+  var orig = applyRole;
+  window.applyRole = function(){
+    var r = orig.apply(this, arguments);
+    ensureAdminNav();
+    try{
+      if(authSession && document.getElementById('nav')){
+        var nav = document.getElementById('nav');
+        if(nav && labels && icons){
+          nav.innerHTML = Object.keys(labels).map(function(p){
+            return '<button class="'+(page===p?'active':'')+'" aria-current="'+(page===p?'page':'false')+'" onclick="go(\''+p+'\')"><span aria-hidden="true">'+(icons[p]||'')+'</span>'+labels[p]+'</button>';
+          }).join('');
+        }
+      }
+    }catch(e){}
+    return r;
+  };
+  window.applyRole.__stokPatched = true;
+}
+
+function patchBadge(){
+  try{ VB = VB_S; window.VB = VB_S; }catch(e){ window.VB = VB_S; }
+  var _isV = typeof isV === 'function' ? isV : function(){ return false; };
+  window.isV = function(r){
+    if(!r) return false;
+    try{ if(_isV(r)) return true; }catch(e){}
+    try{
+      var login = '';
+      if(r.me && authSession && authSession.record) login = authSession.record.login;
+      else if(r.login) login = r.login;
+      login = typeof authLoginName === 'function' ? authLoginName(String(login||'')) : String(login||'').toLowerCase();
+      if(login === 'vferreiras') return true;
+      if(r.me && authSession && authSession.payload && authSession.payload.role === 'gestor') return true;
+    }catch(e){}
+    return false;
+  };
+  window.vb = function(r){ return window.isV(r) ? VB_S : ''; };
+}
+
+function patchAuthEnter(){
+  if(typeof authEnter !== 'function' || authEnter.__stokAdm) return;
+  var orig = authEnter;
+  window.authEnter = function(session){
+    var r = orig.apply(this, arguments);
+    ensureAdminNav();
+    patchApplyRole();
+    setTimeout(function(){ ensureAdminNav(); try{ if(typeof render==='function') render(); }catch(e){} }, 100);
+    return r;
+  };
+  window.authEnter.__stokAdm = true;
+}
+
+function boot(){
+  patchBadge();
+  patchApplyRole();
+  patchAuthEnter();
+  ensureAdminNav();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
+setTimeout(boot, 300);
+setTimeout(boot, 1200);
 })();
 </script>
-<style id="badge-s-css">
+<style id="fix-admin-badge-css">
 .vbadge.vbadge-s{
-  display:inline-block;
-  width:1em;height:1em;
-  min-width:16px;min-height:16px;
-  margin-left:.28em;
-  vertical-align:-.12em;
-  flex:none;
-  animation: vb-pop 4s ease-in-out infinite, vb-s-glow 2.4s ease-in-out infinite;
-  filter: drop-shadow(0 0 3px rgba(233,24,16,.55));
+  display:inline-block !important;
+  width:1.15em !important;
+  height:1.15em !important;
+  min-width:18px !important;
+  min-height:18px !important;
+  margin-left:.3em !important;
+  vertical-align:-.18em !important;
+  flex:none !important;
+  animation: vb-pop 3.5s ease-in-out infinite, vb-s-pulse 2s ease-in-out infinite !important;
+  filter: drop-shadow(0 0 4px rgba(255,60,40,.7)) !important;
 }
-@keyframes vb-s-glow{
-  0%,100%{ filter: drop-shadow(0 0 2px rgba(255,60,40,.45)) drop-shadow(0 0 6px rgba(217,20,11,.25)); }
-  50%{ filter: drop-shadow(0 0 5px rgba(255,106,72,.9)) drop-shadow(0 0 12px rgba(233,24,16,.45)); }
+@keyframes vb-s-pulse{
+  0%,100%{ filter: drop-shadow(0 0 2px rgba(255,50,30,.5)) drop-shadow(0 0 8px rgba(217,20,11,.35)); transform: scale(1); }
+  50%{ filter: drop-shadow(0 0 6px rgba(255,106,72,1)) drop-shadow(0 0 14px rgba(233,24,16,.55)); transform: scale(1.08); }
 }
-body.fx-user-off .vbadge.vbadge-s{ animation: none; filter: none; }
+body.fx-user-off .vbadge.vbadge-s{ animation: none !important; filter: none !important; }
 </style>
 <script id="team-diag-js">
 (function(){
