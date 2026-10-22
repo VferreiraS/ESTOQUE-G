@@ -11,7 +11,9 @@
       "**/node_modules/**",
       "CLAUDE.md",
       "README.md",
-      "tests/**"
+      "tests/**",
+      "**/*.log",
+      "central-agentes/**"
     ],
     "headers": [
       {

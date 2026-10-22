@@ -54,7 +54,7 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 </head>
 <body>
 <div class="wrap">
-<a class="back" href="./index.html">← Voltar ao app</a>
+<a class="back" href="./index.html" onclick="return e99Back(event)">← Voltar ao app</a>
 
 <header>
 <h1>Política de Privacidade</h1>
@@ -99,7 +99,7 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 <h3>2.1 Conta no aparelho</h3>
 <ul>
 <li>Login, nome do estoque/loja e tipo de conta (gestor, auxiliar ou estoque).</li>
-<li>A <strong>senha nunca sai do aparelho</strong> e não é guardada em texto: ela serve para gerar a chave que cifra os seus dados (PBKDF2 + AES-GCM).</li>
+<li>A <strong>senha não é enviada</strong> e não é guardada em texto: ela serve para gerar a chave que cifra os seus dados (PBKDF2 + AES-GCM). Para entrar na nuvem, o Firebase recebe só um código derivado dela (hash), do qual não dá para ler a senha.</li>
 <li>Os cadastros de trabalho (notas fiscais, planos de ação e atividades, corredores, equipe com nome e cargo, fotos anexadas) ficam cifrados no armazenamento do navegador (localStorage e IndexedDB).</li>
 <li>Opcional: “Manter conectado” guarda neste aparelho uma chave não exportável para entrar sem digitar a senha.</li>
 <li>Opcional: recuperação pelo app autenticador (código de 6 números), guardada na própria conta.</li>
@@ -108,7 +108,7 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 <h3>2.2 Conta na nuvem (Google Firebase)</h3>
 <p>Para as contas pessoais, o app pede o seu <strong>e-mail</strong> e cria uma conta no Firebase Authentication (Google). A conta do “PC do estoque” não precisa de e-mail. No banco Firestore (região São Paulo) ficam:</p>
 <ul>
-<li><strong>usuarios</strong>: e-mail, login, nome, tipo de conta, loja, datas de criação e último acesso, e se o e-mail foi confirmado — só você lê;</li>
+<li><strong>usuarios</strong>: e-mail, login, nome, tipo de conta, loja, datas de criação e último acesso, e se o e-mail foi confirmado — só você lê, e o robô do correio do app lê o seu e-mail para enviar os resumos e avisos;</li>
 <li><strong>cofre</strong>: dados para recuperar a conta pelo e-mail (protegidos; só você lê);</li>
 <li><strong>equipes</strong>: a equipe da sua conta, para voltar ao chat ao recuperar a conta — só você lê;</li>
 <li><strong>perfis</strong> da equipe: @usuário, nome, cargo, recado (bio), foto e capa — a sua equipe vê;</li>
@@ -143,7 +143,7 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 <table>
 <thead><tr><th scope="col">Finalidade</th><th scope="col">Dados</th><th scope="col">Base legal (LGPD)</th></tr></thead>
 <tbody>
-<tr><td data-th="Finalidade">Entrar no app e proteger a conta</td><td data-th="Dados">Login, senha (só no aparelho), e-mail, tipo de conta</td><td data-th="Base legal (LGPD)">Execução do contrato de trabalho (art. 7º, V) e legítimo interesse do empregador (art. 7º, IX)</td></tr>
+<tr><td data-th="Finalidade">Entrar no app e proteger a conta</td><td data-th="Dados">Login, senha (não é enviada; a nuvem recebe só um código derivado dela), e-mail, tipo de conta</td><td data-th="Base legal (LGPD)">Execução do contrato de trabalho (art. 7º, V) e legítimo interesse do empregador (art. 7º, IX)</td></tr>
 <tr><td data-th="Finalidade">Organizar o estoque, NFs e planos de ação</td><td data-th="Dados">Cadastros de trabalho, nome e cargo da equipe, fotos de atividades</td><td data-th="Base legal (LGPD)">Execução do contrato de trabalho e legítimo interesse</td></tr>
 <tr><td data-th="Finalidade">Chat, perfis e sincronização da equipe</td><td data-th="Dados">Mensagens, fotos, áudios, perfil, “digitando/visto”, reações</td><td data-th="Base legal (LGPD)">Legítimo interesse (comunicação de trabalho); perfil e foto são opcionais</td></tr>
 <tr><td data-th="Finalidade">Recuperar a conta</td><td data-th="Dados">E-mail, cofre de recuperação, autenticador</td><td data-th="Base legal (LGPD)">Execução do contrato e legítimo interesse</td></tr>
@@ -211,7 +211,7 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 <ul>
 <li>Dados de trabalho cifrados no aparelho com AES-GCM; chave derivada da sua senha (PBKDF2).</li>
 <li>Chat e sincronização cifrados com o código da equipe antes de sair do aparelho.</li>
-<li>Regras de acesso no Firestore: dados particulares (como o e-mail) só o dono lê; dados da equipe só quem conhece o identificador secreto da equipe.</li>
+<li>Regras de acesso no Firestore: dados particulares (como o e-mail) só o dono lê, além do robô do correio, que lê o e-mail para enviar os resumos; dados da equipe só quem conhece o identificador secreto da equipe.</li>
 <li>Conexões sempre por HTTPS.</li>
 <li>Chaves de serviços de IA nunca ficam no código do site.</li>
 </ul>
@@ -257,9 +257,13 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 </main>
 
 <footer>
-<a class="back" href="./index.html">← Voltar ao app</a>
+<a class="back" href="./index.html" onclick="return e99Back(event)">← Voltar ao app</a>
 <p>Vigente desde 21/10/2026 · Lojas G — Estoque 99</p>
 </footer>
 </div>
+<script>
+/* A página abre em nova aba: "Voltar" fecha a aba (ou volta no histórico) em vez de abrir um segundo app. Sem JS, o link leva a ./index.html. */
+function e99Back(ev){try{if(history.length<=1){window.close();setTimeout(function(){if(!window.closed)location.href='./index.html'},300)}else{history.back()}if(ev)ev.preventDefault();return false}catch(e){return true}}
+</script>
 </body>
 </html>

@@ -54,7 +54,7 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 </head>
 <body>
 <div class="wrap">
-<a class="back" href="./index.html">← Voltar ao app</a>
+<a class="back" href="./index.html" onclick="return e99Back(event)">← Voltar ao app</a>
 
 <header>
 <h1>Termos de Uso</h1>
@@ -103,7 +103,7 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 <h2>3. Sua conta e sua senha</h2>
 <ul>
 <li>Você é responsável por guardar sua senha, o código de recuperação e o código da equipe. Não compartilhe com ninguém.</li>
-<li>A senha não sai do seu aparelho. Se você esquecer a senha e perder as formas de recuperação (código, e-mail ou app autenticador), os dados cifrados daquele aparelho podem não ter como ser recuperados.</li>
+<li>A senha não é enviada: a nuvem recebe só um código derivado dela (hash) para você entrar. Se você esquecer a senha e perder as formas de recuperação (código, e-mail ou app autenticador), os dados cifrados daquele aparelho podem não ter como ser recuperados.</li>
 <li>Use um e-mail que seja seu e mantenha-o atualizado.</li>
 <li>Se perceber uso indevido da sua conta, avise imediatamente pelo e-mail de contato.</li>
 <li>Faça backup quando o app pedir ou antes de limpar o navegador.</li>
@@ -193,9 +193,13 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 </main>
 
 <footer>
-<a class="back" href="./index.html">← Voltar ao app</a>
+<a class="back" href="./index.html" onclick="return e99Back(event)">← Voltar ao app</a>
 <p>Vigentes desde 21/10/2026 · Lojas G — Estoque 99 · <a href="./privacidade.html">Política de Privacidade</a></p>
 </footer>
 </div>
+<script>
+/* A página abre em nova aba: "Voltar" fecha a aba (ou volta no histórico) em vez de abrir um segundo app. Sem JS, o link leva a ./index.html. */
+function e99Back(ev){try{if(history.length<=1){window.close();setTimeout(function(){if(!window.closed)location.href='./index.html'},300)}else{history.back()}if(ev)ev.preventDefault();return false}catch(e){return true}}
+</script>
 </body>
 </html>

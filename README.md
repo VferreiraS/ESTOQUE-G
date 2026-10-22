@@ -3,6 +3,13 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 72
+- Política de privacidade (`privacidade.html`) e Termos de uso (`termos.html`) conforme a LGPD, com links no login, no rodapé e em Minha conta.
+- Aceite obrigatório ("Li e aceito") ao criar conta, criar auxiliar e vincular e-mail; cada formulário começa desmarcado.
+- Aviso único sobre o armazenamento no aparelho (sem cookies de rastreamento); na tela de entrar ele fica embaixo do cartão e não cobre o login.
+- Acessibilidade e contraste: foco visível, rótulos e Esc fecha avisos.
+- Correção do cache offline por página (service worker) e do toque na notificação com as páginas legais abertas.
+
 ## Versão 71
 - Agente Nuvem pela Cloudflare + NVIDIA (`cloudflare/ia-worker.js`): a chave fica só nos segredos do Worker.
 - Corrigido erro do contador do chat logo depois de sair da conta.

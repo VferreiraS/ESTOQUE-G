@@ -22,7 +22,7 @@ const doc=(path,tok)=>j(`${FS}/v1/projects/${P}/databases/(default)/documents/${
  const link=decodeURIComponent(mailto).match(/(http\S+#auxiliar=[A-Za-z0-9_-]+)/)[1];const KEY=await A.evaluate(()=>{const k=Object.keys(localStorage).find(k=>k.startsWith('lojasg.estoque99.aux-invites:'));return JSON.parse(localStorage.getItem(k))[0].key});
  await B.goto(L.inviteUrl(link));await B.waitForTimeout(2500);await B.fill('#aux-form input[name=pin]',KEY);await B.click('#aux-form button[type=submit]');await B.waitForTimeout(3000);
  ok(/^ana\./.test(await B.inputValue('#aux-form input[name=email]')),'e-mail do convite já vem preenchido');
- await B.fill('#aux-form input[name=password]','4321');await B.fill('#aux-form input[name=confirmation]','4321');await B.click('#aux-form button[type=submit]');await B.waitForTimeout(3000);
+ await B.fill('#aux-form input[name=password]','4321');await B.fill('#aux-form input[name=confirmation]','4321');await L.terms(B,'#aux-form');await B.click('#aux-form button[type=submit]');await B.waitForTimeout(3000);
  await B.fill('#recovery-last4',(await B.textContent('.recovery-code')).replace(/[^A-Z0-9]/gi,'').slice(-4));await B.click('#recovery-enter');await B.waitForTimeout(2500);
  ok(await until(B,()=>!!(window.e99Cloud&&e99Cloud.user()),null,20000),'auxiliar ligado à nuvem');const bUid=await B.evaluate(()=>e99Cloud.user().uid);
  ok(await until(B,async(a)=>{const r=await fetch('http://127.0.0.1:8080/v1/projects/gen-lang-client-0167474823/databases/(default)/documents/lojas/'+a[0]+'/membros/'+a[1],{headers:{Authorization:'Bearer owner'}});if(r.status!==200)return false;const d=await r.json();return !!(d.fields.inviteId&&d.fields.inviteId.stringValue)},[sid,bUid],60000),'membro do auxiliar na loja (com o convite)');
@@ -53,7 +53,7 @@ const doc=(path,tok)=>j(`${FS}/v1/projects/${P}/databases/(default)/documents/${
  await A.evaluate(()=>{window.confirm=()=>true});await A.evaluate(()=>authLogout());await A.waitForTimeout(1500);await L.login(A,gl);
  ok(await until(A,()=>{const d=document.getElementById('cloud-link');return !!(d&&d.open)},null,10000),'conta antiga: pede para vincular o e-mail');
  ok(!(await A.$('#cloud-link input[name=password]')),'não pede a senha de novo logo depois do login');
- await A.fill('#cloud-link input[name=email]',aEmail);await A.click('#cloud-link button.primary');
+ await A.fill('#cloud-link input[name=email]',aEmail);await L.terms(A,'#cloud-link');await A.click('#cloud-link button.primary');
  ok(await until(A,()=>!document.getElementById('cloud-link').open&&!!e99Cloud.user(),null,15000),'vinculou com o mesmo e-mail');
  // entrar digitando o e-mail no lugar do login
  await A.evaluate(()=>authLogout());await A.waitForTimeout(1500);await L.login(A,aEmail);ok(await A.evaluate(()=>!!authSession),'entra com o e-mail no lugar do login');

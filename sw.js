@@ -1,9 +1,11 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
-const CACHE = 'estoque99-v71';
+const CACHE = 'estoque99-v72';
 const VERSION = (CACHE.match(/-v(\d+)$/) || [])[1] || '';
 const CORE = [
   './index.html',
   './manifest.webmanifest',
+  './privacidade.html',
+  './termos.html',
   './icons/apple-touch-v36.png',
   './icons/icon-192-v36.png',
   './icons/icon-512-v36.png',
@@ -58,8 +60,10 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.endsWith('/sw.js') || request.cache === 'no-store') return; // checagem de versão vai sempre à internet
 
   const robot = url.pathname.endsWith('/robo.html');
-  if (request.mode === 'navigate' || url.pathname.endsWith('/index.html') || robot) {
-    event.respondWith(networkFirst(event, request, robot ? './robo.html' : './index.html'));
+  // Política de Privacidade e Termos: cada página tem a sua cópia (não pode sobrescrever a do app).
+  const legal = url.pathname.match(/\/(privacidade|termos)\.html$/);
+  if (request.mode === 'navigate' || url.pathname.endsWith('/index.html') || robot || legal) {
+    event.respondWith(networkFirst(event, request, robot ? './robo.html' : legal ? './' + legal[1] + '.html' : './index.html'));
     return;
   }
   event.respondWith(
@@ -80,7 +84,7 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       const target = './#abrir=' + encodeURIComponent(page);
-      const main = clients.find((c) => !/robo\.html/.test(c.url));
+      const main = clients.find((c) => !/(robo|privacidade|termos)\.html/.test(c.url));
       if (main) {
         main.postMessage({ type: 'open-page', page });
         if (page === 'alerts') main.postMessage({ type: 'open-alerts' });
