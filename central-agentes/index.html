@@ -1,0 +1,1506 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Grupo Ferreira S.A. · Central de Agentes</title>
+<meta name="description" content="Prédio 3D com os agentes do Claude Code trabalhando em tempo real.">
+<meta name="theme-color" content="#000102">
+<style>
+  :root {
+    --bg: #000102;
+    --glass: rgba(4, 12, 22, 0.72);
+    --glass-strong: rgba(4, 12, 22, 0.86);
+    --line: rgba(34, 230, 255, 0.38);
+    --line-strong: rgba(34, 230, 255, 0.75);
+    --cyan: #22e6ff;
+    --purple: #b066ff;
+    --text: #e6f4ff;
+    --muted: #8aa4bb;
+    --radius: 14px;
+    --font: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; width: 100%;
+    background: var(--bg); color: var(--text);
+    font-family: var(--font);
+    overflow: hidden; overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #scene { position: fixed; inset: 0; }
+  #scene canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+  .glass {
+    background: var(--glass);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 0 0 1px rgba(0,0,0,.4), 0 8px 30px rgba(0,0,0,.45), inset 0 0 22px rgba(34,230,255,.06);
+    backdrop-filter: blur(10px) saturate(130%);
+    -webkit-backdrop-filter: blur(10px) saturate(130%);
+  }
+
+  /* ---------- HUD superior esquerdo ---------- */
+  #hud {
+    position: fixed; top: max(16px, env(safe-area-inset-top)); left: 16px;
+    padding: 14px 16px 12px; min-width: 270px; max-width: calc(100vw - 32px);
+    z-index: 5;
+  }
+  #hud .brand { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  #hud h1 {
+    margin: 0; font-size: 17px; letter-spacing: .14em; font-weight: 800;
+    background: linear-gradient(90deg, #00eaff, #ffffff 55%, #b44dff);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    white-space: nowrap;
+  }
+  #hud .sub { margin: 2px 0 10px; font-size: 11px; letter-spacing: .32em; color: var(--muted); text-transform: uppercase; }
+  .badge {
+    font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap;
+  }
+  .badge.demo { color: #ffd23e; background: rgba(255,210,62,.08); }
+  .badge.live { color: #3dff9a; background: rgba(61,255,154,.08); }
+  .badge.live::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 6px; vertical-align: 1px; animation: blink 1.4s infinite; }
+  .badge.off { color: #ff6b8a; background: rgba(255,107,138,.08); }
+  @keyframes blink { 50% { opacity: .25; } }
+  .counters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .counter { background: rgba(255,255,255,.03); border: 1px solid rgba(34,230,255,.16); border-radius: 10px; padding: 6px 8px; }
+  .counter b { display: block; font-size: 20px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .counter span { font-size: 10px; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+
+  /* ---------- Doca: botões + log ---------- */
+  #dock { position: fixed; inset: 0; pointer-events: none; z-index: 4; }
+  #dock > * { pointer-events: auto; }
+  #controls {
+    position: absolute; top: max(16px, env(safe-area-inset-top)); right: 16px;
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end;
+    padding: 10px; max-width: min(700px, 62vw);
+  }
+  .btn {
+    appearance: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--text);
+    background: rgba(34,230,255,.07); border: 1px solid var(--line);
+    border-radius: 10px; padding: 8px 12px; min-height: 36px; cursor: pointer;
+    transition: background .15s, border-color .15s, box-shadow .15s; white-space: nowrap;
+  }
+  .btn:hover { background: rgba(34,230,255,.16); border-color: var(--line-strong); box-shadow: 0 0 14px rgba(34,230,255,.25); }
+  .btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+  .btn.on { background: rgba(34,230,255,.22); border-color: var(--cyan); color: #fff; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .seg .btn { border: 0; border-radius: 0; padding: 8px 10px; }
+  .seg .btn + .btn { border-left: 1px solid var(--line); }
+  .seg[hidden] { display: none; }
+
+  #log {
+    position: absolute; left: 16px; bottom: max(16px, env(safe-area-inset-bottom));
+    width: min(470px, calc(100vw - 32px)); padding: 10px 12px 8px;
+  }
+  #log h2 { margin: 0 0 6px; font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--cyan); font-weight: 700; }
+  #logList { list-style: none; margin: 0; padding: 0; }
+  #logList li {
+    display: flex; align-items: center; gap: 8px; font-size: 12.5px; line-height: 20px; height: 20px;
+    white-space: nowrap; overflow: hidden; color: #cfe3f5;
+  }
+  #logList li:first-child { color: #fff; }
+  #logList .dot { flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 8px currentColor; background: currentColor; }
+  #logList time { flex: 0 0 auto; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 11px; }
+  #logList .txt { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  #logList .empty { color: var(--muted); }
+
+  /* ---------- Painel do agente ---------- */
+  #agentPanel {
+    position: fixed; right: 16px; bottom: max(16px, env(safe-area-inset-bottom));
+    width: 290px; padding: 14px 16px; z-index: 6;
+  }
+  #agentPanel[hidden] { display: none; }
+  #agentPanel .head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding-right: 26px; }
+  #agentPanel .head .dot { width: 12px; height: 12px; border-radius: 50%; flex: 0 0 12px; background: currentColor; box-shadow: 0 0 10px currentColor; }
+  #agentPanel .head strong { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #agentPanel dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 12.5px; }
+  #agentPanel dt { color: var(--muted); }
+  #agentPanel dd { margin: 0; color: #fff; overflow-wrap: anywhere; }
+  #agentClose {
+    position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; min-height: 0; padding: 0;
+    display: grid; place-items: center; font-size: 18px; line-height: 1;
+  }
+
+  /* ---------- Aguardando ---------- */
+  #waiting {
+    position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    padding: 18px 22px; text-align: center; z-index: 3; pointer-events: none;
+    max-width: calc(100vw - 32px); background: var(--glass-strong);
+  }
+  #waiting[hidden] { display: none; }
+  #waiting strong { display: block; font-size: 17px; color: #fff; }
+  #waiting strong::after { content: ""; display: block; height: 2px; margin: 10px auto 8px; width: 60%; background: linear-gradient(90deg, transparent, var(--cyan), var(--purple), transparent); animation: scan 2s ease-in-out infinite; }
+  #waiting small { display: block; color: var(--muted); font-size: 12px; }
+  @keyframes scan { 50% { opacity: .3; width: 30%; } }
+
+  #fatal { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--text); z-index: 20; }
+  #fatal[hidden] { display: none; }
+
+  /* ---------- Celular ---------- */
+  @media (max-width: 760px) {
+    #hud { top: max(8px, env(safe-area-inset-top)); left: 8px; right: 8px; min-width: 0; max-width: none; padding: 10px 12px; }
+    #hud h1 { font-size: 15px; }
+    #hud .sub { margin-bottom: 8px; font-size: 10px; }
+    .counter { padding: 4px 8px; }
+    .counter b { font-size: 16px; }
+    #dock {
+      inset: auto 8px max(8px, env(safe-area-inset-bottom)) 8px;
+      display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+    }
+    #controls { position: static; max-width: none; justify-content: center; padding: 8px; gap: 6px; }
+    .btn { font-size: 12px; padding: 7px 10px; min-height: 34px; }
+    #log { position: static; width: auto; padding: 8px 10px 6px; }
+    #logList li { font-size: 11.5px; line-height: 17px; height: 17px; }
+    #agentPanel { left: 8px; right: 8px; width: auto; top: 112px; bottom: auto; padding: 12px 14px; }
+    #agentPanel dl { grid-template-columns: auto 1fr auto 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="scene" aria-label="Prédio 3D da Central de Agentes"></div>
+
+<header id="hud" class="glass">
+  <div class="brand">
+    <h1>GRUPO FERREIRA S.A.</h1>
+    <span id="modeBadge" class="badge demo">demo</span>
+  </div>
+  <p class="sub">Central de Agentes</p>
+  <div class="counters">
+    <div class="counter"><b id="cAgents">0</b><span>Agentes</span></div>
+    <div class="counter"><b id="cTasks">0</b><span>Tarefas</span></div>
+    <div class="counter"><b id="cEvents">0</b><span>Eventos</span></div>
+  </div>
+</header>
+
+<div id="dock">
+  <div id="controls" class="glass" role="toolbar" aria-label="Controles">
+    <button class="btn" id="btnMode" type="button" title="Alterna automático → demo → ao vivo">Modo: Auto</button>
+    <button class="btn" id="btnPause" type="button">Pausar</button>
+    <div class="seg" id="speedSeg" role="group" aria-label="Velocidade">
+      <button class="btn on" type="button" data-speed="1">1×</button>
+      <button class="btn" type="button" data-speed="2">2×</button>
+      <button class="btn" type="button" data-speed="4">4×</button>
+    </div>
+    <button class="btn" id="btnRoof" type="button">Esconder teto</button>
+    <button class="btn" id="btnCam" type="button">Resetar câmera</button>
+  </div>
+  <section id="log" class="glass" aria-live="polite">
+    <h2>Atividade ao vivo</h2>
+    <ul id="logList"><li class="empty">Sem atividade ainda.</li></ul>
+  </section>
+</div>
+
+<aside id="agentPanel" class="glass" hidden aria-live="polite">
+  <button class="btn" id="agentClose" type="button" aria-label="Fechar painel">×</button>
+  <div class="head"><span class="dot" id="apDot"></span><strong id="apName">—</strong></div>
+  <dl>
+    <dt>Tipo</dt><dd id="apType">—</dd>
+    <dt>Setor</dt><dd id="apSector">—</dd>
+    <dt>Ação</dt><dd id="apAction">—</dd>
+    <dt>Tarefas</dt><dd id="apTasks">0</dd>
+  </dl>
+</aside>
+
+<div id="waiting" class="glass" hidden>
+  <strong>Aguardando agentes do Claude Code…</strong>
+  <small id="waitingSub">Conectando ao servidor…</small>
+</div>
+
+<div id="fatal" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/GammaCorrectionShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const $ = (id) => document.getElementById(id);
+  function fatal(msg) {
+    const el = $('fatal');
+    el.innerHTML = '<div class="glass" style="padding:20px 24px;max-width:420px"><strong>Não foi possível abrir o prédio 3D.</strong><br><small>' + msg + '</small></div>';
+    el.hidden = false;
+  }
+  if (!window.THREE) { fatal('A biblioteca 3D não carregou. Confira a internet e recarregue a página.'); return; }
+  const T = window.THREE;
+
+  // ================================================================
+  // Constantes do prédio
+  // ================================================================
+  const NF = 4, FLOOR_H = 4, W = 24, D = 12, HW = W / 2, HD = D / 2, SLAB = 0.3;
+  const FY = (f) => f * FLOOR_H + SLAB / 2;          // altura do piso do andar f
+  const CORR_Z = 1.5;                                 // corredor
+  const DESK_X = [-6.4, -3.0, 0.4, 3.8, 7.2];
+  const DESK_Z = -2.1, STAND_Z = -0.95;
+  const BOARD = { x: 9.9, z: -2.5 };                  // onde o agente fica de pé diante do quadro
+  const ELEV = { x: -10.6, z: -4.6, doorZ: -2.4 };    // cabine e porta
+  const WALK = 1.7, ELEV_SPEED = 3.4;
+  const PI = Math.PI;
+
+  const SECTORS = [
+    { name: 'Marketing', hex: 0xff3ea5, css: '#ff3ea5', phrases: [
+      'Escrevendo campanha', 'Analisando métricas de SEO', 'Criando post para redes', 'Revisando copy do anúncio',
+      'Planejando calendário editorial', 'Testando A/B da landing', 'Segmentando público'] },
+    { name: 'Financeiro', hex: 0xffd23e, css: '#ffd23e', phrases: [
+      'Conciliando contas', 'Fechando o balanço', 'Projetando fluxo de caixa', 'Revisando orçamento',
+      'Emitindo notas fiscais', 'Analisando custos', 'Calculando impostos'] },
+    { name: 'Jurídico', hex: 0xa64dff, css: '#b066ff', phrases: [
+      'Revisando contrato', 'Checando conformidade LGPD', 'Redigindo parecer', 'Analisando cláusulas',
+      'Registrando marca', 'Preparando procuração', 'Acompanhando processo'] },
+    { name: 'TI', hex: 0x22e6ff, css: '#22e6ff', phrases: [
+      'Escrevendo código', 'Corrigindo bug #1001', 'Revisando pull request', 'Rodando testes',
+      'Fazendo deploy', 'Monitorando servidores', 'Atualizando dependências'] },
+  ];
+  const BOARD_PHRASES = ['Planejando no quadro', 'Organizando o sprint', 'Desenhando o fluxo', 'Priorizando tarefas'];
+  const DEMO_NAMES = [['Luna', 'Caio', 'Bia'], ['Otávio', 'Marta', 'Dante'], ['Helena', 'Rui', 'Íris'], ['Neo', 'Ada', 'Turing']];
+
+  // ================================================================
+  // Utilidades
+  // ================================================================
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const cut = (s, n) => { s = String(s == null ? '' : s).replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+  const basename = (p) => { const s = String(p == null ? '' : p).replace(/[\\/]+$/, ''); const i = Math.max(s.lastIndexOf('/'), s.lastIndexOf('\\')); return i >= 0 ? s.slice(i + 1) : s; };
+  const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const floorName = (f) => (f + 1) + 'º';
+  const col = (hex) => new T.Color(hex).convertSRGBToLinear();
+  const angleLerp = (a, b, t) => { let d = (b - a) % (2 * PI); if (d > PI) d -= 2 * PI; if (d < -PI) d += 2 * PI; return a + d * t; };
+  const hhmmss = (t) => new Date(t).toLocaleTimeString('pt-BR', { hour12: false });
+
+  // Estado global (declarado antes de tudo para evitar uso antes da definição)
+  let modePref = 'auto', active = null, paused = false, speed = 1, roofVisible = true;
+  let selected = null, zoomIn = 0, panelTimer = 0;
+  let es = null, connected = false, retryMs = 3000, retryTimer = null, everConnected = false;
+
+  // ================================================================
+  // Renderizador, cena e câmera
+  // ================================================================
+  let renderer;
+  try {
+    renderer = new T.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  } catch (e) {
+    fatal('Seu navegador não liberou o WebGL (gráficos 3D).');
+    return;
+  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = T.PCFSoftShadowMap;
+  $('scene').appendChild(renderer.domElement);
+  const MAX_ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+
+  const scene = new T.Scene();
+  scene.background = new T.Color(0x000102);
+  scene.fog = new T.Fog(0x000102, 80, 210);
+
+  const camera = new T.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1200);
+  const CAM_POS = new T.Vector3(30, 19, 46), CAM_TGT = new T.Vector3(0, 9, 0);
+
+  let controls = null;
+  if (T.OrbitControls) {
+    controls = new T.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.minDistance = 4;
+    controls.maxDistance = 150;
+    controls.maxPolarAngle = PI / 2 - 0.04;
+  }
+  function homeCamera() {
+    const a = window.innerWidth / window.innerHeight;
+    const k = Math.max(1, 0.78 / a);
+    const tgt = CAM_TGT.clone();
+    if (a < 0.8) tgt.y -= 2.2;           // celular: sobe o prédio acima do rodapé
+    camera.position.copy(CAM_POS).sub(CAM_TGT).multiplyScalar(k).add(tgt);
+    if (controls) { controls.target.copy(tgt); controls.update(); } else camera.lookAt(tgt);
+  }
+  homeCamera();
+
+  // ---------- Pós-processamento (bloom + gama) ----------
+  let composer = null, bloomPass = null;
+  try {
+    if (T.EffectComposer && T.RenderPass && T.ShaderPass && T.UnrealBloomPass && T.GammaCorrectionShader && T.CopyShader && T.LuminosityHighPassShader) {
+      const pr = renderer.getPixelRatio();
+      const w = Math.floor(window.innerWidth * pr), h = Math.floor(window.innerHeight * pr);
+      const gl2 = renderer.capabilities.isWebGL2;
+      const hdr = gl2 && !!renderer.extensions.get('EXT_color_buffer_float');
+      const params = { minFilter: T.LinearFilter, magFilter: T.LinearFilter, format: T.RGBAFormat, type: hdr ? T.HalfFloatType : T.UnsignedByteType };
+      let rt;
+      if (gl2 && T.WebGLMultisampleRenderTarget) { rt = new T.WebGLMultisampleRenderTarget(w, h, params); rt.samples = 4; }
+      else rt = new T.WebGLRenderTarget(w, h, params);
+      composer = new T.EffectComposer(renderer, rt);
+      composer.setPixelRatio(pr);
+      composer.setSize(window.innerWidth, window.innerHeight);
+      composer.addPass(new T.RenderPass(scene, camera));
+      bloomPass = new T.UnrealBloomPass(new T.Vector2(window.innerWidth, window.innerHeight), 0.32, 0.5, 0.88);
+      composer.addPass(bloomPass);
+      composer.addPass(new T.ShaderPass(T.GammaCorrectionShader));
+    }
+  } catch (e) {
+    console.warn('Bloom indisponível, seguindo sem ele.', e);
+    composer = null;
+  }
+  if (!composer) renderer.outputEncoding = T.sRGBEncoding;
+
+  // ================================================================
+  // Materiais e texturas
+  // ================================================================
+  function neon(hex, k) { return new T.MeshBasicMaterial({ color: col(hex).multiplyScalar(k == null ? 2.2 : k), toneMapped: false }); }
+  function canvasTex(c) { const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding; t.anisotropy = MAX_ANISO; return t; }
+  function makeCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h); ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r); ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
+  }
+  function fitText(ctx, text, maxW) {
+    if (ctx.measureText(text).width <= maxW) return text;
+    let s = text;
+    while (s.length > 1 && ctx.measureText(s + '…').width > maxW) s = s.slice(0, -1);
+    return s + '…';
+  }
+  const FONT = '"Inter", "Segoe UI", system-ui, Roboto, Arial, sans-serif';
+
+  const M = {
+    slab: new T.MeshStandardMaterial({ color: col(0x343a44), roughness: 0.78, metalness: 0.25 }),
+    roof: new T.MeshStandardMaterial({ color: col(0x14181f), roughness: 0.55, metalness: 0.5 }),
+    wall: new T.MeshStandardMaterial({ color: col(0x0b0e14), roughness: 0.9, metalness: 0.2 }),
+    metal: new T.MeshStandardMaterial({ color: col(0x6c7a8a), roughness: 0.28, metalness: 0.9 }),
+    darkMetal: new T.MeshStandardMaterial({ color: col(0x1b2129), roughness: 0.4, metalness: 0.8 }),
+    glass: new T.MeshStandardMaterial({ color: col(0x7fdcff), roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.1, depthWrite: false, side: T.DoubleSide }),
+    elevGlass: new T.MeshStandardMaterial({ color: col(0x22e6ff), roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.16, depthWrite: false, side: T.DoubleSide, emissive: col(0x0a4a5a), emissiveIntensity: 0.4 }),
+    board: new T.MeshStandardMaterial({ color: col(0xe9eef5), roughness: 0.35, metalness: 0.05, emissive: col(0x9fb3c8), emissiveIntensity: 0.25 }),
+    ground: new T.MeshStandardMaterial({ color: col(0x03060b), roughness: 0.9, metalness: 0.1 }),
+    plaza: new T.MeshStandardMaterial({ color: col(0x0a0f17), roughness: 0.85, metalness: 0.2 }),
+    suit: new T.MeshStandardMaterial({ color: col(0x3c4656), roughness: 0.45, metalness: 0.55 }),
+    limb: new T.MeshStandardMaterial({ color: col(0x262d38), roughness: 0.5, metalness: 0.5 }),
+    head: new T.MeshStandardMaterial({ color: col(0xd5dde8), roughness: 0.3, metalness: 0.3 }),
+    paper: new T.MeshBasicMaterial({ color: col(0xf4f8ff).multiplyScalar(1.05), side: T.DoubleSide }),
+    lightStrip: neon(0xcff6ff, 1.6),
+    hit: new T.MeshBasicMaterial({ visible: false }),
+  };
+  // Cores neon: até 1 por canal para manter o tom (rosa ≠ roxo); o ciano pode passar de 1 e brilhar no bloom.
+  const NEON_K = [1.12, 1.12, 1.12, 2.0];
+  const NEON = SECTORS.map((s, i) => neon(s.hex, NEON_K[i]));
+  const NEON_SOFT = SECTORS.map((s) => neon(s.hex, 0.85));
+  const NEON_CYAN = neon(0x22e6ff, 2.0), NEON_PURPLE = neon(0xb44dff, 1.1), NEON_PINK = neon(0xff3ea5, 3.0);
+  const VISOR = SECTORS.map((s, i) => neon(s.hex, i === 3 ? 2.2 : 1.25));
+
+  // Logo holográfico
+  function logoCanvas() {
+    const c = makeCanvas(1600, 480), ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, c.width, c.height);
+    let size = 168;
+    ctx.font = '900 ' + size + 'px ' + FONT;
+    const title = 'GRUPO FERREIRA S.A.';
+    const tw = ctx.measureText(title).width;
+    if (tw > 1500) { size = Math.floor(size * 1500 / tw); ctx.font = '900 ' + size + 'px ' + FONT; }
+    const grad = ctx.createLinearGradient(60, 0, 1540, 0);
+    grad.addColorStop(0, '#00eaff'); grad.addColorStop(0.5, '#ffffff'); grad.addColorStop(1, '#b44dff');
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,234,255,.9)'; ctx.shadowBlur = 28;
+    ctx.fillStyle = grad; ctx.fillText(title, 800, 200);
+    ctx.shadowBlur = 0; ctx.fillText(title, 800, 200);
+    // linha divisória
+    const lg = ctx.createLinearGradient(260, 0, 1340, 0);
+    lg.addColorStop(0, 'rgba(0,234,255,0)'); lg.addColorStop(0.5, 'rgba(200,240,255,.95)'); lg.addColorStop(1, 'rgba(180,77,255,0)');
+    ctx.fillStyle = lg; ctx.fillRect(260, 310, 1080, 4);
+    // subtítulo com espaçamento
+    ctx.font = '700 64px ' + FONT;
+    const sub = 'CENTRAL DE AGENTES', sp = 22;
+    let total = 0; for (const ch of sub) total += ctx.measureText(ch).width + sp; total -= sp;
+    let x = 800 - total / 2;
+    ctx.textAlign = 'left'; ctx.fillStyle = '#9ff4ff'; ctx.shadowColor = 'rgba(0,234,255,.8)'; ctx.shadowBlur = 16;
+    for (const ch of sub) { ctx.fillText(ch, x, 385); x += ctx.measureText(ch).width + sp; }
+    // linhas de varredura (holograma)
+    ctx.shadowBlur = 0; ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = 'rgba(0,0,0,.38)';
+    for (let y = 0; y < c.height; y += 7) ctx.fillRect(0, y, c.width, 2);
+    ctx.globalCompositeOperation = 'source-over';
+    return c;
+  }
+  const LOGO_TEX = canvasTex(logoCanvas());
+
+  // Janelas panorâmicas (cidade noturna azulada)
+  function cityCanvas() {
+    const c = makeCanvas(1024, 160), ctx = c.getContext('2d');
+    const g = ctx.createLinearGradient(0, 0, 0, 160);
+    g.addColorStop(0, '#071a3a'); g.addColorStop(0.65, '#0f3570'); g.addColorStop(1, '#1d5aa8');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 1024, 160);
+    for (let i = 0; i < 40; i++) { ctx.fillStyle = 'rgba(200,230,255,' + rand(0.3, 0.9) + ')'; ctx.fillRect(rand(0, 1024), rand(0, 50), 1.5, 1.5); }
+    let x = 0;
+    while (x < 1024) {
+      const bw = rand(26, 70), bh = rand(40, 125);
+      ctx.fillStyle = 'rgb(' + Math.floor(rand(4, 12)) + ',' + Math.floor(rand(14, 26)) + ',' + Math.floor(rand(40, 60)) + ')';
+      ctx.fillRect(x, 160 - bh, bw, bh);
+      for (let wy = 160 - bh + 6; wy < 156; wy += 9) for (let wx = x + 4; wx < x + bw - 4; wx += 8) {
+        if (Math.random() < 0.32) { ctx.fillStyle = Math.random() < 0.75 ? 'rgba(125,200,255,.85)' : 'rgba(255,214,140,.85)'; ctx.fillRect(wx, wy, 3, 4); }
+      }
+      x += bw + rand(2, 10);
+    }
+    return c;
+  }
+  const CITY_TEX = canvasTex(cityCanvas());
+
+  // Telas dos monitores (código na cor do setor)
+  function screenCanvas(css) {
+    const c = makeCanvas(256, 144), ctx = c.getContext('2d');
+    ctx.fillStyle = '#03101c'; ctx.fillRect(0, 0, 256, 144);
+    ctx.fillStyle = css; ctx.globalAlpha = 0.9; ctx.fillRect(0, 0, 256, 12);
+    for (let y = 22; y < 140; y += 11) {
+      let x = 10 + Math.floor(rand(0, 4)) * 12;
+      const n = Math.floor(rand(1, 5));
+      for (let i = 0; i < n && x < 240; i++) {
+        const w = rand(14, 60);
+        ctx.globalAlpha = rand(0.5, 1);
+        ctx.fillStyle = Math.random() < 0.55 ? css : (Math.random() < 0.5 ? '#e8f6ff' : '#7f9bb5');
+        ctx.fillRect(x, y, w, 5); x += w + 6;
+      }
+    }
+    ctx.globalAlpha = 1;
+    return c;
+  }
+  const SCREEN_TEX = SECTORS.map((s) => canvasTex(screenCanvas(s.css)));
+
+  // Placa "Nº · Setor"
+  function plateCanvas(f) {
+    const s = SECTORS[f];
+    const c = makeCanvas(640, 128), ctx = c.getContext('2d');
+    roundRect(ctx, 6, 6, 628, 116, 22);
+    ctx.fillStyle = 'rgba(3,8,16,.92)'; ctx.fill();
+    ctx.lineWidth = 6; ctx.strokeStyle = s.css; ctx.shadowColor = s.css; ctx.shadowBlur = 18; ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+    ctx.font = '800 64px ' + FONT;
+    const a = floorName(f), b = '  ·  ', t = s.name.toUpperCase();
+    const wa = ctx.measureText(a).width, wb = ctx.measureText(b).width, wt = ctx.measureText(t).width;
+    let x = 320 - (wa + wb + wt) / 2;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = s.css; ctx.fillText(a, x, 66); x += wa;
+    ctx.fillStyle = '#7f9bb5'; ctx.fillText(b, x, 66); x += wb;
+    ctx.fillStyle = '#ffffff'; ctx.fillText(t, x, 66);
+    return c;
+  }
+
+  // ================================================================
+  // Ambiente: céu, chão, grade, praça
+  // ================================================================
+  scene.add(new T.AmbientLight(col(0x22344f), 1.3));
+  scene.add(new T.HemisphereLight(col(0x3c5a9a), col(0x020305), 0.55));
+  const moon = new T.DirectionalLight(col(0xbcd6ff), 0.95);
+  moon.position.set(16, 30, 30);
+  moon.target.position.set(0, 6, 0);
+  moon.castShadow = true;
+  moon.shadow.mapSize.set(2048, 2048);
+  Object.assign(moon.shadow.camera, { left: -24, right: 24, top: 22, bottom: -22, near: 1, far: 110 });
+  moon.shadow.bias = -0.0004;
+  moon.shadow.normalBias = 0.03;
+  moon.shadow.radius = 4;
+  scene.add(moon, moon.target);
+
+  // Estrelas
+  (function stars() {
+    const n = 1800, pos = new Float32Array(n * 3), colr = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      const r = rand(380, 520), th = rand(0, 2 * PI), ph = Math.acos(rand(0.02, 1));
+      pos[i * 3] = r * Math.sin(ph) * Math.cos(th); pos[i * 3 + 1] = r * Math.cos(ph) - 20; pos[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+      const c = new T.Color().setHSL(rand(0.5, 0.7), rand(0, 0.5), rand(0.55, 1));
+      colr[i * 3] = c.r; colr[i * 3 + 1] = c.g; colr[i * 3 + 2] = c.b;
+    }
+    const g = new T.BufferGeometry();
+    g.setAttribute('position', new T.BufferAttribute(pos, 3));
+    g.setAttribute('color', new T.BufferAttribute(colr, 3));
+    const m = new T.PointsMaterial({ size: 1.7, sizeAttenuation: false, vertexColors: true, fog: false, transparent: true, opacity: 0.95, depthWrite: false });
+    scene.add(new T.Points(g, m));
+  })();
+
+  const ground = new T.Mesh(new T.PlaneGeometry(600, 600), M.ground);
+  ground.rotation.x = -PI / 2; ground.position.y = -0.02; ground.receiveShadow = true;
+  scene.add(ground);
+  const grid = new T.GridHelper(400, 160, 0x0b3a7a, 0x062652);
+  grid.position.y = 0.005;
+  grid.material.transparent = true; grid.material.opacity = 0.55; grid.material.depthWrite = false;
+  scene.add(grid);
+
+  function box(w, h, d, mat, x, y, z, parent, cast, receive) {
+    const m = new T.Mesh(new T.BoxGeometry(w, h, d), mat);
+    m.position.set(x || 0, y || 0, z || 0);
+    m.castShadow = !!cast; m.receiveShadow = receive !== false;
+    (parent || scene).add(m);
+    return m;
+  }
+
+  // Praça com contorno neon e logo projetado
+  const PLAZA = { x0: -15, x1: 15, z0: 6.8, z1: 20 };
+  (function plaza() {
+    const pw = PLAZA.x1 - PLAZA.x0, pd = PLAZA.z1 - PLAZA.z0, cz = (PLAZA.z0 + PLAZA.z1) / 2;
+    const p = new T.Mesh(new T.PlaneGeometry(pw, pd), M.plaza);
+    p.rotation.x = -PI / 2; p.position.set(0, 0.012, cz); p.receiveShadow = true; scene.add(p);
+    const t = 0.08, y = 0.03;
+    box(pw, 0.03, t, NEON_CYAN, 0, y, PLAZA.z0, scene, false, false);
+    box(pw, 0.03, t, NEON_CYAN, 0, y, PLAZA.z1, scene, false, false);
+    box(t, 0.03, pd, NEON_CYAN, PLAZA.x0, y, cz, scene, false, false);
+    box(t, 0.03, pd, NEON_CYAN, PLAZA.x1, y, cz, scene, false, false);
+    box(pw - 1.6, 0.02, 0.04, NEON_SOFT[2], 0, y, PLAZA.z0 + 0.8, scene, false, false);
+    box(pw - 1.6, 0.02, 0.04, NEON_SOFT[2], 0, y, PLAZA.z1 - 0.8, scene, false, false);
+    const logo = new T.Mesh(new T.PlaneGeometry(16, 4.8), new T.MeshBasicMaterial({ map: LOGO_TEX, transparent: true, opacity: 0.62, depthWrite: false, color: col(0xffffff).multiplyScalar(1.1) }));
+    logo.rotation.x = -PI / 2; logo.position.set(0, 0.04, cz + 0.6); logo.renderOrder = 2;
+    scene.add(logo);
+  })();
+
+  // ================================================================
+  // Prédio
+  // ================================================================
+  const building = new T.Group(); scene.add(building);
+  const roofGroup = new T.Group(); scene.add(roofGroup);
+  const deskScreens = [];          // [andar][mesa] -> material da tela
+  const cityMat = new T.MeshBasicMaterial({ map: CITY_TEX, color: col(0xffffff).multiplyScalar(0.85) });
+
+  // Parede de fundo
+  box(W + 0.6, NF * FLOOR_H + 0.4, 0.3, M.wall, 0, NF * FLOOR_H / 2, -HD - 0.15, building, false, true);
+  // Paredes laterais de vidro
+  [-1, 1].forEach((s) => {
+    const g = new T.Mesh(new T.PlaneGeometry(D, NF * FLOOR_H), M.glass);
+    g.rotation.y = PI / 2; g.position.set(s * HW, NF * FLOOR_H / 2, 0); g.renderOrder = 1;
+    building.add(g);
+    // perfis do vidro
+    for (let f = 0; f <= NF; f++) box(0.08, 0.08, D, M.darkMetal, s * HW, f * FLOOR_H, 0, building, false, false);
+    for (let k = -1; k <= 1; k++) box(0.06, NF * FLOOR_H, 0.06, M.darkMetal, s * HW, NF * FLOOR_H / 2, k * 3, building, false, false);
+  });
+  // Colunas nos cantos da frente, com faixa neon
+  [-1, 1].forEach((s) => {
+    box(0.7, NF * FLOOR_H + 0.7, 0.7, M.darkMetal, s * (HW + 0.15), (NF * FLOOR_H + 0.7) / 2, HD + 0.15, building, true, true);
+    box(0.12, NF * FLOOR_H + 0.3, 0.05, NEON_CYAN, s * (HW + 0.15), (NF * FLOOR_H + 0.3) / 2 + 0.2, HD + 0.52, building, false, false);
+    box(0.7, NF * FLOOR_H + 0.7, 0.7, M.darkMetal, s * (HW + 0.15), (NF * FLOOR_H + 0.7) / 2, -HD - 0.15, building, true, true);
+  });
+
+  for (let f = 0; f < NF; f++) {
+    const s = SECTORS[f], y0 = f * FLOOR_H, fy = FY(f);
+    // Laje (com vão do elevador a partir do 2º andar)
+    if (f === 0) box(W, SLAB, D, M.slab, 0, y0, 0, building, false, true);
+    else {
+      box(W - 2.8, SLAB, D, M.slab, 1.4, y0, 0, building, false, true);
+      box(2.8, SLAB, D - 2.8, M.slab, -HW + 1.4, y0, 1.4, building, false, true);
+    }
+    // Borda neon em volta da laje
+    const t = 0.07, ny = y0 + SLAB / 2 - 0.02;
+    box(W + 0.1, t, t, NEON[f], 0, ny, HD + 0.02, building, false, false);
+    box(W + 0.1, t, t, NEON[f], 0, ny, -HD + 0.05, building, false, false);
+    box(t, t, D, NEON[f], -HW - 0.02, ny, 0, building, false, false);
+    box(t, t, D, NEON[f], HW + 0.02, ny, 0, building, false, false);
+    box(W + 0.1, t, t, NEON_SOFT[f], 0, y0 - SLAB / 2 + 0.03, HD + 0.02, building, false, false);
+
+    // Faixas de luz no teto
+    const parentStrips = f === NF - 1 ? roofGroup : building;
+    const cy = (f + 1) * FLOOR_H - SLAB / 2 - 0.03;
+    [-3.6, -0.6, 2.4, 4.8].forEach((z) => box(18, 0.04, 0.14, M.lightStrip, 1.2, cy, z, parentStrips, false, false));
+
+    // Janelas panorâmicas no fundo
+    const winW = 20.0, winX = 1.3, winH = 2.6, winY = fy + 2.0;
+    const win = new T.Mesh(new T.PlaneGeometry(winW, winH), cityMat);
+    win.position.set(winX, winY, -HD + 0.02);
+    building.add(win);
+    for (let i = 0; i <= 8; i++) box(0.07, winH + 0.1, 0.08, M.darkMetal, winX - winW / 2 + i * (winW / 8), winY, -HD + 0.06, building, false, false);
+    box(winW + 0.1, 0.09, 0.1, M.darkMetal, winX, winY + winH / 2, -HD + 0.06, building, false, false);
+    box(winW + 0.1, 0.09, 0.1, M.darkMetal, winX, winY - winH / 2, -HD + 0.06, building, false, false);
+
+    // Placa na frente
+    const plate = new T.Mesh(new T.PlaneGeometry(4.2, 0.84), new T.MeshBasicMaterial({ map: canvasTex(plateCanvas(f)), transparent: true, color: col(0xffffff).multiplyScalar(1.05) }));
+    plate.position.set(-7.4, fy + 3.25, HD - 0.25);
+    building.add(plate);
+
+    // Quadro branco com blocos coloridos
+    const bg = new T.Group();
+    bg.position.set(11.25, fy, BOARD.z); bg.rotation.y = -PI / 2;
+    building.add(bg);
+    box(2.8, 1.6, 0.06, M.board, 0, 1.75, 0, bg, true, true);
+    box(2.9, 0.08, 0.1, M.metal, 0, 2.58, 0, bg, false, false);
+    box(2.9, 0.08, 0.1, M.metal, 0, 0.92, 0, bg, false, false);
+    box(0.06, 1.0, 0.06, M.metal, -1.2, 0.5, 0, bg, true, false);
+    box(0.06, 1.0, 0.06, M.metal, 1.2, 0.5, 0, bg, true, false);
+    const stickyCols = [0xff3ea5, 0xffd23e, 0xa64dff, 0x22e6ff, 0x3dff9a, 0xff8a3d];
+    for (let i = 0; i < 10; i++) {
+      const c = stickyCols[(i + f) % stickyCols.length];
+      const m = new T.MeshBasicMaterial({ color: col(c).multiplyScalar(0.95) });
+      box(0.34, 0.26, 0.02, m, -1.1 + (i % 5) * 0.55, 2.2 - Math.floor(i / 5) * 0.42 + rand(-0.04, 0.04), 0.045, bg, false, false);
+    }
+    box(1.8, 0.03, 0.01, NEON_SOFT[f], -0.2, 1.3, 0.04, bg, false, false);
+    box(1.2, 0.03, 0.01, new T.MeshBasicMaterial({ color: col(0x1b2a3a) }), -0.5, 1.16, 0.04, bg, false, false);
+
+    // Mesas metálicas
+    deskScreens[f] = [];
+    DESK_X.forEach((dx, i) => {
+      const g = new T.Group(); g.position.set(dx, fy, DESK_Z); building.add(g);
+      box(2.0, 0.07, 1.0, M.metal, 0, 0.95, 0, g, true, true);
+      box(0.06, 0.92, 0.9, M.darkMetal, -0.95, 0.46, 0, g, true, false);
+      box(0.06, 0.92, 0.9, M.darkMetal, 0.95, 0.46, 0, g, true, false);
+      box(1.9, 0.5, 0.04, M.darkMetal, 0, 0.62, -0.4, g, false, false);
+      box(2.0, 0.025, 0.03, NEON[f], 0, 0.92, 0.51, g, false, false);
+      box(0.1, 0.36, 0.08, M.darkMetal, 0, 1.16, -0.25, g, true, false);
+      box(1.12, 0.68, 0.05, M.darkMetal, 0, 1.52, -0.28, g, true, false);
+      const sm = new T.MeshBasicMaterial({ map: SCREEN_TEX[f], toneMapped: false });
+      const scr = new T.Mesh(new T.PlaneGeometry(1.02, 0.58), sm);
+      scr.position.set(0, 1.52, -0.25); g.add(scr);
+      box(0.72, 0.02, 0.22, M.darkMetal, 0, 1.0, 0.12, g, false, false);
+      deskScreens[f][i] = sm;
+    });
+
+    // Luz do andar
+    [-5, 6].forEach((lx) => {
+      const pl = new T.PointLight(col(s.hex).lerp(col(0xffffff), 0.7), 0.9, 15, 1.4);
+      pl.position.set(lx, fy + 3.3, -1.2);
+      building.add(pl);
+    });
+  }
+
+  // ---------- Elevador ----------
+  const SH = 2.6, shaftH = NF * FLOOR_H + 0.2;
+  (function shaft() {
+    const g = new T.Group(); g.position.set(ELEV.x, 0, ELEV.z); building.add(g);
+    const back = new T.Mesh(new T.PlaneGeometry(SH, shaftH), M.elevGlass); back.position.set(0, shaftH / 2, -SH / 2); g.add(back);
+    [-1, 1].forEach((s) => { const p = new T.Mesh(new T.PlaneGeometry(SH, shaftH), M.elevGlass); p.rotation.y = PI / 2; p.position.set(s * SH / 2, shaftH / 2, 0); g.add(p); });
+    [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => box(0.06, shaftH, 0.06, NEON_CYAN, sx * SH / 2, shaftH / 2, sz * SH / 2, g, false, false));
+    for (let f = 0; f < NF; f++) {
+      const y = FY(f) + 2.95;
+      box(SH, 0.05, 0.05, NEON_CYAN, 0, y, SH / 2, g, false, false);
+    }
+  })();
+  const cabin = new T.Group(); building.add(cabin);
+  (function buildCabin() {
+    const cw = 2.2;
+    box(cw, 0.1, cw, M.darkMetal, 0, -0.05, 0, cabin, false, true);
+    box(cw, 0.1, cw, M.darkMetal, 0, 2.9, 0, cabin, false, false);
+    box(cw - 0.4, 0.03, cw - 0.4, neon(0xcff6ff, 1.8), 0, 2.84, 0, cabin, false, false);
+    const gm = M.elevGlass;
+    const b = new T.Mesh(new T.PlaneGeometry(cw, 2.8), gm); b.position.set(0, 1.42, -cw / 2); cabin.add(b);
+    [-1, 1].forEach((s) => { const p = new T.Mesh(new T.PlaneGeometry(cw, 2.8), gm); p.rotation.y = PI / 2; p.position.set(s * cw / 2, 1.42, 0); cabin.add(p); });
+    [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => box(0.05, 2.9, 0.05, NEON_CYAN, sx * cw / 2, 1.45, sz * cw / 2, cabin, false, false));
+    box(cw, 0.04, 0.05, NEON_CYAN, 0, 0.02, cw / 2, cabin, false, false);
+    const cl = new T.PointLight(col(0x7feaff), 0.5, 5, 2); cl.position.set(0, 2.4, 0); cabin.add(cl);
+  })();
+  cabin.position.set(ELEV.x, FY(0), ELEV.z);
+
+  // ---------- Teto, letreiro, antena e argolas ----------
+  const TOP = NF * FLOOR_H;
+  box(W + 0.6, 0.4, D + 0.6, M.roof, 0, TOP, 0, roofGroup, false, true);
+  [[W + 0.7, 0.07, 0.07, 0, TOP + 0.2, HD + 0.32], [W + 0.7, 0.07, 0.07, 0, TOP + 0.2, -HD - 0.32],
+   [0.07, 0.07, D + 0.7, -HW - 0.32, TOP + 0.2, 0], [0.07, 0.07, D + 0.7, HW + 0.32, TOP + 0.2, 0]].forEach((a) =>
+    box(a[0], a[1], a[2], NEON_CYAN, a[3], a[4], a[5], roofGroup, false, false));
+  box(W + 0.7, 0.05, 0.05, NEON_PURPLE, 0, TOP - 0.18, HD + 0.32, roofGroup, false, false);
+
+  const signMat = new T.MeshBasicMaterial({ map: LOGO_TEX, transparent: true, side: T.DoubleSide, depthWrite: false, color: col(0xffffff).multiplyScalar(1.35), toneMapped: false });
+  const sign = new T.Mesh(new T.PlaneGeometry(16, 4.8), signMat);
+  sign.position.set(0, TOP + 2.9, 3.4); sign.renderOrder = 3;
+  roofGroup.add(sign);
+  box(13, 0.14, 0.5, M.darkMetal, 0, TOP + 0.3, 3.4, roofGroup, false, false);
+  box(12.6, 0.04, 0.08, NEON_CYAN, 0, TOP + 0.39, 3.62, roofGroup, false, false);
+  // feixe do projetor
+  const beam = new T.Mesh(new T.PlaneGeometry(13, 0.9), new T.MeshBasicMaterial({ color: col(0x22e6ff).multiplyScalar(0.5), transparent: true, opacity: 0.18, depthWrite: false, side: T.DoubleSide, blending: T.AdditiveBlending }));
+  beam.position.set(0, TOP + 0.85, 3.4); roofGroup.add(beam);
+
+  const antenna = new T.Group(); antenna.position.set(0, TOP + 0.2, -2.6); roofGroup.add(antenna);
+  box(1.4, 0.5, 1.4, M.darkMetal, 0, 0.25, 0, antenna, true, false);
+  const mast = new T.Mesh(new T.CylinderGeometry(0.07, 0.14, 8.6, 10), M.metal); mast.position.y = 4.8; antenna.add(mast);
+  const tip = new T.Mesh(new T.SphereGeometry(0.26, 18, 12), NEON_PINK); tip.position.y = 9.25; antenna.add(tip);
+  const tipLight = new T.PointLight(col(0xff3ea5), 1.2, 14, 2); tipLight.position.y = 9.25; antenna.add(tipLight);
+  const PINK_LIN = col(0xff3ea5);
+  const ringA = new T.Group(), ringB = new T.Group();
+  ringA.position.y = 6.6; ringB.position.y = 6.6; antenna.add(ringA, ringB);
+  const tA = new T.Mesh(new T.TorusGeometry(2.7, 0.06, 10, 96), NEON_CYAN); tA.rotation.x = PI / 2 + 0.35; ringA.add(tA);
+  const tB = new T.Mesh(new T.TorusGeometry(2.1, 0.06, 10, 96), NEON_PURPLE); tB.rotation.x = PI / 2 - 0.5; ringB.add(tB);
+
+  // ================================================================
+  // Mundos (demo e ao vivo) e elevador lógico
+  // ================================================================
+  function makeElevator() {
+    return {
+      y: FY(0), at: 0, target: null, owner: null, queue: [],
+      call(f) { if (this.target === null && this.at === f) return; this.target = f; },
+      idleAt(f) { return this.target === null && this.at === f; },
+      update(dt) {
+        if (this.target === null) return;
+        const ty = FY(this.target), d = ty - this.y, st = ELEV_SPEED * dt;
+        if (Math.abs(d) <= st) { this.y = ty; this.at = this.target; this.target = null; }
+        else this.y += Math.sign(d) * st;
+      },
+    };
+  }
+  function makeWorld(kind) {
+    return {
+      kind, root: new T.Group(), bots: [], map: new Map(), log: [], tasks: 0, events: 0,
+      desks: Array.from({ length: NF }, () => Array(DESK_X.length).fill(null)),
+      board: Array(NF).fill(null), typing: new Set(), elev: makeElevator(),
+    };
+  }
+  const demo = makeWorld('demo');
+  const live = makeWorld('live');
+
+  // ================================================================
+  // Bonecos
+  // ================================================================
+  const G = {
+    leg: new T.BoxGeometry(0.17, 0.8, 0.19), foot: new T.BoxGeometry(0.19, 0.08, 0.3),
+    torso: new T.BoxGeometry(0.52, 0.62, 0.3), hip: new T.BoxGeometry(0.46, 0.14, 0.26),
+    arm: new T.BoxGeometry(0.13, 0.6, 0.14), hand: new T.SphereGeometry(0.075, 10, 8),
+    head: new T.SphereGeometry(0.22, 20, 16), neck: new T.CylinderGeometry(0.07, 0.08, 0.1, 10),
+    visor: new T.BoxGeometry(0.36, 0.1, 0.1), stripe: new T.BoxGeometry(0.05, 0.42, 0.012),
+    doc: new T.BoxGeometry(0.28, 0.36, 0.015), hitbox: new T.BoxGeometry(0.9, 2.1, 0.9),
+    ring: new T.RingGeometry(0.5, 0.6, 40),
+  };
+  const RING_MAT = neon(0xffffff, 2.2); RING_MAT.side = T.DoubleSide; RING_MAT.transparent = true;
+
+  function mesh(geo, mat, x, y, z, parent, cast) {
+    const m = new T.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = cast !== false; parent.add(m); return m;
+  }
+  function buildBody(sector) {
+    const g = new T.Group();
+    const body = new T.Group(); g.add(body);
+    const legL = new T.Group(), legR = new T.Group();
+    legL.position.set(-0.13, 0.86, 0); legR.position.set(0.13, 0.86, 0); body.add(legL, legR);
+    [legL, legR].forEach((l) => { mesh(G.leg, M.limb, 0, -0.4, 0, l); mesh(G.foot, M.limb, 0, -0.8, 0.05, l); });
+    mesh(G.hip, M.suit, 0, 0.9, 0, body);
+    mesh(G.torso, M.suit, 0, 1.2, 0, body);
+    mesh(G.stripe, NEON[sector], 0, 1.22, 0.156, body, false);
+    const armL = new T.Group(), armR = new T.Group();
+    armL.position.set(-0.34, 1.44, 0); armR.position.set(0.34, 1.44, 0); body.add(armL, armR);
+    [armL, armR].forEach((a) => { mesh(G.arm, M.suit, 0, -0.3, 0, a); mesh(G.hand, M.head, 0, -0.63, 0, a); });
+    const doc = mesh(G.doc, M.paper, 0, -0.62, 0.12, armR, false); doc.rotation.x = 1.2; doc.visible = false;
+    mesh(G.neck, M.limb, 0, 1.56, 0, body);
+    const head = new T.Group(); head.position.set(0, 1.76, 0); body.add(head);
+    mesh(G.head, M.head, 0, 0, 0, head);
+    mesh(G.visor, VISOR[sector], 0, 0.02, 0.17, head, false);
+    const hit = new T.Mesh(G.hitbox, M.hit); hit.position.y = 1.05; g.add(hit);
+    const ring = new T.Mesh(G.ring, RING_MAT); ring.rotation.x = -PI / 2; ring.position.y = 0.03; ring.visible = false; g.add(ring);
+    return { group: g, body, legL, legR, armL, armR, head, doc, hit, ring };
+  }
+
+  let botSeq = 0;
+  class Bot {
+    constructor(world, o) {
+      this.world = world; this.uid = ++botSeq;
+      this.key = o.key || null; this.kind = o.kind; this.name = o.name; this.typeLabel = o.typeLabel;
+      this.sector = o.sector; this.floor = o.floor; this.home = o.floor; this.desk = o.desk == null ? -1 : o.desk;
+      this.x = o.x; this.z = o.z; this.y = FY(this.floor); this.yaw = o.yaw || 0; this.tYaw = this.yaw;
+      this.tasks = 0; this.action = ''; this.anim = 'idle'; this.carry = false;
+      this.plan = []; this.step = null; this.pending = null; this.phase = rand(0, 6); this.animT = rand(0, 10);
+      this.leaving = false; this.removed = false;
+      this.activityUntil = 0; this.lastEventAt = Date.now(); this.leaveAt = 0; this.idleLabel = 'Pensando…';
+      this.p = buildBody(this.sector);
+      this.group = this.p.group; this.p.hit.userData.bot = this;
+      // etiqueta
+      this.lc = makeCanvas(512, 136);
+      this.lt = canvasTex(this.lc);
+      this.label = new T.Sprite(new T.SpriteMaterial({ map: this.lt, transparent: true, depthWrite: false, depthTest: false, toneMapped: false }));
+      this.label.position.y = 2.15; this.label.renderOrder = 10; this.label.center.set(0.5, 0);
+      this.group.add(this.label);
+      this.setAction(o.action || 'Chegando');
+      this.syncTransform();
+      world.root.add(this.group);
+      world.bots.push(this);
+    }
+    setAction(t) {
+      t = cut(t, 60);
+      if (t === this.action) return;
+      this.action = t; this.drawLabel();
+      if (selected === this) refreshPanel(true);
+    }
+    drawLabel() {
+      const c = this.lc, ctx = c.getContext('2d'), s = SECTORS[this.sector];
+      ctx.clearRect(0, 0, c.width, c.height);
+      roundRect(ctx, 4, 4, 504, 128, 20);
+      ctx.fillStyle = 'rgba(3,9,18,.84)'; ctx.fill();
+      ctx.lineWidth = 4; ctx.strokeStyle = s.css; ctx.stroke();
+      ctx.fillStyle = s.css; ctx.fillRect(22, 26, 8, 84);
+      ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+      ctx.font = '700 44px ' + FONT; ctx.fillStyle = '#ffffff';
+      ctx.fillText(fitText(ctx, this.name, 450), 44, 46);
+      ctx.font = '500 34px ' + FONT; ctx.fillStyle = '#bfe9ff';
+      ctx.fillText(fitText(ctx, this.action, 450), 44, 96);
+      this.lt.needsUpdate = true;
+    }
+    syncTransform() {
+      this.group.position.set(this.x, this.y, this.z);
+      this.group.rotation.y = this.yaw;
+    }
+    liveBusy() { return this.kind !== 'demo' && Date.now() < this.activityUntil; }
+
+    // ---- planos ----
+    replan(steps) {
+      const s = this.step;
+      if (s && s.t === 'elev' && s.stage && s.stage !== 'queue') { this.pending = steps; return; }
+      if (s && s.t === 'elev') this.leaveQueue();
+      if (s && s.onAbort) s.onAbort();
+      this.plan = steps; this.step = null;
+    }
+    leaveQueue() {
+      const E = this.world.elev, i = E.queue.indexOf(this);
+      if (i >= 0) E.queue.splice(i, 1);
+      if (E.owner === this) E.owner = null;
+    }
+    tick(dt) {
+      let guard = 0;
+      while (guard++ < 6) {
+        if (!this.step) {
+          if (this.pending) { this.plan = this.pending; this.pending = null; }
+          if (!this.plan.length) this.onIdle(dt);
+          if (!this.plan.length) break;
+          this.step = this.plan.shift();
+        }
+        if (this.runStep(this.step, dt)) { this.step = null; dt = 0; if (this.removed) return; }
+        else break;
+      }
+    }
+    onIdle(dt) {
+      if (this.kind === 'demo') { demoDecide(this); return; }
+      // agente ao vivo parado na mesa (ou no corredor, se não houver mesa)
+      if (this.desk >= 0) this.tYaw = PI;
+      if (this.liveBusy()) {
+        this.anim = this.desk >= 0 ? 'type' : 'hold';
+        if (this.desk >= 0) this.world.typing.add(this.floor * 10 + this.desk);
+      } else {
+        this.anim = 'idle';
+        if (this.activityUntil && this.action !== this.idleLabel && !this.leaving) this.setAction(this.idleLabel);
+      }
+    }
+    moveToward(tx, tz, dt, speed) {
+      const dx = tx - this.x, dz = tz - this.z, d = Math.hypot(dx, dz);
+      if (d < 0.02) { this.x = tx; this.z = tz; return true; }
+      this.tYaw = Math.atan2(dx, dz); this.anim = 'walk';
+      const st = (speed || WALK) * dt;
+      if (st >= d) { this.x = tx; this.z = tz; return true; }
+      this.x += dx / d * st; this.z += dz / d * st;
+      return false;
+    }
+    runStep(s, dt) {
+      if (!s._init) {
+        s._init = true;
+        if (s.label && !this.liveBusy()) this.setAction(s.label);
+        if (s.t === 'goto') {
+          const exp = [];
+          if (s.floor !== this.floor) {
+            exp.push({ t: 'go', x: ELEV.x, z: ELEV.doorZ, label: s.label });
+            exp.push({ t: 'elev', to: s.floor });
+          }
+          exp.push({ t: 'go', x: s.x, z: s.z, face: s.face, label: s.label });
+          this.plan.unshift(...exp);
+          return true;
+        }
+        if (s.t === 'go') s.pts = route(this.x, this.z, s.x, s.z);
+        if (s.t === 'do') { s.left = s.dur; if (s.onStart) s.onStart(); }
+      }
+      switch (s.t) {
+        case 'call': if (s.fn) s.fn(); return true;
+        case 'go':
+          while (s.pts.length) {
+            const [px, pz] = s.pts[0];
+            if (this.moveToward(px, pz, dt)) { s.pts.shift(); dt = 0; } else return false;
+          }
+          if (s.face != null) this.tYaw = s.face;
+          this.anim = 'idle';
+          return true;
+        case 'do':
+          this.anim = s.anim;
+          if (s.face != null) this.tYaw = s.face;
+          if (s.anim === 'type' && s.desk) this.world.typing.add(s.desk[0] * 10 + s.desk[1]);
+          s.left -= dt;
+          if (s.left <= 0) { if (s.onEnd) s.onEnd(); return true; }
+          return false;
+        case 'elev': return this.runElev(s, dt);
+      }
+      return true;
+    }
+    runElev(s, dt) {
+      const E = this.world.elev;
+      if (!s.stage) {
+        if (s.to === this.floor) return true;
+        s.stage = 'queue';
+        if (!E.queue.includes(this)) E.queue.push(this);
+      }
+      if (s.stage === 'queue') {
+        if (E.owner === null && E.queue[0] === this) {
+          E.owner = this; E.queue.shift(); E.call(this.floor); s.stage = 'toDoor';
+        } else {
+          const idx = Math.max(0, E.queue.indexOf(this));
+          if (this.moveToward(ELEV.x + 1.1 + 0.8 * (idx % 2), ELEV.doorZ + 0.7 + 0.75 * Math.floor(idx / 2), dt)) { this.anim = 'idle'; this.tYaw = PI; }
+          if (!this.liveBusy()) this.setAction('Aguardando elevador');
+          return false;
+        }
+      }
+      if (s.stage === 'toDoor') {
+        const there = this.moveToward(ELEV.x, ELEV.doorZ, dt);
+        if (there) { this.anim = 'idle'; this.tYaw = PI; if (E.idleAt(this.floor)) s.stage = 'enter'; else return false; }
+        else return false;
+      }
+      if (s.stage === 'enter') {
+        if (!this.moveToward(ELEV.x, ELEV.z, dt)) return false;
+        this.anim = 'idle'; this.tYaw = 0;
+        E.call(s.to); s.stage = 'ride';
+        if (!this.liveBusy()) this.setAction((s.to > this.floor ? 'Subindo para o ' : 'Descendo para o ') + floorName(s.to) + ' andar');
+      }
+      if (s.stage === 'ride') {
+        this.y = E.y; this.anim = 'idle'; this.tYaw = 0;
+        if (!E.idleAt(s.to)) return false;
+        this.floor = s.to; this.y = FY(s.to); s.stage = 'exit';
+      }
+      if (s.stage === 'exit') {
+        if (!this.moveToward(ELEV.x, ELEV.doorZ, dt)) return false;
+        if (E.owner === this) E.owner = null;
+        return true;
+      }
+      return false;
+    }
+
+    // ---- animação ----
+    animate(dt, t) {
+      const p = this.p; this.animT += dt;
+      let legA = 0, aL = 0, aR = 0, aRz = 0, bob = 0, headX = 0;
+      const k = 1 - Math.exp(-dt * 14);
+      switch (this.anim) {
+        case 'walk': {
+          this.phase += dt * 8.5;
+          const s = Math.sin(this.phase);
+          legA = s * 0.6; aL = -s * 0.5; aR = s * 0.5; bob = Math.abs(Math.cos(this.phase)) * 0.06;
+          if (this.carry) { aR = -1.05; aL = -0.85; }
+          break;
+        }
+        case 'type':
+          aL = -1.22 + Math.sin(this.animT * 15) * 0.09; aR = -1.22 + Math.sin(this.animT * 15 + 1.7) * 0.09;
+          headX = 0.2 + Math.sin(this.animT * 2) * 0.03; break;
+        case 'hold': aL = -0.95; aR = -1.1; headX = 0.12; break;
+        case 'board':
+          aR = -2.45 + Math.sin(this.animT * 3.2) * 0.25; aRz = 0.15 + Math.sin(this.animT * 2.1) * 0.15; aL = -0.2; headX = -0.12; break;
+        default:
+          aL = Math.sin(this.animT * 1.6) * 0.05; aR = -aL; headX = Math.sin(this.animT * 0.7) * 0.05;
+      }
+      p.legL.rotation.x += (legA - p.legL.rotation.x) * k;
+      p.legR.rotation.x += (-legA - p.legR.rotation.x) * k;
+      p.armL.rotation.x += (aL - p.armL.rotation.x) * k;
+      p.armR.rotation.x += (aR - p.armR.rotation.x) * k;
+      p.armR.rotation.z += (-aRz - p.armR.rotation.z) * k;
+      p.head.rotation.x += (headX - p.head.rotation.x) * k;
+      p.body.position.y = bob;
+      p.doc.visible = this.carry || this.anim === 'hold';
+      this.yaw = angleLerp(this.yaw, this.tYaw, 1 - Math.exp(-dt * 10));
+      if (selected === this) { p.ring.visible = true; p.ring.scale.setScalar(1 + Math.sin(t * 4) * 0.06); }
+      else p.ring.visible = false;
+      this.syncTransform();
+    }
+  }
+
+  // Rota pelo corredor (z = 1.5)
+  function route(ax, az, tx, tz) {
+    const lobby = (x, z) => x < -8.4 && z < 0.2;
+    if (Math.abs(ax - tx) < 0.25 || (lobby(ax, az) && lobby(tx, tz))) return [[tx, tz]];
+    const pts = [];
+    if (Math.abs(az - CORR_Z) > 0.05) pts.push([ax, CORR_Z]);
+    pts.push([tx, CORR_Z]);
+    if (Math.abs(tz - CORR_Z) > 0.05) pts.push([tx, tz]);
+    return pts;
+  }
+  const gotoStep = (floor, x, z, face, label) => ({ t: 'goto', floor, x, z, face, label });
+
+  function removeBot(b) {
+    if (b.removed) return;
+    b.removed = true; b.leaveQueue();
+    const w = b.world;
+    if (b.desk >= 0 && w.desks[b.floor] && w.desks[b.home][b.desk] === b) w.desks[b.home][b.desk] = null;
+    for (let f = 0; f < NF; f++) if (w.board[f] === b) w.board[f] = null;
+    if (b.key && w.map.get(b.key) === b) w.map.delete(b.key);
+    const i = w.bots.indexOf(b); if (i >= 0) w.bots.splice(i, 1);
+    w.root.remove(b.group);
+    b.lt.dispose(); b.label.material.dispose();
+    if (selected === b) select(null);
+  }
+
+  // ================================================================
+  // Log e HUD
+  // ================================================================
+  function addLog(w, sector, text, time) {
+    if (w !== live) w.events++;          // no modo ao vivo, EVENTOS conta os hooks recebidos (handleHook)
+    w.log.unshift({ c: sector >= 0 ? SECTORS[sector].css : '#8aa4bb', text, time: time || Date.now() });
+    if (w.log.length > 7) w.log.length = 7;
+    if (w === active) renderLog();
+  }
+  function renderLog() {
+    const ul = $('logList');
+    const w = active;
+    if (!w || !w.log.length) { ul.innerHTML = '<li class="empty">Sem atividade ainda.</li>'; return; }
+    ul.innerHTML = '';
+    for (const e of w.log) {
+      const li = document.createElement('li');
+      const dot = document.createElement('span'); dot.className = 'dot'; dot.style.color = e.c;
+      const tm = document.createElement('time'); tm.textContent = hhmmss(e.time);
+      const tx = document.createElement('span'); tx.className = 'txt'; tx.textContent = e.text; tx.title = e.text;
+      li.append(dot, tm, tx); ul.appendChild(li);
+    }
+  }
+
+  // ================================================================
+  // Modo demo
+  // ================================================================
+  function demoPhrase(sec) {
+    let p = pick(SECTORS[sec].phrases);
+    if (p.startsWith('Corrigindo bug')) p = 'Corrigindo bug #' + (1001 + Math.floor(Math.random() * 120));
+    return p;
+  }
+  function demoDecide(b) {
+    const w = b.world, plan = [], r = Math.random();
+    if (r < 0.2 && w.board[b.home] === null) {
+      w.board[b.home] = b;
+      const ph = pick(BOARD_PHRASES);
+      plan.push(gotoStep(b.home, BOARD.x, BOARD.z, PI / 2, 'Indo ao quadro'));
+      plan.push({ t: 'do', anim: 'board', dur: rand(4, 7), face: PI / 2, label: ph,
+        onStart: () => addLog(w, b.sector, b.name + ' · ' + ph),
+        onEnd: () => { if (w.board[b.home] === b) w.board[b.home] = null; } });
+    } else if (r < 0.42) {
+      const others = w.bots.filter((o) => o !== b);
+      const cross = Math.random() < 0.35;
+      let pool = others.filter((o) => (cross ? o.home !== b.home : o.home === b.home));
+      if (!pool.length) pool = others;
+      const tg = pick(pool);
+      if (tg) {
+        const where = tg.home === b.home ? '' : ' (' + SECTORS[tg.sector].name + ')';
+        plan.push({ t: 'call', fn: () => { b.carry = true; } });
+        plan.push(gotoStep(tg.home, DESK_X[tg.desk] + 1.15, STAND_Z, PI, 'Levando documento a ' + tg.name));
+        plan.push({ t: 'do', anim: 'hold', dur: 1.8, face: -PI / 2 - 0.4, label: 'Entregando documento a ' + tg.name,
+          onEnd: () => { b.carry = false; b.tasks++; w.tasks++; addLog(w, b.sector, b.name + ' entregou documento a ' + tg.name + where); if (selected === b) refreshPanel(true); } });
+      }
+    }
+    if (!plan.length) {
+      const ph = demoPhrase(b.sector);
+      plan.push(gotoStep(b.home, DESK_X[b.desk], STAND_Z, PI, 'Voltando à mesa'));
+      plan.push({ t: 'do', anim: 'type', dur: rand(5, 11), face: PI, label: ph, desk: [b.home, b.desk],
+        onStart: () => addLog(w, b.sector, b.name + ' · ' + ph),
+        onEnd: () => { b.tasks++; w.tasks++; if (selected === b) refreshPanel(true); } });
+    }
+    b.plan = plan;
+  }
+  (function seedDemo() {
+    for (let f = 0; f < NF; f++) {
+      [0, 2, 4].forEach((di, k) => {
+        const b = new Bot(demo, { kind: 'demo', name: DEMO_NAMES[f][k], typeLabel: 'Agente simulado (demo)', sector: f, floor: f, desk: di,
+          x: DESK_X[di], z: STAND_Z, yaw: PI, action: 'Começando o expediente' });
+        demo.desks[f][di] = b;
+        const ph = demoPhrase(f);
+        b.plan = [{ t: 'do', anim: 'type', dur: rand(0.6, 6), face: PI, label: ph, desk: [f, di], onEnd: () => { b.tasks++; demo.tasks++; } }];
+      });
+    }
+    addLog(demo, 3, 'Modo demo: 12 agentes simulados no expediente');
+  })();
+
+  // ================================================================
+  // Modo ao vivo (hooks do Claude Code via SSE)
+  // ================================================================
+  function sectorFromText(text) {
+    const t = norm(text);
+    if (/marketing|seo|copy|social/.test(t)) return 0;
+    if (/financ|contab|budget|custo/.test(t)) return 1;
+    if (/juridic|legal|contrato|lgpd/.test(t)) return 2;
+    if (/dev|code|test|review|explore|plan|general/.test(t)) return 3;
+    return -1;
+  }
+  function freeDesks(w, f) { const r = []; w.desks[f].forEach((o, i) => { if (!o) r.push(i); }); return r; }
+  function chooseFloor(w, pref) {
+    if (pref >= 0 && freeDesks(w, pref).length) return pref;
+    let best = -1, bestFree = 0;
+    for (let f = 0; f < NF; f++) { const n = freeDesks(w, f).length; if (n > bestFree) { bestFree = n; best = f; } }
+    if (best >= 0) return best;
+    return pref >= 0 ? pref : Math.floor(Math.random() * NF);
+  }
+  function ensureLive(key, info) {
+    const w = live;
+    let b = w.map.get(key);
+    if (b) return b;
+    const floor = chooseFloor(w, sectorFromText(info.sectorText));
+    const free = freeDesks(w, floor);
+    const desk = free.length ? pick(free) : -1;
+    b = new Bot(w, { key, kind: info.kind, name: info.name, typeLabel: info.typeLabel, sector: floor, floor: 0, desk,
+      x: rand(-2, 2), z: PLAZA.z0 + rand(3, 5), yaw: PI, action: 'Chegando ao escritório' });
+    b.home = floor; b.sid = info.sid;
+    if (desk >= 0) w.desks[floor][desk] = b;
+    w.map.set(key, b);
+    const tx = desk >= 0 ? DESK_X[desk] : rand(-6, 8);
+    const tz = desk >= 0 ? STAND_Z : CORR_Z + rand(-0.3, 0.6);
+    b.plan = [gotoStep(floor, tx, tz, desk >= 0 ? PI : 0, 'Indo para o ' + floorName(floor) + ' · ' + SECTORS[floor].name)];
+    addLog(w, floor, b.name + ' chegou → ' + floorName(floor) + ' andar · ' + SECTORS[floor].name, info.at);
+    updateHud();
+    return b;
+  }
+  function liveLeave(b, why) {
+    if (b.leaving || b.removed) return;
+    const w = b.world;
+    b.leaving = true; b.activityUntil = 0;
+    if (b.key && w.map.get(b.key) === b) w.map.delete(b.key);
+    if (b.desk >= 0 && w.desks[b.home][b.desk] === b) w.desks[b.home][b.desk] = null;
+    b.desk = -1;
+    b.setAction('Saindo do prédio');
+    b.replan([gotoStep(0, rand(-1.5, 1.5), PLAZA.z0 + 4, 0, 'Saindo do prédio'), { t: 'call', fn: () => removeBot(b) }]);
+    addLog(w, b.sector, b.name + ' saiu' + (why ? ' (' + why + ')' : ''));
+    updateHud();
+  }
+  function toolAction(ev) {
+    const tool = String(ev.tool_name || 'ferramenta');
+    const ti = (ev.tool_input && typeof ev.tool_input === 'object') ? ev.tool_input : {};
+    const file = basename(ti.file_path || ti.notebook_path || ti.path || '');
+    switch (tool) {
+      case 'Read': return 'Lendo ' + (file || 'arquivo');
+      case 'Edit': case 'MultiEdit': case 'NotebookEdit': return 'Editando ' + (file || 'arquivo');
+      case 'Write': return 'Escrevendo ' + (file || 'arquivo');
+      case 'Bash': return 'Rodando: ' + cut(ti.command || ti.description || 'comando', 34);
+      case 'Grep': case 'Glob': case 'LS': return 'Buscando' + (ti.pattern ? ': ' + cut(ti.pattern, 30) : '');
+      case 'WebSearch': return 'Pesquisando: ' + cut(ti.query || '', 34);
+      case 'WebFetch': { let h = ''; try { h = new URL(ti.url).hostname; } catch (_) { h = cut(ti.url || '', 30); } return 'Lendo página: ' + h; }
+      case 'Task': case 'Agent': return 'Delegando: ' + cut(ti.description || ti.prompt || ti.subagent_type || 'subtarefa', 34);
+      case 'TodoWrite': return 'Organizando tarefas';
+      default: {
+        const short = tool.startsWith('mcp__') ? tool.split('__').slice(-1)[0] : tool;
+        return 'Usando ' + cut(short, 30);
+      }
+    }
+  }
+
+  const seen = new Set(), seenOrder = [];
+  function onSSEData(raw) {
+    if (seen.has(raw)) return;            // o servidor reenvia o histórico ao reconectar
+    seen.add(raw); seenOrder.push(raw);
+    if (seenOrder.length > 1500) seen.delete(seenOrder.shift());
+    let ev;
+    try { ev = JSON.parse(raw); } catch (_) { return; }
+    try { handleHook(ev); } catch (err) { console.warn('Evento ignorado:', err); }
+  }
+  function handleHook(ev) {
+    if (Array.isArray(ev)) { ev.forEach(handleHook); return; }
+    if (!ev || typeof ev !== 'object') return;
+    const name = String(ev.hook_event_name || ev.hookEventName || '');
+    if (!name) return;
+    const w = live;
+    w.events++;
+    const now = Date.now();
+    const at = typeof ev._t === 'number' && ev._t <= now ? ev._t : now;
+    const sid = String(ev.session_id || 'sessao');
+    const aid = ev.agent_id != null && ev.agent_id !== '' ? String(ev.agent_id) : null;
+    const folder = basename(ev.cwd || '') || 'sessão';
+    const atype = ev.agent_type ? String(ev.agent_type) : '';
+    const mainKey = 's:' + sid, subKey = aid ? 'a:' + aid : null;
+    const getMain = () => ensureLive(mainKey, { kind: 'main', name: 'Claude · ' + folder, typeLabel: 'Sessão principal do Claude Code', sid, sectorText: folder, at });
+    const getSub = () => ensureLive(subKey, { kind: 'sub', name: atype || 'subagente', typeLabel: 'Subagente · ' + (atype || 'geral'), sid, sectorText: atype + ' ' + folder, at });
+    const getBot = () => (aid ? getSub() : getMain());
+    const touch = (b) => { if (b) b.lastEventAt = Math.max(b.lastEventAt, at); return b; };
+    let b = null;
+
+    switch (name) {
+      case 'SessionStart': {
+        b = touch(getMain());
+        addLog(w, b.sector, b.name + ' · sessão iniciada', at);
+        break;
+      }
+      case 'SessionEnd': {
+        const main = w.map.get(mainKey);
+        for (const o of w.bots.slice()) if (o.sid === sid && !o.leaving) liveLeave(o, 'sessão encerrada');
+        if (!main) addLog(w, -1, 'Sessão encerrada', at);
+        break;
+      }
+      case 'UserPromptSubmit': {
+        b = touch(getMain());
+        const txt = 'Lendo pedido: ' + cut(ev.prompt || '', 40);
+        b.activityUntil = at + 6000; b.idleLabel = 'Pensando…'; b.setAction(txt);
+        addLog(w, b.sector, b.name + ' · ' + txt, at);
+        break;
+      }
+      case 'SubagentStart': {
+        if (!aid) { addLog(w, -1, 'Subagente iniciado' + (atype ? ': ' + atype : ''), at); break; }
+        b = touch(getSub());
+        b.activityUntil = at + 4000; b.idleLabel = 'Pensando…'; b.setAction('Começando: ' + (atype || 'tarefa'));
+        addLog(w, b.sector, b.name + ' · subagente iniciado', at);
+        break;
+      }
+      case 'SubagentStop': {
+        b = subKey ? w.map.get(subKey) : null;
+        w.tasks++;
+        if (b) {
+          touch(b); b.tasks++; b.activityUntil = 0; b.idleLabel = 'Tarefa concluída ✓'; b.setAction('Tarefa concluída ✓');
+          b.leaveAt = at + 6000;
+          addLog(w, b.sector, b.name + ' · tarefa concluída ✓', at);
+          if (selected === b) refreshPanel(true);
+        } else addLog(w, -1, 'Subagente concluiu' + (atype ? ': ' + atype : ''), at);
+        break;
+      }
+      case 'Stop': {
+        b = touch(getBot());
+        b.tasks++; w.tasks++; b.activityUntil = 0; b.idleLabel = 'Tarefa concluída ✓'; b.setAction('Tarefa concluída ✓');
+        if (b.kind === 'sub') b.leaveAt = at + 6000;
+        addLog(w, b.sector, b.name + ' · tarefa concluída ✓', at);
+        if (selected === b) refreshPanel(true);
+        break;
+      }
+      case 'PreToolUse': {
+        b = touch(getBot());
+        const txt = toolAction(ev);
+        b.activityUntil = at + 30000; b.idleLabel = 'Pensando…'; b.setAction(txt);
+        addLog(w, b.sector, b.name + ' · ' + txt, at);
+        break;
+      }
+      case 'PostToolUse': {
+        b = touch(getBot());
+        b.activityUntil = Math.max(now, at) + 3000;
+        break;
+      }
+      case 'Notification': {
+        b = touch(getBot());
+        b.activityUntil = 0; b.idleLabel = 'Aguardando você'; b.setAction('Aguardando você');
+        addLog(w, b.sector, b.name + ' · ' + cut(ev.message || 'aguardando você', 50), at);
+        break;
+      }
+      default: {
+        b = touch(getBot());
+        addLog(w, b.sector, b.name + ' · ' + name, at);
+      }
+    }
+    updateHud();
+  }
+  function liveHousekeeping() {
+    const now = Date.now();
+    for (const b of live.bots.slice()) {
+      if (b.leaving) continue;
+      if (b.leaveAt && now >= b.leaveAt) liveLeave(b, 'concluiu');
+      else if (now - b.lastEventAt > 180000) liveLeave(b, '3 min sem eventos');
+    }
+  }
+
+  // ---------- Conexão SSE ----------
+  const SSE_URL = (() => {
+    let q = null;
+    try { q = new URLSearchParams(location.search).get('sse'); } catch (_) {}
+    if (q) return q;
+    if (/^https?:$/.test(location.protocol) && location.port === '3099') return '/events';
+    return 'http://localhost:3099/events';
+  })();
+  function setConnected(v) {
+    if (connected === v) return;
+    connected = v;
+    if (v) { everConnected = true; addLog(live, 3, 'Conectado ao servidor de hooks'); }
+    else if (everConnected) addLog(live, -1, 'Conexão com o servidor perdida — tentando de novo');
+    refreshMode();
+  }
+  function connect() {
+    retryTimer = null;
+    if (!('EventSource' in window)) return;
+    try { es = new EventSource(SSE_URL); } catch (_) { scheduleRetry(); return; }
+    es.onopen = () => { retryMs = 3000; setConnected(true); };
+    es.addEventListener('hello', () => { retryMs = 3000; setConnected(true); });
+    es.onmessage = (e) => { setConnected(true); onSSEData(e.data); };
+    es.onerror = () => {
+      try { es.close(); } catch (_) {}
+      es = null;
+      setConnected(false);
+      scheduleRetry();
+    };
+  }
+  function scheduleRetry() {
+    if (retryTimer) return;
+    retryTimer = setTimeout(connect, retryMs);
+    retryMs = Math.min(retryMs * 1.6, 20000);
+  }
+
+  // ================================================================
+  // Modo, HUD e controles
+  // ================================================================
+  const MODE_LABEL = { auto: 'Modo: Auto', demo: 'Modo: Demo', live: 'Modo: Ao vivo' };
+  function desiredWorld() { return modePref === 'demo' ? demo : modePref === 'live' ? live : (connected ? live : demo); }
+  function refreshMode() {
+    const w = desiredWorld();
+    if (w !== active) {
+      if (active) scene.remove(active.root);
+      active = w; scene.add(w.root);
+      select(null);
+      renderLog();
+    }
+    $('btnMode').textContent = MODE_LABEL[modePref];
+    $('speedSeg').hidden = active !== demo;
+    updateHud();
+  }
+  function updateHud() {
+    if (!active) return;
+    const badge = $('modeBadge');
+    if (active === demo) { badge.className = 'badge demo'; badge.textContent = 'demo'; }
+    else if (connected) { badge.className = 'badge live'; badge.textContent = 'ao vivo'; }
+    else { badge.className = 'badge off'; badge.textContent = 'ao vivo · sem conexão'; }
+    $('cAgents').textContent = active.bots.filter((b) => !b.leaving).length;
+    $('cTasks').textContent = active.tasks;
+    $('cEvents').textContent = active.events;
+    const waiting = active === live && live.bots.length === 0;
+    $('waiting').hidden = !waiting;
+    if (waiting) $('waitingSub').textContent = connected
+      ? 'Conectado. Os agentes aparecem assim que o Claude Code mandar eventos.'
+      : 'Sem conexão com o servidor (' + SSE_URL.replace(/^https?:\/\//, '') + '). Tentando de novo…';
+  }
+
+  $('btnMode').addEventListener('click', () => {
+    modePref = modePref === 'auto' ? 'demo' : modePref === 'demo' ? 'live' : 'auto';
+    refreshMode();
+  });
+  $('btnPause').addEventListener('click', () => {
+    paused = !paused;
+    $('btnPause').textContent = paused ? 'Continuar' : 'Pausar';
+    $('btnPause').classList.toggle('on', paused);
+  });
+  $('speedSeg').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-speed]'); if (!btn) return;
+    speed = Number(btn.dataset.speed) || 1;
+    $('speedSeg').querySelectorAll('.btn').forEach((x) => x.classList.toggle('on', x === btn));
+  });
+  $('btnRoof').addEventListener('click', () => {
+    roofVisible = !roofVisible; roofGroup.visible = roofVisible;
+    $('btnRoof').textContent = roofVisible ? 'Esconder teto' : 'Mostrar teto';
+    $('btnRoof').classList.toggle('on', !roofVisible);
+  });
+  $('btnCam').addEventListener('click', () => { select(null); homeCamera(); });
+
+  // ---------- Seleção ----------
+  function select(b) {
+    selected = b || null;
+    $('agentPanel').hidden = !selected;
+    if (selected) { zoomIn = 1.2; refreshPanel(true); }
+  }
+  function refreshPanel(force) {
+    if (!selected) return;
+    if (!force && panelTimer > 0) return;
+    panelTimer = 0.25;
+    const b = selected, s = SECTORS[b.sector];
+    $('apDot').style.color = s.css;
+    $('apName').textContent = b.name;
+    $('apType').textContent = b.typeLabel;
+    $('apSector').textContent = s.name + ' · ' + floorName(b.home) + ' andar';
+    $('apAction').textContent = b.action || '—';
+    $('apTasks').textContent = String(b.tasks);
+  }
+  $('agentClose').addEventListener('click', () => select(null));
+
+  const ray = new T.Raycaster(), ndc = new T.Vector2();
+  let downAt = null;
+  renderer.domElement.addEventListener('pointerdown', (e) => { downAt = { x: e.clientX, y: e.clientY }; });
+  renderer.domElement.addEventListener('pointerup', (e) => {
+    if (!downAt) return;
+    const moved = Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y);
+    downAt = null;
+    if (moved > 5) return;                         // foi arrasto, não clique
+    const r = renderer.domElement.getBoundingClientRect();
+    ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    const hits = ray.intersectObjects(active.bots.map((b) => b.p.hit), false);
+    select(hits.length ? hits[0].object.userData.bot : null);
+  });
+
+  // ---------- Redimensionar ----------
+  function onResize() {
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(w, h);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    if (composer) { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w, h); }
+  }
+  window.addEventListener('resize', onResize);
+
+  // ================================================================
+  // Laço principal
+  // ================================================================
+  const clock = new T.Clock();
+  let simTime = 0, hudTimer = 0;
+  const tmpV = new T.Vector3(), tmpV2 = new T.Vector3();
+
+  function simulate(w, dt) {
+    w.elev.update(dt);
+    for (const b of w.bots.slice()) if (!b.removed) b.tick(dt);
+  }
+  function stepWorld(w, dt, mult) {
+    w.typing.clear();
+    if (dt > 0) {
+      const total = dt * mult, n = Math.max(1, Math.ceil(total / 0.025)), h = total / n;
+      for (let i = 0; i < n; i++) { if (i > 0) w.typing.clear(); simulate(w, h); }
+      for (const b of w.bots) b.animate(total, simTime);
+    } else for (const b of w.bots) b.animate(0, simTime);
+  }
+
+  function frame() {
+    requestAnimationFrame(frame);
+    const rdt = Math.min(clock.getDelta(), 0.25);
+    const dt = paused ? 0 : rdt;
+    simTime += dt * (active === demo ? speed : 1);
+
+    stepWorld(demo, dt, speed);
+    stepWorld(live, dt, 1);
+    liveHousekeeping();
+
+    // elevador visível segue o mundo ativo
+    cabin.position.y = active.elev.y;
+    // telas: pulsam quando alguém digita
+    for (let f = 0; f < NF; f++) for (let i = 0; i < DESK_X.length; i++) {
+      const on = active.typing.has(f * 10 + i);
+      const v = on ? 1.25 + 0.55 * Math.abs(Math.sin(simTime * 7 + i)) : (active.desks[f][i] ? 0.85 : 0.45);
+      deskScreens[f][i].color.setScalar(v);
+    }
+    // céu: argolas, antena, letreiro
+    const tt = clock.elapsedTime;
+    ringA.rotation.y = tt * 0.55; ringB.rotation.y = -tt * 0.8;
+    tA.rotation.z = tt * 0.3; tB.rotation.z = -tt * 0.4;
+    tip.material.color.copy(PINK_LIN).multiplyScalar(2.4 + Math.sin(tt * 3) * 0.9);
+    tipLight.intensity = 1.0 + Math.sin(tt * 3) * 0.4;
+    signMat.opacity = 0.9 + Math.sin(tt * 1.7) * 0.05 + (Math.random() < 0.01 ? -0.25 : 0);
+
+    // etiquetas com tamanho legível de longe
+    for (const b of active.bots) {
+      b.label.getWorldPosition(tmpV);
+      const s = Math.min(2.2, Math.max(0.8, camera.position.distanceTo(tmpV) / 26));
+      b.label.scale.set(2.6 * s, 0.69 * s, 1);
+    }
+
+    // câmera seguindo o selecionado
+    if (selected && controls) {
+      tmpV.set(selected.x, selected.y + 1.1, selected.z);
+      const k = 1 - Math.exp(-rdt * 5);
+      tmpV2.copy(tmpV).sub(controls.target).multiplyScalar(k);
+      controls.target.add(tmpV2); camera.position.add(tmpV2);
+      if (zoomIn > 0) {
+        zoomIn -= rdt;
+        const off = tmpV2.copy(camera.position).sub(controls.target);
+        const len = off.length(), want = 15;
+        if (len > want) { off.setLength(len + (want - len) * (1 - Math.exp(-rdt * 4))); camera.position.copy(controls.target).add(off); }
+      }
+    }
+    if (controls) controls.update();
+
+    panelTimer -= rdt;
+    if (selected) refreshPanel(false);
+    hudTimer -= rdt;
+    if (hudTimer <= 0) { hudTimer = 0.5; updateHud(); }
+
+    if (composer) composer.render(); else renderer.render(scene, camera);
+  }
+
+  refreshMode();
+  connect();
+  frame();
+
+  // Para testes e depuração no console
+  window.CentralAgentes = {
+    get mode() { return active === demo ? 'demo' : 'live'; },
+    get connected() { return connected; },
+    demo, live, handleHook, select: (i) => select(active.bots[i] || null),
+    get selected() { return selected; },
+    elevator: () => ({ y: active.elev.y, owner: active.elev.owner && active.elev.owner.name, queue: active.elev.queue.length }),
+    bloom: !!composer,
+    advance(sec) { for (let t = 0; t < sec; t += 0.05) { stepWorld(demo, 0.05, speed); stepWorld(live, 0.05, 1); liveHousekeeping(); } cabin.position.y = active.elev.y; },
+    camera,
+  };
+})();
+</script>
+</body>
+</html>
