@@ -1,5 +1,5 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
-const CACHE = 'estoque99-v72';
+const CACHE = 'estoque99-v73';
 const VERSION = (CACHE.match(/-v(\d+)$/) || [])[1] || '';
 const CORE = [
   './index.html',
@@ -14,8 +14,18 @@ const CORE = [
 ];
 
 self.addEventListener('install', (event) => {
-  // cache:'reload' busca direto da internet: o cache HTTP do navegador (10 min no GitHub Pages) pode ter a versão anterior.
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE.map((u) => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
+  // cache cada arquivo individualmente: um 404 não derruba o cache inteiro
+  event.waitUntil(
+    caches.open(CACHE).then(async (c) => {
+      await Promise.all(CORE.map(async (u) => {
+        try {
+          const response = await fetch(new Request(u, { cache: 'reload' }));
+          if (response && response.ok) await c.put(u, response);
+        } catch (e) { /* ignora falha de um asset */ }
+      }));
+      return self.skipWaiting();
+    })
+  );
 });
 
 self.addEventListener('activate', (event) => {
@@ -23,14 +33,11 @@ self.addEventListener('activate', (event) => {
     caches.keys()
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
-      // avisa as páginas abertas qual versão assumiu; só as mais velhas recarregam
       .then(() => self.clients.matchAll({ type: 'window' }))
       .then((clients) => clients.forEach((c) => c.postMessage({ type: 'page-updated', version: VERSION })))
   );
 });
 
-// Página: busca a versão mais nova na internet (o tempo limite vale só até a resposta começar a chegar);
-// sem conexão ou muito lenta, usa a cópia salva e termina de baixar a nova em segundo plano, avisando a página aberta.
 async function networkFirst(event, request, page) {
   const cache = await caches.open(CACHE);
   const net = fetch(request, { cache: 'no-cache' });
@@ -56,11 +63,10 @@ self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return; // consultas externas (CEP, CNPJ) passam direto
-  if (url.pathname.endsWith('/sw.js') || request.cache === 'no-store') return; // checagem de versão vai sempre à internet
+  if (url.origin !== self.location.origin) return;
+  if (url.pathname.endsWith('/sw.js') || request.cache === 'no-store') return;
 
   const robot = url.pathname.endsWith('/robo.html');
-  // Política de Privacidade e Termos: cada página tem a sua cópia (não pode sobrescrever a do app).
   const legal = url.pathname.match(/\/(privacidade|termos)\.html$/);
   if (request.mode === 'navigate' || url.pathname.endsWith('/index.html') || robot || legal) {
     event.respondWith(networkFirst(event, request, robot ? './robo.html' : legal ? './' + legal[1] + '.html' : './index.html'));
@@ -77,7 +83,6 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Toque na notificação: abre o site na central de alertas.
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const page = (event.notification.data && event.notification.data.page) || 'alerts';
@@ -90,7 +95,6 @@ self.addEventListener('notificationclick', (event) => {
         if (page === 'alerts') main.postMessage({ type: 'open-alerts' });
         if ('focus' in main) return main.focus();
       }
-      // Só a página do robô está aberta: leva ela para o site principal, já na página do aviso.
       if (clients[0] && 'navigate' in clients[0]) return clients[0].navigate(target).then((c) => c && c.focus && c.focus());
       return self.clients.openWindow(target);
     })

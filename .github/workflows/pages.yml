@@ -2,7 +2,7 @@ name: Publicar site (GitHub Pages)
 
 on:
   push:
-    branches: [claude/mobile-desktop-compatibility-tkbd2w]
+    branches: [main, claude/mobile-desktop-compatibility-tkbd2w]
   workflow_dispatch:
 
 permissions:
@@ -23,9 +23,12 @@ jobs:
         run: |
           mkdir -p _site
           cp index.html robo.html manifest.webmanifest sw.js .nojekyll _site/
-          cp -r icons vendor _site/
+          cp -r icons vendor _site/ 2>/dev/null || cp -r icons _site/
           cp privacidade.html termos.html _site/
-          mkdir -p _site/central-agentes && cp central-agentes/index.html central-agentes/README.md _site/central-agentes/
+          if [ -d central-agentes ]; then
+            mkdir -p _site/central-agentes
+            cp central-agentes/index.html central-agentes/README.md _site/central-agentes/ 2>/dev/null || true
+          fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
