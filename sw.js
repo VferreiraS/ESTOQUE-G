@@ -1,5 +1,5 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
-const CACHE = 'estoque99-v74';
+const CACHE = 'estoque99-v75';
 const VERSION = (CACHE.match(/-v(\d+)$/) || [])[1] || '';
 const CORE = [
   './index.html',
@@ -10,8 +10,7 @@ const CORE = [
   './icons/icon-192-v36.png',
   './icons/icon-512-v36.png',
   './icons/icon-maskable-v36.png',
-  './icons/favicon-v36.png',
-  './account-id-patch.js'
+  './icons/favicon-v36.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -38,41 +37,22 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-async function injectPatch(response) {
-  if (!response || !response.ok) return response;
-  const ctype = (response.headers.get('content-type') || '').toLowerCase();
-  if (ctype && ctype.indexOf('html') < 0) return response;
-  const text = await response.text();
-  if (text.indexOf('account-id-patch.js') >= 0 || text.indexOf('authNewAccountId') >= 0) {
-    return new Response(text, { status: response.status, statusText: response.statusText, headers: response.headers });
-  }
-  const injected = text.replace(/<\/body>/i, '<script src="account-id-patch.js"><\/script></body>');
-  const headers = new Headers(response.headers);
-  headers.delete('content-length');
-  return new Response(injected, { status: response.status, statusText: response.statusText, headers });
-}
-
 async function networkFirst(event, request, page) {
   const cache = await caches.open(CACHE);
   const net = fetch(request, { cache: 'no-cache' });
   try {
     const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 6000));
     const response = await Promise.race([net, timeout]);
-    if (response && response.ok && !response.redirected) {
-      const patched = await injectPatch(response);
-      event.waitUntil(cache.put(page, patched.clone()).catch(() => {}));
-      return patched;
-    }
+    if (response && response.ok && !response.redirected) event.waitUntil(cache.put(page, response.clone()).catch(() => {}));
     return response;
   } catch (err) {
     event.waitUntil(net.then(async (response) => {
       if (!response || !response.ok || response.redirected) return;
-      const patched = await injectPatch(response);
-      await cache.put(page, patched.clone());
-      const text = await patched.clone().text();
+      await cache.put(page, response.clone());
+      const text = await response.text();
       const m = text.match(/name="estoque99-version" content="(\d+)"/);
       const clients = await self.clients.matchAll({ type: 'window' });
-      clients.forEach((c) => c.postMessage({ type: 'page-updated', version: m ? m[1] : '74' }));
+      clients.forEach((c) => c.postMessage({ type: 'page-updated', version: m ? m[1] : '' }));
     }).catch(() => {}));
     return (await cache.match(page)) || (await cache.match('./index.html')) || (await cache.match('./')) || Response.error();
   }
