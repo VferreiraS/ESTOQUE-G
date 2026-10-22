@@ -10,18 +10,18 @@ const CORE = [
   './icons/icon-192-v36.png',
   './icons/icon-512-v36.png',
   './icons/icon-maskable-v36.png',
-  './icons/favicon-v36.png'
+  './icons/favicon-v36.png',
+  './account-id-patch.js'
 ];
 
 self.addEventListener('install', (event) => {
-  // cache cada arquivo individualmente: um 404 não derruba o cache inteiro
   event.waitUntil(
     caches.open(CACHE).then(async (c) => {
       await Promise.all(CORE.map(async (u) => {
         try {
           const response = await fetch(new Request(u, { cache: 'reload' }));
           if (response && response.ok) await c.put(u, response);
-        } catch (e) { /* ignora falha de um asset */ }
+        } catch (e) {}
       }));
       return self.skipWaiting();
     })
@@ -38,22 +38,41 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+async function injectPatch(response) {
+  if (!response || !response.ok) return response;
+  const ctype = (response.headers.get('content-type') || '').toLowerCase();
+  if (ctype && ctype.indexOf('html') < 0) return response;
+  const text = await response.text();
+  if (text.indexOf('account-id-patch.js') >= 0 || text.indexOf('authNewAccountId') >= 0) {
+    return new Response(text, { status: response.status, statusText: response.statusText, headers: response.headers });
+  }
+  const injected = text.replace(/<\/body>/i, '<script src="account-id-patch.js"><\/script></body>');
+  const headers = new Headers(response.headers);
+  headers.delete('content-length');
+  return new Response(injected, { status: response.status, statusText: response.statusText, headers });
+}
+
 async function networkFirst(event, request, page) {
   const cache = await caches.open(CACHE);
   const net = fetch(request, { cache: 'no-cache' });
   try {
     const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 6000));
     const response = await Promise.race([net, timeout]);
-    if (response && response.ok && !response.redirected) event.waitUntil(cache.put(page, response.clone()).catch(() => {}));
+    if (response && response.ok && !response.redirected) {
+      const patched = await injectPatch(response);
+      event.waitUntil(cache.put(page, patched.clone()).catch(() => {}));
+      return patched;
+    }
     return response;
   } catch (err) {
     event.waitUntil(net.then(async (response) => {
       if (!response || !response.ok || response.redirected) return;
-      await cache.put(page, response.clone());
-      const text = await response.text();
+      const patched = await injectPatch(response);
+      await cache.put(page, patched.clone());
+      const text = await patched.clone().text();
       const m = text.match(/name="estoque99-version" content="(\d+)"/);
       const clients = await self.clients.matchAll({ type: 'window' });
-      clients.forEach((c) => c.postMessage({ type: 'page-updated', version: m ? m[1] : '' }));
+      clients.forEach((c) => c.postMessage({ type: 'page-updated', version: m ? m[1] : '74' }));
     }).catch(() => {}));
     return (await cache.match(page)) || (await cache.match('./index.html')) || (await cache.match('./')) || Response.error();
   }
