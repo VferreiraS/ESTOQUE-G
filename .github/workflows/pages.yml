@@ -23,7 +23,6 @@ jobs:
         run: |
           mkdir -p _site
           cp index.html robo.html manifest.webmanifest sw.js .nojekyll _site/
-          cp account-id-patch.js _site/ 2>/dev/null || true
           cp -r icons vendor _site/ 2>/dev/null || cp -r icons _site/
           cp privacidade.html termos.html _site/
           if [ -d central-agentes ]; then
