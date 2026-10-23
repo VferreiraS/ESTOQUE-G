@@ -2,7 +2,7 @@ name: Publicar site (GitHub Pages)
 
 on:
   push:
-    branches: [claude/mobile-desktop-compatibility-tkbd2w]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
