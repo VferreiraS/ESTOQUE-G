@@ -8,7 +8,7 @@ async function resetPw(email,np){const r=await (await fetch(`${AU}/emulator/v1/p
  const code=await A.evaluate(()=>e99Team.get().code);ok(await until(A,async(a)=>(await fetch(a,{headers:{Authorization:'Bearer owner'}})).status===200,FS+'/equipes/'+uid,30000),'equipe guardada na nuvem');
  await fetch(FS+'/cofre/'+uid,{method:'DELETE',headers:{Authorization:'Bearer owner'}});
  await A.evaluate(()=>{window.confirm=()=>true;return authLogout()});await A.waitForTimeout(1500);
- await A.click('#mr-link');await A.fill('#mail-rec input[name=email]',email);await A.click('#mail-rec button.primary');await A.waitForSelector('#mail-rec input[name=cloud]');await resetPw(email,'nuvem-789');
+ await A.click('#auth-forgot');await A.click('#mr-link');await A.fill('#mail-rec input[name=email]',email);await A.click('#mail-rec button.primary');await A.waitForSelector('#mail-rec input[name=cloud]');await resetPw(email,'nuvem-789');
  await A.fill('#mail-rec input[name=cloud]','nuvem-789');await A.fill('#mail-rec input[name=password]','8642');await A.fill('#mail-rec input[name=confirmation]','8642');await A.click('#mail-rec button.primary');
  ok(await until(A,()=>!!authSession,null,20000),'conta nova criada');ok(await A.evaluate(()=>authSession.payload.role==='gestor'),'conta nova é de gestor');
  ok(await A.evaluate(()=>!Object.keys(localStorage).some(k=>k.startsWith('lojasg.estoque99.conta-antiga:'))),'conta antiga excluída do aparelho');

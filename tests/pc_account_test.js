@@ -15,10 +15,10 @@ const L=require('./lib.js');const {ok,until}=L;
  ok(await P.evaluate(()=>!!authSession&&!(document.getElementById('cloud-link')||{}).open),'sai e entra de novo sem pedir e-mail');
  await P.evaluate(()=>go('account'));await P.waitForTimeout(500);ok(/Conta do PC do estoque: não usa e-mail/.test(await P.textContent('#view')),'tela Conta explica');
  // criar conta normal com a caixa PC
- await N.goto('http://localhost:8000/index.html?ntfy='+L.N);await N.waitForTimeout(1500);await N.click('text=Criar conta de outro estoque');await N.fill('#auth-screen input[name=store]','PC loja');await N.fill('#auth-screen input[name=login]','pc'+Date.now());await N.check('#auth-screen input[name=pc]');
+ await N.goto('http://localhost:8000/index.html?ntfy='+L.N);await N.waitForTimeout(1500);await N.click('#auth-create');await N.fill('#auth-screen input[name=store]','PC loja');await N.fill('#auth-screen input[name=login]','pc'+Date.now());await N.check('#auth-screen input[name=pc]');
  await N.fill('#auth-screen input[name=password]','1234');await N.fill('#auth-screen input[name=confirmation]','1234');await L.terms(N,'#auth-form');await N.click('#auth-form button[type=submit]');await N.waitForTimeout(2500);ok(!!(await N.$('.recovery-code')),'criar conta com a caixa PC: sem e-mail');
  // conta normal continua exigindo e-mail
- const M=await (await b.newContext()).newPage();await M.goto('http://localhost:8000/index.html?ntfy='+L.N);await M.waitForTimeout(1500);await M.click('text=Criar conta de outro estoque');ok(await M.evaluate(()=>document.querySelector('#auth-screen input[name=email]').required),'conta normal continua exigindo e-mail');
+ const M=await (await b.newContext()).newPage();await M.goto('http://localhost:8000/index.html?ntfy='+L.N);await M.waitForTimeout(1500);await M.click('#auth-create');ok(await M.evaluate(()=>document.querySelector('#auth-screen input[name=email]').required),'conta normal continua exigindo e-mail');
  await M.reload();await M.waitForTimeout(1500);await L.signup(M,'normal'+Date.now());ok(await M.evaluate(()=>!localStorage.getItem('lojasg.estoque99.pc-account:'+authSession.storeKey)&&!!localStorage.getItem('lojasg.estoque99.cloud-email:'+authSession.storeKey)),'conta normal NÃO vira conta PC');
  // conta comum já criada vira a conta do PC (só uma)
  const Q=await (await b.newContext()).newPage();Q.on('dialog',d=>d.accept());await Q.goto('http://localhost:8000/index.html?ntfy='+L.N);await Q.waitForTimeout(1500);await L.signup(Q,'virapc'+Date.now());

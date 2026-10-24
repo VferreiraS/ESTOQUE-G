@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="82"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="83"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -333,7 +333,7 @@ const date=s=>s?s.split('-').reverse().join('/'):'Sem prazo';
 const icons={home:'◫',tasks:'✓',team:'♙',corridors:'▦',nfs:'▤',data:'⇅'},labels={home:'Visão geral',tasks:'Tarefas',team:'Equipe',corridors:'Corredores',nfs:'NFs pendentes',data:'Dados e ajuda'};
 
 function mobileTableLabels(){if(!document.querySelectorAll)return;document.querySelectorAll('#view table').forEach(table=>{const heads=Array.from(table.querySelectorAll('thead th')).map(h=>h.textContent.trim());table.classList.add('mobile-cards');table.querySelectorAll('tbody tr').forEach(row=>Array.from(row.children).forEach((cell,i)=>cell.setAttribute('data-label',heads[i]||'')))})}
-function mobileEnhance(){mobileTableLabels();const nav=$('mobile-bottom');if(!nav)return;const tabs=[['home','⌂','Início'],['nfs','▤','Notas'],['plans','▣','Plano'],['chat','✉','Chat'],['mobile-menu','☰','Mais']];const selected=tabs.some(t=>t[0]===page)?page:'mobile-menu';nav.innerHTML=tabs.map(([p,icon,title])=>`<button class="${selected===p?'active':''}" aria-current="${selected===p?'page':'false'}" onclick="go('${p}')"><span aria-hidden="true">${icon}</span>${title}</button>`).join('')}
+function mobileEnhance(){mobileTableLabels();const nav=$('mobile-bottom');if(!nav)return;const tabs=[['home','⌂','Início'],['nfs','▤','Notas'],['plans','▣','Plano'],['chat','✉','Chat'],['mobile-menu','☰','Mais']];const selected=tabs.some(t=>t[0]===page)?page:'mobile-menu';if(nav.__sel===selected&&nav.firstChild)return;nav.__sel=selected;nav.innerHTML=tabs.map(([p,icon,title])=>`<button class="${selected===p?'active':''}" aria-current="${selected===p?'page':'false'}" onclick="go('${p}')"><span aria-hidden="true">${icon}</span>${title}</button>`).join('')}
 function renderMobileMenu(){return hero('Seu estoque na palma da mão.','Acesse todas as funções do sistema.')+`<div class="panel help mobile-options">${Object.keys(labels).map(p=>`<button onclick="go('${p}')">${labels[p]} →</button>`).join('')}<button onclick="if(window.toggleVisualEffects)window.toggleVisualEffects()">Alternar efeitos visuais</button><button onclick="checkSiteUpdate()">↻ Procurar atualização · versão ${esc(window.SITE_VERSION||'')}</button><button onclick="authLogout()">Sair da conta</button></div><div class="panel help mobile-guide"><h2>Levar os dados do computador</h2><ol><li>No computador, acesse Minha conta e exporte a conta protegida.</li><li>Transfira esse arquivo para o celular.</li><li>Na tela de login do celular, escolha Importar conta protegida e informe a senha dessa conta.</li></ol><p>Para a equipe toda ver os mesmos dados em vários aparelhos, use <b>Chat → Equipe sincronizada</b>. Sem isso, cada aparelho guarda só os próprios dados. Se a conta já existir neste aparelho, entre nela e use Dados e ajuda → Restaurar backup para atualizar os cadastros. A restauração substitui os dados atuais após confirmação.</p><p>Para enviar um plano com fotos, use Compartilhar. Se o navegador não oferecer esse recurso, baixe as fotos e copie o texto. O envio pelo WhatsApp ou Outlook precisa de conexão.</p><p>Use sempre o mesmo navegador e faça backups. A prévia de um arquivo HTML pode não executar o sistema; o navegador precisa permitir JavaScript, armazenamento local e criptografia.</p><p><strong>Usar como app:</strong> no iPhone/iPad, abra o endereço do site no Safari, toque em Compartilhar e em “Adicionar à Tela de Início”. No Android, abra no Chrome e toque em ⋮ → “Instalar app”. No computador, use o ícone de instalar na barra de endereço do Chrome ou Edge.</p></div>`}
 if(window.visualViewport&&window.visualViewport.addEventListener){window.visualViewport.addEventListener('resize',()=>{const typing=document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);document.body.classList.toggle('keyboard-open',!!typing&&window.innerHeight-window.visualViewport.height>140)})}
 
@@ -613,7 +613,7 @@ async function savePlan(event){event.preventDefault();if(!authSession||!planDraf
 async function deletePlan(id){if(!authSession||!confirm('Excluir este plano e suas fotos?'))return;state.plans=(state.plans||[]).filter(p=>p.id!==id);await save();render()}
 function renderPlans(){if(planDraft)return renderPlanEditor();const rows=(state.plans||[]).filter(p=>!planFilter||p.date===planFilter).slice().sort((a,b)=>b.date.localeCompare(a.date));return hero('Plano de ação','Defina o dia, descreva as atividades e mostre o que precisa ser feito.',`<button class="primary" onclick="openPlan()">＋ Novo plano</button>${shareReportButton('plans')}`)+`<div class="panel"><div class="panelhead"><h2>Planos por dia</h2><label>Filtrar data <input type="date" aria-label="Filtrar planos por data" value="${esc(planFilter)}" onchange="planFilter=this.value;render()"></label><button onclick="planFilter='';render()">Todos os dias</button></div><div class="help">${rows.length?rows.map(p=>`<article class="plan-card"><div class="cardtop"><div><span class="pill">${date(p.date)}</span><h2>${esc(p.title)}</h2></div><button onclick="openPlan('${p.id}')">Editar plano</button></div><p class="small">${p.activities.filter(a=>a.done).length} de ${p.activities.length} atividades feitas · ${p.activities.reduce((n,a)=>n+a.photos.length,0)} fotos</p><ol class="plan-activities">${p.activities.map(a=>`<li class="${a.done?'act-done':''}">${planDoneBtn(p,a)}<b>${esc(a.title)}</b>${a.time?` <span class="act-time">até ${esc(a.time)}</span>`:''}${actLate(p,a)?' <span class="act-late">Atrasada</span>':''}<div class="small">Responsável: ${esc(a.owner||'A definir')} <button type="button" class="fwd-btn" onclick="e99Forward('act','${p.id}','${a.id}')" title="Encaminhar no chat">💬 Encaminhar</button></div>${a.notes?`<p class="plan-notes">${esc(a.notes)}</p>`:''}${planPhotosMarkup(a,p.id)}</li>`).join('')}</ol><div class="toolbar"><button class="primary" onclick="copyPlan('${p.id}')">Copiar para WhatsApp / Outlook</button><button onclick="sharePlan('${p.id}')">Compartilhar com fotos</button><button onclick="downloadPlanEml('${p.id}')">E-mail para Outlook (.eml)</button><button onclick="downloadPlanHtml('${p.id}')">Baixar plano com fotos</button><button class="danger" onclick="deletePlan('${p.id}')">Excluir plano</button></div></article>`).join(''):'<div class="empty"><h3>Nenhum plano nesta seleção.</h3><p>Crie um plano e escolha o dia em que as atividades serão realizadas.</p><button onclick="openPlan()">Criar plano de ação</button></div>'}</div></div>`}
 function planPhotosMarkup(a,planId){return `<div class="plan-photos">${a.photos.map((ph,i)=>`<figure><img src="${ph.data}" alt="Foto ${i+1} da atividade ${esc(a.title)}" width="170" height="120" loading="lazy"><button onclick="downloadPlanPhoto('${planId}','${a.id}','${ph.id}')">Baixar foto ${i+1}</button></figure>`).join('')}</div>`}
-function renderPlanEditor(){const p=planDraft;return hero('Montar plano de ação','As fotos e atividades são salvas ao clicar em Salvar plano.')+`<form class="panel help" id="plan-editor" onsubmit="savePlan(event)"><div class="fields"><div class="pair"><label>Nome do plano<input name="title" required maxlength="200" value="${esc(p.title)}" oninput="planChange('title',this.value)"></label><label>Dia da realização<input type="date" name="date" required value="${esc(p.date)}" onchange="planChange('date',this.value)"></label></div></div><p class="small">Até 5 fotos por atividade. Fotos são reduzidas para caber no armazenamento local; guarde os originais se precisar de mais detalhes.</p>${p.activities.map((a,i)=>`<section class="plan-edit-item"><div class="cardtop"><h2>Atividade ${i+1}</h2><button type="button" class="danger" onclick="planRemoveItem(${i})" ${planPhotoBusy?'disabled':''}>Remover atividade</button></div><div class="fields"><label>O que será feito?<textarea required maxlength="500" oninput="planChange('title',this.value,${i})">${esc(a.title)}</textarea></label><label>Responsável<input list="plan-owners" maxlength="200" value="${esc(a.owner)}" oninput="planChange('owner',this.value,${i})" placeholder="Nome ou TODOS"></label><label>Até que horas? (opcional)<input type="time" value="${esc(a.time||'')}" onchange="planChange('time',this.value,${i})"></label><label>Orientações / local / observações<textarea maxlength="3000" oninput="planChange('notes',this.value,${i})">${esc(a.notes)}</textarea></label><label>Selecionar fotos da galeria<input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple onchange="planAttachPhotos(event,${i})" ${planPhotoBusy?'disabled':''}></label><label>Tirar foto da atividade<input type="file" accept="image/*" capture="environment" onchange="planAttachPhotos(event,${i})" ${planPhotoBusy?'disabled':''}></label></div><div class="plan-photos">${a.photos.map((ph,j)=>`<figure><img src="${ph.data}" alt="Foto ${j+1} da atividade ${i+1}" width="170" height="120"><button type="button" onclick="planRemovePhoto(${i},${j})" ${planPhotoBusy?'disabled':''}>Remover foto</button></figure>`).join('')}</div></section>`).join('')}<datalist id="plan-owners"><option value="TODOS">${state.team.map(p=>`<option value="${esc(p.name)}">`).join('')}</datalist><p role="status">${planPhotoBusy?'Preparando fotos… Aguarde antes de sair.':''}</p><div class="toolbar"><button type="button" onclick="planAddItem()" ${planPhotoBusy?'disabled':''}>＋ Adicionar atividade</button><button type="submit" class="primary" ${planPhotoBusy?'disabled':''}>Salvar plano</button><button type="button" onclick="planCancel()" ${planPhotoBusy?'disabled':''}>Cancelar</button></div></form>`}
+function renderPlanEditor(){const p=planDraft;return hero('Montar plano de ação','As fotos e atividades são salvas ao clicar em Salvar plano.')+`<form class="panel help" id="plan-editor" onsubmit="savePlan(event)"><div class="fields"><div class="pair"><label>Nome do plano<input name="title" required maxlength="200" value="${esc(p.title)}" oninput="planChange('title',this.value)"></label><label>Dia da realização<input type="date" name="date" required value="${esc(p.date)}" onchange="planChange('date',this.value)"></label></div></div><p class="small">Até 5 fotos por atividade. Fotos são reduzidas para caber no armazenamento local; guarde os originais se precisar de mais detalhes.</p>${p.activities.map((a,i)=>`<section class="plan-edit-item"><div class="cardtop"><h2>Atividade ${i+1}</h2><button type="button" class="danger" onclick="planRemoveItem(${i})" ${planPhotoBusy?'disabled':''}>Remover atividade</button></div><div class="fields"><label>O que será feito?<textarea required maxlength="500" oninput="planChange('title',this.value,${i})">${esc(a.title)}</textarea></label><label>Responsável<input list="plan-owners" maxlength="200" value="${esc(a.owner)}" oninput="planChange('owner',this.value,${i})" placeholder="Nome ou TODOS"></label><label>Até que horas? (opcional)<input type="time" value="${esc(a.time||'')}" onchange="planChange('time',this.value,${i})"></label><label>Orientações / local / observações<textarea maxlength="3000" oninput="planChange('notes',this.value,${i})">${esc(a.notes)}</textarea></label><label>Selecionar fotos da galeria<input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple onchange="planAttachPhotos(event,${i})" ${planPhotoBusy?'disabled':''}></label><label>Tirar foto da atividade<input type="file" accept="image/*" capture="environment" onchange="planAttachPhotos(event,${i})" ${planPhotoBusy?'disabled':''}></label></div><div class="plan-photos">${a.photos.map((ph,j)=>`<figure><img src="${ph.data}" alt="Foto ${j+1} da atividade ${i+1}" width="170" height="120" decoding="async"><button type="button" onclick="planRemovePhoto(${i},${j})" ${planPhotoBusy?'disabled':''}>Remover foto</button></figure>`).join('')}</div></section>`).join('')}<datalist id="plan-owners"><option value="TODOS">${state.team.map(p=>`<option value="${esc(p.name)}">`).join('')}</datalist><p role="status">${planPhotoBusy?'Preparando fotos… Aguarde antes de sair.':''}</p><div class="toolbar"><button type="button" onclick="planAddItem()" ${planPhotoBusy?'disabled':''}>＋ Adicionar atividade</button><button type="submit" class="primary" ${planPhotoBusy?'disabled':''}>Salvar plano</button><button type="button" onclick="planCancel()" ${planPhotoBusy?'disabled':''}>Cancelar</button></div></form>`}
 function compressPlanPhoto(file){return new Promise((resolve,reject)=>{if(file.size>20*1024*1024){reject(Error('A foto ultrapassa 20 MB. Escolha uma versão menor.'));return}const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{URL.revokeObjectURL(url);try{const canvas=document.createElement('canvas');let size=1200,data='';for(let attempt=0;attempt<5;attempt++){const scale=Math.min(1,size/Math.max(img.naturalWidth,img.naturalHeight));canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);data=canvas.toDataURL('image/jpeg',0.72-attempt*0.07);if(data.length<=200000)break;size=Math.round(size*0.78)}if(data.length>200000)throw Error('Esta imagem ainda está grande. Escolha uma versão menor.');resolve({id:uid(),data})}catch(e){reject(e)}};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Formato não suportado pelo navegador. Exporte a foto como JPG ou PNG e tente novamente.'))};img.src=url})}
 async function planAttachPhotos(event,index){const files=Array.from(event.target.files);event.target.value='';if(!planDraft||planPhotoBusy||!files.length)return;const draft=planDraft,item=draft.activities[index];if(item.photos.length+files.length>5){notify('Cada atividade aceita até 5 fotos.');return}planPhotoBusy=true;render();try{const photos=[];for(const file of files)photos.push(await compressPlanPhoto(file));const candidate=JSON.parse(JSON.stringify(draft));candidate.activities[index].photos.push(...photos);const total=(state.plans||[]).filter(p=>p.id!==draft.id).concat(candidate).reduce((n,p)=>n+p.activities.reduce((m,a)=>m+a.photos.reduce((k,ph)=>k+ph.data.length,0),0),0);if(total>2400000)throw Error('Armazenamento de fotos cheio. Baixe planos antigos e remova suas fotos para liberar espaço.');if(planDraft===draft&&authSession){item.photos.push(...photos);planDraftDirty=true}}catch(e){notify(e.message)}finally{planPhotoBusy=false;render()}}
 function planText(p){return `${authSession.payload.store}\nPLANO DE AÇÃO — ${date(p.date)}\n${p.title}\n\n`+p.activities.map((a,i)=>`${i+1}. ${a.title}${a.time?' (até '+a.time+')':''}${a.done?' ✓ feita':''}\nResponsável: ${a.owner||'A definir'}${a.notes?'\nOrientações: '+a.notes:''}${a.photos.length?'\nFotos: '+a.photos.length+' (enviar junto)':''}`).join('\n\n')+'\n\nSe alguma atividade não for concluída, informar o motivo da pendência.'}
@@ -964,11 +964,13 @@ let renderedDay=iso();setInterval(()=>{if(!modal.open&&iso()!==renderedDay){rend
  function motionAllowed(){return enabled&&!(preference&&preference.matches)}
  function cancelAnimations(){animations.forEach(function(a){try{a.cancel()}catch(e){}});animations=[]}
  function updateControl(){var button=document.getElementById('effects-toggle');document.body.classList.toggle('fx-off',!motionAllowed());document.body.classList.toggle('fx-user-off',!enabled);if(button){button.textContent=enabled?'Efeitos: ligados':'Efeitos: desligados';button.setAttribute('aria-pressed',motionAllowed()?'true':'false');button.title='Ligar ou desligar animações deste site.'}}
- function reveal(element,delay){if(typeof element.animate!=='function'||!motionAllowed())return;try{var a=element.animate([{opacity:.25,transform:'translateY(14px)'},{opacity:1,transform:'translateY(0)'}],{duration:420,delay:delay,easing:'cubic-bezier(.22,1,.36,1)'});animations.push(a);a.onfinish=function(){var i=animations.indexOf(a);if(i>=0)animations.splice(i,1)}}catch(e){}}
+ function reveal(element,delay){if(typeof element.animate!=='function'||!motionAllowed())return;try{if(element.getAnimations&&element.getAnimations().length)return;var a=element.animate([{opacity:.25,transform:'translateY(10px)'},{opacity:1,transform:'translateY(0)'}],{duration:200,delay:delay,easing:'cubic-bezier(.22,1,.36,1)'});animations.push(a);a.onfinish=function(){var i=animations.indexOf(a);if(i>=0)animations.splice(i,1)}}catch(e){}}
  function updateScroll(){framePending=false;var doc=document.documentElement,height=Math.max(0,doc.scrollHeight-window.innerHeight),y=Math.max(0,window.pageYOffset||doc.scrollTop||0),bar=document.getElementById('scroll-progress'),top=document.getElementById('back-top');if(bar)bar.style.transform='scaleX('+(height?Math.min(1,y/height):0)+')';if(top)top.classList.toggle('hidden',y<320);document.body.classList.toggle('is-scrolled',y>12)}
  function scheduleScroll(){if(framePending)return;framePending=true;if(typeof window.requestAnimationFrame==='function')window.requestAnimationFrame(updateScroll);else updateScroll()}
- window.refreshVisualEffects=function(){if(observer)observer.disconnect();cancelAnimations();updateControl();updateScroll();if(!motionAllowed())return;var nodes=root.querySelectorAll('.hero,.stat,.cards>.card,.grid2>.card,.panel');if(typeof window.IntersectionObserver==='function'){try{observer=new window.IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){reveal(entry.target,0);observer.unobserve(entry.target)}})},{threshold:.05});Array.prototype.forEach.call(nodes,function(node){observer.observe(node)})}catch(e){observer=null}}else Array.prototype.forEach.call(nodes,function(node,i){if(node.getBoundingClientRect().top<window.innerHeight)reveal(node,Math.min(i,3)*40)})};
- window.toggleVisualEffects=function(){enabled=!enabled;try{localStorage.setItem(key,enabled?'on':'off')}catch(e){}window.refreshVisualEffects()};
+ var revealPage=null;
+ /* a cada render: sem leitura de layout na hora (a barra de rolagem atualiza no próximo quadro) e sem piscar os blocos quando a tela só se atualiza (sincronização); a entrada só roda ao trocar de tela */
+ window.refreshVisualEffects=function(){var cur=typeof page!=='undefined'?page:'';var same=cur===revealPage;revealPage=cur;updateControl();scheduleScroll();if(observer){observer.disconnect();observer=null}if(same)return;cancelAnimations();if(!motionAllowed())return;var nodes=root.querySelectorAll('.hero,.stat,.cards>.card,.grid2>.card,.panel');if(typeof window.IntersectionObserver==='function'){try{observer=new window.IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){reveal(entry.target,0);observer.unobserve(entry.target)}})},{threshold:.05});Array.prototype.forEach.call(nodes,function(node){observer.observe(node)})}catch(e){observer=null}}else Array.prototype.forEach.call(nodes,function(node,i){if(node.getBoundingClientRect().top<window.innerHeight)reveal(node,Math.min(i,3)*40)})};
+ window.toggleVisualEffects=function(){enabled=!enabled;try{localStorage.setItem(key,enabled?'on':'off')}catch(e){}revealPage=null;window.refreshVisualEffects()};
  window.scrollToSiteTop=function(){try{window.scrollTo({top:0,behavior:motionAllowed()?'smooth':'auto'})}catch(e){window.scrollTo(0,0)}};
  window.addEventListener('scroll',scheduleScroll,{passive:true});window.addEventListener('resize',scheduleScroll,{passive:true});window.addEventListener('beforeprint',cancelAnimations);
  if(preference){if(typeof preference.addEventListener==='function')preference.addEventListener('change',window.refreshVisualEffects);else if(typeof preference.addListener==='function')preference.addListener(window.refreshVisualEffects)}
@@ -1199,7 +1201,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-</script><details style="margin:16px"><summary>Licença do leitor de câmera ZXing 0.21.3</summary><pre style="white-space:pre-wrap">                                 Apache License
+</script><script type="text/plain" id="zxing-license">                                 Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
 
@@ -1444,7 +1446,7 @@ POSSIBILITY OF SUCH DAMAGES.
 You acknowledge that this software is not designed or intended for
 use in the design, construction, operation or maintenance of any
 nuclear facility.
-</pre></details>
+</script>
 <style id="device-compat">
 /* Compatibilidade: iPhone/iPad (Safari), Android (Chrome) e computador. */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -1767,16 +1769,17 @@ function logoSvg(s){return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0
 function motifSvg(s){return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -16 32 32"><g transform="scale(1.9)">'+s.orn+'</g></svg>'}
 function activeKey(){return getPref()==='off'?0:currentMonth()}
 function applySeason(){
+  /* só mexe no DOM quando algo muda: escrever sempre fazia o observador abaixo disparar de novo a cada quadro */
   var key=activeKey(),s=SEASONS[key]||null,b=document.body,root=document.documentElement;
-  for(var i=1;i<=12;i++)b.classList.remove('season-'+i);
-  if(s)b.classList.add('season-'+key);
-  b.dataset.season=String(key);
-  if(s){root.style.setProperty('--season-motif','url("'+svgUri(motifSvg(s))+'")')}else{root.style.removeProperty('--season-motif')}
+  for(var i=1;i<=12;i++)if(i!==key&&b.classList.contains('season-'+i))b.classList.remove('season-'+i);
+  if(s&&!b.classList.contains('season-'+key))b.classList.add('season-'+key);
+  if(b.dataset.season!==String(key))b.dataset.season=String(key);
+  var motif=s?'url("'+svgUri(motifSvg(s))+'")':'';if(root.style.getPropertyValue('--season-motif')!==motif){if(motif)root.style.setProperty('--season-motif',motif);else root.style.removeProperty('--season-motif')}
   refreshBrand(s);
   var btn=document.getElementById('season-toggle');
-  if(btn){btn.textContent=s?'Sazonal: '+s.name.toLowerCase():'Sazonal: desligado';btn.setAttribute('aria-pressed',String(!!s))}
+  if(btn){var bt=s?'Sazonal: '+s.name.toLowerCase():'Sazonal: desligado';if(btn.textContent!==bt)btn.textContent=bt;if(btn.getAttribute('aria-pressed')!==String(!!s))btn.setAttribute('aria-pressed',String(!!s))}
   var link=document.querySelector('link[rel=icon]');
-  if(link){if(!link.dataset.orig)link.dataset.orig=link.getAttribute('href');link.setAttribute('type',s?'image/svg+xml':'image/png');link.setAttribute('href',s?svgUri(logoSvg(s)):link.dataset.orig)}
+  if(link){if(!link.dataset.orig)link.dataset.orig=link.getAttribute('href');var lt=s?'image/svg+xml':'image/png',lh=s?svgUri(logoSvg(s)):link.dataset.orig;if(link.getAttribute('type')!==lt)link.setAttribute('type',lt);if(link.getAttribute('href')!==lh)link.setAttribute('href',lh)}
   document.querySelectorAll('.logo img').forEach(function(img){
     if(!img.dataset.orig)img.dataset.orig=img.getAttribute('src');
     var want=s?svgUri(logoSvg(s)):img.dataset.orig;
@@ -1784,7 +1787,7 @@ function applySeason(){
   });
 }
 function refreshBrand(s){
-  document.querySelectorAll('aside .brand small').forEach(function(el){el.textContent=s?'LOJAS G · '+s.name.toUpperCase():'LOJAS G · ESTOQUE 99'});
+  var t=s?'LOJAS G · '+s.name.toUpperCase():'LOJAS G · ESTOQUE 99';document.querySelectorAll('aside .brand small').forEach(function(el){if(el.textContent!==t)el.textContent=t});
 }
 window.toggleSeason=function(){setPref(getPref()==='off'?'auto':'off');applySeason();if(typeof notify==='function')notify(getPref()==='off'?'Tema sazonal desligado.':'Tema sazonal ligado: cores e logo do mês.')};
 var pending=false;
@@ -2564,7 +2567,9 @@ async function paint(scroll){var box=document.getElementById('chat-list');if(!bo
   var html='',lastDay='',people={};
   for(var i=0;i<l.length;i++){var r=l[i];var m=mem[r.topic+'|'+r.id]||(mem[r.topic+'|'+r.id]=await decMsg(r.payload));if(!m)continue;people[m.from]=1;var dd=day(m.at);if(dd!==lastDay){html+='<div class="chat-day">'+esc2(dd)+'</div>';lastDay=dd}
     snip[r.id]={from:m.from,t:m.text?m.text.slice(0,140):(m.img?'📷 Foto':m.audio?'🎤 Áudio':'')};
-    html+='<div class="chat-msg'+(r.mine?' mine':'')+(m.text&&window.e99IsMention&&window.e99IsMention(m.text)&&!r.mine?' mentioned':'')+'" data-id="'+esc2(r.id)+'" data-at="'+esc2(m.at)+'" data-from="'+esc2(m.from)+'">'+(r.mine?'':'<span class="who">'+esc2(m.from)+'</span>')+(m.re?'<button type="button" class="chat-quote" onclick="chatJump(\''+esc2(m.re.id)+'\')"><b>'+esc2(m.re.from===cfg.name?'Você':m.re.from)+'</b><span>'+esc2(m.re.t||'Mensagem')+'</span></button>':'')+(m.img?(r.hasImg?'<img data-chat-img="'+esc2(r.id)+'" alt="Foto enviada por '+esc2(m.from)+'">':'<span class="img-wait">📷 Foto (baixando… fotos ficam no servidor só por 3 horas)</span>'):'')+(m.audio?(r.hasImg?'<span class="chat-audio"><audio data-chat-audio="'+esc2(r.id)+'" data-mime="'+esc2(m.audio.mime)+'" controls preload="metadata" aria-label="Áudio de '+esc2(m.from)+'"></audio><span class="dur">'+mmss(m.audio.dur)+'</span></span>':'<span class="img-wait">🎤 Áudio de '+mmss(m.audio.dur)+' (baixando… áudios ficam no servidor só por 3 horas)</span>'):'')+(m.text?(window.e99Mentions?window.e99Mentions(esc2(m.text)):esc2(m.text)):'')+'<span class="when">'+time(m.at)+'</span><button type="button" class="chat-re-btn" aria-label="Responder" title="Responder" onclick="chatReply(\''+esc2(r.id)+'\')">↩</button><span class="swipe-ico" aria-hidden="true">↩</span></div>'}
+    html+='<div class="chat-msg'+(r.mine?' mine':'')+(m.text&&window.e99IsMention&&window.e99IsMention(m.text)&&!r.mine?' mentioned':'')+'" data-id="'+esc2(r.id)+'" data-at="'+esc2(m.at)+'" data-from="'+esc2(m.from)+'">'+(r.mine?'':'<span class="who">'+esc2(m.from)+'</span>')+(m.re?'<button type="button" class="chat-quote" onclick="chatJump(\''+esc2(m.re.id)+'\')"><b>'+esc2(m.re.from===cfg.name?'Você':m.re.from)+'</b><span>'+esc2(m.re.t||'Mensagem')+'</span></button>':'')+(m.img?(r.hasImg?'<img data-chat-img="'+esc2(r.id)+'" alt="Foto enviada por '+esc2(m.from)+'" decoding="async">':'<span class="img-wait">📷 Foto (baixando… fotos ficam no servidor só por 3 horas)</span>'):'')+(m.audio?(r.hasImg?'<span class="chat-audio"><audio data-chat-audio="'+esc2(r.id)+'" data-mime="'+esc2(m.audio.mime)+'" controls preload="metadata" aria-label="Áudio de '+esc2(m.from)+'"></audio><span class="dur">'+mmss(m.audio.dur)+'</span></span>':'<span class="img-wait">🎤 Áudio de '+mmss(m.audio.dur)+' (baixando… áudios ficam no servidor só por 3 horas)</span>'):'')+(m.text?(window.e99Mentions?window.e99Mentions(esc2(m.text)):esc2(m.text)):'')+'<span class="when">'+time(m.at)+'</span><button type="button" class="chat-re-btn" aria-label="Responder" title="Responder" onclick="chatReply(\''+esc2(r.id)+'\')">↩</button><span class="swipe-ico" aria-hidden="true">↩</span></div>'}
+  /* nada mudou: não refaz a lista (evita piscar fotos/áudios e travadinhas a cada sincronização) */
+  if(box.__h===html&&box.firstChild){if(keepBottom)box.scrollTop=box.scrollHeight;return}box.__h=html;
   var keep={};box.querySelectorAll('audio[data-chat-audio]').forEach(function(a){if(a.src)keep[a.getAttribute('data-chat-audio')]=a});
   box.innerHTML=html||'<p class="small" style="text-align:center;margin:auto">Nenhuma mensagem ainda. Diga oi para a equipe!</p>';
   var cnt=document.getElementById('chat-people');if(cnt)cnt.textContent=Object.keys(people).length+' pessoa(s) já falaram';
@@ -3259,20 +3264,23 @@ function sampleG(n){var c=document.createElement('canvas'),S=240,m=S/2;c.width=S
 function Field(layout,few){var cv=document.createElement('canvas');cv.className='fx-g';cv.setAttribute('aria-hidden','true');var ctx=cv.getContext('2d');
   var mobile=Math.min(innerWidth,innerHeight)<700,N=few?(mobile?700:1200):(mobile?1800:3400),parts=[],stars=[],w=0,h=0,dpr=1,raf=0,t0=performance.now(),ang=0,pointer={x:-1e4,y:-1e4},visible=true,built=false;
   function build(){var g=sampleG(N);parts=g.map(function(p){var blue=Math.random()<Math.max(.08,Math.min(.85,(p[0]+.35)*.9)),pal=blue?BLUE:GOLD,col=pal[(Math.random()*pal.length)|0];
-      var a=Math.random()*Math.PI*2,r=1.6+Math.random()*1.4;return {tx:p[0],ty:p[1],tz:(Math.random()-.5)*.28,x:Math.cos(a)*r,y:Math.sin(a)*r,z:(Math.random()-.5)*2,vx:0,vy:0,vz:0,c:col,s:.6+Math.random()*1.1,tw:Math.random()*6.28}});
+      var a=Math.random()*Math.PI*2,r=1.6+Math.random()*1.4;return {tx:p[0],ty:p[1],tz:(Math.random()-.5)*.28,x:Math.cos(a)*r,y:Math.sin(a)*r,z:(Math.random()-.5)*2,vx:0,vy:0,vz:0,c:col,cs:'rgb('+col[0]+','+col[1]+','+col[2]+')',s:.6+Math.random()*1.1,tw:Math.random()*6.28}});
+    /* agrupa por cor: troca a cor do pincel 8 vezes por quadro em vez de 1800 (a soma "lighter" não depende da ordem, o desenho fica igual) */
+    parts.sort(function(a,b){return a.cs<b.cs?-1:a.cs>b.cs?1:0});
     stars=[];for(var i=0;i<(mobile?60:140);i++)stars.push({x:Math.random(),y:Math.random(),s:Math.random()*1.2+.3,tw:Math.random()*6.28});built=true}
   function size(){var r=cv.getBoundingClientRect();dpr=Math.min(2,window.devicePixelRatio||1);var W=Math.max(1,Math.round(r.width*dpr)),H=Math.max(1,Math.round(r.height*dpr));if(W!==cv.width||H!==cv.height){cv.width=W;cv.height=H}w=W;h=H}
-  function frame(now){raf=0;if(!visible||!cv.isConnected||!document.body.classList.contains('dark'))return;size();if(!built)build();var t=(now-t0)/1000*CALM;reduce=still();ang=reduce?.2:Math.sin(t*.3)*.32;
+  function frame(now){raf=0;if(!visible||document.hidden||!cv.isConnected||!document.body.classList.contains('dark'))return;if(dirty||!hasRO){dirty=false;size()}if(!built)build();var t=(now-t0)/1000*CALM;reduce=still();ang=reduce?.2:Math.sin(t*.3)*.32;
     ctx.clearRect(0,0,w,h);ctx.globalCompositeOperation='lighter';
-    for(var i=0;i<stars.length;i++){var st=stars[i],al=.25+.25*Math.sin(t*1.3+st.tw);ctx.fillStyle='rgba(255,255,255,'+al.toFixed(3)+')';ctx.fillRect(st.x*w,st.y*h,st.s*dpr,st.s*dpr)}
+    ctx.fillStyle='#fff';for(var i=0;i<stars.length;i++){var st=stars[i];ctx.globalAlpha=.25+.25*Math.sin(t*1.3+st.tw);ctx.fillRect(st.x*w,st.y*h,st.s*dpr,st.s*dpr)}var lastCs='';
     var L=layout?layout(w,h,dpr):{cx:w*.5,cy:h*.5,R:Math.min(w,h)*.42},cx=L.cx,cy=L.cy,R=L.R,ca=Math.cos(ang),sa=Math.sin(ang),px=pointer.x*dpr,py=pointer.y*dpr,rad=(mobile?60:90)*dpr;
     for(var j=0;j<parts.length;j++){var p=parts[j];
       if(!reduce){p.vx+=(p.tx-p.x)*.012;p.vy+=(p.ty-p.y)*.012;p.vz+=(p.tz-p.z)*.012;p.vx*=.9;p.vy*=.9;p.vz*=.9;p.x+=p.vx;p.y+=p.vy;p.z+=p.vz}else{p.x=p.tx;p.y=p.ty;p.z=p.tz}
       var rx=p.x*ca+p.z*sa,rz=-p.x*sa+p.z*ca,per=2.6/(2.6+rz),sx=cx+rx*R*per,sy=cy+p.y*R*per;
       var dx=sx-px,dy=sy-py,dd=dx*dx+dy*dy;if(dd<rad*rad&&!reduce){var f=(1-Math.sqrt(dd)/rad)*.06;p.vx+=dx/R*f*3;p.vy+=dy/R*f*3}
-      var al2=.55+.45*Math.sin(t*2+p.tw),sz=p.s*per*dpr*(mobile?1.15:1.25);ctx.fillStyle='rgba('+p.c[0]+','+p.c[1]+','+p.c[2]+','+(al2*.85).toFixed(3)+')';ctx.fillRect(sx,sy,sz,sz)}
-    ctx.globalCompositeOperation='source-over';if(!reduce)raf=requestAnimationFrame(frame)}
-  if('ResizeObserver' in window)new ResizeObserver(function(){kick()}).observe(cv);
+      var al2=.55+.45*Math.sin(t*2+p.tw),sz=p.s*per*dpr*(mobile?1.15:1.25);if(p.cs!==lastCs){ctx.fillStyle=p.cs;lastCs=p.cs}ctx.globalAlpha=al2*.85;ctx.fillRect(sx,sy,sz,sz)}
+    ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';if(!reduce)raf=requestAnimationFrame(frame)}
+  /* mede o tamanho só quando ele muda (antes: a cada quadro, forçando o layout da página) */
+  var hasRO='ResizeObserver' in window,dirty=true;if(hasRO)new ResizeObserver(function(){dirty=true;kick()}).observe(cv);
   function kick(){if(!raf)raf=requestAnimationFrame(frame)}
   function onMove(e){var r=cv.getBoundingClientRect(),pt=e.touches?e.touches[0]:e;if(!pt)return;pointer.x=pt.clientX-r.left;pointer.y=pt.clientY-r.top}
   addEventListener('pointermove',onMove,{passive:true});addEventListener('touchmove',onMove,{passive:true});addEventListener('pointerleave',function(){pointer.x=pointer.y=-1e4});
@@ -3356,7 +3364,7 @@ html body.dark .logo,html body.dark .logo img,html body.dark .entry-emblem,html 
 <script id="glow-js">
 (function(){'use strict';
 /* última palavra do título em vermelho e etiqueta em pílula acima do título do Início */
-function decorate(root){if(!root)return;root.querySelectorAll('.hero h1, .auth-card h1').forEach(function(h){if(h.querySelector('.accent-word'))return;var w=h.lastChild;if(!w||w.nodeType!==3)return;var t=w.textContent,m=t.match(/(\S+)\s*$/);if(!m)return;w.textContent=t.slice(0,m.index);var sp=document.createElement('span');sp.className='accent-word';sp.textContent=m[1];h.appendChild(sp)});
+function decorate(root){if(!root)return;root.querySelectorAll('.hero h1, .auth-card h1').forEach(function(h){if(h.querySelector('.accent-word'))return;var w=h.lastChild;if(!w||w.nodeType!==3)return;var t=w.textContent,m=t.match(/(\S+)\s*$/);if(!m)return;w.textContent=t.slice(0,m.index);var sp=document.createElement('span');sp.className='accent-word';sp.textContent=m[1];sp.setAttribute('data-t',m[1]);h.appendChild(sp)});
   var hh=root.querySelector('.hero-home h1');if(hh&&!hh.parentNode.querySelector('.hero-pill')){var pl=document.createElement('span');pl.className='hero-pill';pl.innerHTML='<i></i>Stok · Lojas G';hh.parentNode.insertBefore(pl,hh)}}
 var r0=render;render=function(){var r=r0.apply(this,arguments);try{decorate(document.getElementById('view'))}catch(e){}return r};
 var a0=renderAuth;renderAuth=function(){var r=a0.apply(this,arguments);try{decorate(document.getElementById('auth-screen'))}catch(e){}return r};
@@ -3376,7 +3384,7 @@ body:not(.fx-user-off) .prof-head .av.av-l{animation:prof-ring 3.2s ease-in-out 
 body:not(.fx-user-off) .vbadge{animation:vb-pop 4s ease-in-out infinite}
 @keyframes vb-pop{0%,88%,100%{transform:scale(1)}92%{transform:scale(1.25)}96%{transform:scale(.95)}}
 html body.dark #view .prof-stats>div,html body.dark #view .prof-list>div,html body.dark #view .prof-people button{position:relative;overflow:hidden}
-html body.dark #view .prof-stats>div::after,html body.dark #view .prof-people button::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.09),transparent);transform:skewX(-18deg);pointer-events:none;animation:fx-shine 7s ease-in-out infinite;animation-delay:var(--fx-delay,0s)}
+html body.dark #view .prof-stats>div::after,html body.dark #view .prof-people button::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.09),transparent);transform:skewX(-18deg);pointer-events:none;animation:fx-shine-45 7s ease-in-out infinite;animation-delay:var(--fx-delay,0s)}
 html body.dark #view .prof-people button{transition:transform .18s ease,border-color .18s ease}
 html body.dark #view .prof-people button:hover{transform:translateY(-3px);border-color:#ff2a1f}
 .prof-chip:hover{text-decoration:underline}
@@ -3454,7 +3462,7 @@ function all(){var l=[],byLogin={};if(mine)l.push({key:'me',p:mine,role:authSess
 function find(name){var n=norm(name);if(!n)return null;var l=all();for(var i=0;i<l.length;i++){var p=l[i].p;if(norm(p.name)===n||norm('@'+p.user)===n||norm(p.user)===n||p.names.some(function(x){return norm(x)===n}))return l[i]}
   if(mine&&n===norm(chatName()))return {key:'me',p:mine,me:true,role:authSession&&authSession.payload.role};return null}
 function initial(n){return e((String(n||'?').trim()[0]||'?').toUpperCase())}
-function avatar(rec,name,cls){var p=rec&&rec.p;if(p&&p.photo)return '<img class="av '+(cls||'')+'" src="'+e(url(p.photo))+'" alt="">';return '<span class="av '+(cls||'')+'" aria-hidden="true">'+initial(p?p.name:name)+'</span>'}
+function avatar(rec,name,cls){var p=rec&&rec.p;if(p&&p.photo)return '<img class="av '+(cls||'')+'" src="'+e(url(p.photo))+'" alt="" decoding="async">';return '<span class="av '+(cls||'')+'" aria-hidden="true">'+initial(p?p.name:name)+'</span>'}
 window.profAvatar=function(name,cls){return avatar(find(name),name,cls)};
 window.profChip=function(name){var r=find(name);return '<span class="prof-chip" role="link" tabindex="0" onclick="event.stopPropagation();openProfile(\''+e(String(r?r.key:'n:'+name).replace(/'/g,''))+'\')">'+avatar(r,name,'av-s')+e(r?r.p.name:name)+'</span>'};
 window.openProfile=function(key){view=key||'me';go('profile')};
@@ -3552,7 +3560,7 @@ window.profSave=async function(ev){ev.preventDefault();keepForm();var p=editing,
 function decorateChat(){var box=document.getElementById('chat-list');if(!box)return;box.querySelectorAll('.chat-msg .who').forEach(function(w){var n=w.getAttribute('data-name')||w.textContent;if(w.getAttribute('data-av')===n+'|'+(find(n)?find(n).p.at:0))return;var r=find(n);w.setAttribute('data-name',n);w.setAttribute('data-av',n+'|'+(r?r.p.at:0));
   w.innerHTML=avatar(r,n,'av-s')+'<span>'+e(r?r.p.name:n)+vb(r)+'</span>'+(r?'<span class="small">@'+e(r.p.user)+'</span>':'');w.onclick=function(){openProfile(r?r.key:'n:'+n)}})}
 var mo=null;function watchChat(){var box=document.getElementById('chat-list');if(!box||box.__profWatch)return;box.__profWatch=1;new MutationObserver(function(){decorateChat()}).observe(box,{childList:true});decorateChat()}
-function decorateTeam(){if(page!=='team')return;document.querySelectorAll('#view .cards .card').forEach(function(c){var h=c.querySelector('h3'),a=c.querySelector('.avatar');if(!h||!a)return;var n=h.textContent;if(n==='TODOS')return;var r=find(n);if(r&&r.p.photo){a.classList.add('has-photo');a.innerHTML='<img src="'+e(url(r.p.photo))+'" alt="">'}a.title='Ver perfil';a.onclick=function(){openProfile(r?r.key:'n:'+n)};
+function decorateTeam(){if(page!=='team')return;document.querySelectorAll('#view .cards .card').forEach(function(c){var h=c.querySelector('h3'),a=c.querySelector('.avatar');if(!h||!a)return;var n=h.textContent;if(n==='TODOS')return;var r=find(n);if(r&&r.p.photo){a.classList.add('has-photo');a.innerHTML='<img src="'+e(url(r.p.photo))+'" alt="" loading="lazy" decoding="async">'}a.title='Ver perfil';a.onclick=function(){openProfile(r?r.key:'n:'+n)};
   if(r&&!c.querySelector('.prof-handle')){var s=document.createElement('div');s.className='small prof-handle';s.textContent='@'+r.p.user;h.after(s)}})}
 function decorateHeader(){if(!authSession)return;document.querySelectorAll('button[onclick="go(\'account\')"]').forEach(function(b){if(b.closest('#nav,.nav,#mobile-bottom'))return;var old=b.querySelector('.acct-av');if(old)old.remove();var t=document.createElement('span');t.className='acct-av';t.innerHTML=avatar({p:mine||blank()},chatName(),'av-s');b.insertBefore(t.firstChild,b.firstChild);b.firstChild.classList.add('acct-av')})}
 var rr=render;render=function(){if(page!=='profile')view=view;var r=rr.apply(this,arguments);try{decorateTeam();watchChat();decorateHeader()}catch(x){}return r};
@@ -3883,7 +3891,13 @@ function ParticleBadge(host){
   host.appendChild(cv);
   host.classList.add('vbadge','vbadge-s','vbadge-particle');
   var ctx=cv.getContext('2d');
-  var parts=[], raf=0, t0=performance.now(), ang=0, built=false, alive=true;
+  var parts=[], raf=0, t0=performance.now(), ang=0, built=false, alive=true, lastT=0, side=0, seen=true;
+  /* v82 · fluidez: mede o tamanho só quando muda, pausa fora da tela / com o app em segundo plano,
+     ~30 quadros por segundo (o selo é pequeno) e, com efeitos desligados, desenha o S parado uma vez */
+  function still(){return document.body.classList.contains('fx-user-off')||window.__osReduce===true}
+  function measure(){var dpr=Math.min(2, window.devicePixelRatio||1);var r=host.getBoundingClientRect();side=Math.max(16, Math.round((r.width||18)*dpr));if(cv.width!==side){cv.width=side;cv.height=side}}
+  if('ResizeObserver' in window){try{new ResizeObserver(function(){side=0;start()}).observe(host)}catch(e){}}
+  if('IntersectionObserver' in window){try{new IntersectionObserver(function(es){seen=es[es.length-1].isIntersecting;if(seen)start()}).observe(host)}catch(e){}}
 
   function build(){
     var g=sampleS(90);
@@ -3893,44 +3907,53 @@ function ParticleBadge(host){
       return {
         tx:p[0], ty:p[1], tz:(Math.random()-.5)*.2,
         x:Math.cos(a)*r, y:Math.sin(a)*r, z:(Math.random()-.5)*1.5,
-        vx:0, vy:0, vz:0, c:col,
+        vx:0, vy:0, vz:0, c:col, cs:'rgb('+col[0]+','+col[1]+','+col[2]+')',
         s:.7+Math.random()*1.1, tw:Math.random()*6.28
       };
     });
+    /* agrupa por cor: troca o pincel poucas vezes por quadro ("lighter" não depende da ordem) */
+    parts.sort(function(a,b){return a.cs<b.cs?-1:a.cs>b.cs?1:0});
     built=true;
   }
 
-  function frame(now){
-    raf=0;
-    if(!alive || !cv.isConnected) return;
+  function draw(now){
     if(!built) build();
-    var t=(now-t0)/1000;
-    ang=Math.sin(t*.35)*.28;
+    if(!side) measure();
+    var t=(now-t0)/1000, fix=still();
+    ang=fix?.12:Math.sin(t*.35)*.28;
     var dpr=Math.min(2, window.devicePixelRatio||1);
-    var css=host.getBoundingClientRect();
-    var side=Math.max(16, Math.round((css.width||18)*dpr));
-    if(cv.width!==side){ cv.width=side; cv.height=side; }
     var w=cv.width, h=cv.height;
     ctx.clearRect(0,0,w,h);
     ctx.globalCompositeOperation='lighter';
-    var cx=w/2, cy=h/2, R=w*.42, ca=Math.cos(ang), sa=Math.sin(ang);
+    var cx=w/2, cy=h/2, R=w*.42, ca=Math.cos(ang), sa=Math.sin(ang), lastCs='';
     for(var j=0;j<parts.length;j++){
       var p=parts[j];
+      if(fix){p.x=p.tx;p.y=p.ty;p.z=p.tz;p.vx=p.vy=p.vz=0}
       p.vx+=(p.tx-p.x)*.014;
       p.vy+=(p.ty-p.y)*.014;
       p.vz+=(p.tz-p.z)*.014;
-      p.vx*.88; p.vx*=.88; p.vy*=.88; p.vz*=.88;
+      p.vx*=.88; p.vy*=.88; p.vz*=.88;
       p.x+=p.vx; p.y+=p.vy; p.z+=p.vz;
       var rx=p.x*ca+p.z*sa, rz=-p.x*sa+p.z*ca;
       var per=2.5/(2.5+rz);
       var sx=cx+rx*R*per, sy=cy+p.y*R*per;
-      var al=.5+.5*Math.sin(t*2.2+p.tw);
+      var al=fix?.8:.5+.5*Math.sin(t*2.2+p.tw);
       var sz=Math.max(.6, p.s*per*(dpr>1?1.1:1.2));
-      ctx.fillStyle='rgba('+p.c[0]+','+p.c[1]+','+p.c[2]+','+(al*.95).toFixed(3)+')';
+      if(p.cs!==lastCs){ctx.fillStyle=p.cs;lastCs=p.cs}
+      ctx.globalAlpha=al*.95;
       ctx.fillRect(sx, sy, sz, sz);
     }
+    ctx.globalAlpha=1;
     ctx.globalCompositeOperation='source-over';
-    raf=requestAnimationFrame(frame);
+  }
+
+  function frame(now){
+    raf=0;
+    if(!alive || !cv.isConnected || document.hidden || !seen) return;
+    if(now-lastT<30){ raf=requestAnimationFrame(frame); return; }
+    lastT=now;
+    draw(now);
+    if(!still()) raf=requestAnimationFrame(frame);
   }
 
   function start(){ if(!raf) raf=requestAnimationFrame(frame); }
@@ -4021,8 +4044,12 @@ function boot(){
   patchRender();
   ensureAdminNav();
   mountAll(document);
-  if(window.MutationObserver){
-    var mo=new MutationObserver(function(){ mountAll(document); });
+  if(window.MutationObserver&&!window.__pbMO){
+    window.__pbMO=true;
+    /* volta a animar os selos quando o app retorna ao primeiro plano */
+    document.addEventListener('visibilitychange',function(){ if(document.hidden) return; var l=document.querySelectorAll('.vbadge-particle'); for(var i=0;i<l.length;i++) if(l[i]._pb) l[i]._pb.start(); });
+    /* junta as mudanças do DOM e procura selos novos no máximo uma vez por quadro */
+    var moPend=0;var mo=new MutationObserver(function(){ if(moPend) return; moPend=requestAnimationFrame(function(){ moPend=0; mountAll(document); }); });
     mo.observe(document.body,{childList:true,subtree:true});
   }
 }
@@ -4243,7 +4270,7 @@ addEventListener('touchend',async function(){if(y0==null)return;y0=null;if(dy*.6
     try{var sv=await (await fetch('./sw.js?'+Date.now(),{cache:'no-store'})).text();var nv=(sv.match(/estoque99-v(\d+)/)||[])[1];var cv=String(window.SITE_VERSION||((document.querySelector('meta[name="estoque99-version"]')||{}).content)||'');if(nv&&cv&&Number(nv)>Number(cv)){el.classList.remove('spin');location.reload();return}}catch(x){}
     await new Promise(function(r){setTimeout(r,500)});
     try{render()}catch(x){}
-  }finally{busy=false;hide()}});
+  }finally{busy=false;hide()}},{passive:true});
 })();
 </script>
 <style id="anim-css">
@@ -4255,10 +4282,15 @@ addEventListener('touchend',async function(){if(y0==null)return;y0=null;if(dy*.6
 @media (max-width:900px){.hero:not(.hero-home)>.fx-g{opacity:.5}}
 html body.dark #view .panel,html body.dark #view .card,html body.dark #view .stat,html body.dark #view .plan-card,html body.dark #view .pn-card,html body.dark button.primary{position:relative;overflow:hidden}
 html body.dark #view .panel::after,html body.dark #view .card::after,html body.dark #view .stat:not(:first-child)::after,html body.dark #view .plan-card::after,html body.dark #view .pn-card::after,html body.dark button.primary::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;pointer-events:none;background:linear-gradient(100deg,transparent,#ffffff12 45%,#ffffff26 50%,#ffffff12 55%,transparent);transform:skewX(-18deg);animation:fx-shine 7s ease-in-out infinite;animation-delay:var(--fx-delay,0s)}
-@keyframes fx-shine{0%,82%{left:-60%}100%{left:130%}}
+/* o brilho corre com transform (só a placa de vídeo trabalha); antes mexia em left e recalculava o layout a cada quadro */
+@keyframes fx-shine{0%,82%{transform:translateX(0) skewX(-18deg)}100%{transform:translateX(475%) skewX(-18deg)}}
+@keyframes fx-shine-45{0%,82%{transform:translateX(0) skewX(-18deg)}100%{transform:translateX(422%) skewX(-18deg)}}
 html body.dark button.primary{animation:fx-pulse 3s ease-in-out infinite}
 @keyframes fx-pulse{0%,100%{box-shadow:0 8px 26px -8px #ff2a1fcc}50%{box-shadow:0 8px 34px -4px #ff2a1fff,0 0 0 4px #ff2a1f22}}
-html body.dark .accent-word{animation:fx-glow 3s ease-in-out infinite}
+/* brilho da palavra vermelha: uma cópia transparente com sombra forte acende e apaga por opacidade (sem repintar o título a cada quadro) */
+html body.dark .accent-word{position:relative}
+html body.dark .accent-word[data-t]::after{content:attr(data-t);content:attr(data-t) / "";position:absolute;left:0;top:0;z-index:-1;color:transparent;text-shadow:0 0 42px #ff2a1fcc;opacity:0;pointer-events:none;animation:fx-glow-o 3s ease-in-out infinite}
+@keyframes fx-glow-o{0%,100%{opacity:0}50%{opacity:1}}
 @keyframes fx-glow{0%,100%{text-shadow:0 0 28px #ff2a1f66}50%{text-shadow:0 0 42px #ff2a1fcc}}
 html body.dark .nav button.active,html body.dark #mobile-bottom button.active{animation:fx-pulse 3s ease-in-out infinite}
 html body.dark .alert-count.has,html body.dark .has-alerts .alert-count{animation:fx-pulse 2s ease-in-out infinite}
@@ -4271,7 +4303,10 @@ var last=null;
 function off(){return document.body.classList.contains('fx-user-off')}
 var rr=render;render=function(){var r=rr.apply(this,arguments);try{var v=document.getElementById('view');if(!v)return r;
   var items=v.querySelectorAll('.panel,.card,.stat,.plan-card,.pn-card,.prof-stats>div,.prof-people button');items.forEach(function(el,i){el.style.setProperty('--fx-delay',((i*1.3)%7).toFixed(1)+'s')});
-  var cur=typeof page!=='undefined'?page:'';if(cur!==last){last=cur;if(!off()){var blocks=v.querySelectorAll('.hero,.stat,.panel,.card,.plan-card,.prof-cover,.prof-head,.prof-bio,.prof-meta,.prof-stats>div,.prof-list>div,.prof-people button');for(var j=0;j<blocks.length&&j<16;j++){if(typeof blocks[j].animate==='function')blocks[j].animate(window.e99EntryKF||[{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:window.e99EntryMs||380,delay:j*(window.e99EntryGap||40),easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'})}}}
+  var cur=typeof page!=='undefined'?page:'';if(cur!==last){last=cur;if(!off()){var blocks=v.querySelectorAll('.hero,.stat,.panel,.card,.plan-card,.prof-cover,.prof-head,.prof-bio,.prof-meta,.prof-stats>div,.prof-list>div,.prof-people button');
+    /* troca de tela macia e curta: no máximo 200 ms por bloco, 10 blocos, 18 ms entre eles; com "menos movimento" no aparelho, só esmaece */
+    var kf=window.__osReduce?[{opacity:0},{opacity:1}]:(window.e99EntryKF||[{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'none'}]),dur=Math.min(200,Math.round((window.e99EntryMs||380)*.5)),gap=Math.min(18,window.e99EntryGap||18);
+    for(var j=0;j<blocks.length&&j<10;j++){if(typeof blocks[j].animate==='function')blocks[j].animate(kf,{duration:dur,delay:j*gap,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'})}}}
   var ac=document.querySelector('.alert-count');if(ac)ac.classList.toggle('has',+ac.textContent>0)}catch(x){}return r};
 })();
 </script>
@@ -4599,8 +4634,8 @@ async function typing(stop){var c=await cdb();if(!c)return;var now=Date.now();if
 document.addEventListener('input',function(ev){if(ev.target&&ev.target.id==='chat-text'){if(ev.target.value.trim())typing(false);mentionSuggest(ev.target)}});
 function paintTyping(){var el=document.getElementById('chat-typing');if(!el){var h=document.querySelector('.chat-wrap .chat-head');if(!h)return;el=document.createElement('div');el.id='chat-typing';el.setAttribute('aria-live','polite');h.after(el)}
   var now=Date.now(),names=Object.keys(typers).filter(function(u){return typers[u].at>now-7000}).map(function(u){return typers[u].nome||'Alguém'});
-  el.innerHTML=names.length?'<span class="dots"><i></i><i></i><i></i></span>'+e(names.length>2?names.length+' pessoas estão digitando…':names.join(' e ')+(names.length>1?' estão':' está')+' digitando…'):''}
-setInterval(function(){if(page==='chat')paintTyping()},1500);
+  var th=names.length?'<span class="dots"><i></i><i></i><i></i></span>'+e(names.length>2?names.length+' pessoas estão digitando…':names.join(' e ')+(names.length>1?' estão':' está')+' digitando…'):'';if(el.__h!==th){el.__h=th;el.innerHTML=th}}
+setInterval(function(){if(page==='chat'&&!document.hidden)paintTyping()},1500);
 
 /* ---------- ouvir a nuvem da equipe ---------- */
 async function subscribe(){var c=await cdb();if(!c){return}if(subSid===c.sid&&tyUnsub)return;[tyUnsub,rdUnsub,rcUnsub,pinUnsub].forEach(function(f){if(f)f()});subSid=c.sid;
@@ -4623,7 +4658,7 @@ function decorateNow(){var box=document.getElementById('chat-list');if(!box)retu
 async function markRead(box){if(page!=='chat'||document.hidden)return;var all=box.querySelectorAll('.chat-msg[data-at]');if(!all.length)return;var at=all[all.length-1].getAttribute('data-at');if(!at||at<=lastRead||Date.now()-lastReadAt<4000)return;
   var c=await cdb();if(!c)return;lastRead=at;lastReadAt=Date.now();try{await c.col('lidos').doc(c.uid).set({nome:myName(),at:String(at).slice(0,40)})}catch(x){}}
 function watch(){var box=document.getElementById('chat-list');if(!box||box.__social)return;box.__social=1;new MutationObserver(decorate).observe(box,{childList:true});decorate()}
-setInterval(function(){if(page==='chat'){watch();paintPin()}},700);
+setInterval(function(){if(page==='chat'&&!document.hidden){watch();paintPin()}},700);
 
 /* ---------- reações (❤️ com dois toques, como no Instagram) ---------- */
 window.e99React=async function(id,emoji,heart){var c=await cdb();if(!c){notify('Vincule seu e-mail (tela Conta) para reagir às mensagens.');return}
@@ -5293,4 +5328,93 @@ window.checkSiteUpdate=async function(){var say=typeof notify==='function'?notif
 try{var up=sessionStorage.getItem('e99-updated');if(up){sessionStorage.removeItem('e99-updated');if(up!==VERSION)setTimeout(function(){if(typeof notify==='function')notify('Site atualizado para a versão '+VERSION+'.')},1200)}}catch(e){}
 })();
 </script>
+<style id="login-clean-css">
+/* v73 · tela de entrar limpa: só o essencial à vista, recuperar acesso numa folha, rodapé numa linha pequena */
+body.locked #sound-control{display:none!important}
+#login-hint,#auth-screen .site-version{display:none!important}
+#auth-screen#auth-screen .auth-links{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:10px 0 0}
+#auth-screen#auth-screen .auth-link,#auth-screen#auth-screen .auth-actions button,#auth-screen#auth-screen .mr-link{background:none!important;border:0!important;box-shadow:none!important;animation:none!important;min-height:40px;padding:8px 2px!important;margin:0!important;width:auto!important;color:#bdbdbd!important;font-size:14px!important;font-weight:600!important;text-decoration:none!important;display:inline-flex;align-items:center}
+#auth-screen#auth-screen .auth-link::after,#auth-screen#auth-screen .auth-actions button::after,#auth-screen#auth-screen .mr-link::after{display:none!important}
+#auth-screen#auth-screen .auth-link:active,#auth-screen#auth-screen .auth-actions button:active,#auth-screen#auth-screen .mr-link:active{opacity:.55}
+#auth-screen .auth-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:2px 20px;margin-top:10px}
+#auth-screen .auth-actions.al-hide{display:none!important}
+#auth-screen .legal-links{font-size:12px;line-height:1.5;color:#7d7d7d;margin:16px 0 0}
+#auth-screen .legal-links a{color:#9a9a9a;text-decoration:none}
+#auth-screen .copyright{font-size:10.5px;color:#5f5f5f;margin:2px 0 0;letter-spacing:0}
+#auth-sheet{border:0;padding:0;margin:auto auto 0;width:100%;max-width:480px;max-height:90dvh;overflow:auto;border-radius:22px 22px 0 0;background:#121212;color:#f2f2f2;box-shadow:0 -10px 40px #000c}
+#auth-sheet::backdrop{background:rgba(0,0,0,.6)}
+#auth-sheet[open]{animation:as-up .2s cubic-bezier(.22,1,.36,1)}
+@keyframes as-up{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+@media(min-width:600px){#auth-sheet{margin:auto;border-radius:22px}}
+#auth-sheet .as{display:grid;gap:10px;padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px))}
+#auth-sheet h2{margin:0 0 4px;font-size:19px}
+#auth-sheet#auth-sheet .as-opt{display:grid!important;justify-items:start;gap:2px;width:100%!important;min-height:58px;padding:11px 16px!important;margin:0!important;border-radius:14px!important;border:1px solid #2c2c2c!important;background:#1b1b1b!important;color:#f2f2f2!important;text-align:left;text-decoration:none!important;font-size:15px!important;font-weight:650!important;box-shadow:none!important}
+#auth-sheet#auth-sheet .as-opt small{font-size:12.5px;font-weight:500;color:#9d9d9d}
+#auth-sheet details{margin-top:4px}
+#auth-sheet summary{cursor:pointer;color:#a8a8a8;font-size:13.5px;padding:8px 2px;min-height:40px}
+#auth-sheet#auth-sheet .as-close{background:none!important;border:0!important;color:#bdbdbd!important;min-height:44px;font-weight:600;box-shadow:none!important}
+#lic-panel .lic-full summary{cursor:pointer;font-weight:600;padding:6px 0}
+#lic-panel .lic-text{width:100%;max-height:50vh;overflow:auto;margin-top:8px;padding:12px 14px;border:1px solid var(--ds-line,#333);border-radius:12px;font:13px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;white-space:pre-wrap;overflow-wrap:anywhere;-webkit-overflow-scrolling:touch}
+#lic-panel .lic-text p{margin:0 0 10px}
+</style>
+<script id="login-clean-js">
+(function(){
+'use strict';
+/* v73 · tela de entrar sem poluição: Login, Senha, Manter conectado, Entrar, "Esqueci a senha" e "Criar conta".
+   As 3 formas de recuperar (e-mail, Authenticator, código) e "Importar conta protegida" ficam numa folha. Nenhuma função saiu. */
+function ver(){var m=document.querySelector('meta[name="estoque99-version"]');return m?m.content:''}
+function closeSheet(){var d=document.getElementById('auth-sheet');if(d&&d.open)try{d.close()}catch(e){d.removeAttribute('open')}}
+window.authSheetOpen=function(){var d=document.getElementById('auth-sheet');if(!d)return;if(typeof d.showModal==='function')try{d.showModal();return}catch(e){}d.setAttribute('open','')};
+function opt(btn,title,sub){btn.className='as-opt';btn.innerHTML='<span>'+title+'</span><small>'+sub+'</small>'}
+function tidy(){try{
+  var box=document.getElementById('auth-screen');if(!box||box.hidden)return;
+  var li=document.querySelector('#auth-form input[name=login]');
+  if(li&&authMode==='login'&&!authPending&&li.getAttribute('placeholder')!=='Login, @usuário ou e-mail')li.setAttribute('placeholder','Login, @usuário ou e-mail');
+  var h=document.getElementById('login-hint');if(h)h.remove();
+  var f=document.getElementById('auth-form');
+  if(f&&authMode==='login'&&!authPending&&!authRecoveryShow&&!document.getElementById('auth-links')){
+    var links=document.createElement('div');links.id='auth-links';links.className='auth-links';
+    links.innerHTML='<button type="button" class="auth-link" id="auth-forgot" onclick="authSheetOpen()" aria-haspopup="dialog">Esqueci a senha</button><button type="button" class="auth-link" id="auth-create" onclick="authSetMode(\'signup\')">Criar conta</button>';
+    var d=document.createElement('dialog');d.id='auth-sheet';d.setAttribute('aria-labelledby','as-title');
+    d.innerHTML='<div class="as"><h2 id="as-title">Recuperar acesso</h2><p class="small" style="margin:0 0 4px">Escolha como prefere voltar a entrar.</p><div class="as-slot"></div><button type="button" class="as-opt" id="as-code" onclick="authSetMode(\'recover\')"><span>Com o código de recuperação</span><small>O código que o Stok mostrou ao criar a conta</small></button><details><summary>Mais opções</summary><button type="button" class="as-opt" id="as-import" onclick="document.getElementById(\'auth-import\').click()"><span>Importar conta protegida</span><small>Arquivo exportado em Minha conta, com a senha dela</small></button></details><button type="button" class="as-close" onclick="this.closest(\'dialog\').close()">Fechar</button></div>';
+    /* fecha a folha antes de abrir a próxima janela (fase de captura roda antes do clique do botão) */
+    d.addEventListener('click',function(ev){if(ev.target===d){closeSheet();return}if(ev.target.closest&&ev.target.closest('.as-opt'))closeSheet()},true);
+    var acts=box.querySelector('.auth-actions');
+    f.after(links);(links.parentNode).insertBefore(d,links.nextSibling);
+    if(acts)acts.classList.add('al-hide')}
+  var sheet=document.getElementById('auth-sheet');
+  if(sheet){var slot=sheet.querySelector('.as-slot');
+    var mr=document.getElementById('mr-link');if(mr&&!sheet.contains(mr)){opt(mr,'Pelo e-mail','Recebe um link para criar uma senha nova');slot.appendChild(mr)}
+    var tp=document.getElementById('totp-link');if(tp&&!sheet.contains(tp)){opt(tp,'Pelo Authenticator','Entra com o código de 6 números do app');slot.appendChild(tp)}}
+  var ll=box.querySelector('.legal-links');
+  if(ll&&!ll.getAttribute('data-tidy')){ll.setAttribute('data-tidy','1');var a=ll.querySelectorAll('a');
+    if(a[0]){a[0].textContent='Privacidade';a[0].setAttribute('aria-label','Política de privacidade')}if(a[1]){a[1].textContent='Termos';a[1].setAttribute('aria-label','Termos de uso')}
+    ll.insertBefore(document.createTextNode('Versão '+ver()+' · '),ll.firstChild)}
+}catch(e){}}
+var rA=renderAuth;renderAuth=function(){var r=rA.apply(this,arguments);tidy();return r};
+var box=document.getElementById('auth-screen');if(box&&window.MutationObserver)new MutationObserver(tidy).observe(box,{childList:true});
+tidy();
+
+/* Licenças: em Dados e ajuda (e pelo link "Licenças" no rodapé), nunca na tela de entrar */
+function licHTML(){var el=document.getElementById('zxing-license'),t=el?el.textContent:'';
+  var paras=t.replace(/\r/g,'').split(/\n[ \t]*\n/).map(function(p){return p.split('\n').map(function(l){return l.trim()}).join(' ').replace(/[ \t]+/g,' ').trim()}).filter(Boolean);
+  return paras.map(function(p){return '<p>'+esc(p)+'</p>'}).join('')}
+function panel(){var d=document.createElement('div');d.className='panel help';d.id='lic-panel';
+  d.innerHTML='<h2>Licenças</h2><p>O leitor de código de barras usa a biblioteca ZXing 0.21.3 (© ZXing authors), licença Apache 2.0, de uso livre. O texto completo está abaixo e em <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">apache.org/licenses/LICENSE-2.0</a>.</p><details class="lic-full"><summary>Ver texto completo (inglês)</summary><div class="lic-text">'+licHTML()+'</div></details>';return d}
+var rr=render;render=function(){var r=rr.apply(this,arguments);try{if(authSession&&page==='data'){var v=document.getElementById('view');if(v&&!document.getElementById('lic-panel'))v.appendChild(panel())}}catch(e){}return r};
+window.openLicenses=function(){go('data');setTimeout(function(){var p=document.getElementById('lic-panel');if(!p)return;var d=p.querySelector('details');if(d)d.open=true;p.scrollIntoView({block:'start'})},60)};
+var fl=document.querySelector('footer .legal-links');if(fl&&!fl.querySelector('.lic-link')){fl.insertAdjacentHTML('beforeend',' · <a href="#" class="lic-link" onclick="openLicenses();return false">Licenças</a>')}
+})();
+</script>
+<style id="fluid-css">
+/* v73 · fluidez no celular: o toque responde na hora (sem espera de duplo toque nem clarão cinza),
+   o aperto aparece já no dedo e solta macio, e listas longas só desenham o que está na tela. Só tema escuro. */
+html{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button,a,summary,label,select,[onclick],[role=button]{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:not(:disabled):active{transition-duration:.05s}
+body:not(.fx-user-off) #view button:not(:disabled):not(.chat-re-btn):active,body:not(.fx-user-off) .nav button:not(:disabled):active{transform:scale(.97)}
+body:not(.fx-user-off) .mobile-bottom button:active{transform:scale(.92)}
+#view .cards>.card,table.mobile-cards tbody tr{content-visibility:auto;contain-intrinsic-size:auto 180px}
+#chat-list{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+</style>
 </body></html>

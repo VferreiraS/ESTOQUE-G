@@ -19,13 +19,12 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão publicada:** 81 (`meta estoque99-version` + `CACHE` `estoque99-v81` no `sw.js`), branch `claude/mobile-desktop-compatibility-tkbd2w`, SHA `719df78`.
-- **Candidata local:** v82, ainda sem commit/deploy; isola caches do Stok e alinha `robo.html`. O usuário precisa aprovar antes de publicar.
+- **Versão:** 83 (`meta estoque99-version` + `CACHE` `estoque99-v83` no `sw.js`), publicada no GitHub Pages e no Firebase Hosting.
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
 
-### Mudanças recentes (v73 → v82 candidata) — não desfazer sem pedido
+### Mudanças recentes (v73 → v83) — não desfazer sem pedido
 
 | Versão | O quê |
 |--------|--------|
@@ -34,14 +33,15 @@
 | v78 | Híbrido: backup cifrado tentando Firebase `backups/`; gestor **redefine senha** de auxiliar **com código de recuperação** (`authAdminResetPassword` em `hybrid-admin-js`). |
 | v80 | Bug do menu: `applyRole` **apagava** `labels.admin` — corrigido (não pular `admin`). Administração deve aparecer para role `gestor`. |
 | v81 | Selo verificado = **S de partículas vermelhas** (mesmo path da logo + canvas estilo `Field`/`sampleG`). Script `particle-badge-js`. Login `vferreiras` / gestor recebem selo mesmo offline. |
-| v82 (rascunho local, não publicado) | Limita leitura/limpeza do CacheStorage aos caches próprios do Stok e alinha metadados `index.html`/`robo.html`/`sw.js`; aguarda aprovação do usuário para commit/deploy. |
+| v82 | Limita leitura/limpeza do CacheStorage aos caches próprios do Stok (`CACHE_PREFIX`) e alinha `robo.html`. |
+| v83 | Tela de entrar limpa (links "Esqueci a senha" → folha `#auth-sheet` com e-mail / Authenticator / código; "Criar conta" = `#auth-create`), licença ZXing em Dados e ajuda (`#lic-panel`), fluidez (blocos `login-clean-*`, `fluid-css`) e selo de partículas mais leve. |
 
 Arquivos de patch em `scripts/` e workflows one-shot em `.github/workflows/` (`apply-*.yml`) são auxiliares; o que vale no ar é o `index.html` + `sw.js` publicados.
 
 ### O que o Claude precisa melhorar / pendências
 
 1. **Administração no menu** — confirmar no celular real que **Administração** aparece após login gestor; se sumir de novo, `applyRole` / snapshot de `FULL.labels` ainda pode estar em conflito com patches.
-2. **Selo de partículas** — validar performance no iPhone (90 partículas por selo + MutationObserver). Se pesar, reduzir N ou pausar fora da viewport.
+2. **Selo de partículas** — v83: já pausa fora da tela e em segundo plano, ~30 fps, um só MutationObserver (com rAF). Falta só conferir no iPhone real.
 3. **Redefinir senha sem código** — usuário quer autonomia total quando auxiliar perde senha; hoje **exige código de recuperação** (criptografia). Próximo passo seguro: **custódia/escrow** na criação do auxiliar (bits da chave embrulhados para o gestor), não armazenar senha em claro.
 4. **Backup/restore nuvem** — `hyCloudBackupRecord` grava em `backups/{id}` se as **Firestore rules** permitirem. Revisar `firestore.rules` para backup cifrado + restore multi-aparelho. Sem rules corretas o backup falha em silêncio.
 5. **Modelo híbrido completo** — fases A/B parcialmente no cliente; falta restore polido na UI e registro de metadados para o gestor ver contas além do aparelho local.
@@ -50,7 +50,6 @@ Arquivos de patch em `scripts/` e workflows one-shot em `.github/workflows/` (`a
 8. **Testes** — rodar `bash tests/run.sh` antes de publicar; cobrir admin delete, reset de senha e selo se possível.
 9. **Não reintroduzir** — injeção de HTML pelo SW (`injectPatch` / `account-id-patch.js`); isso quebrou o app (SyntaxError).
 10. **Google Drive** — após cada publicação, histórico + cópia na pasta Stok (regra acima).
-11. **Candidata v82 local** — não publicar até autorização. `tests/cloud_test.js` foi ajustado para aceitar câmera já autorizada e passou isoladamente (31 verificações, exit 0). Na suíte anterior: 224 PASS, nenhum FAIL explícito; exit 1 por `TimeoutError` no seletor antigo (corrigido) e três `SecurityError` emitidos por `apis.google.com` no navegador de teste. A versão pública permanece v81.
 
 ### Preferências do usuário (Vitor / vferreiras)
 

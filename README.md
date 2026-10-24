@@ -3,6 +3,15 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 83
+- Tela de entrar limpa: Login ("Login, @usuário ou e-mail"), Senha com Mostrar, Manter conectado, Entrar e dois links discretos, "Esqueci a senha" e "Criar conta".
+- "Esqueci a senha" abre uma folha com as 3 formas de recuperar (pelo e-mail, pelo Authenticator, com o código de recuperação); "Importar conta protegida" fica em "Mais opções".
+- Rodapé do login numa linha pequena ("Versão 83 · Privacidade · Termos") e © menor; o botão ♪ não aparece na tela de entrar.
+- Licença do leitor de código de barras (ZXing 0.21.3, Apache 2.0) saiu da tela de entrar e foi para Dados e ajuda: resumo em português e texto completo recolhido, com rolagem.
+- Fluidez: troca de tela mais curta (transform/opacity, respeita "menos movimento"), toque sem atraso, listeners passivos, timers e animações pausam com o app em segundo plano, sem re-render quando nada mudou.
+- Selo verificado de partículas (v81) mais leve: pausa fora da tela e em segundo plano, ~30 quadros/s, desenho agrupado por cor, um só observador do DOM.
+- Medido com `tests/perf_probe.js` (iPhone 13, CPU 4x): troca de tela ~123 → ~62 ms; saltos de layout parado 0,13–0,60 → 0; mutações do DOM no Início parado ~7.400 → 0 em 10 s.
+
 ## Versão 82
 - O cache offline do Stok é limitado aos caches próprios; atualizar o app não apaga dados em cache de outros sites no mesmo domínio.
 
