@@ -3,6 +3,12 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 84
+- Intro curta (~1,7 s): células de prateleira acendem, um scanner vermelho percorre a cena e as prateleiras se consolidam no S da marca. Sem assets ou chamadas externas.
+- Decorativa e não bloqueia o login; efeitos desligados a suprimem, movimento reduzido mostra a marca estática e o som depende das preferências/gesto já desbloqueado.
+- Validação: `bash tests/run.sh` concluiu com exit 0 (20 scripts, nenhum `FAIL`), usando os emuladores locais do Firebase.
+- Destino do release: branch `claude/mobile-desktop-compatibility-tkbd2w` e workflow GitHub Pages. Esta publicação não inclui deploy separado do Firebase Hosting.
+
 ## Versão 83
 - Tela de entrar limpa: Login ("Login, @usuário ou e-mail"), Senha com Mostrar, Manter conectado, Entrar e dois links discretos, "Esqueci a senha" e "Criar conta".
 - "Esqueci a senha" abre uma folha com as 3 formas de recuperar (pelo e-mail, pelo Authenticator, com o código de recuperação); "Importar conta protegida" fica em "Mais opções".

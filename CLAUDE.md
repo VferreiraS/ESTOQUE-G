@@ -19,12 +19,12 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão:** 83 (`meta estoque99-version` + `CACHE` `estoque99-v83` no `sw.js`), publicada no GitHub Pages e no Firebase Hosting.
+- **Versão:** 84 (`meta estoque99-version` + `CACHE` `estoque99-v84` no `sw.js`), publicada no GitHub Pages e no Firebase Hosting.
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
 
-### Mudanças recentes (v73 → v83) — não desfazer sem pedido
+### Mudanças recentes (v73 → v84) — não desfazer sem pedido
 
 | Versão | O quê |
 |--------|--------|
@@ -35,6 +35,7 @@
 | v81 | Selo verificado = **S de partículas vermelhas** (mesmo path da logo + canvas estilo `Field`/`sampleG`). Script `particle-badge-js`. Login `vferreiras` / gestor recebem selo mesmo offline. |
 | v82 | Limita leitura/limpeza do CacheStorage aos caches próprios do Stok (`CACHE_PREFIX`) e alinha `robo.html`. |
 | v83 | Tela de entrar limpa (links "Esqueci a senha" → folha `#auth-sheet` com e-mail / Authenticator / código; "Criar conta" = `#auth-create`), licença ZXing em Dados e ajuda (`#lic-panel`), fluidez (blocos `login-clean-*`, `fluid-css`) e selo de partículas mais leve. |
+| v84 | Abertura nova: prateleiras acendem, scanner vermelho e o S; ~1,7 s; não bloqueia o login; tela 'Toque para abrir' removida — no iPhone o som da abertura só toca se já houve toque. |
 
 Arquivos de patch em `scripts/` e workflows one-shot em `.github/workflows/` (`apply-*.yml`) são auxiliares; o que vale no ar é o `index.html` + `sw.js` publicados.
 

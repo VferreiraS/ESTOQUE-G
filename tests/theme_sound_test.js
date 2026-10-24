@@ -1,10 +1,10 @@
 const L=require('./lib.js');const {ok,until}=L;const {spawn}=require('child_process');const path=require('path');
 let PW;try{PW=require('playwright')}catch(e){PW=require('/opt/node22/lib/node_modules/playwright')}
 (async()=>{const s1=spawn('node',[path.join(__dirname,'fake_llm.js'),'20143']);await new Promise(r=>setTimeout(r,700));
- // som: no iPhone, sem toque ainda, aparece "Toque para abrir" e o som toca junto da animação
- const raw=await PW.chromium.launch();const c=await raw.newContext(PW.devices['iPhone 13']);const P=await c.newPage();await P.goto('http://localhost:8000/index.html?ntfy='+L.N);await P.waitForTimeout(900);
- ok(await P.evaluate(()=>!!document.getElementById('stok-gate')),'iPhone: "Toque para abrir" aparece');await P.tap('#stok-gate');await P.waitForTimeout(300);
- ok(await P.evaluate(()=>!!document.getElementById('stok-intro')&&!document.getElementById('stok-gate')),'toque: abertura começa junto');ok(await P.evaluate(()=>siteAudio&&siteAudio.state==='running'),'som liberado no toque');await raw.close();
+ // som: no iPhone a abertura v84 não pede toque ("Toque para abrir" removido); o som é liberado no primeiro toque do usuário
+ const raw=await PW.chromium.launch();const c=await raw.newContext(PW.devices['iPhone 13']);const P=await c.newPage();await P.goto('http://localhost:8000/index.html?ntfy='+L.N);await P.waitForTimeout(200);
+ ok(await P.evaluate(()=>!document.getElementById('stok-gate')&&!!document.getElementById('stok-intro')),'iPhone: abertura sem tela "Toque para abrir"');await P.waitForTimeout(1500);await P.tap('body');await P.waitForTimeout(300);
+ ok(await P.evaluate(()=>!document.getElementById('stok-intro')),'abertura some sozinha e não bloqueia');ok(await P.evaluate(()=>siteAudio&&siteAudio.state==='running'),'som liberado no toque');await raw.close();
  // temas únicos
  const b=await L.chromium.launch();const errs=[];const A=await (await b.newContext({viewport:{width:1440,height:900}})).newPage(),B=await (await b.newContext({viewport:{width:1440,height:900}})).newPage();[A,B].forEach(p=>p.on('pageerror',e=>errs.push(e.message)));
  for(const [p,l] of [[A,'tema'+Date.now()],[B,'outro'+Date.now()]]){await p.goto('http://localhost:8000/index.html?ntfy='+L.N);await p.waitForTimeout(1200);await L.signup(p,l)}

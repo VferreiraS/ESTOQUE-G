@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="83"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="84"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* Os efeitos do site seguem o botão "Efeitos: ligados/desligados", não a opção "menos movimento" do computador
    (no Windows ela vem desligando as animações quando o PC está no modo de desempenho). */
@@ -4311,65 +4311,55 @@ var rr=render;render=function(){var r=rr.apply(this,arguments);try{var v=documen
 })();
 </script>
 <style id="intro-css">
-/* Abertura Stok: o S se desenha em vermelho, acende e "entra" na tela; o nome aparece por baixo. */
 .entry-splash{display:none!important}
-#stok-intro{position:fixed;inset:0;z-index:100001;background:#000;display:grid;place-content:center;justify-items:center;gap:14px;overflow:hidden;pointer-events:none;animation:si-out .5s ease 2.05s forwards}
-#stok-intro::before{content:"";position:absolute;inset:-30%;background:radial-gradient(circle at 50% 46%,#ff2a1f33,transparent 38%);opacity:0;animation:si-halo 1.6s ease .5s forwards}
-#stok-intro svg{width:min(34vw,170px);height:auto;overflow:visible;animation:si-zoom .75s cubic-bezier(.7,0,.84,0) 1.6s forwards;filter:drop-shadow(0 0 18px #ff2a1f88)}
-#stok-intro .si-stroke{fill:none;stroke:#ff3a24;stroke-width:1.8;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100;animation:si-draw .9s cubic-bezier(.65,0,.35,1) .1s forwards}
-#stok-intro .si-fill{opacity:0;transform-origin:50% 50%;animation:si-fill .45s ease .85s forwards}
-#stok-intro .si-word{font:700 clamp(26px,7vw,44px)/1 'Oswald','Arial Narrow',system-ui,sans-serif;color:#fff;letter-spacing:.7em;margin-right:-.7em;opacity:0;animation:si-word .7s cubic-bezier(.22,1,.36,1) 1s forwards}
-#stok-intro .si-sub{font:600 11px/1 system-ui,sans-serif;letter-spacing:.32em;color:#ff8a7a;opacity:0;animation:si-word .6s ease 1.2s forwards}
-@keyframes si-draw{to{stroke-dashoffset:0}}
-@keyframes si-fill{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
-@keyframes si-word{from{opacity:0;letter-spacing:.7em;transform:translateY(8px)}to{opacity:1;letter-spacing:.18em;transform:none}}
-@keyframes si-halo{0%{opacity:0;transform:scale(.6)}60%{opacity:1}100%{opacity:.7;transform:scale(1)}}
-@keyframes si-zoom{to{transform:scale(16);opacity:0;filter:drop-shadow(0 0 40px #ff2a1f)}}
-@keyframes si-out{to{opacity:0;visibility:hidden}}
-#stok-gate{position:fixed;inset:0;z-index:100002;background:#000;display:grid;place-content:center;justify-items:center;gap:22px;cursor:pointer;-webkit-tap-highlight-color:transparent}
-#stok-gate svg{width:min(26vw,120px);filter:drop-shadow(0 0 22px #ff2a1f99);animation:sg-p 1.6s ease-in-out infinite}
-#stok-gate .sg-t{font:600 13px/1 system-ui,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:#ff8a7a;animation:sg-b 1.6s ease-in-out infinite}
-@keyframes sg-p{50%{transform:scale(1.06);filter:drop-shadow(0 0 34px #ff2a1f)}}
-@keyframes sg-b{50%{opacity:.45}}
+body:not(.fx-user-off) .entry-splash{display:none!important}
+#stok-intro{position:fixed;z-index:100001;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:18px 12px 0;gap:4px;overflow:hidden;pointer-events:none;color:#fff;background:radial-gradient(ellipse at 50% 14%,#260b08 0,#0b0708 36%,#020203 76%,#000 100%)}
+#stok-intro .si-scene{display:block;width:min(62vw,250px);height:auto;overflow:visible}
+#stok-intro .si-racks{transform-box:fill-box;transform-origin:center;animation:si-collapse .3s ease .9s forwards}
+#stok-intro .si-shelf{fill:none;stroke:#676b72;stroke-opacity:.42;stroke-width:1.15;stroke-linecap:round}
+#stok-intro .si-upright{stroke:#555a61;stroke-opacity:.35;stroke-width:1.1}
+#stok-intro .si-cell{fill:#292d32;stroke:#777d85;stroke-opacity:.52;stroke-width:.8;animation:si-stock .34s ease-out both}
+#stok-intro .si-cell:nth-of-type(2){animation-delay:.08s}#stok-intro .si-cell:nth-of-type(3){animation-delay:.14s}#stok-intro .si-cell:nth-of-type(4){animation-delay:.2s}#stok-intro .si-cell:nth-of-type(5){animation-delay:.26s}#stok-intro .si-cell:nth-of-type(6){animation-delay:.32s}#stok-intro .si-cell:nth-of-type(7){animation-delay:.38s}#stok-intro .si-cell:nth-of-type(8){animation-delay:.44s}#stok-intro .si-cell:nth-of-type(9){animation-delay:.5s}#stok-intro .si-cell:nth-of-type(10){animation-delay:.56s}
+#stok-intro .si-scan{fill:none;stroke:#ff6248;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100;opacity:0;filter:drop-shadow(0 0 4px #ff442c);animation:si-scan .88s cubic-bezier(.42,0,.2,1) .12s forwards}
+#stok-intro .si-mark{fill:#ff3828;opacity:0;transform-box:fill-box;transform-origin:center;animation:si-mark .35s cubic-bezier(.2,.8,.2,1) .87s forwards}
+#stok-intro .si-word{margin-top:-5px;font:750 clamp(25px,7vw,34px)/1 system-ui,sans-serif;letter-spacing:.34em;margin-right:-.34em;opacity:0;animation:si-type .26s ease-out 1.08s forwards}
+#stok-intro .si-sub{margin-top:6px;color:#ff9585;font:650 10px/1.2 system-ui,sans-serif;letter-spacing:.2em;text-align:center;opacity:0;animation:si-type .24s ease-out 1.22s forwards}
+#stok-intro.si-ending{animation:si-exit .18s ease-in 1.5s forwards}
+#stok-intro[data-reduced-motion="true"] .si-racks,#stok-intro[data-reduced-motion="true"] .si-scan{display:none!important}
+#stok-intro[data-reduced-motion="true"] .si-mark,#stok-intro[data-reduced-motion="true"] .si-word,#stok-intro[data-reduced-motion="true"] .si-sub{animation:none!important;opacity:1!important;transform:none!important;filter:none!important}
+#stok-intro[data-reduced-motion="true"].si-ending{animation:none!important}
+body.stok-intro-active #auth-screen .auth-card .brand{visibility:hidden}
+@media(min-width:700px){#stok-intro{align-items:center;justify-content:center;padding:24px}#stok-intro .si-scene{width:min(34vw,300px)}#stok-intro .si-word,#stok-intro .si-sub{width:min(34vw,300px)}}
+@keyframes si-stock{0%{fill:#292d32}35%{fill:#ff6047;stroke:#ffb5a3;filter:drop-shadow(0 0 3px #ff3828)}100%{fill:#292d32;stroke:#777d85;filter:none}}
+@keyframes si-scan{0%{opacity:0;stroke-dashoffset:100}12%{opacity:.9}78%{opacity:.7}100%{opacity:0;stroke-dashoffset:0}}
+@keyframes si-collapse{to{opacity:0;transform:scale(.88)}}
+@keyframes si-mark{0%{opacity:0;transform:scale(.68)}100%{opacity:1;transform:scale(1)}}
+@keyframes si-type{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes si-exit{to{opacity:0;visibility:hidden}}
 </style>
 <script id="intro-js">
 (function(){
 'use strict';
 var S='M42 14h30.5a7.5 7.5 0 0 1 0 15H42a3.5 3.5 0 0 0 0 7H58a21 21 0 0 1 0 42H27.5a7.5 7.5 0 0 1 0-15H58a6 6 0 0 0 0-12H42a18.5 18.5 0 0 1 0-37z';
-var lastShow=0;
+var active=null,removeTimer=0;
 function off(){try{return localStorage.getItem('lojasg.estoque99.visual-effects')==='off'}catch(x){return false}}
-function show(){if(off()||Date.now()-lastShow<3000)return;lastShow=Date.now();var old=document.getElementById('stok-intro');if(old)old.remove();
-  var d=document.createElement('div');d.id='stok-intro';d.setAttribute('aria-hidden','true');
-  d.innerHTML='<svg viewBox="0 0 100 100"><defs><linearGradient id="si-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7a5a"/><stop offset=".5" stop-color="#ff2a1f"/><stop offset="1" stop-color="#b80f08"/></linearGradient></defs><path class="si-fill" fill="url(#si-g)" d="'+S+'"/><path class="si-stroke" pathLength="100" d="'+S+'"/></svg><div class="si-word">STOK</div><div class="si-sub">LOJAS G · ESTOQUE 99</div>';
-  document.body.appendChild(d);setTimeout(function(){if(d.parentNode)d.remove()},2700)}
-/* Som de entrada: duas batidas graves e um acorde que cresce (sintetizado aqui, sem arquivo) */
+function reduced(){try{if(typeof window.__osReduce==='boolean')return window.__osReduce;return !!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)}catch(x){return false}}
+function clear(){if(removeTimer)clearTimeout(removeTimer);removeTimer=0;if(active&&active.parentNode)active.remove();active=null;document.body&&document.body.classList.remove('stok-intro-active')}
+function show(){if(off()||document.hidden||!document.body)return;if(active&&active.parentNode)return;clear();
+  var d=document.createElement('div');d.id='stok-intro';d.setAttribute('aria-hidden','true');if(reduced())d.setAttribute('data-reduced-motion','true');
+  var cells='';[[42,24],[91,24],[140,24],[189,24],[238,24],[42,66],[91,66],[140,66],[189,66],[238,66],[42,108],[91,108],[140,108],[189,108],[238,108]].forEach(function(c,i){var w=i%3===0?24:29,h=i%4===0?20:25;cells+='<rect class="si-cell" x="'+c[0]+'" y="'+(c[1]-h)+'" width="'+w+'" height="'+h+'" rx="2"/>'});
+  d.innerHTML='<svg class="si-scene" viewBox="0 0 320 160" role="presentation"><g class="si-racks"><path class="si-shelf" d="M27 32h266M27 74h266M27 116h266"/><path class="si-upright" d="M32 27v94M288 27v94"/>'+cells+'</g><path class="si-scan" pathLength="100" d="M276 17H70q-9 0-9 9v34q0 9 9 9h180q9 0 9 9v33q0 9-9 9H72q-9 0-9 9v10q0 9 9 9h175"/><g transform="translate(90 30) scale(1.3)"><path class="si-mark" d="'+S+'"/></g></svg><div class="si-word">STOK</div><div class="si-sub">LOJAS G · ESTOQUE 99</div>';
+  active=d;document.body.classList.add('stok-intro-active');document.body.appendChild(d);d.classList.add('si-ending');removeTimer=setTimeout(clear,reduced()?950:1710)}
+/* Som sintético só em contexto já desbloqueado e quando o som do app está ligado. */
 function tudum(ctx){var t=ctx.currentTime+.02,out=ctx.createGain();out.gain.value=.75;out.connect(ctx.destination);
-  function thud(at,f0,f1,len,vol){var o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(f0,at);o.frequency.exponentialRampToValueAtTime(f1,at+len);g.gain.setValueAtTime(0.0001,at);g.gain.exponentialRampToValueAtTime(vol,at+.012);g.gain.exponentialRampToValueAtTime(0.0001,at+len);o.connect(g);g.connect(out);o.start(at);o.stop(at+len+.05);
-    var n=ctx.createBufferSource(),b=ctx.createBuffer(1,ctx.sampleRate*.05,ctx.sampleRate),dd=b.getChannelData(0);for(var i=0;i<dd.length;i++)dd[i]=(Math.random()*2-1)*(1-i/dd.length);n.buffer=b;var lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=900;var ng=ctx.createGain();ng.gain.value=vol*.35;n.connect(lp);lp.connect(ng);ng.connect(out);n.start(at)}
-  thud(t,78,42,.32,.9);thud(t+.3,64,30,.75,1);
-  var lp=ctx.createBiquadFilter();lp.type='lowpass';lp.Q.value=4;lp.frequency.setValueAtTime(260,t+.32);lp.frequency.exponentialRampToValueAtTime(2600,t+1.6);
-  var cg=ctx.createGain();cg.gain.setValueAtTime(0.0001,t+.32);cg.gain.exponentialRampToValueAtTime(.16,t+1.2);cg.gain.exponentialRampToValueAtTime(0.0001,t+2.4);lp.connect(cg);cg.connect(out);
-  [110,164.81,220.5,261.63,329.63].forEach(function(f,i){var o=ctx.createOscillator();o.type=i<3?'sawtooth':'triangle';o.frequency.setValueAtTime(f,t+.32);o.detune.value=(i%2?7:-7);o.connect(lp);o.start(t+.32);o.stop(t+2.5)})}
-function play(){try{if(typeof siteSoundEnabled!=='undefined'&&!siteSoundEnabled)return;var ctx=typeof unlockSiteAudio==='function'?unlockSiteAudio():null;if(!ctx)return;if(ctx.state==='running'){tudum(ctx);return}var t0=Date.now();ctx.resume().then(function(){if(ctx.state==='running'&&Date.now()-t0<350)tudum(ctx)}).catch(function(){})}catch(x){}}
-/* aparelho bloqueou o som: mostra "Toque para abrir" e começa animação + som juntos no toque */
-function soundOn(){return !(typeof siteSoundEnabled!=='undefined'&&!siteSoundEnabled)}
-function gate(){var g=document.createElement('div');g.id='stok-gate';g.innerHTML='<svg viewBox="0 0 100 100"><path fill="#ff2a1f" d="'+S+'"/></svg><div class="sg-t">Toque para abrir</div>';document.body.appendChild(g);
-  function go(){g.removeEventListener('pointerdown',go);g.removeEventListener('keydown',go);document.removeEventListener('keydown',go);g.remove();lastShow=0;show();play()}
-  g.addEventListener('pointerdown',go);document.addEventListener('keydown',go)}
-function first(){if(off()){return}if(!soundOn()){show();return}
-  /* iPhone/Android: o navegador pode dizer que o som está liberado, mas ele fica mudo até o primeiro toque. Sem toque ainda, pede o toque e toca junto. */
-  var noTouch=navigator.userActivation?!navigator.userActivation.hasBeenActive:/iP(hone|ad|od)|Android/.test(navigator.userAgent);if(noTouch&&(/iP(hone|ad|od)|Android/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1))){if(document.body)gate();else document.addEventListener('DOMContentLoaded',gate);return}
-  var ctx=null;try{ctx=typeof unlockSiteAudio==='function'?unlockSiteAudio():null}catch(x){}
-  if(ctx&&ctx.state==='running'){show();play();return}
-  var done=false;if(ctx)ctx.resume().then(function(){if(!done&&ctx.state==='running'){done=true;show();play()}}).catch(function(){});
-  setTimeout(function(){if(!done){done=true;if(document.body)gate();else show()}},250)}
-window.playStokIntro=function(withSound){show();if(withSound)play()};
-/* o som de "login" antigo vira o som de entrada */
-var ps=playSiteSound;playSiteSound=function(kind){if(kind==='login'){play();return}return ps.apply(this,arguments)};
-var en=authEnter;authEnter=function(){var r=en.apply(this,arguments);show();return r};
+  function thud(at,f0,f1,len,vol){var o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(f0,at);o.frequency.exponentialRampToValueAtTime(f1,at+len);g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(vol,at+.012);g.gain.exponentialRampToValueAtTime(.0001,at+len);o.connect(g);g.connect(out);o.start(at);o.stop(at+len+.05)}
+  thud(t,78,42,.32,.18);thud(t+.3,64,30,.48,.2);var lp=ctx.createBiquadFilter();lp.type='lowpass';lp.Q.value=4;lp.frequency.setValueAtTime(260,t+.32);lp.frequency.exponentialRampToValueAtTime(1800,t+1.2);var cg=ctx.createGain();cg.gain.setValueAtTime(.0001,t+.32);cg.gain.exponentialRampToValueAtTime(.045,t+.8);cg.gain.exponentialRampToValueAtTime(.0001,t+1.25);lp.connect(cg);cg.connect(out);[110,164.81,220].forEach(function(f,i){var o=ctx.createOscillator();o.type='sine';o.frequency.setValueAtTime(f,t+.32);o.connect(lp);o.start(t+.32);o.stop(t+1.35)})}
+function play(){try{if(document.hidden||typeof siteSoundEnabled!=='undefined'&&!siteSoundEnabled)return;if(navigator.userActivation&&!navigator.userActivation.hasBeenActive)return;var ctx=typeof unlockSiteAudio==='function'?unlockSiteAudio():null;if(ctx&&ctx.state==='running')tudum(ctx)}catch(x){}}
+window.playStokIntro=function(withSound){show();if(withSound&&!off())play()};
+var en=typeof authEnter==='function'?authEnter:null;if(en)authEnter=function(){var r=en.apply(this,arguments);show();return r};
 window.replayEntrySplash=function(){show()};
-/* ao abrir o app/site: abertura uma vez por sessão (o som só toca se o aparelho já permitir) */
-try{if(!sessionStorage.getItem('e99-intro')){sessionStorage.setItem('e99-intro','1');first()}}catch(x){show()}
+document.addEventListener('visibilitychange',function(){if(document.hidden)clear()});
+try{if(!sessionStorage.getItem('e99-intro')){sessionStorage.setItem('e99-intro','1');show()}}catch(x){show()}
 })();
 </script>
 <style id="cloud-css">
