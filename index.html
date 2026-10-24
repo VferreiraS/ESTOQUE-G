@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="87"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="88"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -3395,7 +3395,8 @@ function myLogin(){return authSession?authLoginName(authSession.record.login):''
 /* a mesma conta em vários aparelhos (celular e PC) aparece como uma pessoa só */
 function all(){var l=[],byLogin={};if(mine)l.push({key:'me',p:mine,role:authSession&&authSession.payload.role,me:true});
   Object.keys(team).forEach(function(k){var r=team[k];if(!r||!r.p)return;var lg=r.login?authLoginName(r.login):'';if(lg&&lg===myLogin())return;
-    if(lg&&byLogin[lg]){var o=byLogin[lg];o.devices++;if(r.uid)o.uid=r.uid;if(r.p.at>o.p.at){o.key=k;o.p=r.p;o.seen=r.seen}return}var it={key:k,p:r.p,role:r.role,seen:r.seen,devices:1,login:lg,uid:r.uid||''};if(lg)byLogin[lg]=it;l.push(it)});return l}
+    var nt=!r.uid&&k.indexOf('fb')!==0;
+    if(lg&&byLogin[lg]){var o=byLogin[lg];o.devices++;if(r.uid){o.uid=r.uid;if(o.uids.indexOf(r.uid)<0)o.uids.push(r.uid)}if(nt)o.ntfy=true;o.keys.push(k);if(r.p.at>o.p.at){o.key=k;o.p=r.p;o.seen=r.seen}return}var it={key:k,keys:[k],p:r.p,role:r.role,seen:r.seen,devices:1,login:lg,uid:r.uid||'',uids:r.uid?[r.uid]:[],ntfy:nt};if(lg)byLogin[lg]=it;l.push(it)});return l}
 function find(name){var n=norm(name);if(!n)return null;var l=all();for(var i=0;i<l.length;i++){var p=l[i].p;if(norm(p.name)===n||norm('@'+p.user)===n||norm(p.user)===n||p.names.some(function(x){return norm(x)===n}))return l[i]}
   if(mine&&n===norm(chatName()))return {key:'me',p:mine,me:true,role:authSession&&authSession.payload.role};return null}
 function initial(n){return e((String(n||'?').trim()[0]||'?').toUpperCase())}
@@ -3436,26 +3437,46 @@ async function storeRename(){if(!isStore())return;var k='lojasg.estoque99.store-
   if(!mine||!mine.at){var b=blank();await saveMine(b)}else if(clash){mine.names=[mine.name].concat(mine.names||[]).slice(0,6);mine.name=NAME;await saveMine(mine)}
   if(t.name!==NAME&&window.e99ChatReload)try{await window.e99ChatReload({code:t.code,name:NAME,team:t.team,owner:t.owner,sync:t.sync,replace:t.replace})}catch(x){}refresh()}
 document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(function(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(i&&authSession&&Date.now()-(lastPub[i.topic]||0)>2.5*3600000)publish(false)},3000)});
-function startup(){setTimeout(storeRename,5000);var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i||!authSession){setTimeout(startup,4000);return}if(Date.now()-(lastPub[i.topic]||0)>2.5*3600000)publish(false)}
-/* ---------- selo verificado (v87): só pelo uid do Firebase na lista "verificados" (só o administrador grava; o app só lê).
-   O login que vem do perfil NÃO dá selo (qualquer um poderia se renomear). Tipos: 's' = S de partículas, 'raio' = raio vermelho. ---------- */
-var VUID='TConyCsDQfPWBZ2MuGhVQTy7Mmz1',VKEY='lojasg.estoque99.verificados',VER={};VER[VUID]='s';
+function startup(){setTimeout(storeRename,5000);verFetch(false);var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i||!authSession){setTimeout(startup,4000);return}if(Date.now()-(lastPub[i.topic]||0)>2.5*3600000)publish(false)}
+/* ---------- selo verificado (v88): lista "verificados/{uid}" (só o administrador grava; qualquer aparelho lê, mesmo sem nuvem).
+   - perfil que veio da nuvem (perfis/{uid}, só o dono do uid grava): vale o uid.
+   - perfil que chegou só pelo ntfy (aparelho sem nuvem): vale o login gravado no próprio documento verificados/{uid} (campo login, pode ter vírgulas). É só visual e só dentro da equipe.
+   - o próprio aparelho: uid guardado; se nunca entrou na nuvem, o gestor vferreiras/vferrreiras vê o próprio S (só no aparelho dele).
+   Tipos: 's' = S de partículas, 'raio' = raio vermelho. ---------- */
+var VUID='TConyCsDQfPWBZ2MuGhVQTy7Mmz1',VKEY='lojasg.estoque99.verificados',VLKEY='lojasg.estoque99.verificados-login',VER={},VERL={};VER[VUID]='s';VERL[VUID]='vferrreiras,vferreiras';
+var OWNER_LOGINS=['vferreiras','vferrreiras'];
 function verClean(o){var r={};if(o&&typeof o==='object')Object.keys(o).forEach(function(k){if(/^[A-Za-z0-9]{10,128}$/.test(k)&&(o[k]==='s'||o[k]==='raio'))r[k]=o[k]});return r}
-try{var vc=verClean(JSON.parse(localStorage.getItem(VKEY)||'{}'));Object.keys(vc).forEach(function(k){VER[k]=vc[k]})}catch(x){}
+function verCleanL(o){var r={};if(o&&typeof o==='object')Object.keys(o).forEach(function(k){if(/^[A-Za-z0-9]{10,128}$/.test(k)&&typeof o[k]==='string'&&o[k].length<=200)r[k]=o[k]});return r}
+try{var vc=verClean(JSON.parse(localStorage.getItem(VKEY)||'{}'));Object.keys(vc).forEach(function(k){VER[k]=vc[k]});var vl=verCleanL(JSON.parse(localStorage.getItem(VLKEY)||'{}'));Object.keys(vl).forEach(function(k){VERL[k]=vl[k]})}catch(x){}
+function verApply(n,nl){n[VUID]=n[VUID]||'s';if(!nl[VUID])nl[VUID]='vferrreiras,vferreiras';var ch=JSON.stringify(n)!==JSON.stringify(VER)||JSON.stringify(nl)!==JSON.stringify(VERL);VER=n;VERL=nl;try{localStorage.setItem(VKEY,JSON.stringify(n));localStorage.setItem(VLKEY,JSON.stringify(nl))}catch(x){}if(ch)refresh()}
 /* o uid da nuvem desta conta fica guardado no aparelho: sem internet o gestor mantém o S */
 function myUid(){var u=window.e99Cloud&&window.e99Cloud.user&&window.e99Cloud.user(),k=authSession?'lojasg.estoque99.my-uid:'+authSession.storeKey:'';if(u&&u.uid){if(k)try{if(localStorage.getItem(k)!==u.uid)localStorage.setItem(k,u.uid)}catch(x){}return u.uid}try{return k?localStorage.getItem(k)||'':''}catch(x){return ''}}
-function vTipo(r){if(!r)return '';var id=r.me?myUid():(r.uid||'');return id&&VER[id]||''}
+function verByLogin(lg){lg=lg?authLoginName(lg):'';if(!lg)return '';for(var id in VERL){if(!VER[id])continue;if(String(VERL[id]).split(',').some(function(x){return authLoginName(x)===lg}))return VER[id]}return ''}
+function vTipo(r){if(!r)return '';
+  if(r.me){var id=myUid();if(id)return VER[id]||'';var lg=myLogin();if(authSession&&authSession.payload.role==='gestor'&&OWNER_LOGINS.indexOf(lg)>=0)return 's';return verByLogin(lg)}
+  var us=r.uids||(r.uid?[r.uid]:[]);for(var i=0;i<us.length;i++)if(VER[us[i]])return VER[us[i]];
+  return r.ntfy&&r.login?verByLogin(r.login):''}
 function isV(r){return !!vTipo(r)}
 function vb(r){var t=vTipo(r);if(!t)return '';return '<span class="vbadge vbadge-'+(t==='raio'?'raio':'s')+'" data-vbadge="'+(t==='raio'?'raio':'s')+'" role="img" aria-label="Conta verificada"></span>'}
 window.e99VerTipo=vTipo;window.e99Ver=function(){return Object.assign({},VER)};
+/* com nuvem: escuta a lista ao vivo. Sem nuvem: lê pelo endereço público do Firestore (a cada 10 min, com cópia no aparelho) */
 var verUnsub=null;async function verStart(){if(verUnsub)return;var d;try{d=await fb()}catch(x){return}if(verUnsub)return;
-  verUnsub=d.collection('verificados').onSnapshot(function(q){var n={};n[VUID]='s';q.forEach(function(doc){var t=doc.data()&&doc.data().tipo;if(t==='s'||t==='raio')n[doc.id]=t});var ch=JSON.stringify(n)!==JSON.stringify(VER);VER=n;try{localStorage.setItem(VKEY,JSON.stringify(n))}catch(x){}if(ch)refresh()},function(e){verUnsub=null;try{console.warn('Stok verificados:',e&&e.code)}catch(x){}})}
+  verUnsub=d.collection('verificados').onSnapshot(function(q){var n={},nl={};q.forEach(function(doc){var x=doc.data()||{},t=x.tipo;if(t==='s'||t==='raio'){n[doc.id]=t;if(typeof x.login==='string')nl[doc.id]=x.login.slice(0,200)}});verApply(n,nl)},function(e){verUnsub=null;try{console.warn('Stok verificados:',e&&e.code)}catch(x){}})}
+var verAt=0,verBusy=false;
+async function verFetch(force){if(verUnsub||verBusy||(!force&&Date.now()-verAt<10*60000))return;verBusy=true;verAt=Date.now();
+  try{var emu='';try{emu=localStorage.getItem('e99-fb-emu')||''}catch(x){}var base=emu?'http://'+emu.split('|')[1]:'https://firestore.googleapis.com';
+    var r=await fetch(base+'/v1/projects/gen-lang-client-0167474823/databases/(default)/documents/verificados?pageSize=300',{cache:'no-store'});if(!r.ok)throw Error('http '+r.status);var j=await r.json(),n={},nl={};
+    (j.documents||[]).forEach(function(doc){var id=String(doc.name||'').split('/').pop(),f=doc.fields||{},t=f.tipo&&f.tipo.stringValue;if(/^[A-Za-z0-9]{10,128}$/.test(id)&&(t==='s'||t==='raio')){n[id]=t;if(f.login&&typeof f.login.stringValue==='string')nl[id]=f.login.stringValue.slice(0,200)}});
+    if(!verUnsub)verApply(n,nl)}catch(x){verAt=Date.now()-9*60000}finally{verBusy=false}}
+window.e99VerFetch=function(){return verFetch(true)};
+setInterval(function(){if(authSession&&!document.hidden)verFetch(false)},60000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&authSession)verFetch(false)});
 window.e99ProfilesAll=function(){return all()};window.profBadge=function(name){return vb(find(name))};window.profByLogin=function(lg){lg=authLoginName(String(lg||''));if(!lg)return null;if(lg===myLogin())return {key:'me',p:mine||blank(),me:true};return all().find(function(r){return r.login&&authLoginName(r.login)===lg})||null};
 /* ---------- página de perfil ---------- */
 function actsOf(names){var since=new Date(Date.now()-30*864e5).toISOString().slice(0,10),done=[],todo=0,today=iso();var ns=names.map(norm);
   (state.plans||[]).forEach(function(pl){(pl.activities||[]).forEach(function(a){var mine1=ns.indexOf(norm(a.owner))>=0||norm(a.owner)==='todos';if(a.done&&ns.indexOf(norm(a.doneBy))>=0&&pl.date>=since)done.push({t:a.title,p:pl.title,at:a.doneAt||pl.date});else if(!a.done&&mine1&&pl.date===today)todo++})});
   done.sort(function(a,b){return String(b.at).localeCompare(String(a.at))});return {done:done,todo:todo}}
-function targetRec(){if(view==='me')return {key:'me',p:mine||blank(),me:true,role:authSession.payload.role};if(view.indexOf('n:')===0){var n=view.slice(2);return find(n)||{key:view,p:null,name:n}}var r=team[view];return r?{key:view,p:r.p,role:r.role,seen:r.seen}:{key:'me',p:mine||blank(),me:true,role:authSession.payload.role}}
+function targetRec(){if(view==='me')return {key:'me',p:mine||blank(),me:true,role:authSession.payload.role};if(view.indexOf('n:')===0){var n=view.slice(2);return find(n)||{key:view,p:null,name:n}}var r=team[view];if(r){var m=all().find(function(x){return x.keys&&x.keys.indexOf(view)>=0});var o={key:view,p:r.p,role:r.role,seen:r.seen};if(m){o.login=m.login;o.uid=m.uid;o.uids=m.uids;o.ntfy=m.ntfy}return o}return {key:'me',p:mine||blank(),me:true,role:authSession.payload.role}}
 function people(){var seen={},out=[],logins={};all().forEach(function(r){seen[norm(r.p.name)]=1;var lg=r.me?myLogin():(r.login?authLoginName(r.login):'');if(lg)logins[lg]=1;out.push({key:r.key,name:r.p.name,user:r.p.user,rec:r})});
   (state.team||[]).forEach(function(t){if(t.login&&logins[authLoginName(t.login)])return;if(!seen[norm(t.name)]&&!find(t.name)){seen[norm(t.name)]=1;out.push({key:'n:'+t.name,name:t.name,user:'',rec:null,role:t.role})}});return out}
 function page1(){if(!authSession)return '';var r=targetRec(),p=r.p,name=p?p.name:r.name,member=(state.team||[]).find(function(t){return norm(t.name)===norm(name)});
@@ -3939,7 +3960,7 @@ function mountAll(root){
   }
 }
 
-/* v87: o selo vem só do uid na lista "verificados" (profile-js: vTipo/vb). O antigo patchBadge dava o S a qualquer
+/* v87/v88: o selo vem da lista "verificados" (profile-js: vTipo/vb — uid; login só do próprio documento da lista). O antigo patchBadge dava o S a qualquer
    perfil com login 'vferreiras' ou a qualquer gestor — brecha fechada, não reintroduzir. */
 
 function ensureAdminNav(){

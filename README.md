@@ -3,6 +3,13 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 88
+
+- **Selo também em aparelho sem nuvem:** a lista `verificados` agora pode ser lida por qualquer aparelho (só tem uid → tipo/login; continua só o administrador gravando). Quem nunca vinculou o e-mail lê a lista pelo endereço público do Firestore (a cada 10 min) e guarda uma cópia para usar sem internet.
+- **Seu próprio S:** se o aparelho nunca entrou na nuvem, a conta gestor `vferreiras`/`vferrreiras` vê o próprio S (só no aparelho dela). Com nuvem, vale o uid.
+- **Selo dos outros:** perfil que veio da nuvem (`perfis/{uid}`) vale pelo uid; perfil que chegou só pelo ntfy vale quando o login bate com o campo `login` do documento `verificados/{uid}` (é só visual e só dentro da equipe). Gravar com `node scripts/verificar.js <uid> <s|raio> [STK-…] --login <login>[,<outro>]`.
+- O selo aparece também no topo do perfil de outra pessoa. Teste novo: `tests/selo_semnuvem_test.js` (inclui tentativas de fraude).
+
 ## Versão 87
 
 - **Selo de raio vermelho:** novo selo verificado em forma de raio vermelho vivo (#FF2A1F), feito de partículas como o S e do mesmo tamanho. Fica parado com Efeitos desligados ou "menos movimento" e pausa fora da tela. Leitor de tela: "Conta verificada".

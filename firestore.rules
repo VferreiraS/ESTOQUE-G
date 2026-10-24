@@ -40,8 +40,9 @@ rules_version = '2';
 //   - tipo: 'resumo'|'aviso'   - loja: 32 hex     - criado: int
 //
 // Coleção: verificados        Documento: {uid}
-//   Selo verificado. Só o administrador grava; quem está logado só lê.
+//   Selo verificado. Só o administrador grava; qualquer um lê (aparelhos sem nuvem também).
 //   - tipo: 's'|'raio'   - stkId: string (opcional, ID STK-… da conta)
+//   - login: string (opcional; logins separados por vírgula — selo de perfis que chegam só pelo ntfy)
 //
 // Nenhum papel (role) gravado pelo cliente dá permissão nas regras.
 // ===============================================================
@@ -206,10 +207,11 @@ service cloud.firestore {
       allow delete: if isOwner(uid);
     }
 
-    // Contas verificadas (selo): só o administrador grava (console ou CLI); o app só lê.
-    //   verificados/{uid}: tipo 's'|'raio', stkId (opcional)
+    // Contas verificadas (selo): só o administrador grava (console ou CLI); qualquer aparelho lê,
+    // mesmo sem login na nuvem (só tem uid → tipo/login; nada sensível).
+    //   verificados/{uid}: tipo 's'|'raio', stkId (opcional), login (opcional, logins separados por vírgula)
     match /verificados/{uid} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow write: if false;
     }
 
