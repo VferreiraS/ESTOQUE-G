@@ -1,5 +1,6 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
-const CACHE = 'estoque99-v81';
+const CACHE_PREFIX = 'estoque99-';
+const CACHE = 'estoque99-v82';
 const VERSION = (CACHE.match(/-v(\d+)$/) || [])[1] || '';
 const CORE = [
   './index.html',
@@ -30,7 +31,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith(CACHE_PREFIX) && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
       .then(() => self.clients.matchAll({ type: 'window' }))
       .then((clients) => clients.forEach((c) => c.postMessage({ type: 'page-updated', version: VERSION })))
@@ -71,15 +72,14 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(networkFirst(event, request, robot ? './robo.html' : legal ? './' + legal[1] + '.html' : './index.html'));
     return;
   }
-  event.respondWith(
-    caches.match(request).then((hit) => hit || fetch(request).then((response) => {
-      if (response.ok) {
-        const copy = response.clone();
-        caches.open(CACHE).then((c) => c.put(request, copy));
-      }
-      return response;
-    }))
-  );
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE);
+    const hit = await cache.match(request);
+    if (hit) return hit;
+    const response = await fetch(request);
+    if (response.ok) await cache.put(request, response.clone()).catch(() => {});
+    return response;
+  })());
 });
 
 self.addEventListener('notificationclick', (event) => {

@@ -19,12 +19,13 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão:** 81 (`meta estoque99-version` + `CACHE` `estoque99-v81` no `sw.js`).
+- **Versão publicada:** 81 (`meta estoque99-version` + `CACHE` `estoque99-v81` no `sw.js`), branch `claude/mobile-desktop-compatibility-tkbd2w`, SHA `719df78`.
+- **Candidata local:** v82, ainda sem commit/deploy; isola caches do Stok e alinha `robo.html`. O usuário precisa aprovar antes de publicar.
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
 
-### Mudanças recentes (v73 → v81) — não desfazer sem pedido
+### Mudanças recentes (v73 → v82 candidata) — não desfazer sem pedido
 
 | Versão | O quê |
 |--------|--------|
@@ -33,6 +34,7 @@
 | v78 | Híbrido: backup cifrado tentando Firebase `backups/`; gestor **redefine senha** de auxiliar **com código de recuperação** (`authAdminResetPassword` em `hybrid-admin-js`). |
 | v80 | Bug do menu: `applyRole` **apagava** `labels.admin` — corrigido (não pular `admin`). Administração deve aparecer para role `gestor`. |
 | v81 | Selo verificado = **S de partículas vermelhas** (mesmo path da logo + canvas estilo `Field`/`sampleG`). Script `particle-badge-js`. Login `vferreiras` / gestor recebem selo mesmo offline. |
+| v82 (rascunho local, não publicado) | Limita leitura/limpeza do CacheStorage aos caches próprios do Stok e alinha metadados `index.html`/`robo.html`/`sw.js`; aguarda aprovação do usuário para commit/deploy. |
 
 Arquivos de patch em `scripts/` e workflows one-shot em `.github/workflows/` (`apply-*.yml`) são auxiliares; o que vale no ar é o `index.html` + `sw.js` publicados.
 
@@ -48,6 +50,7 @@ Arquivos de patch em `scripts/` e workflows one-shot em `.github/workflows/` (`a
 8. **Testes** — rodar `bash tests/run.sh` antes de publicar; cobrir admin delete, reset de senha e selo se possível.
 9. **Não reintroduzir** — injeção de HTML pelo SW (`injectPatch` / `account-id-patch.js`); isso quebrou o app (SyntaxError).
 10. **Google Drive** — após cada publicação, histórico + cópia na pasta Stok (regra acima).
+11. **Candidata v82 local** — não publicar até autorização. `tests/cloud_test.js` foi ajustado para aceitar câmera já autorizada e passou isoladamente (31 verificações, exit 0). Na suíte anterior: 224 PASS, nenhum FAIL explícito; exit 1 por `TimeoutError` no seletor antigo (corrigido) e três `SecurityError` emitidos por `apis.google.com` no navegador de teste. A versão pública permanece v81.
 
 ### Preferências do usuário (Vitor / vferreiras)
 

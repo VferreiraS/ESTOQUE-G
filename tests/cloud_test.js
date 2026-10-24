@@ -59,8 +59,8 @@ const doc=(path,tok)=>j(`${FS}/v1/projects/${P}/databases/(default)/documents/${
  await A.evaluate(()=>authLogout());await A.waitForTimeout(1500);await L.login(A,aEmail);ok(await A.evaluate(()=>!!authSession),'entra com o e-mail no lugar do login');
  // permissões
  await A.evaluate(()=>{localStorage.removeItem('e99-no-perm-step');e99PermStep()});await A.waitForTimeout(800);ok(await A.evaluate(()=>document.getElementById('perm-step').open&&document.querySelectorAll('#perm-step .perm-row').length===3),'passo de permissões com 3 itens');
- await A.click('#perm-step button[onclick*="camera"]');await A.waitForTimeout(1500);ok(/Câmera[\s\S]*✓ Ativo/.test(await A.textContent('#perm-step')),'câmera liberada');
- await A.click('#perm-step button[onclick*="sound"]');await A.waitForTimeout(800);ok(/Som[\s\S]*✓ Ativo/.test(await A.textContent('#perm-step')),'som liberado');
+ const cameraRow=A.locator('#perm-step .perm-row').filter({hasText:'Câmera'});if(!(await cameraRow.locator('.perm-ok').count())){const allow=cameraRow.locator('button[onclick*="camera"]');if(await allow.count()&&await allow.isEnabled()){await allow.click();await A.waitForTimeout(1500)}}ok(await cameraRow.locator('.perm-ok').count()===1,'câmera liberada');
+ const soundRow=A.locator('#perm-step .perm-row').filter({hasText:'Som'});if(!(await soundRow.locator('.perm-ok').count())){const allow=soundRow.locator('button[onclick*="sound"]');if(await allow.count()&&await allow.isEnabled()){await allow.click();await A.waitForTimeout(800)}}ok(await soundRow.locator('.perm-ok').count()===1,'som liberado');
  await A.evaluate(()=>document.getElementById('perm-step').close());await A.evaluate(()=>go('account'));await A.waitForTimeout(600);ok(/Nuvem e e-mail[\s\S]*e-mail confirmado/.test(await A.textContent('#view')),'tela Conta mostra a nuvem');
  const hs=await B.evaluate(()=>document.documentElement.scrollWidth<=innerWidth);ok(hs,'sem rolagem lateral no iPhone');
  console.log('errors',errs);await b.close()})();

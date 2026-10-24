@@ -3,6 +3,9 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 82
+- O cache offline do Stok é limitado aos caches próprios; atualizar o app não apaga dados em cache de outros sites no mesmo domínio.
+
 ## Versão 72
 - Política de privacidade (`privacidade.html`) e Termos de uso (`termos.html`) conforme a LGPD, com links no login, no rodapé e em Minha conta.
 - Aceite obrigatório ("Li e aceito") ao criar conta, criar auxiliar e vincular e-mail; cada formulário começa desmarcado.
