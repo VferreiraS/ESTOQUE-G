@@ -1,5 +1,7 @@
 {
   "name": "stok-ia",
   "main": "ia-worker.js",
-  "compatibility_date": "2025-09-01"
+  "compatibility_date": "2025-09-01",
+  // Workers AI grátis (sem chave): o Worker chama env.AI.run(...)
+  "ai": { "binding": "AI" }
 }

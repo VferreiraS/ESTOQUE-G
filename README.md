@@ -3,6 +3,13 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 85
+- IA grátis e sem cartão nos agentes do Stok (Minha conta → Agentes de IA).
+- **Workers AI (sem chave nenhuma):** crie a conta grátis na Cloudflare → no Stok, abra "☁️ Cloudflare" e toque em **Criar o Worker com 1 toque** → invente a `SENHA` → **Create and deploy** → cole no Stok o endereço `.workers.dev` e a SENHA, deixe "Workers AI (grátis, sem chave)" e toque em Ligar. Modelo: `@cf/meta/llama-3.3-70b-instruct-fp8-fast`.
+- **Google Gemini (chave grátis):** crie a chave em https://aistudio.google.com/apikey → no Apps Script, Propriedades do script → `GEMINI_API_KEY` = a chave → Implantar → **Nova implantação** → no Stok, em "Qual IA", escolha **Google Gemini (grátis)**. Modelo: `gemini-3.8-flash`.
+- NVIDIA e Ollama continuam funcionando. No Worker, `NVIDIA_API_KEY` virou opcional (crie o segredo depois, no painel, só se quiser a NVIDIA).
+- Testes com provedores falsos: Gemini no `ia.gs`, Workers AI e NVIDIA no Worker, senha errada (401), CORS e o assistente no navegador.
+
 ## Versão 84
 - Intro curta (~1,7 s): células de prateleira acendem, um scanner vermelho percorre a cena e as prateleiras se consolidam no S da marca. Sem assets ou chamadas externas.
 - Decorativa e não bloqueia o login; efeitos desligados a suprimem, movimento reduzido mostra a marca estática e o som depende das preferências/gesto já desbloqueado.
