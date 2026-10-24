@@ -3,6 +3,13 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 87
+
+- **Selo de raio vermelho:** novo selo verificado em forma de raio vermelho vivo (#FF2A1F), feito de partículas como o S e do mesmo tamanho. Fica parado com Efeitos desligados ou "menos movimento" e pausa fora da tela. Leitor de tela: "Conta verificada".
+- **Lista de verificados na nuvem:** o selo agora vem só da coleção `verificados/{uid}` (`tipo: 's' | 'raio'`). Só o administrador grava, com `node scripts/verificar.js <uid> <s|raio> [STK-…]`. O app só lê e guarda uma cópia para usar sem internet.
+- **Brecha fechada:** antes, quem pusesse o login `vferreiras` no perfil ganhava o selo. Agora o login não conta mais; vale só o uid da conta.
+- Raio gravado para a conta `STK-0091ZHBQ21YE` (leonardo69). Teste novo: `tests/verificados_test.js`.
+
 ## Versão 86
 - **Consertos:** Plano e Minha conta sem rolagem lateral no iPhone (um nível de cartão só, botões quebram linha); Administração sempre no menu da conta de gestor e, para quem não é gestor, a tela explica o que fazer e tem "Voltar ao início"; "1 atividade" no singular; "Adicionar corredor"; "Usar sem e-mail (conta do PC)".
 - **Menos movimento:** o app respeita o pedido do aparelho e abre com Efeitos desligados; quem quiser liga em Minha conta → Preferências.

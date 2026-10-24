@@ -19,12 +19,12 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão:** 86 (`meta estoque99-version` + `CACHE` `estoque99-v86` no `sw.js`), publicada no GitHub Pages e no Firebase Hosting.
+- **Versão:** 87 (`meta estoque99-version` + `CACHE` `estoque99-v87` no `sw.js`), publicada no GitHub Pages e no Firebase Hosting.
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
 
-### Mudanças recentes (v73 → v86) — não desfazer sem pedido
+### Mudanças recentes (v73 → v87) — não desfazer sem pedido
 
 | Versão | O quê |
 |--------|--------|
@@ -38,6 +38,7 @@
 | v84 | Abertura nova: prateleiras acendem, scanner vermelho e o S; ~1,7 s; não bloqueia o login; tela 'Toque para abrir' removida — no iPhone o som da abertura só toca se já houve toque. |
 | v85 | **IA grátis sem cartão:** Worker Cloudflare usa **Workers AI** (`env.AI`, binding `AI` no `wrangler.jsonc`, modelo `@cf/meta/llama-3.3-70b-instruct-fp8-fast`) sem chave; NVIDIA só com `nvidia/…` + segredo opcional `NVIDIA_API_KEY`; só `SENHA` é obrigatória. `ia.gs` ganhou **Google Gemini** (`GEMINI_API_KEY`, endpoint OpenAI-compatível, `gemini-3.8-flash`). Assistente: "Google Gemini (grátis)" e "Workers AI (grátis, sem chave)" / "NVIDIA (com chave)". Teste `tests/ia_free_test.js`. |
 | v86 | **Auditoria de design aplicada** (blocos `v86-css` / `v86-js` no fim do `index.html`): topo 56 px com sino (`.bell-btn`, `#alert-total`), títulos curtos + "Mais ações" (`.more-actions`) em Notas/Corredores/Plano/Equipe, ícones SVG (`e99Icon`), cartões planos, cartões 3D no Início (`.stats.tilt-on`), Preferências em Minha conta (`#prefs-panel`; no PC as opções ficam no rodapé da barra lateral), respeita "menos movimento" (`__osReduceSystem`; Efeitos começam desligados), Administração montada antes do menu para `role==='gestor'`. **ZXing, Fuse e flatpickr saíram do HTML** → `vendor/*.js` carregados por `e99Need()` e pré-cacheados no `sw.js`. Cache em memória do `localStorage` (`Storage.prototype`). |
+| v87 | **Selo pelo uid, não pelo login:** coleção `verificados/{uid}` (`tipo:'s'|'raio'`, `stkId`), regra `read` logado / `write: if false`. `profile-js`: `vTipo`/`vb` leem a lista (onSnapshot + cache `lojasg.estoque99.verificados`) e o uid guardado por conta (`lojasg.estoque99.my-uid:*`) para o gestor offline. O `patchBadge` (login `vferreiras`/qualquer gestor) foi **removido** — não reintroduzir. Novo selo **raio vermelho** (#FF2A1F) no motor do `particle-badge-js`. Gravados: gestor `TConyCs…`=s e leonardo69 `5mB4IsIggFeQInmVCX5Id5ChIxB3`=raio (`STK-0091ZHBQ21YE`). Gravar outros com `node scripts/verificar.js <uid> <s|raio> [STK-…]`. Teste `tests/verificados_test.js`. Atenção: no Firestore o login do gestor é `vferrreiras` (3 r) — por isso só o uid vale. |
 
 Arquivos de patch em `scripts/` e workflows one-shot em `.github/workflows/` (`apply-*.yml`) são auxiliares; o que vale no ar é o `index.html` + `sw.js` publicados.
 
@@ -45,7 +46,7 @@ Arquivos de patch em `scripts/` e workflows one-shot em `.github/workflows/` (`a
 
 0. **IA grátis (v85)** — falta o dono criar o Worker (botão 1 toque) e/ou a `GEMINI_API_KEY` no Apps Script e testar no iPhone. Se o modelo grátis mudar, trocar `gemini-3.8-flash` (`ia.gs` + `agWizSave`) e `@cf/…` (Worker + `agCfSave`).
 1. **Administração no menu** — resolvido na v86 (o item é posto antes do menu ser montado, em todo render, para `role==='gestor'`). Atenção: contas feitas em "Criar conta" têm `role:'estoque'` e **não** são gestor; só confirmar no iPhone real com a conta gestor.
-2. **Selo de partículas** — v83: já pausa fora da tela e em segundo plano, ~30 fps, um só MutationObserver (com rAF). Falta só conferir no iPhone real.
+2. **Selo de partículas** — v87: selo vem só de `verificados/{uid}` (raio do leonardo69 já gravado). v83: já pausa fora da tela e em segundo plano, ~30 fps, um só MutationObserver (com rAF). Falta só conferir no iPhone real.
 3. **Redefinir senha sem código** — usuário quer autonomia total quando auxiliar perde senha; hoje **exige código de recuperação** (criptografia). Próximo passo seguro: **custódia/escrow** na criação do auxiliar (bits da chave embrulhados para o gestor), não armazenar senha em claro.
 4. **Backup/restore nuvem** — `hyCloudBackupRecord` grava em `backups/{id}` se as **Firestore rules** permitirem. Revisar `firestore.rules` para backup cifrado + restore multi-aparelho. Sem rules corretas o backup falha em silêncio.
 5. **Modelo híbrido completo** — fases A/B parcialmente no cliente; falta restore polido na UI e registro de metadados para o gestor ver contas além do aparelho local.

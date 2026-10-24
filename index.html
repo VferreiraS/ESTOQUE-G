@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="86"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="87"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -3437,11 +3437,19 @@ async function storeRename(){if(!isStore())return;var k='lojasg.estoque99.store-
   if(t.name!==NAME&&window.e99ChatReload)try{await window.e99ChatReload({code:t.code,name:NAME,team:t.team,owner:t.owner,sync:t.sync,replace:t.replace})}catch(x){}refresh()}
 document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(function(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(i&&authSession&&Date.now()-(lastPub[i.topic]||0)>2.5*3600000)publish(false)},3000)});
 function startup(){setTimeout(storeRename,5000);var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i||!authSession){setTimeout(startup,4000);return}if(Date.now()-(lastPub[i.topic]||0)>2.5*3600000)publish(false)}
-/* ---------- selo verificado: só a conta do Vitor (uid fixo do Firebase; o documento só pode ser gravado por ele) ---------- */
-var VUID='TConyCsDQfPWBZ2MuGhVQTy7Mmz1',vLogin='';
-function isV(r){if(!r)return false;var u=window.e99Cloud&&window.e99Cloud.user&&window.e99Cloud.user();if(r.me)return !!(u&&u.uid===VUID)||(!!vLogin&&myLogin()===vLogin);return r.uid===VUID||(!!vLogin&&!!r.login&&authLoginName(r.login)===vLogin)}
-var VB='<svg class="vbadge" viewBox="0 0 40 40" role="img" aria-label="Verificado"><path fill="#e01810" d="M19.998 3.094 14.638 0l-2.972 5.15H5.432v6.354L0 14.64 3.094 20 0 25.359l5.432 3.137v5.905h5.975L14.638 40l5.36-3.094L25.358 40l3.232-5.6h6.162v-6.01L40 25.359 36.905 20 40 14.641l-5.248-3.03v-6.46h-6.419L25.358 0l-5.36 3.094Zm7.415 11.225 2.254 2.287-11.43 11.5-6.835-6.93 2.244-2.258 4.587 4.581 9.18-9.18Z"/></svg>';
-function vb(r){return isV(r)?VB:''}
+/* ---------- selo verificado (v87): só pelo uid do Firebase na lista "verificados" (só o administrador grava; o app só lê).
+   O login que vem do perfil NÃO dá selo (qualquer um poderia se renomear). Tipos: 's' = S de partículas, 'raio' = raio vermelho. ---------- */
+var VUID='TConyCsDQfPWBZ2MuGhVQTy7Mmz1',VKEY='lojasg.estoque99.verificados',VER={};VER[VUID]='s';
+function verClean(o){var r={};if(o&&typeof o==='object')Object.keys(o).forEach(function(k){if(/^[A-Za-z0-9]{10,128}$/.test(k)&&(o[k]==='s'||o[k]==='raio'))r[k]=o[k]});return r}
+try{var vc=verClean(JSON.parse(localStorage.getItem(VKEY)||'{}'));Object.keys(vc).forEach(function(k){VER[k]=vc[k]})}catch(x){}
+/* o uid da nuvem desta conta fica guardado no aparelho: sem internet o gestor mantém o S */
+function myUid(){var u=window.e99Cloud&&window.e99Cloud.user&&window.e99Cloud.user(),k=authSession?'lojasg.estoque99.my-uid:'+authSession.storeKey:'';if(u&&u.uid){if(k)try{if(localStorage.getItem(k)!==u.uid)localStorage.setItem(k,u.uid)}catch(x){}return u.uid}try{return k?localStorage.getItem(k)||'':''}catch(x){return ''}}
+function vTipo(r){if(!r)return '';var id=r.me?myUid():(r.uid||'');return id&&VER[id]||''}
+function isV(r){return !!vTipo(r)}
+function vb(r){var t=vTipo(r);if(!t)return '';return '<span class="vbadge vbadge-'+(t==='raio'?'raio':'s')+'" data-vbadge="'+(t==='raio'?'raio':'s')+'" role="img" aria-label="Conta verificada"></span>'}
+window.e99VerTipo=vTipo;window.e99Ver=function(){return Object.assign({},VER)};
+var verUnsub=null;async function verStart(){if(verUnsub)return;var d;try{d=await fb()}catch(x){return}if(verUnsub)return;
+  verUnsub=d.collection('verificados').onSnapshot(function(q){var n={};n[VUID]='s';q.forEach(function(doc){var t=doc.data()&&doc.data().tipo;if(t==='s'||t==='raio')n[doc.id]=t});var ch=JSON.stringify(n)!==JSON.stringify(VER);VER=n;try{localStorage.setItem(VKEY,JSON.stringify(n))}catch(x){}if(ch)refresh()},function(e){verUnsub=null;try{console.warn('Stok verificados:',e&&e.code)}catch(x){}})}
 window.e99ProfilesAll=function(){return all()};window.profBadge=function(name){return vb(find(name))};window.profByLogin=function(lg){lg=authLoginName(String(lg||''));if(!lg)return null;if(lg===myLogin())return {key:'me',p:mine||blank(),me:true};return all().find(function(r){return r.login&&authLoginName(r.login)===lg})||null};
 /* ---------- página de perfil ---------- */
 function actsOf(names){var since=new Date(Date.now()-30*864e5).toISOString().slice(0,10),done=[],todo=0,today=iso();var ns=names.map(norm);
@@ -3510,17 +3518,17 @@ if(typeof authSession!=='undefined'&&authSession)load().then(startup);
 var cloudSid='',cloudUnsub=null,cloudAt=0,cloudUid='';
 async function sha(t){var h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(h)).map(function(b){return b.toString(16).padStart(2,'0')}).join('').slice(0,32)}
 async function fb(){if(!window.e99Cloud)throw Error('nuvem indisponível');var c=await window.e99Cloud.load(),u=c.auth.currentUser;if(!u)throw Error('sem login na nuvem');if(u.uid!==cloudUid){cloudUid=u.uid;cloudAt=0;if(cloudUnsub){cloudUnsub();cloudUnsub=null}cloudSid=''}return c.db}
-async function cloudStart(){if(!authSession)return;var t=topic();if(!t)return;var sid=await sha('loja|'+t);if(sid===cloudSid&&cloudUnsub)return;var d;try{d=await fb()}catch(x){return}
+async function cloudStart(){if(!authSession)return;var t=topic();if(!t)return;var sid=await sha('loja|'+t);verStart();if(sid===cloudSid&&cloudUnsub)return;var d;try{d=await fb()}catch(x){return}
   if(cloudUnsub){cloudUnsub();cloudUnsub=null}cloudSid=sid;
   cloudUnsub=d.collection('lojas').doc(sid).collection('perfis').onSnapshot(function(q){q.forEach(function(doc){cloudIn(doc.data(),doc.id).catch(function(){})})},function(e){try{console.warn('Stok nuvem:',e&&e.code)}catch(x){}});cloudPut()}
-async function cloudIn(x,id){if(!x||!authSession||typeof x.login!=='string')return;var p=clean(x.p);if(!p)return;p.at=Number(x.at)||0;var lg=x.login.slice(0,80);if(id===VUID&&vLogin!==authLoginName(lg)){vLogin=authLoginName(lg);setTimeout(refresh,50)}
+async function cloudIn(x,id){if(!x||!authSession||typeof x.login!=='string')return;var p=clean(x.p);if(!p)return;p.at=Number(x.at)||0;var lg=x.login.slice(0,80);
   if(authLoginName(lg)===myLogin()){if(!mine||!mine.at||p.at>mine.at){mine=p;await put('me|'+authSession.storeKey,mine);refresh()}return}
   var key='fb'+(await sha('p|'+authLoginName(lg))).slice(0,30);var cur=team[key];if(cur&&cur.p&&cur.p.at>=p.at){if(id&&cur.uid!==id){cur.uid=id;refresh()}return}
   team[key]={p:p,role:x.role==='auxiliar'?'auxiliar':'gestor',seen:p.at,login:lg,uid:id||''};var t=topic();await put('tm|'+t+'|'+key,team[key]);var idx=await get('idx|'+t)||[];if(idx.indexOf(key)<0){idx.push(key);await put('idx|'+t,idx.slice(-200))}refresh()}
 async function cloudPut(){if(!authSession||!mine||!mine.at||!cloudSid||mine.at<=cloudAt)return;var d;try{d=await fb()}catch(x){return}if(!authSession||!mine)return;var p=clean(mine);if(!p)return;
   try{await d.collection('lojas').doc(cloudSid).collection('perfis').doc(cloudUid).set({login:authSession.record.login.slice(0,80),role:authSession.payload.role==='auxiliar'?'auxiliar':authSession.payload.role==='gestor'?'gestor':'estoque',p:p,at:mine.at});cloudAt=mine.at}catch(e){try{console.warn('Stok nuvem:',e&&e.code)}catch(x){}}}
 var _pub=publish;publish=function(now){_pub(now);setTimeout(function(){cloudStart().then(cloudPut)},400)};
-window.e99ProfileCloud=function(){cloudStart().then(cloudPut)};setInterval(function(){if(authSession&&!document.hidden&&window.e99Cloud&&window.e99Cloud.user())cloudStart()},20000);
+window.e99ProfileCloud=function(){cloudStart().then(cloudPut)};setInterval(function(){if(authSession&&!document.hidden&&window.e99Cloud&&window.e99Cloud.user()){myUid();verStart();cloudStart()}},20000);
 })();
 </script>
 <style id="dedupe-css">
@@ -3796,8 +3804,12 @@ if(_hyAdm){
 
 var S_PATH = 'M42 14h30.5a7.5 7.5 0 0 1 0 15H42a3.5 3.5 0 0 0 0 7H58a21 21 0 0 1 0 42H27.5a7.5 7.5 0 0 1 0-15H58a6 6 0 0 0 0-12H42a18.5 18.5 0 0 1 0-37z';
 var RED = [[255,58,36],[255,106,72],[233,24,16],[217,20,11],[255,90,55],[200,30,18],[255,120,80]];
+/* v87: raio vermelho vivo (#FF2A1F), mesmo centro e tamanho do S */
+var RAIO_PATH = 'M61 9L22 53H45L35 84L78 35H56L68 9z';
+var RAIO_RED = [[255,42,31],[255,42,31],[255,72,52],[255,98,70],[236,30,20],[255,140,100]];
+var SHAPES = {s:{path:S_PATH,col:RED,n:90,k:1,label:'Conta verificada'}, raio:{path:RAIO_PATH,col:RAIO_RED,n:150,k:1.15,label:'Conta verificada'}};
 
-function sampleS(n){
+function sampleS(n,path){
   var c=document.createElement('canvas'),S=160,m=S/2;
   c.width=S;c.height=S;
   var x=c.getContext('2d');
@@ -3805,7 +3817,7 @@ function sampleS(n){
   x.save();
   x.translate(m-105,m-98);
   x.scale(2.15,2.15);
-  try{ x.fill(new Path2D(S_PATH)); }catch(e){}
+  try{ x.fill(new Path2D(path||S_PATH)); }catch(e){}
   x.restore();
   var d=x.getImageData(0,0,S,S).data,pts=[];
   for(var y=0;y<S;y+=2)for(var X=0;X<S;X+=2)
@@ -3818,15 +3830,17 @@ function sampleS(n){
   return out;
 }
 
-function ParticleBadge(host){
+function ParticleBadge(host,kind){
   if(!host || host._pb) return host && host._pb;
+  var shape=SHAPES[kind]||SHAPES.s;
   var cv=document.createElement('canvas');
   cv.className='vbadge-canvas';
   cv.setAttribute('aria-hidden','true');
   cv.width=44; cv.height=44;
   host.innerHTML='';
   host.appendChild(cv);
-  host.classList.add('vbadge','vbadge-s','vbadge-particle');
+  host.classList.add('vbadge','vbadge-particle',kind==='raio'?'vbadge-raio':'vbadge-s');
+  host.setAttribute('role','img');host.setAttribute('aria-label',shape.label);
   var ctx=cv.getContext('2d');
   var parts=[], raf=0, t0=performance.now(), ang=0, built=false, alive=true, lastT=0, side=0, seen=true;
   /* v82 · fluidez: mede o tamanho só quando muda, pausa fora da tela / com o app em segundo plano,
@@ -3837,15 +3851,15 @@ function ParticleBadge(host){
   if('IntersectionObserver' in window){try{new IntersectionObserver(function(es){seen=es[es.length-1].isIntersecting;if(seen)start()}).observe(host)}catch(e){}}
 
   function build(){
-    var g=sampleS(90);
+    var g=sampleS(shape.n,shape.path);
     parts=g.map(function(p){
-      var col=RED[(Math.random()*RED.length)|0];
+      var col=shape.col[(Math.random()*shape.col.length)|0];
       var a=Math.random()*Math.PI*2, r=1.5+Math.random()*1.2;
       return {
         tx:p[0], ty:p[1], tz:(Math.random()-.5)*.2,
         x:Math.cos(a)*r, y:Math.sin(a)*r, z:(Math.random()-.5)*1.5,
         vx:0, vy:0, vz:0, c:col, cs:'rgb('+col[0]+','+col[1]+','+col[2]+')',
-        s:.7+Math.random()*1.1, tw:Math.random()*6.28
+        s:(.7+Math.random()*1.1)*shape.k, tw:Math.random()*6.28
       };
     });
     /* agrupa por cor: troca o pincel poucas vezes por quadro ("lighter" não depende da ordem) */
@@ -3874,7 +3888,7 @@ function ParticleBadge(host){
       var rx=p.x*ca+p.z*sa, rz=-p.x*sa+p.z*ca;
       var per=2.5/(2.5+rz);
       var sx=cx+rx*R*per, sy=cy+p.y*R*per;
-      var al=fix?.8:.5+.5*Math.sin(t*2.2+p.tw);
+      var amp=shape.k>1?.3:.5, al=fix?.85:(1-amp)+amp*Math.sin(t*2.2+p.tw); /* raio: brilho mais firme (vivo) */
       var sz=Math.max(.6, p.s*per*(dpr>1?1.1:1.2));
       if(p.cs!==lastCs){ctx.fillStyle=p.cs;lastCs=p.cs}
       ctx.globalAlpha=al*.95;
@@ -3905,7 +3919,7 @@ function ParticleBadge(host){
 
 function mountAll(root){
   root=root||document;
-  var nodes=root.querySelectorAll ? root.querySelectorAll('[data-vbadge], .vbadge-s:not(.vbadge-particle)') : [];
+  var nodes=root.querySelectorAll ? root.querySelectorAll('[data-vbadge], .vbadge-s:not(.vbadge-particle), .vbadge-raio:not(.vbadge-particle)') : [];
   for(var i=0;i<nodes.length;i++){
     var el=nodes[i];
     if(el._pb) continue;
@@ -3914,37 +3928,19 @@ function mountAll(root){
       span.setAttribute('data-vbadge','1');
       span.className='vbadge vbadge-s';
       span.setAttribute('role','img');
-      span.setAttribute('aria-label','Verificado Stok');
+      span.setAttribute('aria-label','Conta verificada');
       if(el.parentNode) el.parentNode.replaceChild(span, el);
-      ParticleBadge(span);
+      ParticleBadge(span,'s');
     } else {
-      el.setAttribute('data-vbadge','1');
-      ParticleBadge(el);
+      var k=el.getAttribute('data-vbadge')==='raio'||el.classList.contains('vbadge-raio')?'raio':'s';
+      el.setAttribute('data-vbadge',k);
+      ParticleBadge(el,k);
     }
   }
 }
 
-var VB_S = '<span class="vbadge vbadge-s" data-vbadge="1" role="img" aria-label="Verificado Stok"></span>';
-
-function patchBadge(){
-  try{ VB = VB_S; }catch(e){}
-  window.VB = VB_S;
-  var _isV = typeof isV === 'function' ? isV : function(){ return false; };
-  window.isV = function(r){
-    if(!r) return false;
-    try{ if(_isV(r)) return true; }catch(e){}
-    try{
-      var login='';
-      if(r.me && authSession && authSession.record) login=authSession.record.login;
-      else if(r.login) login=r.login;
-      login=typeof authLoginName==='function'?authLoginName(String(login||'')):String(login||'').toLowerCase();
-      if(login==='vferreiras') return true;
-      if(r.me && authSession && authSession.payload && authSession.payload.role==='gestor') return true;
-    }catch(e){}
-    return false;
-  };
-  window.vb = function(r){ return window.isV(r) ? VB_S : ''; };
-}
+/* v87: o selo vem só do uid na lista "verificados" (profile-js: vTipo/vb). O antigo patchBadge dava o S a qualquer
+   perfil com login 'vferreiras' ou a qualquer gestor — brecha fechada, não reintroduzir. */
 
 function ensureAdminNav(){
   try{
@@ -3977,7 +3973,6 @@ function patchRender(){
 }
 
 function boot(){
-  patchBadge();
   patchRender();
   ensureAdminNav();
   mountAll(document);
@@ -4018,6 +4013,8 @@ span[data-vbadge]{
   pointer-events:none !important;
   filter: drop-shadow(0 0 3px rgba(255,58,36,.65));
 }
+.vbadge.vbadge-raio .vbadge-canvas{filter:drop-shadow(0 0 3px rgba(255,42,31,.8))}
+@media (prefers-reduced-motion: reduce){.vbadge{animation:none !important}}
 </style>
 <script id="team-diag-js">
 (function(){

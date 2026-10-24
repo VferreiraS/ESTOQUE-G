@@ -39,6 +39,10 @@ rules_version = '2';
 //   - assunto, texto: string
 //   - tipo: 'resumo'|'aviso'   - loja: 32 hex     - criado: int
 //
+// Coleção: verificados        Documento: {uid}
+//   Selo verificado. Só o administrador grava; quem está logado só lê.
+//   - tipo: 's'|'raio'   - stkId: string (opcional, ID STK-… da conta)
+//
 // Nenhum papel (role) gravado pelo cliente dá permissão nas regras.
 // ===============================================================
 
@@ -200,6 +204,13 @@ service cloud.firestore {
       allow get: if isOwner(uid);
       allow create, update: if isOwner(uid) && isValidCofre(request.resource.data);
       allow delete: if isOwner(uid);
+    }
+
+    // Contas verificadas (selo): só o administrador grava (console ou CLI); o app só lê.
+    //   verificados/{uid}: tipo 's'|'raio', stkId (opcional)
+    match /verificados/{uid} {
+      allow read: if request.auth != null;
+      allow write: if false;
     }
 
     // Equipe da conta (para voltar ao chat ao recuperar pelo e-mail): só o dono.
