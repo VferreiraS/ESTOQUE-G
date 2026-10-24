@@ -34,6 +34,8 @@ nav.toc{background:var(--surface);border:1px solid var(--line);border-radius:16p
 nav.toc h2{border:0;margin:0 0 6px;padding:0;font-size:19px}
 nav.toc ol{margin:0;padding-left:22px}
 nav.toc li{margin:3px 0}
+nav.toc a{display:inline-flex;align-items:center;min-height:44px}
+.skip{position:absolute;left:12px;top:-60px;background:#000;color:#fff;padding:12px 16px;border-radius:10px;z-index:10}.skip:focus{top:12px}
 .box{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:12px 16px;margin:14px 0}
 .box p{margin:6px 0}
 .table{width:100%;overflow-x:auto;margin:12px 0}
@@ -55,6 +57,7 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 </style>
 </head>
 <body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
 <div class="wrap">
 <a class="back" href="./index.html" onclick="return e99Back(event)">← Voltar ao app</a>
 
@@ -87,7 +90,7 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 </ol>
 </nav>
 
-<main>
+<main id="conteudo" tabindex="-1">
 <section id="controlador">
 <h2>1. Quem cuida dos seus dados</h2>
 <p><strong>Controlador:</strong> Lojas G — Estoque 99 (loja 99). CNPJ: [CNPJ a preencher]. Endereço: [endereço a preencher].</p>
@@ -142,16 +145,16 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 <section id="finalidades">
 <h2>3. Para que usamos e com qual base legal</h2>
 <div class="table">
-<table>
-<thead><tr><th scope="col">Finalidade</th><th scope="col">Dados</th><th scope="col">Base legal (LGPD)</th></tr></thead>
-<tbody>
-<tr><td data-th="Finalidade">Entrar no app e proteger a conta</td><td data-th="Dados">Login, senha (não é enviada; a nuvem recebe só um código derivado dela), e-mail, tipo de conta</td><td data-th="Base legal (LGPD)">Execução do contrato de trabalho (art. 7º, V) e legítimo interesse do empregador (art. 7º, IX)</td></tr>
-<tr><td data-th="Finalidade">Organizar o estoque, NFs e planos de ação</td><td data-th="Dados">Cadastros de trabalho, nome e cargo da equipe, fotos de atividades</td><td data-th="Base legal (LGPD)">Execução do contrato de trabalho e legítimo interesse</td></tr>
-<tr><td data-th="Finalidade">Chat, perfis e sincronização da equipe</td><td data-th="Dados">Mensagens, fotos, áudios, perfil, “digitando/visto”, reações</td><td data-th="Base legal (LGPD)">Legítimo interesse (comunicação de trabalho); perfil e foto são opcionais</td></tr>
-<tr><td data-th="Finalidade">Recuperar a conta</td><td data-th="Dados">E-mail, cofre de recuperação, autenticador</td><td data-th="Base legal (LGPD)">Execução do contrato e legítimo interesse</td></tr>
-<tr><td data-th="Finalidade">Aviso de conta nova e contagem</td><td data-th="Dados">Estoque, login, tipo de conta, data, aparelho/navegador</td><td data-th="Base legal (LGPD)">Legítimo interesse (controle de acesso a uma ferramenta interna)</td></tr>
-<tr><td data-th="Finalidade">Corrigir erros do app</td><td data-th="Dados">Erros técnicos e nome de quem usava</td><td data-th="Base legal (LGPD)">Legítimo interesse</td></tr>
-<tr><td data-th="Finalidade">Relatório por e-mail, planilha, IA, notificações, câmera e microfone</td><td data-th="Dados">Os dados descritos em cada item</td><td data-th="Base legal (LGPD)">Consentimento (art. 7º, I): só funciona se você ligar; pode desligar quando quiser</td></tr>
+<table role="table">
+<thead role="rowgroup"><tr role="row"><th scope="col">Finalidade</th><th scope="col">Dados</th><th scope="col">Base legal (LGPD)</th></tr></thead>
+<tbody role="rowgroup">
+<tr role="row"><td data-th="Finalidade">Entrar no app e proteger a conta</td><td data-th="Dados">Login, senha (não é enviada; a nuvem recebe só um código derivado dela), e-mail, tipo de conta</td><td data-th="Base legal (LGPD)">Execução do contrato de trabalho (art. 7º, V) e legítimo interesse do empregador (art. 7º, IX)</td></tr>
+<tr role="row"><td data-th="Finalidade">Organizar o estoque, NFs e planos de ação</td><td data-th="Dados">Cadastros de trabalho, nome e cargo da equipe, fotos de atividades</td><td data-th="Base legal (LGPD)">Execução do contrato de trabalho e legítimo interesse</td></tr>
+<tr role="row"><td data-th="Finalidade">Chat, perfis e sincronização da equipe</td><td data-th="Dados">Mensagens, fotos, áudios, perfil, “digitando/visto”, reações</td><td data-th="Base legal (LGPD)">Legítimo interesse (comunicação de trabalho); perfil e foto são opcionais</td></tr>
+<tr role="row"><td data-th="Finalidade">Recuperar a conta</td><td data-th="Dados">E-mail, cofre de recuperação, autenticador</td><td data-th="Base legal (LGPD)">Execução do contrato e legítimo interesse</td></tr>
+<tr role="row"><td data-th="Finalidade">Aviso de conta nova e contagem</td><td data-th="Dados">Estoque, login, tipo de conta, data, aparelho/navegador</td><td data-th="Base legal (LGPD)">Legítimo interesse (controle de acesso a uma ferramenta interna)</td></tr>
+<tr role="row"><td data-th="Finalidade">Corrigir erros do app</td><td data-th="Dados">Erros técnicos e nome de quem usava</td><td data-th="Base legal (LGPD)">Legítimo interesse</td></tr>
+<tr role="row"><td data-th="Finalidade">Relatório por e-mail, planilha, IA, notificações, câmera e microfone</td><td data-th="Dados">Os dados descritos em cada item</td><td data-th="Base legal (LGPD)">Consentimento (art. 7º, I): só funciona se você ligar; pode desligar quando quiser</td></tr>
 </tbody>
 </table>
 </div>
