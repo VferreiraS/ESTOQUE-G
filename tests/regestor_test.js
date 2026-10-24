@@ -10,7 +10,7 @@ async function resetPw(email,np){const r=await (await fetch(`${AU}/emulator/v1/p
  await A.evaluate(()=>{window.confirm=()=>true;return authLogout()});await A.waitForTimeout(1500);
  await A.click('#auth-forgot');await A.click('#mr-link');await A.fill('#mail-rec input[name=email]',email);await A.click('#mail-rec button.primary');await A.waitForSelector('#mail-rec input[name=cloud]');await resetPw(email,'nuvem-789');
  await A.fill('#mail-rec input[name=cloud]','nuvem-789');await A.fill('#mail-rec input[name=password]','8642');await A.fill('#mail-rec input[name=confirmation]','8642');await A.click('#mail-rec button.primary');
- ok(await until(A,()=>!!authSession,null,20000),'conta nova criada');ok(await A.evaluate(()=>authSession.payload.role==='gestor'),'conta nova é de gestor');
+ ok(await until(A,()=>!!authSession,null,20000),'conta nova criada');ok(await A.evaluate(()=>authSession.payload.role==='estoque'),'conta nova mantém o papel da nuvem (estoque não vira gestor)');
  ok(await A.evaluate(()=>!Object.keys(localStorage).some(k=>k.startsWith('lojasg.estoque99.conta-antiga:'))),'conta antiga excluída do aparelho');
  await A.evaluate(()=>openProfile('me'));await A.waitForTimeout(3000);ok(await until(A,()=>{if(page!=='profile')openProfile('me');const t=document.getElementById('view').innerText;return /Vitor Antigo/.test(t)&&/ENCARREGADO/.test(t)},null,20000),'perfil antigo veio para a conta nova');
  ok(await until(A,(u)=>!!(window.e99Cloud&&e99Cloud.user()&&e99Cloud.user().uid===u),uid,20000),'mesma identidade na nuvem (selo)');

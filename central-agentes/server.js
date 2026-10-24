@@ -19,14 +19,20 @@ const INDEX = path.join(__dirname, 'index.html');
 const clients = new Set();
 let buffer = [];
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
+// CORS só para a própria página (localhost) e o GitHub Pages do dono. Pedidos sem Origin (hooks via curl) continuam valendo.
+const ORIGENS = [/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/, /^https:\/\/vferreiras\.github\.io$/];
+function origemOk(origin) {
+  return !origin || ORIGENS.some((r) => r.test(origin));
+}
+function cors(req) {
+  const o = req && req.headers && req.headers.origin;
+  const h = { 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Vary': 'Origin' };
+  if (o && origemOk(o)) h['Access-Control-Allow-Origin'] = o;
+  return h;
+}
 
 function send(res, status, body, type) {
-  const headers = Object.assign({}, CORS);
+  const headers = Object.assign({}, cors(res.req));
   if (body !== undefined && body !== null) headers['Content-Type'] = type || 'application/json; charset=utf-8';
   res.writeHead(status, headers);
   res.end(body === undefined || body === null ? undefined : body);
@@ -98,7 +104,7 @@ function abrirSSE(req, res) {
     'Cache-Control': 'no-cache',
     'Connection': 'keep-alive',
     'X-Accel-Buffering': 'no',
-  }, CORS));
+  }, cors(req)));
   res.write('retry: 3000\n');
   res.write('event: hello\ndata: {"ok":true}\n\n');
   prune();
@@ -125,6 +131,7 @@ function servirIndex(res) {
 
 const server = http.createServer((req, res) => {
   const rota = url.parse(req.url).pathname;
+  if (!origemOk(req.headers.origin)) return send(res, 403, JSON.stringify({ ok: false, erro: 'origem não permitida' }));
   if (req.method === 'OPTIONS') return send(res, 204);
   if (req.method === 'POST' && rota === '/event') return receberEvento(req, res);
   if (req.method === 'GET' || req.method === 'HEAD') {

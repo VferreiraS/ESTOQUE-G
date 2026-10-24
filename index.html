@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="88"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="89"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -2791,7 +2791,14 @@ async function handle(d,ch){if(ch!==chan||!authSession)return;var o=await decStr
   if(o.k==='snap'&&snapTimer){clearTimeout(snapTimer);snapTimer=0}
   if(o.k!=='ops'&&o.k!=='snap')return;var ops=o.ops;
   if(o.att){if(!d.attachment||!d.attachment.url){lost();return}try{var r=await fetch(d.attachment.url);if(!r.ok){lost();return}ops=JSON.parse(new TextDecoder().decode(await dec(ch,await r.arrayBuffer()))).ops;lostCount=0;if(/baixar os dados/.test(lastErr))lastErr=''}catch(e){lost();return}}
-  if(!Array.isArray(ops)||ch!==chan)return;if(o.r==='auxiliar')ops=ops.filter(function(op){return op&&auxColl(op.c)}).map(auxPlanOp).filter(Boolean);await applyOps(ops,o.k==='snap',who);if(!amAux()){var sm=sy();var fx=ops.filter(function(op){return op.fix&&sm.meta.plans[op.i]});if(fx.length){fx.forEach(function(op){sm.meta.plans[op.i][3]=''});if(stamp()){await persist();schedulePublish(800)}}}paintStatus()}
+  if(!Array.isArray(ops)||ch!==chan)return;if(o.r==='auxiliar')ops=ops.filter(function(op){return op&&auxColl(op.c)&&!op.d}).map(auxPlanOp).filter(Boolean);ops=delGuard(ops,who,o.k==='snap');await applyOps(ops,o.k==='snap',who);if(!amAux()){var sm=sy();var fx=ops.filter(function(op){return op.fix&&sm.meta.plans[op.i]});if(fx.length){fx.forEach(function(op){sm.meta.plans[op.i][3]=''});if(stamp()){await persist();schedulePublish(800)}}}paintStatus()}
+/* v89: freio contra apagar dados dos outros pelo ntfy (o papel vem do próprio remetente, então não dá para confiar nele).
+   Apagar item cuja última mudança foi do próprio remetente: vale. Apagar itens de outras pessoas: no máximo 3 por mensagem;
+   acima disso as exclusões são ignoradas e o aparelho avisa. Auxiliar nunca apaga pela sincronização. */
+function delGuard(ops,who,isSnap){var s=sy();if(isSnap&&s.replace&&!s.ready)return ops;var foreign=[];
+  ops.forEach(function(op){if(!op||!op.d||C.indexOf(op.c)<0)return;var m=s.meta[op.c]&&s.meta[op.c][op.i];if(!m||m[2])return;if(!arr(op.c).some(function(x){return x&&x.id===op.i}))return;if(String(m[1])===String(op.b))return;foreign.push(op)});
+  if(foreign.length<=3)return ops;var bad=new Set(foreign);try{feedAdd(who,'tentou apagar '+foreign.length+' itens de outras pessoas de uma vez (ignorado por segurança)');notify(who+' tentou apagar '+foreign.length+' itens de uma vez. Por segurança, nada foi apagado neste aparelho.')}catch(e){}
+  return ops.filter(function(op){return !bad.has(op)})}
 /* auxiliar só marca atividades como feitas: copia apenas done/doneBy/doneAt para o plano que este aparelho já tem */
 function auxPlanOp(op){if(!op||op.c!=='plans')return op;if(op.d||!op.x||!Array.isArray(op.x.activities))return null;var cur=arr('plans').find(function(p){return p&&p.id===op.i});if(!cur)return null;
   var by={};op.x.activities.forEach(function(a){if(a&&a.id)by[a.id]=a});var acts=(cur.activities||[]).map(function(a){var r=by[a.id];if(!r)return a;var n=Object.assign({},a);if(r.done){n.done=true;n.doneBy=r.doneBy;n.doneAt=r.doneAt}else{delete n.done;delete n.doneBy;delete n.doneAt}return n});
@@ -3429,7 +3436,9 @@ window.e99OnProfile=async function(o,getBody,t){if(!authSession||typeof o.dev!==
   if(!p||!authSession)return;p.at=Number(o.pat)||Date.now();if(partial&&cur&&cur.p&&cur.p.at>=p.at&&cur.p.photo)return;
   var lg=typeof o.login==='string'?o.login.slice(0,80):'';
   /* mesma conta em outro aparelho (ex.: celular): este aparelho adota o perfil mais novo da própria conta */
-  if(lg&&authLoginName(lg)===authLoginName(authSession.record.login)){if(!mine||!mine.at||p.at>mine.at){var np=Object.assign({},p,{v:1,at:p.at});mine=clean(np)||mine;if(mine){mine.at=p.at;await put('me|'+authSession.storeKey,mine);try{localStorage.setItem('lojasg.estoque99.profile-seen:'+authSession.storeKey,String(Date.now()))}catch(x){}}}refresh();return}
+  /* v89: perfil que chega pelo ntfy com o MEU login não é adotado (qualquer um da equipe pode mandar). Meu perfil em outro aparelho vem pela nuvem (perfis/{meu uid}). */
+  if(lg&&authLoginName(lg)===authLoginName(authSession.record.login))return;
+  if(false){if(!mine||!mine.at||p.at>mine.at){var np=Object.assign({},p,{v:1,at:p.at});mine=clean(np)||mine;if(mine){mine.at=p.at;await put('me|'+authSession.storeKey,mine);try{localStorage.setItem('lojasg.estoque99.profile-seen:'+authSession.storeKey,String(Date.now()))}catch(x){}}}refresh();return}
   team[key]={p:p,role:o.r==='auxiliar'?'auxiliar':'gestor',seen:Number(o.at)||Date.now(),login:lg};await put('tm|'+t+'|'+key,team[key]);var idx=await get('idx|'+t)||[];if(idx.indexOf(key)<0){idx.push(key);await put('idx|'+t,idx.slice(-200))}refresh()};
 async function storeRename(){if(!isStore())return;var k='lojasg.estoque99.store-renamed:'+authSession.storeKey;if(localStorage.getItem(k))return;var t=window.e99Team&&window.e99Team.get();if(!t)return;
   var clash=Object.keys(team).some(function(x){var r=team[x];return r.p&&r.login&&authLoginName(r.login)!=='estoque 99'&&(norm(r.p.name)===norm(t.name)||(r.p.names||[]).some(function(n){return norm(n)===norm(t.name)}))});
@@ -3542,10 +3551,15 @@ async function fb(){if(!window.e99Cloud)throw Error('nuvem indisponível');var c
 async function cloudStart(){if(!authSession)return;var t=topic();if(!t)return;var sid=await sha('loja|'+t);verStart();if(sid===cloudSid&&cloudUnsub)return;var d;try{d=await fb()}catch(x){return}
   if(cloudUnsub){cloudUnsub();cloudUnsub=null}cloudSid=sid;
   cloudUnsub=d.collection('lojas').doc(sid).collection('perfis').onSnapshot(function(q){q.forEach(function(doc){cloudIn(doc.data(),doc.id).catch(function(){})})},function(e){try{console.warn('Stok nuvem:',e&&e.code)}catch(x){}});cloudPut()}
-async function cloudIn(x,id){if(!x||!authSession||typeof x.login!=='string')return;var p=clean(x.p);if(!p)return;p.at=Number(x.at)||0;var lg=x.login.slice(0,80);
-  if(authLoginName(lg)===myLogin()){if(!mine||!mine.at||p.at>mine.at){mine=p;await put('me|'+authSession.storeKey,mine);refresh()}return}
-  var key='fb'+(await sha('p|'+authLoginName(lg))).slice(0,30);var cur=team[key];if(cur&&cur.p&&cur.p.at>=p.at){if(id&&cur.uid!==id){cur.uid=id;refresh()}return}
-  team[key]={p:p,role:x.role==='auxiliar'?'auxiliar':'gestor',seen:p.at,login:lg,uid:id||''};var t=topic();await put('tm|'+t+'|'+key,team[key]);var idx=await get('idx|'+t)||[];if(idx.indexOf(key)<0){idx.push(key);await put('idx|'+t,idx.slice(-200))}refresh()}
+/* v89: perfil da nuvem vale pelo uid (id do documento = dono). Só adoto "meu perfil" do documento do MEU uid;
+   outro documento com o meu login é ignorado. Cada uid tem sua própria entrada (um não sobrescreve o outro). */
+async function cloudIn(x,id){if(!x||!authSession||typeof x.login!=='string'||!id)return;var p=clean(x.p);if(!p)return;p.at=Math.min(Number(x.at)||0,Date.now()+86400000);var lg=x.login.slice(0,80);
+  if(id===cloudUid){if(!mine||!mine.at||p.at>mine.at){mine=p;await put('me|'+authSession.storeKey,mine);refresh()}return}
+  if(authLoginName(lg)===myLogin())return;
+  var t=topic(),key='fb'+(await sha('u|'+id)).slice(0,30),old='fb'+(await sha('p|'+authLoginName(lg))).slice(0,30);
+  if(team[old]&&team[old].uid===id){delete team[old];try{await put('tm|'+t+'|'+old,null)}catch(e){}}
+  var cur=team[key];if(cur&&cur.p&&cur.p.at>=p.at)return;
+  team[key]={p:p,role:x.role==='auxiliar'?'auxiliar':'gestor',seen:p.at,login:lg,uid:id};await put('tm|'+t+'|'+key,team[key]);var idx=await get('idx|'+t)||[];idx=idx.filter(function(k){return k!==old||!!team[old]});if(idx.indexOf(key)<0)idx.push(key);await put('idx|'+t,idx.slice(-200));refresh()}
 async function cloudPut(){if(!authSession||!mine||!mine.at||!cloudSid||mine.at<=cloudAt)return;var d;try{d=await fb()}catch(x){return}if(!authSession||!mine)return;var p=clean(mine);if(!p)return;
   try{await d.collection('lojas').doc(cloudSid).collection('perfis').doc(cloudUid).set({login:authSession.record.login.slice(0,80),role:authSession.payload.role==='auxiliar'?'auxiliar':authSession.payload.role==='gestor'?'gestor':'estoque',p:p,at:mine.at});cloudAt=mine.at}catch(e){try{console.warn('Stok nuvem:',e&&e.code)}catch(x){}}}
 var _pub=publish;publish=function(now){_pub(now);setTimeout(function(){cloudStart().then(cloudPut)},400)};
@@ -3749,7 +3763,10 @@ window.authAdminResetPassword=async function(index){
 };
 
 /** Backup cifrado da conta atual na nuvem (Firebase), se disponível. */
+/* v89: desligado. A função 'fb' não existe neste bloco e a nuvem não tem regra para 'backups', então nada era enviado
+   (e a tela dizia "enviado"). Fica desligado até existir backup + restauração de verdade. */
 async function hyCloudBackupRecord(record){
+  return false;
   if(!record||!record.login)return;
   try{
     var d=typeof fb==='function'?await fb():null;
@@ -3777,8 +3794,7 @@ async function hyCloudBackupRecord(record){
 window.hyBackupMyAccount=async function(){
   if(!authSession||!authSession.record){notify('Entre na conta.');return}
   try{
-    await hyCloudBackupRecord(authSession.record);
-    notify('Backup cifrado enviado à nuvem (se o Firebase permitir).');
+    notify('Backup na nuvem ainda não está disponível. Use Dados → Exportar para guardar uma cópia cifrada.');
   }catch(e){notify('Backup indisponível neste momento.')}
 };
 
@@ -3802,7 +3818,7 @@ if(_hyAdm){
       var rows=typeof authAccounts==='function'?authAccounts():[];
       var extra='<div class="panel help" style="margin-top:16px"><h2>Redefinir senha (híbrido)</h2>';
       extra+='<p class="small">Se um auxiliar perdeu a senha, use o <b>código de recuperação</b> dele (gerado na criação da conta ou em Minha conta). Os dados cifrados são preservados. Só funciona para contas <b>neste aparelho</b>.</p>';
-      extra+='<p><button type="button" onclick="hyBackupMyAccount()">Fazer backup cifrado da minha conta</button></p>';
+      extra+='<p class="small">Backup na nuvem: ainda não disponível. Para guardar uma cópia, use Dados → Exportar.</p>';
       var list=rows.map(function(r,i){
         if(r.key===authSession.storeKey||hyProtected(r.login))return '';
         return '<div class="panel help" style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px">'
@@ -4173,7 +4189,7 @@ window.resetDevice=async function(){
     try{sessionStorage.removeItem('e99-updated')}catch(x){}
   }catch(x){}
   /* espera os bancos e o cache de arquivos serem apagados (no máximo 3 s) antes de abrir o site de novo */
-  var cachesDone=('caches' in window)?caches.keys().then(function(ks){return Promise.all(ks.map(function(k){return caches.delete(k)}))}).catch(function(){}):Promise.resolve();
+  var cachesDone=('caches' in window)?caches.keys().then(function(ks){/* v89: só os caches do Stok; outros sites do mesmo domínio (github.io) ficam */return Promise.all(ks.filter(function(k){return k.indexOf('estoque99-')===0}).map(function(k){return caches.delete(k)}))}).catch(function(){}):Promise.resolve();
   await Promise.race([Promise.all(DBS.map(dropDb).concat([cachesDone])),new Promise(function(r){setTimeout(r,3000)})]);
   try{notify('Aparelho limpo. Abrindo o site de novo…')}catch(x){}
   /* a sincronização ainda aberta pode ter gravado algo durante a espera: limpa de novo logo antes de recarregar */
@@ -4373,12 +4389,21 @@ var createBefore=authCreate;authCreate=async function(login,store,password){var 
 function freshPw(){if(!stash||!authSession)return '';if(Date.now()-stash.t>10*60000){stash=null;return ''}return stash.login===authLoginName(authSession.record.login)?stash.pw:''}
 
 /* liga (ou cria) a conta da nuvem desta pessoa */
+/* v89: a marca "senha da nuvem já atualizada" fica cifrada com a chave da conta (antes era parte do hash e deixava testar o PIN fora do app) */
+async function pwSame(s,h){try{var o=JSON.parse(ls('lojasg.estoque99.cloud-pw:'+s.storeKey)||'null');if(!o||!o.iv)return false;var t=new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:authUn64(o.iv),additionalData:authBytes('cloudpw|'+authLoginName(s.record.login))},s.key,authUn64(o.c)));return t===h}catch(x){return false}}
+async function pwSet(s,h){try{var iv=crypto.getRandomValues(new Uint8Array(12));var c=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:authBytes('cloudpw|'+authLoginName(s.record.login))},s.key,authBytes(h)));ls('lojasg.estoque99.cloud-pw:'+s.storeKey,JSON.stringify({iv:authB64(iv),c:authB64(c)}))}catch(x){}}
+try{Object.keys(localStorage).forEach(function(k){if(k.indexOf('lojasg.estoque99.cloud-pw:')===0&&!/^\{/.test(localStorage.getItem(k)||''))localStorage.removeItem(k)})}catch(x){}
+/* v89: limite de tentativas de senha da nuvem neste aparelho (5 erros → espera 5 min, dobra a cada novo bloqueio) */
+window.e99CloudTry={K:'lojasg.estoque99.cloud-tries',get:function(){try{return JSON.parse(localStorage.getItem(this.K)||'{}')||{}}catch(x){return {}}},
+  wait:function(){var o=this.get();return o.until&&o.until>Date.now()?Math.ceil((o.until-Date.now())/60000):0},
+  fail:function(){var o=this.get();o.n=(o.n||0)+1;if(o.n>=5){o.b=(o.b||0)+1;o.until=Date.now()+5*60000*Math.pow(2,o.b-1);o.n=0}try{localStorage.setItem(this.K,JSON.stringify(o))}catch(x){}},
+  ok:function(){try{localStorage.removeItem(this.K)}catch(x){}}};
 async function link(email,pw){var s=authSession;if(!s)throw Error('Entre na conta.');email=String(email||'').trim().toLowerCase();if(!EMAIL_RE.test(email)||email.length>120)throw Error('Digite um e-mail válido.');
   var c=await load(),d=await derive(s.record.login,pw),u=c.auth.currentUser;
   if(u&&u.email!==email){await c.auth.signOut();u=null}
   if(!u){try{u=(await c.auth.createUserWithEmailAndPassword(email,d)).user}catch(x){if(x.code!=='auth/email-already-in-use')throw x;try{u=(await c.auth.signInWithEmailAndPassword(email,d)).user}catch(y){if(y.code==='auth/network-request-failed'||y.code==='auth/too-many-requests')throw y;throw Error('Este e-mail já está ligado a outra conta do Stok, com outra senha. Use a mesma senha daquela conta ou outro e-mail.')}}}
-  else if(ls('lojasg.estoque99.cloud-pw:'+s.storeKey)!==(await sha(d)).slice(0,16)){try{await u.updatePassword(d)}catch(x){}}
-  if(authSession!==s)return;setMyEmail(email);ls('lojasg.estoque99.cloud-pw:'+s.storeKey,(await sha(d)).slice(0,16));
+  else if(!(await pwSame(s,(await sha(d)).slice(0,16)))){try{await u.updatePassword(d)}catch(x){}}
+  if(authSession!==s)return;setMyEmail(email);await pwSet(s,(await sha(d)).slice(0,16));
   if(!u.emailVerified&&!/@pc\.stok-e99\.app$/.test(email))verify(u,false);await after(true,true)}
 async function verify(u,force){var k='lojasg.estoque99.cloud-verify:'+u.uid;if(!force&&Date.now()-Number(ls(k)||0)<6*3600000)return;try{await u.sendEmailVerification();ls(k,String(Date.now()));if(force)notify('Enviamos um novo e-mail de confirmação para '+u.email+'.')}catch(x){if(force)notify(msg(x))}}
 
@@ -4408,7 +4433,7 @@ window.e99CloudMember=function(login){return cloudMem[authLoginName(String(login
 /* gestor: uma vez por dia prepara o resumo de cada auxiliar com e-mail confirmado; o robô envia */
 function day(){var d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')}
 async function daily(loja){if(window.e99Autopilot)return;/* o piloto dos agentes cuida dos e-mails */var u=user();if(!u||!u.emailVerified||!loja||!authSession)return;var k='lojasg.estoque99.cloud-daily:'+loja;if(ls(k)===day())return;var c=await load(),list=Object.keys(cloudMem).map(function(l){return cloudMem[l]}).filter(function(m){return m.role==='auxiliar'&&m.verificado&&m.uid!==u.uid});
-  if(!list.length)return;var ok=0;for(var i=0;i<list.length;i++){var m=list[i];var t=summary(m.nome||'');try{await c.db.collection('correio').doc(loja+'_'+m.uid+'_'+day()).set({de:u.uid,para:m.uid,assunto:('Stok · seu resumo de '+new Date().toLocaleDateString('pt-BR')).slice(0,150),texto:t.slice(0,8000),tipo:'resumo',loja:loja,criado:Date.now()});ok++}catch(x){}}
+  if(!list.length)return;var ok=0;for(var i=0;i<list.length;i++){var m=list[i];var t=summary(m.nome||'');try{await c.db.collection('correio').doc(loja+'_'+m.uid+'_'+day()).set({de:u.uid,para:m.uid,assunto:('Stok · seu resumo de '+new Date().toLocaleDateString('pt-BR')).slice(0,150),texto:t.slice(0,4000),tipo:'resumo',loja:loja,criado:Date.now()});ok++}catch(x){}}
   if(ok)ls(k,day())}
 function summary(name){var n=normalText(name),p=(state.team||[]).find(function(x){return normalText(x.name)===n||normalText(x.id)===n})||null,id=p?normalText(p.id):'';
   function mine(o){o=normalText(o||'');return o==='todos'||(id&&o===id)}
@@ -4443,14 +4468,14 @@ window.e99CloudLink=async function(ev){ev.preventDefault();if(linkBusy||!authSes
 /* ao entrar na conta */
 async function onEnter(){if(!authSession)return;var pc=!!ls('lojasg.estoque99.pc-account:'+authSession.storeKey);/* conta do PC do estoque: e-mail interno automático */var s=authSession,c;try{c=await load()}catch(x){return}if(authSession!==s)return;var u=c.auth.currentUser,em=pc?'pc-'+(await sha('pc|'+authLoginName(s.record.login))).slice(0,24)+'@pc.stok-e99.app':myEmail(),pw=freshPw();
   if(pc){if(u&&u.email===em){after(false);return}if(pw)try{await link(em,pw)}catch(x){try{console.warn('Stok nuvem PC:',x.code||x)}catch(y){}}return}
-  if(u&&em&&u.email===em){if(pw){try{var d=await derive(s.record.login,pw),h=(await sha(d)).slice(0,16);if(ls('lojasg.estoque99.cloud-pw:'+s.storeKey)!==h){await u.updatePassword(d);ls('lojasg.estoque99.cloud-pw:'+s.storeKey,h)}}catch(x){}}after(false);return}
+  if(u&&em&&u.email===em){if(pw){try{var d=await derive(s.record.login,pw),h=(await sha(d)).slice(0,16);if(!(await pwSame(s,h))){await u.updatePassword(d);await pwSet(s,h)}}catch(x){}}after(false);return}
   if(em&&pw){try{await link(em,pw);return}catch(x){if(soft(x))return;linkErr=msg(x);linkSoft=false}}
   else if(u&&!em){try{await c.auth.signOut()}catch(x){}}
   try{if(sessionStorage.getItem('e99-cloud-later'))return}catch(x){}showLink()}
 var enterBefore=authEnter;authEnter=function(){var r=enterBefore.apply(this,arguments);linkErr='';linkSoft=false;setTimeout(onEnter,700);return r};
 var logoutBefore=authLogout;authLogout=async function(){var r=await logoutBefore.apply(this,arguments);if(!authSession){if(memUnsub){memUnsub();memUnsub=null;memSid=''}cloudMem={};stash=null;load().then(function(c){return c.auth.signOut()}).catch(function(){})}return r};
 var cpBefore=authChangePassword;authChangePassword=async function(ev){var v=readForm(ev.target),s=authSession,rev=s&&s.record.revision;var r=await cpBefore.apply(this,arguments);
-  if(s&&authSession===s&&s.record.revision!==rev&&v.password){var u=user();if(u)try{var nd=await derive(s.record.login,v.password);try{await u.updatePassword(nd)}catch(x){if(x.code!=='auth/requires-recent-login')throw x;await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email,await derive(s.record.login,v.current)));await u.updatePassword(nd)}ls('lojasg.estoque99.cloud-pw:'+s.storeKey,(await sha(nd)).slice(0,16))}catch(x){try{console.warn('Stok nuvem senha:',x.code||x)}catch(y){}}}return r};
+  if(s&&authSession===s&&s.record.revision!==rev&&v.password){var u=user();if(u)try{var nd=await derive(s.record.login,v.password);try{await u.updatePassword(nd)}catch(x){if(x.code!=='auth/requires-recent-login')throw x;await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email,await derive(s.record.login,v.current)));await u.updatePassword(nd)}if(authSession)await pwSet(authSession,(await sha(nd)).slice(0,16))}catch(x){try{console.warn('Stok nuvem senha:',x.code||x)}catch(y){}}}return r};
 window.e99LoginForEmail=function(v){v=String(v||'').trim().toLowerCase();if(v.indexOf('@')<0)return '';try{return (JSON.parse(ls('lojasg.estoque99.cloud-logins')||'{}')||{})[v]||''}catch(x){return ''}};
 setInterval(function(){if(authSession&&!document.hidden&&user())after(false).catch(function(){})},5*60000);
 document.addEventListener('visibilitychange',function(){if(!document.hidden&&authSession&&user()){var u=user();if(!u.emailVerified)after(false).catch(function(){})}});
@@ -4586,15 +4611,18 @@ setInterval(function(){if(page==='chat'&&!document.hidden)paintTyping()},1500);
 async function subscribe(){var c=await cdb();if(!c){return}if(subSid===c.sid&&tyUnsub)return;[tyUnsub,rdUnsub,rcUnsub,pinUnsub].forEach(function(f){if(f)f()});subSid=c.sid;
   tyUnsub=c.col('digitando').onSnapshot(function(q){typers={};q.forEach(function(d){if(d.id!==c.uid)typers[d.id]=d.data()});if(page==='chat')paintTyping()},function(){});
   rdUnsub=c.col('lidos').onSnapshot(function(q){readers={};q.forEach(function(d){if(d.id!==c.uid)readers[d.id]=d.data()});decorate()},function(){});
-  rcUnsub=c.col('reacoes').orderBy('at','desc').limit(600).onSnapshot(function(q){reacts={};q.forEach(function(d){var x=d.data();(reacts[x.msg]=reacts[x.msg]||[]).push({uid:x.uid,emoji:x.emoji,nome:x.nome})});decorate()},function(){});
+  rcUnsub=c.col('reacoes').orderBy('at','desc').limit(600).onSnapshot(function(q){reacts={};q.forEach(function(d){var x=d.data();if(REACT_OK.indexOf(x.emoji)<0)return;(reacts[x.msg]=reacts[x.msg]||[]).push({uid:x.uid,emoji:x.emoji,nome:x.nome})});decorate()},function(){});
   pinUnsub=c.col('fixada').doc('atual').onSnapshot(function(d){pinned=d.exists?d.data():null;paintPin()},function(){})}
 setInterval(function(){if(authSession&&T()&&window.e99Cloud&&window.e99Cloud.user())subscribe()},5000);
 
 /* ---------- visto, reações e menções em cada mensagem ---------- */
+/* v89: só estes emojis valem (no app e na regra da nuvem); nada da rede vai para onclick */
+var REACT_OK=['👍','❤️','😂','😮','😢','🙏'];
 var decT=0;function decorate(){clearTimeout(decT);decT=setTimeout(decorateNow,40)}
 function decorateNow(){var box=document.getElementById('chat-list');if(!box)return;var uid=window.e99Cloud&&window.e99Cloud.user()?window.e99Cloud.user().uid:'';
   box.querySelectorAll('.chat-msg').forEach(function(m){var id=m.getAttribute('data-id'),l=reacts[id]||[];var old=m.querySelector('.reacts');if(old)old.remove();if(!l.length)return;var g={};l.forEach(function(r){(g[r.emoji]=g[r.emoji]||[]).push(r)});
-    var d=document.createElement('div');d.className='reacts';d.innerHTML=Object.keys(g).map(function(k){var mine=g[k].some(function(r){return r.uid===uid});return '<button type="button" class="'+(mine?'me':'')+'" title="'+e(g[k].map(function(r){return r.nome}).join(', '))+'" onclick="e99React(\''+e(id)+'\',\''+e(k)+'\')">'+e(k)+' '+g[k].length+'</button>'}).join('');
+    var d=document.createElement('div');d.className='reacts';d.innerHTML=Object.keys(g).map(function(k){var mine=g[k].some(function(r){return r.uid===uid});return '<button type="button" class="'+(mine?'me':'')+'" title="'+e(g[k].map(function(r){return r.nome}).join(', '))+'" data-react="'+REACT_OK.indexOf(k)+'">'+e(k)+' '+g[k].length+'</button>'}).join('');
+    d.addEventListener('click',function(ev){var b=ev.target.closest('button[data-react]');if(b)window.e99React(id,REACT_OK[+b.getAttribute('data-react')])});
     var when=m.querySelector('.when');m.insertBefore(d,when)});
   box.querySelectorAll('.seen-by').forEach(function(s){s.remove()});var mine=box.querySelectorAll('.chat-msg.mine');var last=mine[mine.length-1];
   if(last){var at=last.getAttribute('data-at')||'';var who=Object.keys(readers).filter(function(u){return String(readers[u].at||'')>=at}).map(function(u){return readers[u].nome||'?'});
@@ -4606,7 +4634,7 @@ function watch(){var box=document.getElementById('chat-list');if(!box||box.__soc
 setInterval(function(){if(page==='chat'&&!document.hidden){watch();paintPin()}},700);
 
 /* ---------- reações (❤️ com dois toques, como no Instagram) ---------- */
-window.e99React=async function(id,emoji,heart){var c=await cdb();if(!c){notify('Vincule seu e-mail (tela Conta) para reagir às mensagens.');return}
+window.e99React=async function(id,emoji,heart){if(REACT_OK.indexOf(emoji)<0||!/^[A-Za-z0-9_-]{1,60}$/.test(String(id||'')))return;var c=await cdb();if(!c){notify('Vincule seu e-mail (tela Conta) para reagir às mensagens.');return}
   var ref=c.col('reacoes').doc(id+'_'+c.uid),cur=(reacts[id]||[]).find(function(r){return r.uid===c.uid});
   if(heart){var el=document.querySelector('.chat-msg[data-id="'+id+'"]');if(el){var h=document.createElement('span');h.className='heart-pop';h.textContent='❤️';el.appendChild(h);setTimeout(function(){h.remove()},950)}if(cur&&cur.emoji==='❤️')return}
   try{if(cur&&cur.emoji===emoji)await ref.delete();else await ref.set({msg:id,uid:c.uid,emoji:emoji,nome:myName(),at:Date.now()});
@@ -4882,7 +4910,7 @@ async function run(force){if(busy||!authSession||!boss()||!state)return;busy=tru
     for(var i=0;i<ppl.length;i++){var p=ppl[i],d=personData(p);var m=await ai('Escreva uma mensagem curta e calorosa de bom dia para '+p.name+', do estoque, com as tarefas dele hoje e o que está atrasado. Máximo 3 frases, sem inventar nada.',txt(d),plain(p,d));
       if(o.opt.push&&window.e99PushTo){if(await window.e99PushTo(p.login,'Bom dia, '+p.name.split(' ')[0]+' · Stok',m.text,'home'))sent++}
       if(o.opt.mail&&c&&loja&&p.uid&&p.ok&&window.e99Cloud.user().emailVerified){var mm=await ai('Escreva um e-mail curto e personalizado para '+p.name+' com o resumo do dia dele no estoque: o que está atrasado, o que fazer hoje, NFs e corredores. Termine com "Equipe Stok". Só o texto do e-mail.',txt(d),m.text+'\n\nAbra o app: https://vferreiras.github.io/ESTOQUE-G/\n\nEquipe Stok');
-        try{await c.db.collection('correio').doc(loja+'_'+p.uid+'_'+today).set({de:myUid,para:p.uid,assunto:('Stok · seu dia '+new Date().toLocaleDateString('pt-BR')).slice(0,150),texto:mm.text.slice(0,8000),tipo:'resumo',loja:loja,criado:Date.now()});mails++}catch(x){log(o,'E-mail para '+p.name+' não entrou na fila ('+(x&&x.code||x)+').','err')}}}
+        try{await c.db.collection('correio').doc(loja+'_'+p.uid+'_'+today).set({de:myUid,para:p.uid,assunto:('Stok · seu dia '+new Date().toLocaleDateString('pt-BR')).slice(0,150),texto:mm.text.slice(0,4000),tipo:'resumo',loja:loja,criado:Date.now()});mails++}catch(x){log(o,'E-mail para '+p.name+' não entrou na fila ('+(x&&x.code||x)+').','err')}}}
     if(loja)try{localStorage.setItem('lojasg.estoque99.cloud-daily:'+loja,new Date().getFullYear()+String(new Date().getMonth()+1).padStart(2,'0')+String(new Date().getDate()).padStart(2,'0'))}catch(x){}
     if(o.opt.chat&&window.chatSend&&ppl.length){var all=ppl.map(function(p){var d=personData(p);return p.name+': '+(d.late.length?d.late.length+' atrasada(s), ':'')+d.acts.length+' para hoje'}).join('\n');
       var g=await ai('Escreva uma mensagem de bom dia para o chat da equipe do estoque, curta, motivadora, marcando cada pessoa com @Nome e dizendo quantas tarefas cada uma tem. Máximo 5 linhas.',all,'☀️ Bom dia, equipe! '+ppl.map(function(p){var d=personData(p);return '@'+p.name+' '+d.acts.length+' tarefa(s)'+(d.late.length?' (+'+d.late.length+' atrasada)':'')}).join(' · '));
@@ -4997,7 +5025,8 @@ function code(x){var c=x&&x.code||'';return c==='auth/invalid-credential'||c==='
 window.mrGo=async function(ev){ev.preventDefault();if(busy)return;var v=readForm(ev.target);err='';busy=true;paint();
   try{var c=await window.e99Cloud.load();
     if(step===1){email=String(v.email||'').trim().toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email))throw Error('Digite um e-mail válido.');try{await c.auth.sendPasswordResetEmail(email)}catch(x){if(x.code!=='auth/user-not-found')throw x}step=2;busy=false;paint();return}
-    authPasswordCheck(v.password,v.confirmation);var u=(await c.auth.signInWithEmailAndPassword(email,String(v.cloud||''))).user;
+    authPasswordCheck(v.password,v.confirmation);var T9=window.e99CloudTry,w9=T9?T9.wait():0;if(w9)throw Error('Muitas tentativas neste aparelho. Espere '+w9+' min e tente de novo.');
+    var u;try{u=(await c.auth.signInWithEmailAndPassword(email,String(v.cloud||''))).user;if(T9)T9.ok()}catch(x){if(T9&&x&&x.code!=='auth/network-request-failed')T9.fail();throw x}
     var vd=null,ud=null;try{vd=(await c.db.collection('cofre').doc(u.uid).get()).data()}catch(x){}try{ud=(await c.db.collection('usuarios').doc(u.uid).get()).data()}catch(x){}
     var login=authLoginName((vd&&vd.login)||(ud&&ud.login)||'');if(!login)throw Error('Não encontrei uma conta do Stok ligada a este e-mail.');
     var storeKey=await authStorageKey(login),raw=localStorage.getItem(storeKey),record=raw?authCheckRecord(JSON.parse(raw)):null,newCode=authNewRecoveryCode();
@@ -5006,14 +5035,15 @@ window.mrGo=async function(ev){ev.preventDefault();if(busy)return;var v=readForm
     else{var msg=record?'Esta conta foi criada antes da recuperação por e-mail existir, então os dados guardados só neste aparelho não podem ser abertos. Recomeçar a conta com o mesmo login e e-mail? Seu perfil, selo, equipe e dados da equipe voltam pela nuvem e pela sincronização.':'Não há cópia desta conta neste aparelho. Criar a conta aqui com o mesmo login e e-mail? Seu perfil e os dados da equipe voltam pela nuvem e pela sincronização.';
       if(!confirm(msg)){busy=false;err='';paint();return}
       if(raw){localStorage.removeItem(storeKey);['lojasg.estoque99.chat:','lojasg.estoque99.agents:','lojasg.estoque99.totp:','lojasg.estoque99.vault:'].forEach(function(p){try{localStorage.removeItem(p+storeKey)}catch(x){}})}/* conta antiga excluída do aparelho */
-      var role=ud&&ud.role==='auxiliar'?'auxiliar':'gestor';
+      /* v89: mantém o papel salvo na nuvem; nunca promove a gestor */
+      var role=ud&&['gestor','auxiliar','estoque'].indexOf(ud.role)>=0?ud.role:'estoque';
       /* traz o perfil (nome, foto, capa, cargo) da nuvem antes de entrar */
       var prof=null;try{if(ud&&/^[0-9a-f]{32}$/.test(ud.loja||'')){var pd=(await c.db.collection('lojas').doc(ud.loja).collection('perfis').doc(u.uid).get()).data();if(pd&&pd.p)prof=Object.assign({},pd.p,{at:Number(pd.at)||Date.now()})}}catch(x){}
       var session=await authCreate(login,login==='estoque 99'?'Estoque 99':(prof&&prof.name?String(prof.name).slice(0,80):'Estoque'),v.password,authEmpty(),role);
       try{var eq=(await c.db.collection('equipes').doc(u.uid).get()).data();if(eq&&eq.code){var cc={code:eq.code,name:eq.name||'',team:eq.team||'Equipe',owner:!!eq.owner,sync:!!eq.sync,replace:true};var civ=crypto.getRandomValues(new Uint8Array(12));var cct=await crypto.subtle.encrypt({name:'AES-GCM',iv:civ,additionalData:authBytes('chat|'+authLoginName(session.record.login))},session.key,authBytes(JSON.stringify(cc)));localStorage.setItem('lojasg.estoque99.chat:'+session.storeKey,JSON.stringify({iv:authB64(civ),cipher:authB64(new Uint8Array(cct))}))}}catch(x){}
       if(prof)try{await new Promise(function(res){var rq=indexedDB.open('estoque99-profiles',1);rq.onupgradeneeded=function(){rq.result.createObjectStore('p')};rq.onsuccess=function(){var db=rq.result,tx=db.transaction('p','readwrite');tx.objectStore('p').put(prof,'me|'+session.storeKey);tx.oncomplete=function(){db.close();res()};tx.onerror=function(){db.close();res()}};rq.onerror=function(){res()}})}catch(x){}
       localStorage.setItem(session.storeKey,JSON.stringify(session.record));authEnter({key:session.key,record:session.record,storeKey:session.storeKey,payload:session.payload});authShownCode=session.recoveryCode}
-    ls('lojasg.estoque99.cloud-email:'+storeKey,email);var d2=await derive(login,v.password);try{await u.updatePassword(d2);ls('lojasg.estoque99.cloud-pw:'+storeKey,(await sha(d2)).slice(0,16))}catch(x){}
+    ls('lojasg.estoque99.cloud-email:'+storeKey,email);var d2=await derive(login,v.password);try{await u.updatePassword(d2)}catch(x){}
     grab(login,v.password);vault();var dd=document.getElementById('mail-rec');if(dd)dd.close();busy=false;
     notify(record&&vd&&vd.salt===record.salt?'Conta recuperada com todos os dados! Anote o novo código em Minha conta.':(localStorage.getItem('lojasg.estoque99.chat:'+storeKey)?'Conta recuperada e de volta à equipe! Anote o novo código em Minha conta.':'Conta recuperada! Para voltar à equipe, peça o convite (Chat → Convidar) a quem está na equipe. Anote o novo código em Minha conta.'));try{go('account')}catch(x){}}
   catch(x){busy=false;err=code(x);paint()}};
@@ -5045,48 +5075,61 @@ function unb32(s){s=String(s).toUpperCase().replace(/[^A-Z2-7]/g,'');var bits=''
 async function hotp(secret,counter){var k=await crypto.subtle.importKey('raw',unb32(secret),{name:'HMAC',hash:'SHA-1'},false,['sign']);var c=new ArrayBuffer(8),v=new DataView(c);v.setUint32(0,Math.floor(counter/4294967296));v.setUint32(4,counter>>>0);
   var h=new Uint8Array(await crypto.subtle.sign('HMAC',k,c)),o=h[19]&15;var n=((h[o]&127)<<24|h[o+1]<<16|h[o+2]<<8|h[o+3])%1e6;return String(n).padStart(6,'0')}
 async function check(secret,code){code=String(code||'').replace(/\D/g,'');if(code.length!==6)return false;var t=Math.floor(Date.now()/30000);for(var d=-1;d<=1;d++)if(await hotp(secret,t+d)===code)return true;return false}
-window.e99Totp=function(secret,at){return hotp(secret,Math.floor((at||Date.now())/30000))};
 async function wrapKey(secret,login){var base=await crypto.subtle.importKey('raw',unb32(secret),'HKDF',false,['deriveKey']);return crypto.subtle.deriveKey({name:'HKDF',hash:'SHA-256',salt:authBytes('e99-totp'),info:authBytes(authLoginName(login))},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
 async function wrap(secret,bits,login){var iv=crypto.getRandomValues(new Uint8Array(12));var c=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:authBytes('totp|'+authLoginName(login))},await wrapKey(secret,login),bits);return {iv:authB64(iv),cipher:authB64(new Uint8Array(c))}}
 async function unwrap(secret,w,login){return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:authUn64(w.iv),additionalData:authBytes('totp|'+authLoginName(login))},await wrapKey(secret,login),authUn64(w.cipher)))}
 function K(sk){return 'lojasg.estoque99.totp:'+sk}
-function get(sk){try{return JSON.parse(localStorage.getItem(K(sk))||'null')}catch(x){return null}}
+/* v89: a chave secreta do Authenticator NÃO fica mais em claro no aparelho.
+   Guardamos só: w = chave da conta embrulhada pela chave do Authenticator, e s = a chave do Authenticator cifrada com a senha (para trocar a senha).
+   Para recuperar, a pessoa digita a chave que anotou ao ativar + o código atual do app. Registros antigos (secret em claro) são apagados e pedem nova ativação. */
+function get(sk){try{var t=JSON.parse(localStorage.getItem(K(sk))||'null');if(t&&t.secret){localStorage.setItem(K(sk),JSON.stringify({old:1,at:Date.now()}));return {old:1}}return t}catch(x){return null}}
+function ok2(t){return !!(t&&t.v===2&&t.w&&t.s)}
+async function secKey(bits,login){var base=await crypto.subtle.importKey('raw',bits,'HKDF',false,['deriveKey']);return crypto.subtle.deriveKey({name:'HKDF',hash:'SHA-256',salt:authBytes('e99-totp-sec'),info:authBytes(authLoginName(login))},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function sealSec(secret,bits,login){var iv=crypto.getRandomValues(new Uint8Array(12));var c=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},await secKey(bits,login),authBytes(secret));return {iv:authB64(iv),cipher:authB64(new Uint8Array(c))}}
+async function openSec(t,bits,login){return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:authUn64(t.s.iv)},await secKey(bits,login),authUn64(t.s.cipher)))}
+async function store(sk,secret,bits,record){localStorage.setItem(K(sk),JSON.stringify({v:2,w:await wrap(secret,bits,record.login),s:await sealSec(secret,bits,record.login),salt:record.salt,at:Date.now()}))}
 /* guarda a chave da conta protegida pelo Authenticator (precisa da senha atual, que só existe logo após entrar) */
-var pw=null;var dB=authDecrypt;authDecrypt=async function(rec,p){var r=await dB.apply(this,arguments);if(rec&&typeof p==='string')pw={l:authLoginName(rec.login),p:p,t:Date.now()};return r};
-var rB=authResetWithBits;authResetWithBits=async function(record,raw,storeKey,payload,p){pw={l:authLoginName(record.login),p:String(p),t:Date.now()};var r=await rB.apply(this,arguments);setTimeout(refresh,500);return r};
-var chB=authChangePassword;authChangePassword=async function(ev){var v=readForm(ev.target),s=authSession,rev=s&&s.record.revision;var r=await chB.apply(this,arguments);if(s&&authSession===s&&s.record.revision!==rev&&v.password){pw={l:authLoginName(s.record.login),p:v.password,t:Date.now()};refresh()}return r};
-async function refresh(){if(!authSession||!pw||pw.l!==authLoginName(authSession.record.login))return;var t=get(authSession.storeKey);if(!t||!t.secret||t.salt===authSession.record.salt)return;try{var bits=await authKeyBits(pw.p,authSession.record.salt);t.w=await wrap(t.secret,bits,authSession.record.login);t.salt=authSession.record.salt;localStorage.setItem(K(authSession.storeKey),JSON.stringify(t))}catch(x){}}
-var eB=authEnter;authEnter=function(){var r=eB.apply(this,arguments);setTimeout(refresh,300);return r};
+var dB=authDecrypt,recSec=null;
+var rB=authResetWithBits;authResetWithBits=async function(record,raw,storeKey,payload,p){var sec=recSec;recSec=null;var r=await rB.apply(this,arguments);
+  try{var nr=sec&&JSON.parse(localStorage.getItem(storeKey)||'null');if(nr&&nr.salt)await store(storeKey,sec,await authKeyBits(String(p),nr.salt),nr)}catch(x){}return r};
+var chB=authChangePassword;authChangePassword=async function(ev){var v=readForm(ev.target),s=authSession,rev=s&&s.record.revision,sec=null;
+  try{var t=s&&get(s.storeKey);if(ok2(t)&&t.salt===s.record.salt&&v.current)sec=await openSec(t,await authKeyBits(String(v.current),t.salt),s.record.login)}catch(x){sec=null}
+  var r=await chB.apply(this,arguments);if(s&&v.password&&sec){try{var nr=JSON.parse(localStorage.getItem(s.storeKey)||'null');if(nr&&nr.revision!==rev&&nr.salt)await store(s.storeKey,sec,await authKeyBits(String(v.password),nr.salt),nr)}catch(x){}}return r};
 /* ---------- Minha conta: ativar ---------- */
 var draft=null;
 window.totpStart=async function(){var s=new Uint8Array(20);crypto.getRandomValues(s);draft=b32(s);if(typeof ZXing==='undefined'&&window.e99Need){try{await window.e99Need('zxing')}catch(x){}}render()};
 window.totpCancel=function(){draft=null;render()};
 window.totpConfirm=async function(ev){ev.preventDefault();var v=readForm(ev.target);if(!(await check(draft,v.code))){notify('Código errado. Confira a hora do celular e digite o código atual do Authenticator.');return}
   var p=String(v.password||'');try{await dB(authSession.record,p)}catch(x){notify('Senha atual incorreta.');return}
-  var bits=await authKeyBits(p,authSession.record.salt);var t={secret:draft,w:await wrap(draft,bits,authSession.record.login),salt:authSession.record.salt,at:Date.now()};localStorage.setItem(K(authSession.storeKey),JSON.stringify(t));draft=null;notify('Authenticator ativado! Se esquecer a senha, entre com o código dele.');render()};
+  var bits=await authKeyBits(p,authSession.record.salt);await store(authSession.storeKey,draft,bits,authSession.record);draft=null;notify('Authenticator ativado! Guarde a chave que você anotou: ela e o código do app são pedidos se esquecer a senha.');render()};
 window.totpOff=function(){if(!confirm('Desativar a recuperação pelo Authenticator neste aparelho?'))return;localStorage.removeItem(K(authSession.storeKey));render()};
 function qr(uri){try{var w=new ZXing.BrowserQRCodeSvgWriter();var svg=w.write(uri,200,200);return svg.outerHTML}catch(x){return ''}}
 function panel(){if(!authSession)return '';var t=get(authSession.storeKey);var h='<div class="panel help" id="totp-panel"><h2>🔐 Authenticator</h2>';
-  if(t&&t.secret)return h+'<p><span class="perm-ok">✓ Ativado</span> neste aparelho. Esqueceu a senha? Na tela de entrar, toque em "Entrar com o código do Authenticator".</p><button onclick="totpOff()">Desativar</button></div>';
+  if(ok2(t)&&t.salt===authSession.record.salt)return h+'<p><span class="perm-ok">✓ Ativado</span> neste aparelho. Esqueceu a senha? Na tela de entrar, toque em "Entrar com o código do Authenticator" e use a chave que você anotou ao ativar.</p><button onclick="totpOff()">Desativar</button></div>';
+  if(!draft&&t&&(t.old||ok2(t)))h+='<p class="cl-err" role="alert"><b>Ative de novo.</b> '+(t.old?'Por segurança, o Authenticator antigo foi desligado (a chave dele ficava aberta neste aparelho).':'A senha foi trocada sem o Authenticator, então ele parou de valer.')+' Toque em "Ativar Authenticator" e anote a chave nova.</p>';
   if(!draft)return h+'<p>Use o Google Authenticator, Microsoft Authenticator ou Authy para recuperar a conta se esquecer a senha e o código.</p><button class="primary" onclick="totpStart()">Ativar Authenticator</button></div>';
   var uri='otpauth://totp/'+encodeURIComponent('Stok:'+authSession.record.login)+'?secret='+draft+'&issuer=Stok&digits=6&period=30';
-  return h+'<p>1. No app Authenticator, toque em <b>+</b> e leia o QR code (ou toque no botão no celular).</p><div class="totp-qr">'+qr(uri)+'</div><p><a class="button" href="'+e(uri)+'">Abrir no Authenticator</a></p><p class="small">Ou digite a chave: <span class="totp-secret">'+e(draft.replace(/(.{4})/g,'$1 ').trim())+'</span></p>'
+  return h+'<p>1. No app Authenticator, toque em <b>+</b> e leia o QR code (ou toque no botão no celular).</p><div class="totp-qr">'+qr(uri)+'</div><p><a class="button" href="'+e(uri)+'">Abrir no Authenticator</a></p><p class="small"><b>Anote esta chave em lugar seguro</b> (papel ou gerenciador de senhas). Ela será pedida, junto com o código do app, se você esquecer a senha: <span class="totp-secret">'+e(draft.replace(/(.{4})/g,'$1 ').trim())+'</span></p>'
    +'<form onsubmit="totpConfirm(event)" class="fields"><label>2. Código de 6 números do app<input name="code" inputmode="numeric" maxlength="6" required autocomplete="one-time-code"></label><label>Sua senha atual<input name="password" type="password" inputmode="numeric" required autocomplete="current-password"></label><button class="primary">Confirmar e ativar</button><button type="button" onclick="totpCancel()">Cancelar</button></form></div>'}
 var raB=renderAccount;renderAccount=function(){return raB.apply(this,arguments)+'<div class="grid2">'+panel()+'</div>'};
 /* ---------- tela de entrar: recuperar com o código ---------- */
 var tries=0,waitUntil=0;
 function dlg(){var d=document.getElementById('totp-rec');if(!d){d=document.createElement('dialog');d.id='totp-rec';document.body.appendChild(d)}return d}
-window.totpRecOpen=function(){var d=dlg();d.innerHTML='<form onsubmit="totpRecGo(event)"><h2 style="margin:0">🔐 Entrar com o Authenticator</h2><p class="small" style="margin:0">Funciona no aparelho onde você ativou o Authenticator.</p><label>Login<input name="login" required maxlength="80" autocomplete="username"></label><label>Código de 6 números do Authenticator<input name="code" inputmode="numeric" maxlength="6" required autocomplete="one-time-code"></label><label>Nova senha do app (4 a 8 números)<input name="password" type="password" inputmode="numeric" required autocomplete="new-password"></label><label>Repita a nova senha<input name="confirmation" type="password" inputmode="numeric" required autocomplete="new-password"></label><p id="totp-err" class="cl-err" role="alert"></p><button class="primary">Entrar e trocar a senha</button><button type="button" onclick="this.closest(\'dialog\').close()">Cancelar</button></form>';try{d.showModal()}catch(x){d.setAttribute('open','')}};
+window.totpRecOpen=function(){var d=dlg();d.innerHTML='<form onsubmit="totpRecGo(event)"><h2 style="margin:0">🔐 Entrar com o Authenticator</h2><p class="small" style="margin:0">Funciona no aparelho onde você ativou o Authenticator.</p><label>Login<input name="login" required maxlength="80" autocomplete="username"></label><label>Chave do Authenticator (a que você anotou ao ativar)<input name="key" required maxlength="64" autocapitalize="characters" autocomplete="off" spellcheck="false"></label><label>Código de 6 números do Authenticator<input name="code" inputmode="numeric" maxlength="6" required autocomplete="one-time-code"></label><label>Nova senha do app (4 a 8 números)<input name="password" type="password" inputmode="numeric" required autocomplete="new-password"></label><label>Repita a nova senha<input name="confirmation" type="password" inputmode="numeric" required autocomplete="new-password"></label><p id="totp-err" class="cl-err" role="alert"></p><button class="primary">Entrar e trocar a senha</button><button type="button" onclick="this.closest(\'dialog\').close()">Cancelar</button></form>';try{d.showModal()}catch(x){d.setAttribute('open','')}};
 window.totpRecGo=async function(ev){ev.preventDefault();var v=readForm(ev.target),er=document.getElementById('totp-err');function fail(m){if(er)er.textContent=m}
   if(Date.now()<waitUntil){fail('Muitas tentativas. Espere 30 segundos.');return}
   try{authPasswordCheck(v.password,v.confirmation)}catch(x){fail(x.message);return}
   var login=authLoginName(v.login),sk=await authStorageKey(login),raw=localStorage.getItem(sk),t=get(sk);
-  if(!raw||!t||!t.secret){fail('O Authenticator não foi ativado para este login neste aparelho. Use "recuperar pelo e-mail".');return}
-  if(!(await check(t.secret,v.code))){if(++tries>=5){tries=0;waitUntil=Date.now()+30000}fail('Código errado. Use o código atual do Authenticator.');return}
-  try{var record=authCheckRecord(JSON.parse(raw));if(t.salt!==record.salt)throw Error('desatualizado');var bits=await unwrap(t.secret,t.w,record.login);var opened=await authOpenWithBits(record,bits);var code=authNewRecoveryCode();
+  if(t&&t.old){fail('O Authenticator deste login foi desligado por segurança na versão 89. Entre com a senha, código de recuperação ou e-mail e ative de novo em Minha conta.');return}
+  if(!raw||!ok2(t)){fail('O Authenticator não foi ativado para este login neste aparelho. Use "recuperar pelo e-mail".');return}
+  var key=String(v.key||'').toUpperCase().replace(/[^A-Z2-7]/g,'');
+  if(key.length<16||!(await check(key,v.code))){if(++tries>=5){tries=0;waitUntil=Date.now()+30000}fail('Chave ou código errado. Use a chave anotada e o código atual do Authenticator.');return}
+  try{var record=authCheckRecord(JSON.parse(raw));if(t.salt!==record.salt)throw Error('desatualizado');var bits=await unwrap(key,t.w,record.login);recSec=key;var opened=await authOpenWithBits(record,bits);var code=authNewRecoveryCode();
     var d=document.getElementById('totp-rec');if(d)d.close();await authResetWithBits(record,raw,sk,opened.payload,v.password,code,null);authShownCode=code;notify('Senha trocada com o Authenticator. Anote o novo código de recuperação em Minha conta.');try{go('account')}catch(x){}}
   catch(x){fail('Não deu para abrir a conta com o Authenticator (a senha mudou em outro aparelho?). Use "recuperar pelo e-mail".')}};
 var rA=renderAuth;renderAuth=function(){rA.apply(this,arguments);try{var f=document.getElementById('auth-form');if(f&&!authRecoveryShow&&!authPending&&(authMode==='login'||authMode==='recover')&&!document.getElementById('totp-link')){var b=document.createElement('button');b.type='button';b.id='totp-link';b.className='mr-link';b.textContent='Entrar com o código do Authenticator';b.onclick=window.totpRecOpen;var m=document.getElementById('mr-link');(m||f).after(b)}}catch(x){}};
+/* v89: apaga na abertura qualquer chave antiga do Authenticator guardada em claro */
+try{Object.keys(localStorage).forEach(function(k){if(k.indexOf('lojasg.estoque99.totp:')===0)get(k.slice(22))})}catch(x){}
 if(typeof authSession!=='undefined'&&!authSession&&document.getElementById('auth-form'))renderAuth();
 })();
 </script>
@@ -5128,16 +5171,17 @@ async function derive(login,p){return 'Stk#'+(await sha('e99-cloud|'+authLoginNa
 window.cpGo=async function(ev){ev.preventDefault();if(st.busy)return;var v=readForm(ev.target);var login=String(st.needLogin?v.login:st.login||'').trim().replace(/^@+/,''),email=String(v.email||'').trim().toLowerCase(),p=String(v.password||'');
   st.login=login;st.email=email;st.pass=p;st.err='';if(!EMAIL.test(email)){st.err='Digite um e-mail válido.';paint();return}st.busy=true;paint();
   try{var c=await window.e99Cloud.load();if(c.auth.currentUser)try{await c.auth.signOut()}catch(x){}var u;
-    try{u=(await c.auth.signInWithEmailAndPassword(email,await derive(login,p))).user}catch(x){if(x.code==='auth/network-request-failed')throw Error('Sem internet. Tente de novo com sinal.');throw Error('E-mail, login ou senha não conferem com a conta da nuvem. Se esqueceu a senha, use "recuperar pelo e-mail".')}
+    var T9=window.e99CloudTry,w9=T9?T9.wait():0;if(w9)throw Error('Muitas tentativas neste aparelho. Espere '+w9+' min e tente de novo.');
+    try{u=(await c.auth.signInWithEmailAndPassword(email,await derive(login,p))).user;if(T9)T9.ok()}catch(x){if(x.code==='auth/network-request-failed')throw Error('Sem internet. Tente de novo com sinal.');if(T9)T9.fail();throw Error('E-mail, login ou senha não conferem com a conta da nuvem. Se esqueceu a senha, use "recuperar pelo e-mail".')}
     var ud=null;try{ud=(await c.db.collection('usuarios').doc(u.uid).get()).data()}catch(x){}
     var lg=authLoginName((ud&&ud.login)||login);if(await exists(lg)){st.busy=false;st.err='';document.getElementById('cloud-pull').close();notify('A conta já está neste aparelho: entre com login e senha.');return}
-    var role=ud&&ud.role==='auxiliar'?'auxiliar':'gestor';
+    /* v89: mantém o papel salvo na nuvem; nunca promove a gestor */
+    var role=ud&&['gestor','auxiliar','estoque'].indexOf(ud.role)>=0?ud.role:'estoque';
     var prof=null;try{if(ud&&/^[0-9a-f]{32}$/.test(ud.loja||'')){var pd=(await c.db.collection('lojas').doc(ud.loja).collection('perfis').doc(u.uid).get()).data();if(pd&&pd.p)prof=Object.assign({},pd.p,{at:Number(pd.at)||Date.now()})}}catch(x){}
-    if(ud&&ud.role==='estoque'&&lg!=='estoque 99')role='gestor';
     var session=await authCreate(lg,lg==='estoque 99'?'Estoque 99':(prof&&prof.name?String(prof.name).slice(0,80):'Estoque'),p,authEmpty(),role);
     try{var eq=(await c.db.collection('equipes').doc(u.uid).get()).data();if(eq&&eq.code){var cc={code:eq.code,name:eq.name||'',team:eq.team||'Equipe',owner:!!eq.owner,sync:!!eq.sync,replace:true};var civ=crypto.getRandomValues(new Uint8Array(12));var cct=await crypto.subtle.encrypt({name:'AES-GCM',iv:civ,additionalData:authBytes('chat|'+authLoginName(session.record.login))},session.key,authBytes(JSON.stringify(cc)));localStorage.setItem('lojasg.estoque99.chat:'+session.storeKey,JSON.stringify({iv:authB64(civ),cipher:authB64(new Uint8Array(cct))}))}}catch(x){}
     if(prof)try{await new Promise(function(res){var rq=indexedDB.open('estoque99-profiles',1);rq.onupgradeneeded=function(){rq.result.createObjectStore('p')};rq.onsuccess=function(){var db=rq.result,tx=db.transaction('p','readwrite');tx.objectStore('p').put(prof,'me|'+session.storeKey);tx.oncomplete=function(){db.close();res()};tx.onerror=function(){db.close();res()}};rq.onerror=function(){res()}})}catch(x){}
-    ls('lojasg.estoque99.cloud-email:'+session.storeKey,email);ls('lojasg.estoque99.cloud-pw:'+session.storeKey,(await sha(await derive(lg,p))).slice(0,16));
+    ls('lojasg.estoque99.cloud-email:'+session.storeKey,email);
     localStorage.setItem(session.storeKey,JSON.stringify(session.record));st.busy=false;document.getElementById('cloud-pull').close();authEnter({key:session.key,record:session.record,storeKey:session.storeKey,payload:session.payload});authShownCode=session.recoveryCode;
     notify(localStorage.getItem('lojasg.estoque99.chat:'+session.storeKey)?'Conta trazida da nuvem e de volta à equipe! Anote o novo código em Minha conta.':'Conta trazida da nuvem! Entre na equipe pelo convite (Chat). Anote o novo código em Minha conta.')}
   catch(x){st.busy=false;st.err=x.message||'Não foi possível trazer a conta.';paint()}};
@@ -5403,8 +5447,8 @@ html body.dark #view .stats .stat:first-child strong{color:var(--brand)!importan
 html body.dark #view .stats .stat:first-child span{color:var(--ds-muted)!important;opacity:1}
 html body.dark #view .stats .stat strong{font-size:clamp(32px,4vw,40px)!important}
 /* botões: vermelho só no principal e em alertas; sem gradiente nem brilho */
-html body.dark button.primary,html body.dark .primary,html body.dark #view button.primary,html body.dark #auth-screen button.primary,html body.dark #view .toolbar button.primary,html body.dark .hero button.primary{background:#FF2A1F!important;background-image:none!important;border:1px solid #FF2A1F!important;color:#fff!important;box-shadow:none!important;filter:none!important;font-weight:650}
-@media(hover:hover){html body.dark button.primary:hover{background:#ff4136!important;border-color:#ff4136!important}}
+html body.dark button.primary,html body.dark .primary,html body.dark #view button.primary,html body.dark #auth-screen button.primary,html body.dark #view .toolbar button.primary,html body.dark .hero button.primary{/* v89: #DB2318 = 4,9:1 com texto branco (AA) */background:#DB2318!important;background-image:none!important;border:1px solid #DB2318!important;color:#fff!important;box-shadow:none!important;filter:none!important;font-weight:650}
+@media(hover:hover){html body.dark button.primary:hover{background:#C41E14!important;border-color:#C41E14!important}}
 html body.dark .toolbar button:not(.primary),html body.dark .hero button:not(.primary){background:var(--ds-surface)!important;border:1px solid var(--ds-line)!important}
 button svg.ic,a svg.ic,summary svg.ic,h2 svg.ic,h3 svg.ic,span svg.ic{width:20px;height:20px;flex:0 0 auto;vertical-align:-4px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 button:has(>svg.ic),summary:has(>svg.ic){display:inline-flex;align-items:center;justify-content:center;gap:8px}
@@ -5448,7 +5492,7 @@ html body.dark #view .mobile-options button{display:flex!important;justify-conte
 #breadcrumb .bc-store{color:var(--ds-muted);font-weight:500}
 .bell-btn{position:relative;display:inline-grid!important;place-items:center;width:44px;height:44px;min-height:44px!important;padding:0!important;border-radius:12px!important;background:transparent!important;border:1px solid transparent!important;color:var(--ds-ink)!important}
 .bell-btn svg.ic{width:22px;height:22px}
-.bell-btn .alert-count{position:absolute;top:3px;right:1px;min-width:18px;height:18px;padding:0 5px!important;border-radius:999px;font-size:11px!important;line-height:18px;background:var(--brand)!important;color:#fff!important;filter:none!important;box-shadow:none!important}
+.bell-btn .alert-count{position:absolute;top:3px;right:1px;min-width:18px;height:18px;padding:0 5px!important;border-radius:999px;font-size:11px!important;line-height:18px;background:#DB2318!important;color:#fff!important;filter:none!important;box-shadow:none!important}
 .bell-btn .alert-count[data-zero]{display:none}
 @media(hover:hover){.bell-btn:hover{background:var(--ds-accent-soft)!important}}
 @media (max-width:900px){

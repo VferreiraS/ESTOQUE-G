@@ -1,6 +1,6 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
 const CACHE_PREFIX = 'estoque99-';
-const CACHE = 'estoque99-v88';
+const CACHE = 'estoque99-v89';
 const VERSION = (CACHE.match(/-v(\d+)$/) || [])[1] || '';
 const CORE = [
   './index.html',
@@ -62,6 +62,7 @@ async function networkFirst(event, request, page) {
       const clients = await self.clients.matchAll({ type: 'window' });
       clients.forEach((c) => c.postMessage({ type: 'page-updated', version: m ? m[1] : '' }));
     }).catch(() => {}));
+    if (typeof page !== 'string') return (await cache.match(page)) || Response.error();
     return (await cache.match(page)) || (await cache.match('./index.html')) || (await cache.match('./')) || Response.error();
   }
 }
@@ -75,8 +76,15 @@ self.addEventListener('fetch', (event) => {
 
   const robot = url.pathname.endsWith('/robo.html');
   const legal = url.pathname.match(/\/(privacidade|termos)\.html$/);
-  if (request.mode === 'navigate' || url.pathname.endsWith('/index.html') || robot || legal) {
+  /* v89: só a raiz do app e o index.html são guardados como './index.html'; outras páginas (ex.: central-agentes/) ficam com o próprio endereço */
+  const scope = new URL(self.registration ? self.registration.scope : './', self.location).pathname;
+  const app = url.pathname === scope || url.pathname === scope + 'index.html';
+  if (app || robot || legal) {
     event.respondWith(networkFirst(event, request, robot ? './robo.html' : legal ? './' + legal[1] + '.html' : './index.html'));
+    return;
+  }
+  if (request.mode === 'navigate') {
+    event.respondWith(networkFirst(event, request, request));
     return;
   }
   event.respondWith((async () => {

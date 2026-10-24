@@ -8,7 +8,7 @@ rules_version = '2';
 //   Dados particulares da pessoa (tem e-mail = dado pessoal): só o dono lê/grava.
 //   - email: string (obrigatório, = e-mail do login)
 //   - login: string (1..80)       - nome: string (0..40)
-//   - role: 'gestor'|'auxiliar'|'estoque'  (informativo, não dá permissão)
+//   - role: 'gestor'|'auxiliar'|'estoque'  (informativo; 'gestor' só se já era ou se verificados/{uid}.tipo=='s')
 //   - loja: string (0..64)        - criado, visto: int
 //   - verificado: bool (= e-mail confirmado no token)
 //
@@ -25,7 +25,7 @@ rules_version = '2';
 // Coleções do chat (dentro de lojas/{loja}, só a equipe sabe o caminho):
 //   digitando/{uid}: nome (0..40), at (int)          — "fulano está digitando"
 //   lidos/{uid}:     nome (0..40), at (string <=40)  — até onde a pessoa leu
-//   reacoes/{msg_uid}: msg (id), uid (= dono), emoji (1..16), nome (0..40), at (int)
+//   reacoes/{msg_uid}: msg (id), uid (= dono), emoji (só 👍 ❤️ 😂 😮 😢 🙏), nome (0..40), at (int)
 //   erros/{id}:      msg (1..300), onde (0..200), pagina (0..40), ver (0..10), por (0..40), n (int), at (int) — erros vistos nos aparelhos
 //   fixada/atual:    msg (id), t (0..140), from (0..60), por (0..40), at (int)
 //
@@ -36,7 +36,7 @@ rules_version = '2';
 // Coleção: correio              Documento: id automático
 //   Fila de e-mails que o robô (tarefa agendada) envia. Só o robô lê e apaga.
 //   - de: uid de quem criou    - para: uid do destinatário (o robô busca o e-mail)
-//   - assunto, texto: string
+//   - assunto (1..150), texto (1..4000): string   — id = loja_para_AAAAMMDD; de e para são membros da loja
 //   - tipo: 'resumo'|'aviso'   - loja: 32 hex     - criado: int
 //
 // Coleção: verificados        Documento: {uid}
@@ -96,6 +96,15 @@ service cloud.firestore {
         (l.size() < 6 || isStr(l[5], 0, 40));
     }
 
+    // v89: ninguém se promove a gestor pela nuvem. 'gestor' só vale se o documento já era gestor
+    // ou se o administrador marcou o uid em verificados com tipo 's' (gestor da loja).
+    function gestorOk(uid) {
+      return request.resource.data.role != 'gestor' ||
+        (resource != null && resource.data.role == 'gestor') ||
+        (exists(/databases/$(database)/documents/verificados/$(uid)) &&
+          get(/databases/$(database)/documents/verificados/$(uid)).data.tipo == 's');
+    }
+
     // ---------- Validadores (usados no create E no update) ----------
     function isValidUsuario(d) {
       return hasOnlyAllowedFields(['email', 'login', 'nome', 'role', 'loja', 'criado', 'visto', 'verificado']) &&
@@ -126,6 +135,7 @@ service cloud.firestore {
       return hasOnlyAllowedFields(['login', 'role', 'at', 'p']) &&
         hasRequiredFields(['login', 'role', 'at', 'p']) &&
         isStr(d.login, 1, 80) && isValidRole(d.role) && isValidTime(d.at) &&
+        d.at <= request.time.toMillis() + 86400000 &&
         isValidPerfilMap(d.p);
     }
 
@@ -155,7 +165,7 @@ service cloud.firestore {
       return hasOnlyAllowedFields(['msg', 'uid', 'emoji', 'nome', 'at']) &&
         hasRequiredFields(['msg', 'uid', 'emoji', 'nome', 'at']) &&
         isMsgId(d.msg) && d.uid == request.auth.uid && id == d.msg + '_' + d.uid &&
-        isStr(d.emoji, 1, 16) && isStr(d.nome, 0, 40) && isValidTime(d.at);
+        d.emoji in ['👍', '❤️', '😂', '😮', '😢', '🙏'] && isStr(d.nome, 0, 40) && isValidTime(d.at);
     }
     function isValidFixada(d) {
       return hasOnlyAllowedFields(['msg', 't', 'from', 'por', 'at']) &&
@@ -167,7 +177,9 @@ service cloud.firestore {
       return hasOnlyAllowedFields(['msg', 'onde', 'pagina', 'ver', 'por', 'n', 'at']) &&
         hasRequiredFields(['msg', 'onde', 'pagina', 'ver', 'por', 'n', 'at']) &&
         isStr(d.msg, 1, 300) && isStr(d.onde, 0, 200) && isStr(d.pagina, 0, 40) && isStr(d.ver, 0, 10) &&
-        isStr(d.por, 0, 40) && d.n is int && d.n >= 1 && d.n <= 1000000 && isValidTime(d.at);
+        isStr(d.por, 0, 40) && d.n is int && d.n >= 1 && d.n <= 1000000 && isValidTime(d.at) &&
+        // v89: data não pode ir para o futuro (furava a fila do robô) nem ser muito antiga
+        d.at <= request.time.toMillis() + 60000 && d.at >= request.time.toMillis() - 86400000;
     }
 
     function isValidCofre(d) {
@@ -185,9 +197,13 @@ service cloud.firestore {
         hasRequiredFields(['de', 'para', 'assunto', 'texto', 'tipo', 'loja', 'criado']) &&
         d.de == request.auth.uid &&
         d.para is string && d.para.matches('^[A-Za-z0-9]{10,128}$') &&
-        isStr(d.assunto, 1, 150) && isStr(d.texto, 1, 8000) &&
+        isStr(d.assunto, 1, 150) && isStr(d.texto, 1, 4000) &&
         d.tipo in ['resumo', 'aviso'] &&
-        isLojaId(d.loja) && isValidTime(d.criado);
+        isLojaId(d.loja) && isValidTime(d.criado) &&
+        d.criado <= request.time.toMillis() + 60000 &&
+        // v89: quem envia e quem recebe são membros da mesma loja
+        exists(/databases/$(database)/documents/lojas/$(d.loja)/membros/$(request.auth.uid)) &&
+        exists(/databases/$(database)/documents/lojas/$(d.loja)/membros/$(d.para));
     }
 
     // ---------- Regras ----------
@@ -196,7 +212,8 @@ service cloud.firestore {
     match /usuarios/{uid} {
       allow get: if isOwner(uid) || isRobot();
       allow create, update: if isOwner(uid) && isValidUsuario(request.resource.data) &&
-        (request.method == 'create' || request.resource.data.criado == resource.data.criado);
+        (request.method == 'create' || request.resource.data.criado == resource.data.criado) &&
+        gestorOk(uid);
       allow delete: if isOwner(uid);
     }
 
@@ -283,7 +300,9 @@ service cloud.firestore {
 
     // Fila de e-mails: quem tem e-mail confirmado cria; só o robô lê e apaga; ninguém altera.
     match /correio/{id} {
-      allow create: if isAuthenticated() && emailVerified() && isValidCorreio(request.resource.data);
+      allow create: if isAuthenticated() && emailVerified() && isValidCorreio(request.resource.data) &&
+        id.matches('^[0-9a-f]{32}_[A-Za-z0-9]{10,128}_[0-9]{8}$') &&
+        id.split('_')[0] == request.resource.data.loja && id.split('_')[1] == request.resource.data.para;
       allow read, delete: if isRobot();
     }
   }

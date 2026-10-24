@@ -19,12 +19,12 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão:** 88 (`meta estoque99-version` + `CACHE` `estoque99-v88` no `sw.js`), publicada no GitHub Pages e no Firebase Hosting.
+- **Versão:** 89 (`meta estoque99-version` + `CACHE` `estoque99-v89` no `sw.js`), publicada no GitHub Pages e no Firebase Hosting.
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
 
-### Mudanças recentes (v73 → v88) — não desfazer sem pedido
+### Mudanças recentes (v73 → v89) — não desfazer sem pedido
 
 | Versão | O quê |
 |--------|--------|
@@ -40,8 +40,10 @@
 | v86 | **Auditoria de design aplicada** (blocos `v86-css` / `v86-js` no fim do `index.html`): topo 56 px com sino (`.bell-btn`, `#alert-total`), títulos curtos + "Mais ações" (`.more-actions`) em Notas/Corredores/Plano/Equipe, ícones SVG (`e99Icon`), cartões planos, cartões 3D no Início (`.stats.tilt-on`), Preferências em Minha conta (`#prefs-panel`; no PC as opções ficam no rodapé da barra lateral), respeita "menos movimento" (`__osReduceSystem`; Efeitos começam desligados), Administração montada antes do menu para `role==='gestor'`. **ZXing, Fuse e flatpickr saíram do HTML** → `vendor/*.js` carregados por `e99Need()` e pré-cacheados no `sw.js`. Cache em memória do `localStorage` (`Storage.prototype`). |
 | v87 | **Selo pelo uid, não pelo login:** coleção `verificados/{uid}` (`tipo:'s'|'raio'`, `stkId`), regra `read` logado / `write: if false`. `profile-js`: `vTipo`/`vb` leem a lista (onSnapshot + cache `lojasg.estoque99.verificados`) e o uid guardado por conta (`lojasg.estoque99.my-uid:*`) para o gestor offline. O `patchBadge` (login `vferreiras`/qualquer gestor) foi **removido** — não reintroduzir. Novo selo **raio vermelho** (#FF2A1F) no motor do `particle-badge-js`. Gravados: gestor `TConyCs…`=s e leonardo69 `5mB4IsIggFeQInmVCX5Id5ChIxB3`=raio (`STK-0091ZHBQ21YE`). Gravar outros com `node scripts/verificar.js <uid> <s|raio> [STK-…]`. Teste `tests/verificados_test.js`. Atenção: no Firestore o login do gestor é `vferrreiras` (3 r) — por isso só o uid vale. |
 | v88 | **Selo sem nuvem:** `verificados` com `allow read: if true` (write continua `false`). O app lê a lista pelo REST público do Firestore (`verFetch`, a cada 10 min, cache `lojasg.estoque99.verificados` + `…verificados-login`) e, com nuvem, pelo onSnapshot. Regra do selo (`vTipo` no `profile-js`): **próprio** = uid guardado na lista; se o aparelho nunca entrou na nuvem, role `gestor` + login `vferreiras`/`vferrreiras` → S (só visual, só no próprio aparelho). **Outros** = uid do perfil da nuvem (`perfis/{uid}`) na lista; perfil só pelo ntfy → login igual ao campo `login` do documento `verificados/{uid}` (logins separados por vírgula). O uid que viesse pelo ntfy é ignorado. Gravados: gestor `login:'vferrreiras,vferreiras'`, leonardo69 `login:'leonardo69'` (`node scripts/verificar.js <uid> <tipo> [STK] --login a,b`). Teste `tests/selo_semnuvem_test.js`. Risco aceito: alguém **dentro da equipe** que mande perfil pelo ntfy com o login de um verificado ganha o selo nos aparelhos sem nuvem (visual). |
+| v89 | **Segurança (auditoria):** reação do chat só com 6 emojis fixos (`REACT_OK`, sem onclick com dado da rede; regra igual). Authenticator: chave **não fica mais em claro** (`totp:` guarda `w` + `s` cifrado com a senha; recuperar pede a chave anotada + código; registros antigos são apagados e o app pede "Ative de novo"); `e99Totp` saiu do global. "Trazer da nuvem"/"recuperar pelo e-mail" mantêm o papel salvo (estoque **não** vira gestor). Regra `usuarios`: `role:'gestor'` só se já era ou se `verificados/{uid}.tipo=='s'`. Sync: auxiliar não apaga pelo ntfy; apagar >3 itens de outras pessoas numa mensagem é barrado (`delGuard`). Regras: `erros.at` ≤ agora+1 min e ≥ agora−1 dia; `correio` id `loja_para_AAAAMMDD`, texto ≤4000, de/para membros; `perfis.at` ≤ agora+1 dia. Perfil: só adota o meu do doc do meu uid; ntfy com meu login é ignorado; entradas da nuvem por uid. Backup na nuvem desligado (avisa). `cloud-pw` agora cifrado com a chave da conta + limite de tentativas (`e99CloudTry`). SW guarda outras páginas pelo próprio endereço. "Apagar tudo" só limpa caches `estoque99-*`. Central de Agentes: CORS só localhost e vferreiras.github.io. Botão principal #DB2318 (4,9:1). Workflows `apply-*.yml` e `scripts/apply-*.mjs` apagados. Testes `tests/seguranca_test.js`, `tests/sw_test.js`. |
 
-Arquivos de patch em `scripts/` e workflows one-shot em `.github/workflows/` (`apply-*.yml`) são auxiliares; o que vale no ar é o `index.html` + `sw.js` publicados.
+
+Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o site); o que vale no ar é o `index.html` + `sw.js` publicados.
 
 ### O que o Claude precisa melhorar / pendências
 
@@ -56,6 +58,12 @@ Arquivos de patch em `scripts/` e workflows one-shot em `.github/workflows/` (`a
 8. **Testes** — rodar `bash tests/run.sh` antes de publicar; cobrir admin delete, reset de senha e selo se possível.
 9. **Não reintroduzir** — injeção de HTML pelo SW (`injectPatch` / `account-id-patch.js`); isso quebrou o app (SyntaxError).
 10. **Google Drive** — após cada publicação, histórico + cópia na pasta Stok (regra acima).
+
+### Decisões pendentes do dono (v89 — não mudar sem perguntar)
+- **Força da senha da nuvem:** ainda é SHA-256(login + PIN 4–8 dígitos). Só foi posto limite de tentativas no aparelho. Trocar por senha aleatória exige migrar contas.
+- **Authenticator:** v89 passou a pedir a chave anotada para recuperar; quem já tinha precisa ativar de novo. Confirmar se o dono aceita esse modelo.
+- **Dados pessoais no aparelho (S15):** `cloud-logins`, `members:`, `aux-invites:`, `agent-brief:` e fotos (IndexedDB) seguem em claro; avisos do ntfy com nomes. Cifrar exige mudar como o app acha a conta antes do login.
+- **Protocolo do ntfy:** o papel do remetente ainda é declarado por ele; o freio `delGuard` só limita. Correção completa = mensagens assinadas.
 
 ### Preferências do usuário (Vitor / vferreiras)
 
