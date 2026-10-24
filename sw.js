@@ -1,6 +1,6 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
 const CACHE_PREFIX = 'estoque99-';
-const CACHE = 'estoque99-v85';
+const CACHE = 'estoque99-v86';
 const VERSION = (CACHE.match(/-v(\d+)$/) || [])[1] || '';
 const CORE = [
   './index.html',
@@ -11,7 +11,14 @@ const CORE = [
   './icons/icon-192-v36.png',
   './icons/icon-512-v36.png',
   './icons/icon-maskable-v36.png',
-  './icons/favicon-v36.png'
+  './icons/favicon-v36.png',
+  /* v86: bibliotecas carregadas sob demanda ficam guardadas para funcionar sem internet */
+  './vendor/zxing.min.js',
+  './vendor/fuse.min.js',
+  './vendor/flatpickr.min.js',
+  './vendor/flatpickr.css',
+  './vendor/fonts/oswald-latin.woff2',
+  './vendor/fonts/oswald-latin-ext.woff2'
 ];
 
 self.addEventListener('install', (event) => {

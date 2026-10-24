@@ -3,6 +3,15 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 86
+- **Consertos:** Plano e Minha conta sem rolagem lateral no iPhone (um nível de cartão só, botões quebram linha); Administração sempre no menu da conta de gestor e, para quem não é gestor, a tela explica o que fazer e tem "Voltar ao início"; "1 atividade" no singular; "Adicionar corredor"; "Usar sem e-mail (conta do PC)".
+- **Menos movimento:** o app respeita o pedido do aparelho e abre com Efeitos desligados; quem quiser liga em Minha conta → Preferências.
+- **Som, Efeitos e Tema do mês** saíram de cima do conteúdo: no celular ficam em Minha conta → Preferências; no PC, no rodapé da barra lateral.
+- **Telas mais limpas:** topo do celular com 56 px (nome da tela + sino com contador); Notas, Corredores, Plano e Equipe com título curto, um botão principal e "Mais ações"; rótulos em letra normal; ícones SVG de uma família só; cartões planos; o número vermelho do Início não compete mais com o botão principal.
+- **Cartões 3D no Início:** os 4 resumos inclinam até 8° seguindo o dedo/mouse, com reflexo de luz, e voltam ao soltar. Parados com Efeitos desligados ou menos movimento. O brilho e o pulso infinitos dos cartões e botões saíram; o S de partículas fica no login e no Início.
+- **Mais rápido:** leitor de código (ZXing), busca aproximada (Fuse) e calendário (flatpickr, agora escuro) carregam só quando usados (`vendor/`) e ficam guardados pelo service worker para funcionar sem internet; fundo de estrelas numa camada fixa; busca de pessoa/corredor por Map; listas do chat e de NFs desenham só o que aparece; alertas não rodam com o app em segundo plano; leituras repetidas do armazenamento vêm da memória. O `index.html` caiu de 1,17 MB para ~0,76 MB.
+- Privacidade e Termos: rolagem suave só sem "menos movimento", foco vermelho igual ao app e títulos-âncora com folga no topo.
+
 ## Versão 85
 - IA grátis e sem cartão nos agentes do Stok (Minha conta → Agentes de IA).
 - **Workers AI (sem chave nenhuma):** crie a conta grátis na Cloudflare → no Stok, abra "☁️ Cloudflare" e toque em **Criar o Worker com 1 toque** → invente a `SENHA` → **Create and deploy** → cole no Stok o endereço `.workers.dev` e a SENHA, deixe "Workers AI (grátis, sem chave)" e toque em Ligar. Modelo: `@cf/meta/llama-3.3-70b-instruct-fp8-fast`.

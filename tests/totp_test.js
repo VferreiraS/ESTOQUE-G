@@ -3,7 +3,7 @@ const L=require('./lib.js');const {ok,until}=L;
  const l='tp'+Date.now();await A.goto('http://localhost:8000/index.html?ntfy='+L.N);await A.waitForTimeout(1500);
  ok(await A.evaluate(()=>e99Totp('GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ',59000))==='287082','código igual ao padrão dos apps Authenticator (RFC 6238)');
  await L.signup(A,l);await A.evaluate(async()=>{state.team=[{id:'zz',name:'Marcador TOTP',role:'x'}];await save();go('account')});
- await A.click('text=Ativar Authenticator');ok(await A.evaluate(()=>!!document.querySelector('.totp-qr svg')),'QR code para o Authenticator');
+ await A.click('text=Ativar Authenticator');ok(await until(A,()=>!!document.querySelector('.totp-qr svg'),null,10000),'QR code para o Authenticator'); // v86: o leitor/QR (ZXing) carrega sob demanda
  const secret=await A.evaluate(()=>document.querySelector('.totp-secret').textContent.replace(/\s/g,''));
  await A.fill('#totp-panel input[name=code]','000000');await A.fill('#totp-panel input[name=password]','1234');await A.click('#totp-panel button.primary');await A.waitForTimeout(500);ok(await A.evaluate(()=>!!document.querySelector('#totp-panel input[name=code]')),'código errado é recusado');
  await A.fill('#totp-panel input[name=code]',await A.evaluate(s=>e99Totp(s),secret));await A.click('#totp-panel button.primary');ok(await until(A,()=>/✓ Ativado/.test(document.getElementById('totp-panel').innerText),null,5000),'Authenticator ativado');
