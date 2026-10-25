@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="90"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="91"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -5750,6 +5750,268 @@ function compact(){var b=document.getElementById('alert-popup');if(!b)return;if(
   if(Date.now()-enteredAt>15000){b.classList.remove('compact');return}
   if(b.querySelector('.alert-more'))return;var n=(b.querySelector('.small')||{}).textContent||'';b.classList.add('compact');var m=document.createElement('button');m.type='button';m.className='alert-more';m.textContent='Ver pendências'+(/^\d+/.test(n)?' ('+n.match(/^\d+/)[0]+')':'');m.onclick=function(){b.__open=true;b.classList.remove('compact');m.remove()};b.appendChild(m)}
 var box=document.getElementById('alert-popup');if(box&&window.MutationObserver)new MutationObserver(compact).observe(box,{childList:true,attributes:true,attributeFilter:['class']});
+})();
+</script>
+<style id="v91-css">
+/* v91 · visual inspirado em TRON: Legacy, Daft Punk e no vidro do iOS 26. Fica o preto, o vermelho da marca, a Oswald, o S de partículas e o selo.
+   Grade de luz só no Início e na tela de entrar; rastros de luz só nos cartões que estão na tela. Tudo para com Efeitos desligados,
+   "menos movimento", "Pausar animação", fora da tela e em segundo plano. Só tema escuro. Último bloco: vence os anteriores. */
+:root,html body,html body.dark{
+  /* neon ciano do Tron nos destaques e nas linhas (o vermelho fica só no S da marca); para trocar a cor do neon, só aqui */
+  --neon:#2EE6FF;--neon-rgb:46,230,255;--neon-hot:#A8F7FF;--neon-hot-rgb:168,247,255;--neon-ink:#021317;
+  --brand:#2EE6FF;--red:#2EE6FF;--red2:#2EE6FF;
+  --grid:rgba(46,230,255,.32);--grid-c:44px;
+  --glass:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.018) 42%,rgba(255,255,255,0) 100%),rgba(17,17,21,.62);
+  --glass-card:#121216;--glass-bar:rgba(11,11,14,.8);--glass-pop:rgba(15,15,19,.92);--glass-solid:#111114;
+  --glass-edge:rgba(255,255,255,.11);--glass-hi:inset 0 1px 0 rgba(255,255,255,.12);
+  --glass-blur:saturate(1.4) blur(14px);--spring:cubic-bezier(.34,1.56,.64,1)}
+
+/* ---------- Tron: grade de luz em perspectiva (Início e entrada) ---------- */
+/* a "respiração" fica no contêiner e o acender da abertura no canvas: duas animações de opacidade no mesmo elemento saem da placa de vídeo e o navegador recalcularia a cada quadro */
+.tron-grid{display:block;position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;contain:strict;animation:tg-breath 5.5s ease-in-out infinite}
+.tron-grid canvas,.tron-grid i{position:absolute;display:block;pointer-events:none}
+.tron-grid canvas{left:0;top:0;width:100%;height:100%}
+.tg-run{left:0;right:0;top:var(--tg-top,50%);height:2px;margin-top:-1px;opacity:0;transform-origin:var(--tg-hx,50%) 50%;will-change:transform,opacity;
+  background:linear-gradient(90deg,transparent var(--tg-l0,0%),rgba(var(--neon-rgb),.55) var(--tg-l1,18%),var(--neon-hot) calc((var(--tg-l1,18%) + var(--tg-hx,50%)) / 2),#fff var(--tg-hx,50%),var(--neon-hot) calc(var(--tg-hx,50%) + 12%),rgba(var(--neon-rgb),.55) 88%,transparent);
+  box-shadow:0 0 10px 1px rgba(var(--neon-rgb),.6)}
+.tg-run.tg-wave{height:3px;margin-top:-1.5px;box-shadow:0 0 18px 4px rgba(var(--neon-rgb),.8)}
+@keyframes tg-breath{0%,100%{opacity:1}50%{opacity:.8}}
+/* parada: fora da tela, em segundo plano, "Pausar animação", Efeitos desligados, "menos movimento" */
+.tron-grid.tg-pause,body.e99-hidden .tron-grid{animation-play-state:paused!important}
+.tron-grid.tg-pause .tg-run{visibility:hidden}
+body.fx-off .tron-grid .tg-run,body.fx-user-off .tron-grid .tg-run{display:none!important}
+/* entrada: grade fixa na tela inteira, atrás do S e do formulário */
+#auth-screen>.tron-grid{position:fixed;inset:0;z-index:0;--tg-hy:52%;--tg-hx:50%;--tg-s:58px;--tg-near:.5}
+@media (min-width:901px){#auth-screen>.tron-grid{--tg-hy:54.5%;--tg-s:84px}}
+/* Início: chão de luz embaixo do S, some atrás do título */
+#view .hero-home>.tron-grid{position:absolute;inset:-8px 0 0 0;z-index:0;--tg-hy:50%;--tg-hx:70%;--tg-s:46px;--tg-l0:46%;--tg-l1:80%;--tg-near:.35}
+@media (min-width:901px){#view .hero-home>.tron-grid{--tg-hy:56%;--tg-hx:72%;--tg-s:64px;--tg-l0:30%;--tg-l1:60%}}
+/* textos do topo do Início ficam legíveis sobre a grade */
+html body.dark #view .hero-home .subtitle,html body.dark #view .hero-home .hero-pill{text-shadow:0 0 6px #000,0 0 14px #000,0 1px 2px #000}
+
+/* ---------- vidro do iOS 26 ---------- */
+/* cartões: sem sombra grande borrada e, nos cartões grandes, fundo de cor única (gradiente em cartão comprido pesa na rolagem); o vidro aparece na borda clara, no reflexo de cima, nos cantos e nos rastros */
+html:root body.dark #view .stat,html:root body.dark #view .panel,html:root body.dark #view .card,html:root body.dark #view .pn-card,html:root body.dark #view .pn-kpi,html:root body.dark #view .plan-card,html:root body.dark #view .sync-box,html:root body.dark #view .help{background:var(--glass-card)!important;border:1px solid var(--glass-edge)!important;box-shadow:var(--glass-hi)!important;border-radius:22px!important}
+html:root body.dark #view .stats .stat,html:root body.dark #view .pn-kpi{background:var(--glass)!important}
+html:root body.dark #view .stats .stat:first-child{background:var(--glass)!important;border-color:rgba(var(--neon-rgb),.45)!important}
+@media (max-width:900px){html:root body.dark #view .stat,html:root body.dark #view .panel,html:root body.dark #view .card,html:root body.dark #view .pn-card,html:root body.dark #view .pn-kpi,html:root body.dark #view .plan-card,html:root body.dark #view .sync-box,html:root body.dark #view .help{border-radius:20px!important}}
+/* um nível de cartão só (como na v86) */
+html:root body.dark #view .panel>.help,html:root body.dark #view .panel>.help.panel{background:none!important;border:0!important;box-shadow:none!important;border-radius:0!important}
+html:root body.dark #view .panel:has(>.help>.plan-card){background:none!important;border:0!important;box-shadow:none!important}
+/* topo, barra de baixo, menus e janelas: vidro com desfoque (o conteúdo passa por trás) */
+html:root body.dark header,html:root body.dark.is-scrolled header{background:var(--glass-bar)!important;background-image:none!important;-webkit-backdrop-filter:var(--glass-blur)!important;backdrop-filter:var(--glass-blur)!important;border-bottom:1px solid var(--glass-edge)!important;
+  border-image:linear-gradient(90deg,rgba(var(--neon-rgb),.8),rgba(var(--neon-rgb),.8) 56px,rgba(255,255,255,.16) 56px,rgba(255,255,255,.08) 70%,transparent) 1!important}
+html:root body.dark #mobile-bottom{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02)),var(--glass-bar)!important;border:1px solid var(--glass-edge)!important;box-shadow:var(--glass-hi),0 14px 40px -14px #000!important;-webkit-backdrop-filter:blur(16px)!important;backdrop-filter:blur(16px)!important}
+html:root body.dark #mobile-bottom button.active,html:root body.dark #mobile-bottom button[aria-current="page"]{background:rgba(255,255,255,.1)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 0 0 1px rgba(255,255,255,.06)!important}
+html:root body.dark aside{background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.008)),rgba(12,12,15,.82)!important;border-right:1px solid transparent!important;
+  border-image:linear-gradient(180deg,rgba(var(--neon-rgb),.75),rgba(var(--neon-rgb),.75) 72px,rgba(255,255,255,.14) 72px,rgba(255,255,255,.07) 75%,transparent) 1!important}
+html:root body.dark .more-menu,html:root body.dark dialog,html:root body.dark #auth-sheet,html:root body.dark .alert-popup,html:root body #toast{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.015) 40%,rgba(255,255,255,0)),var(--glass-pop)!important;-webkit-backdrop-filter:blur(24px) saturate(1.7)!important;backdrop-filter:blur(24px) saturate(1.7)!important}
+html:root body.dark .more-menu,html:root body.dark dialog,html:root body.dark #auth-sheet,html:root body.dark .alert-popup{border:1px solid var(--glass-edge)!important;box-shadow:var(--glass-hi),0 30px 80px -24px #000!important}
+html:root body.dark .more-menu{border-radius:18px!important}
+html:root body.dark dialog::backdrop{background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+/* botões secundários e "Mais ações": vidro leve */
+html:root body.dark #view .toolbar>button:not(.primary):not(.fx-pause),html:root body.dark #view .panelhead>button:not(.primary):not(.fx-pause),html:root body.dark #view .cardtop>button:not(.primary):not(.fx-pause),html:root body.dark #view .hero-actions>button:not(.primary):not(.fx-pause),html:root body.dark #view .more-actions>summary,html:root body.dark .bell-btn:hover{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02)),rgba(20,20,24,.7)!important;border-color:var(--glass-edge)!important;box-shadow:var(--glass-hi)!important}
+.fx-pause,html body #view .hero-home>.fx-pause,html body #view .hero>.fx-pause{-webkit-backdrop-filter:blur(14px) saturate(1.5);backdrop-filter:blur(14px) saturate(1.5)}
+/* entrada: o formulário vira um painel de vidro sobre a grade */
+html:root body.dark #auth-screen .auth-card form{position:relative;padding:16px 14px 14px;margin:0 -8px;border-radius:26px;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.015) 45%,rgba(255,255,255,0)),rgba(10,10,13,.72);border:1px solid var(--glass-edge);box-shadow:var(--glass-hi),0 30px 70px -30px #000;-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6)}
+html:root body.dark #auth-screen .auth-card form .fields{gap:12px}
+/* animações de entrada com "fill both" faziam o cartão isolar o fundo e o vidro não desfocava a grade: o início fica, o fim volta ao normal (igual) */
+#auth-screen .auth-card,#view>*,.stats>.stat{animation-fill-mode:backwards!important}
+/* textos da entrada legíveis sobre a grade */
+html body.dark #auth-screen .auth-card>.subtitle,html body.dark #auth-screen .auth-links,html body.dark #auth-screen .auth-actions,html body.dark #auth-screen .legal-links,html body.dark #auth-screen .copyright,html body.dark #auth-screen .auth-card>p,html body.dark #auth-screen .auth-card>.small{text-shadow:0 0 6px #000,0 0 14px #000,0 1px 2px #000}
+/* sem suporte a desfoque: fundo sólido (continua legível) */
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  html:root body.dark header,html:root body.dark #mobile-bottom,html:root body.dark .more-menu,html:root body.dark dialog,html:root body.dark #auth-sheet,html:root body.dark .alert-popup,html:root body #toast,html:root body.dark #auth-screen .auth-card form,.fx-pause{background:var(--glass-solid)!important}}
+
+/* ---------- Daft Punk: títulos com espaçamento largo e traço de luz nos cantos ---------- */
+html body.dark .hero h1,html body.dark #view .hero:not(.hero-home) h1,html body.dark .auth-card h1{letter-spacing:.04em!important}
+html body.dark .hero-home h1{max-width:10.5ch!important}html body.dark .auth-card h1{max-width:11.6ch!important}
+html body.dark #view .panelhead h2,html body.dark #view .pn-card h2{letter-spacing:.035em}
+/* traço de luz nos cantos (fixo): só duas caixinhas nos cantos (leve até em lista comprida) */
+html:root body.dark #view .stats .stat::before,html:root body.dark #view .panel::before,html:root body.dark #view .card::before,html:root body.dark #view .pn-card::before,html:root body.dark #view .plan-card::before,html:root body.dark #view .stats .stat::after,html:root body.dark #view .panel::after,html:root body.dark #view .card::after,html:root body.dark #view .pn-card::after,html:root body.dark #view .plan-card::after,html:root body.dark #auth-screen .auth-card form::before,html:root body.dark #auth-screen .auth-card form::after{content:""!important;display:block!important;position:absolute;z-index:2;pointer-events:none;padding:1.5px;width:96px;height:96px;animation:none!important;border:0!important;border-radius:0;box-shadow:none;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+html:root body.dark #view .stats .stat::before,html:root body.dark #view .panel::before,html:root body.dark #view .card::before,html:root body.dark #view .pn-card::before,html:root body.dark #view .plan-card::before,html:root body.dark #auth-screen .auth-card form::before{left:0;top:0;border-top-left-radius:inherit;background:radial-gradient(92px 92px at 0 0,rgba(var(--neon-rgb),.95),rgba(var(--neon-rgb),.3) 42%,transparent 70%)}
+html:root body.dark #view .stats .stat::after,html:root body.dark #view .panel::after,html:root body.dark #view .card::after,html:root body.dark #view .pn-card::after,html:root body.dark #view .plan-card::after,html:root body.dark #auth-screen .auth-card form::after{right:0;bottom:0;left:auto;top:auto;width:76px;height:76px;border-bottom-right-radius:inherit;background:radial-gradient(70px 70px at 100% 100%,rgba(var(--neon-rgb),.6),transparent 70%)}
+html:root body.dark #view .panel>.help::before,html:root body.dark #view .panel>.help::after,html:root body.dark #view .panel:has(>.help>.plan-card)::before,html:root body.dark #view .panel:has(>.help>.plan-card)::after{content:none!important;display:none!important}
+html:root body.dark #auth-screen .auth-card{position:relative}
+html:root body.dark #auth-screen .auth-card::before{display:none!important}
+/* rastro de luz que corre pela borda (um traço pequeno por cartão visível, só "transform": leve) */
+.e99-streak{position:absolute;left:-54px;top:-2px;width:54px;height:4px;z-index:3;pointer-events:none;border-radius:4px;transform-origin:100% 50%;display:none;
+  background:linear-gradient(90deg,transparent,rgba(var(--neon-rgb),.45) 45%,var(--neon-hot) 82%,#fff);box-shadow:0 0 12px 2px rgba(var(--neon-rgb),.55)}
+/* só existe na tela enquanto corre (sem camada parada); durante a rolagem some e a grade para (a rolagem fica lisa) */
+.e99-streak.run{display:block;animation:e99-in .5s ease}
+body.e99-scrolling .e99-streak{display:none!important}
+@keyframes e99-in{from{opacity:0}}
+/* brilho na borda que segue o dedo ou o mouse */
+.e99-glow{position:absolute;inset:0;z-index:3;pointer-events:none;border-radius:inherit;padding:2px;opacity:0;transition:opacity .55s ease;
+  background:radial-gradient(170px circle at var(--mx,50%) var(--my,50%),#fff,rgba(var(--neon-hot-rgb),.95) 12%,rgba(var(--neon-rgb),.6) 34%,transparent 70%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.e99-glow.lit{opacity:1;transition-duration:.12s}
+body.fx-off .e99-streak,body.fx-off .e99-glow,body.fx-user-off .e99-streak,body.fx-user-off .e99-glow{display:none!important}
+@supports not ((mask-composite:exclude) or (-webkit-mask-composite:xor)){.e99-glow{display:none!important}html:root body.dark #view .stats .stat::before,html:root body.dark #view .panel::before,html:root body.dark #view .card::before,html:root body.dark #view .pn-card::before,html:root body.dark #view .plan-card::before,html:root body.dark #view .stats .stat::after,html:root body.dark #view .panel::after,html:root body.dark #view .card::after,html:root body.dark #view .pn-card::after,html:root body.dark #view .plan-card::after,html:root body.dark #auth-screen .auth-card form::before,html:root body.dark #auth-screen .auth-card form::after{content:none!important;display:none!important}}
+
+/* ---------- toque: mola nos botões principais ---------- */
+body:not(.fx-off) #view button.primary,body:not(.fx-off) #auth-screen button.primary,body:not(.fx-off) #view .hero button,body:not(.fx-off) #view .more-actions>summary,body:not(.fx-off) #mobile-bottom button,body:not(.fx-off) header .bell-btn,body:not(.fx-off) .fx-pause{transition:transform .55s var(--spring),background-color .15s,border-color .15s,box-shadow .2s,filter .15s,color .15s!important}
+body:not(.fx-off) #view button.primary:not(:disabled):active,body:not(.fx-off) #auth-screen button.primary:not(:disabled):active,body:not(.fx-off) #view .hero button:not(:disabled):active,body:not(.fx-off) #view .more-actions>summary:not(:disabled):active,body:not(.fx-off) header .bell-btn:not(:disabled):active,body:not(.fx-off) .fx-pause:not(:disabled):active{transform:scale(.94)!important;transition-duration:.08s!important}
+body:not(.fx-off) #mobile-bottom button:active{transform:scale(.9)!important;transition-duration:.08s!important}
+/* botão principal com brilho de neon (a cor continua a mesma) */
+html:root body.dark #view button.primary,html:root body.dark #auth-screen button.primary{box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 0 0 1px rgba(var(--neon-hot-rgb),.5),0 10px 28px -12px rgba(var(--neon-rgb),.85),0 0 22px -8px rgba(var(--neon-rgb),.7)!important}
+html:root body.dark #view .more-menu button.primary{box-shadow:none!important}
+
+/* ---------- Tron: linhas de circuito finas nos separadores ---------- */
+html:root body.dark aside .brand,html:root body.dark #auth-screen .brand,html:root body.dark #view .nf-tabs,html:root body.dark #prefs-panel .pref-row+.pref-row{border-image:linear-gradient(90deg,rgba(var(--neon-rgb),.8),rgba(var(--neon-rgb),.8) 36px,rgba(255,255,255,.16) 36px,rgba(255,255,255,.08) 70%,transparent) 1!important}
+html:root body.dark hr{border:0;height:1px;background:linear-gradient(90deg,rgba(var(--neon-rgb),.8),rgba(var(--neon-rgb),.8) 36px,rgba(255,255,255,.16) 36px,rgba(255,255,255,.08) 70%,transparent)}
+
+/* ---------- abertura: pulso de luz junto com o S ---------- */
+#stok-intro::before{content:"";position:absolute;left:50%;top:calc(18px + min(17.44vw,70px));width:90vmin;height:90vmin;margin:-45vmin 0 0 -45vmin;border-radius:50%;border:2px solid rgba(var(--neon-hot-rgb),.95);box-shadow:0 0 34px 6px rgba(var(--neon-rgb),.6),inset 0 0 34px 4px rgba(var(--neon-rgb),.5);opacity:0;transform:scale(.05);animation:si-pulse 1s cubic-bezier(.15,.75,.25,1) .84s forwards;pointer-events:none}
+#stok-intro::after{content:"";position:absolute;left:0;right:0;top:calc(18px + min(17.44vw,70px));height:2px;margin-top:-1px;background:linear-gradient(90deg,transparent,rgba(var(--neon-rgb),.95) 22%,#fff 50%,rgba(var(--neon-rgb),.95) 78%,transparent);box-shadow:0 0 18px 3px rgba(var(--neon-rgb),.75);opacity:0;transform:scaleX(0);animation:si-beam .75s cubic-bezier(.2,.8,.2,1) .86s forwards;pointer-events:none}
+@media(min-width:700px){#stok-intro::before,#stok-intro::after{top:calc(50% - 21px)}}
+@keyframes si-pulse{0%{opacity:1;transform:scale(.05)}65%{opacity:.55}100%{opacity:0;transform:scale(1.7)}}
+@keyframes si-beam{0%{opacity:0;transform:scaleX(0)}22%{opacity:1}100%{opacity:0;transform:scaleX(1)}}
+#stok-intro[data-reduced-motion="true"]::before,#stok-intro[data-reduced-motion="true"]::after{display:none}
+
+/* ---------- cores: ciano neon nos destaques; vermelho só no S da marca (logo, S de partículas e S da abertura) ---------- */
+html:root body.dark button.primary,html:root body.dark .primary,html:root body.dark #view button.primary,html:root body.dark #auth-screen button.primary,html:root body.dark #view .toolbar button.primary,html:root body.dark .hero button.primary{background:var(--neon)!important;background-image:none!important;border:1px solid var(--neon)!important;color:var(--neon-ink)!important;font-weight:700}
+@media(hover:hover){html:root body.dark button.primary:hover{background:#1FCDE6!important;border-color:#1FCDE6!important}}
+html:root body.dark #view .more-menu button.primary,html:root body.dark .more-menu .primary{background:transparent!important;border:0!important;color:var(--ds-ink)!important}
+html:root body.dark .bell-btn .alert-count{background:var(--neon)!important;color:var(--neon-ink)!important;font-weight:700}
+html:root body.dark input:focus,html:root body.dark select:focus,html:root body.dark textarea:focus{box-shadow:0 0 0 3px rgba(var(--neon-rgb),.22)!important}
+html:root body #scroll-progress{background:var(--neon)!important}
+html:root body.dark::before{background:radial-gradient(38vmax 30vmax at 82% 8%,rgba(var(--neon-rgb),.11),transparent 70%),radial-gradient(30vmax 26vmax at 8% 62%,rgba(var(--neon-rgb),.08),transparent 70%),radial-gradient(34vmax 24vmax at 70% 96%,rgba(var(--neon-rgb),.07),transparent 70%)!important}
+html:root body #toast,html:root body .toast{border-color:rgba(var(--neon-rgb),.55)!important}
+#ptr i{border-top-color:var(--neon)!important}
+/* chat, perfil, agentes e piloto automático */
+.chat-quote,.chat-reply{border-left-color:var(--neon)!important}
+@keyframes chat-flash{0%,60%{box-shadow:0 0 0 3px var(--neon)}100%{box-shadow:0 0 0 3px transparent}}
+.chat-msg .reacts button.me{border-color:var(--neon)!important;background:rgba(var(--neon-rgb),.16)!important}
+.chat-msg.mentioned{box-shadow:inset 3px 0 0 var(--neon)!important}
+.prof-head .av.av-l{box-shadow:0 0 0 3px #000,0 0 0 6px var(--neon)}
+@keyframes prof-ring{0%,100%{box-shadow:0 0 0 3px #000,0 0 0 6px var(--neon),0 0 18px 4px rgba(var(--neon-rgb),.27)}50%{box-shadow:0 0 0 3px #000,0 0 0 6px var(--neon-hot),0 0 34px 10px rgba(var(--neon-rgb),.53)}}
+html:root body.dark #view .prof-people button:hover{border-color:var(--neon)!important}
+.prof-cover,#prof-edit .pe-cover{background:linear-gradient(135deg,#2EE6FF,#0b4d5a 60%,#031012)}
+.prof-user b{color:var(--neon)}
+.ag-btn,.ag-step a.button{border-color:rgba(var(--neon-rgb),.6)!important;background:rgba(var(--neon-rgb),.12)!important}
+.ag-step,.push-card{background:rgba(var(--neon-rgb),.05)!important}
+.ag-thinking i{background:var(--neon)!important}
+.ap-issue{border-left-color:var(--neon)!important}
+/* abertura: prateleiras e scanner em ciano; o S continua vermelho */
+#stok-intro{background:radial-gradient(ellipse at 50% 14%,#06242a 0,#04090b 36%,#020203 76%,#000 100%)!important}
+#stok-intro .si-scan{stroke:var(--neon-hot)!important;filter:drop-shadow(0 0 4px var(--neon))!important}
+#stok-intro .si-sub{color:var(--neon-hot)!important}
+@keyframes si-stock{0%{fill:#292d32}35%{fill:#2EE6FF;stroke:#A8F7FF;filter:drop-shadow(0 0 3px #2EE6FF)}100%{fill:#292d32;stroke:#777d85;filter:none}}
+/* selos: contorno ciano brilhante (o selo continua com a cor dele) */
+.vbadge-canvas,.vbadge.vbadge-raio .vbadge-canvas{filter:drop-shadow(0 0 1px #2EE6FF) drop-shadow(0 0 2px rgba(46,230,255,.95)) drop-shadow(0 0 5px rgba(46,230,255,.6))!important}
+
+@media print{.tron-grid,.e99-streak,.e99-glow{display:none!important}}
+</style>
+<script id="v91-js">
+(function(){
+'use strict';
+/* v91 · só visual: Tron (grade de luz, rastros nas bordas, pulso na abertura), Daft Punk (títulos e linhas de circuito)
+   e vidro do iOS 26. Nada anima escondido, fora da tela, rolando, com Efeitos desligados ou "menos movimento".
+   O som de abertura e a música ambiente ficaram para a v92 (fora do ar nesta versão). Nenhuma função saiu. */
+var D=document,B=D.body;
+function fxOn(){return !B.classList.contains('fx-off')&&!B.classList.contains('fx-user-off')}
+function fxPaused(){try{return localStorage.getItem('lojasg.estoque99.fx-pause')==='1'}catch(e){return false}}
+var scrolling=false;
+function moving(){return fxOn()&&!fxPaused()&&!D.hidden}
+/* enquanto o S de partículas se monta, a grade e os rastros esperam (depois entram): menos coisa ao mesmo tempo no celular */
+var busyT=0;function sBusy(){var b=false;try{var f=window.e99Fx&&window.e99Fx();b=!!(f&&(f.login||f.home))}catch(e){}if(b&&!busyT)busyT=setTimeout(function(){busyT=0;gridsRefresh();trailsSoon()},700);return b}
+function curPage(){return typeof page!=='undefined'?page:''}
+function logged(){try{return !!authSession}catch(e){return false}}
+
+/* ---------- grade Tron (Início e entrada) ---------- */
+/* desenhada uma vez num canvas (perspectiva, brilho neon e esmaecimentos já no desenho); pulsos de luz pequenos correm do horizonte até perto */
+var grids={},gio=null,booted={},RUNS=3,RUN_MS=2600;
+function cssNum(cs,n,d){var v=parseFloat(cs.getPropertyValue(n));return isFinite(v)?v:d}
+function drawGrid(g){var cv=g.__cv;if(!cv||!g.isConnected)return false;var r=g.getBoundingClientRect(),w=Math.round(r.width),h=Math.round(r.height);if(w<2||h<2)return false;
+  var key=w+'x'+h;if(g.__key===key)return true;g.__key=key;
+  var cs=getComputedStyle(g),hy=h*cssNum(cs,'--tg-hy',52)/100,vx=w*cssNum(cs,'--tg-hx',50)/100,S=cssNum(cs,'--tg-s',58),l0=cssNum(cs,'--tg-l0',0)/100*w,l1=cssNum(cs,'--tg-l1',0)/100*w,near=cssNum(cs,'--tg-near',.5),Dh=h-hy,NR=(cs.getPropertyValue('--neon-rgb')||'46,230,255').trim(),HR=(cs.getPropertyValue('--neon-hot-rgb')||'168,247,255').trim();
+  /* o canvas cobre só onde há desenho (um pouco acima do horizonte para baixo; no Início só o lado do S): menos pixels para a tela juntar a cada quadro.
+     A posição vai por "transform" (mexer em top/left contaria como salto de layout na abertura) */
+  var ox=l1>l0?Math.max(0,Math.floor(l0)):0,oy=Math.max(0,Math.floor(hy-Math.min(h*.24,Dh*.7))),cw=w-ox,ch=h-oy;cv.style.transform='translate('+ox+'px,'+oy+'px)';cv.style.width=cw+'px';cv.style.height=ch+'px';
+  var dpr=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);var x=cv.getContext('2d');if(!x)return false;x.setTransform(dpr,0,0,dpr,-ox*dpr,-oy*dpr);x.clearRect(ox,oy,cw,ch);
+  var P=new Path2D(),span=Math.max(vx,w-vx)*4,n=Math.ceil(span/S);for(var i=-n;i<=n;i++){var bx=vx+i*S;P.moveTo(vx+(bx-vx)*.015,hy);P.lineTo(bx,h)}
+  var g0=Math.min(S*.55,Dh*.4),q=g0/Math.max(1,Dh-g0),py=h;for(var k=1;k<200;k++){var y=hy+Dh/(1+k*q);if(py-y<1.6)break;P.moveTo(0,y);P.lineTo(w,y);py=y}P.moveTo(0,h-.5);P.lineTo(w,h-.5);
+  x.globalCompositeOperation='lighter';x.lineCap='round';
+  [[8,'rgba('+NR+',.07)'],[3.2,'rgba('+NR+',.30)'],[1.3,'rgba('+HR+',.9)'],[.6,'rgba(255,255,255,.5)']].forEach(function(s){x.lineWidth=s[0];x.strokeStyle=s[1];x.stroke(P)});
+  /* esmaece perto do horizonte (sem serrilhado) e um pouco perto da tela (onde ficam os textos) */
+  x.globalCompositeOperation='destination-in';var gy=x.createLinearGradient(0,hy,0,h);gy.addColorStop(0,'rgba(0,0,0,0)');gy.addColorStop(.07,'rgba(0,0,0,.28)');gy.addColorStop(.32,'#000');gy.addColorStop(.62,'#000');gy.addColorStop(1,'rgba(0,0,0,'+near+')');x.fillStyle=gy;x.fillRect(0,0,w,h);
+  /* brilho do horizonte e céu em neon */
+  x.globalCompositeOperation='lighter';var R=Math.max(w,h)*.62;x.save();x.translate(vx,hy);x.scale(1,Math.max(.05,Math.min(.42,(hy-oy)*.92/R)));var sk=x.createRadialGradient(0,0,0,0,0,R);sk.addColorStop(0,'rgba('+NR+',.30)');sk.addColorStop(.45,'rgba('+NR+',.08)');sk.addColorStop(1,'rgba('+NR+',0)');x.fillStyle=sk;x.fillRect(-R,-R,2*R,2*R);x.restore();
+  var hl=x.createLinearGradient(0,0,w,0);hl.addColorStop(0,'rgba('+NR+',0)');hl.addColorStop(Math.max(.01,Math.min(.49,(vx-w*.32)/w)),'rgba('+NR+',.7)');hl.addColorStop(vx/w,'rgba(236,254,255,1)');hl.addColorStop(Math.min(.99,Math.max(.51,(vx+w*.32)/w)),'rgba('+NR+',.7)');hl.addColorStop(1,'rgba('+NR+',0)');
+  x.fillStyle=hl;x.globalAlpha=.25;x.fillRect(0,hy-4,w,8);x.globalAlpha=1;x.fillRect(0,hy-.75,w,1.5);
+  /* Início: o chão some atrás do título (lado esquerdo) */
+  if(l1>l0){x.globalCompositeOperation='destination-in';var gx=x.createLinearGradient(l0,0,l1,0);gx.addColorStop(0,'rgba(0,0,0,0)');gx.addColorStop(1,'#000');x.fillStyle=gx;x.fillRect(0,0,w,h)}
+  x.globalCompositeOperation='source-over';
+  g.style.setProperty('--tg-top',hy.toFixed(1)+'px');g.__D=Dh;makeRuns(g);
+  if(g.__bootPending){g.__bootPending=0;setTimeout(function(){g.style.opacity='';if(moving()&&g.isConnected)boot(g)},Math.max(0,g.__bootAt-Date.now()))}
+  return true}
+/* pulsos: a profundidade cai em linha reta, a posição na tela segue a perspectiva (1/z) */
+function runFrames(D,wave){var f=[],z0=8;for(var i=0;i<=10;i++){var t=i/10,z=z0-(z0-1)*t,y=D/z-D/z0,s=1/z;f.push({offset:t,transform:'translate3d(0,'+y.toFixed(1)+'px,0) scale('+(.3+s*1.4).toFixed(3)+','+(wave?(.6+s*3):(.4+s*2.2)).toFixed(3)+')',opacity:t<.12?t/.12*(wave?1:.85):(wave?1:.85)*(1-Math.pow(t,3)*.9)})}return f}
+function makeRuns(g){(g.__anims||[]).forEach(function(a){a.cancel()});g.__anims=[];if(!g.__runs)return;var D=g.__D||200;
+  g.__runs.forEach(function(el,i){var a=el.animate(runFrames(D,false),{duration:RUN_MS,iterations:Infinity,delay:-i*RUN_MS/RUNS,easing:'linear'});g.__anims.push(a)});gridState(g)}
+function boot(g){var cv=g.__cv,wv=g.__wave;if(!cv)return;try{cv.animate([{opacity:0},{opacity:1}],{duration:1100,easing:'cubic-bezier(.2,.7,.2,1)'});if(wv){wv.style.display='block';var a=wv.animate(runFrames(g.__D||200,true),{duration:1300,easing:'cubic-bezier(.35,.1,.55,1)'});a.onfinish=function(){wv.style.display='none'}}}catch(e){}}
+function gridState(g){if(!g)return;var on=g.isConnected&&moving()&&!scrolling&&g.__vis!==false&&!sBusy();g.classList.toggle('tg-pause',!on);(g.__anims||[]).forEach(function(a){try{if(on){if(a.playState!=='running')a.play()}else if(a.playState==='running')a.pause()}catch(e){}})}
+function watchGrid(g){if(!('IntersectionObserver' in window))return;if(!gio)gio=new IntersectionObserver(function(es){es.forEach(function(e){e.target.__vis=e.isIntersecting;if(e.isIntersecting)drawSoon(e.target);gridState(e.target)})});gio.observe(g)}
+function placeGrid(kind,host){var g=grids[kind];if(!g){g=grids[kind]=D.createElement('span');g.className='tron-grid';g.setAttribute('aria-hidden','true');
+    var cv=D.createElement('canvas');g.appendChild(cv);g.__cv=cv;g.__runs=[];for(var i=0;i<RUNS;i++){var r=D.createElement('i');r.className='tg-run';g.appendChild(r);g.__runs.push(r)}
+    var wv=D.createElement('i');wv.className='tg-run tg-wave';wv.style.display='none';g.appendChild(wv);g.__wave=wv;watchGrid(g)}
+  if(host.firstChild!==g){host.insertBefore(g,host.firstChild);drawSoon(g);
+    /* pulso de luz ao abrir: a grade acende e uma onda corre do horizonte para perto (depois da abertura, se ela estiver na tela) */
+    if(!booted[kind]&&moving()){booted[kind]=1;g.__bootAt=Date.now()+(D.getElementById('stok-intro')?1450:0);g.__bootPending=1;g.style.opacity='0'}}
+  gridState(g)}
+function gridsRefresh(){for(var k in grids)gridState(grids[k])}
+/* o desenho espera a tela ficar livre (a entrada e o Início respondem primeiro) */
+function drawSoon(g){if(g.__ds)return;g.__ds=1;var go=function(){g.__ds=0;drawGrid(g)};if(window.requestIdleCallback)requestIdleCallback(go,{timeout:700});else setTimeout(go,120)}
+var rzT=0;addEventListener('resize',function(){clearTimeout(rzT);rzT=setTimeout(function(){for(var k in grids)if(grids[k].isConnected)drawSoon(grids[k])},150)},{passive:true});
+
+/* ---------- rastros de luz nas bordas e brilho que segue o toque ---------- */
+var CARDS='#view .stats .stat,#view .panel,#view .card,#view .plan-card,#view .pn-card,#auth-screen .auth-card form';
+var eio=null,vis=new Map(),trailRaf=0,live=new Set();
+/* animação que fica rodando num elemento que saiu da tela (o app redesenha a página) faria o navegador trabalhar a cada quadro para sempre: cancela */
+function sweep(){live.forEach(function(e){if(!e.isConnected){try{if(e.__a)e.__a.cancel()}catch(x){}e.__a=null;e.__key='';live.delete(e)}})}
+function maxTrails(){return innerWidth>900?6:4}
+function skip(el){try{if(el.matches('#view .panel>.help'))return true;if(el.matches('#view .panel:has(>.help>.plan-card)'))return true}catch(e){}return false}
+function child(el,cls,prop,make){var e=el[prop];if(e&&e.parentNode===el)return e;if(!make)return null;e=D.createElement('i');e.className=cls;e.setAttribute('aria-hidden','true');el.appendChild(e);el[prop]=e;return e}
+/* o traço percorre a borda por dentro (cantos arredondados viram chanfros de 45°); só "transform", na placa de vídeo */
+function runStreak(el){var e=child(el,'e99-streak','__e99s',true),W=el.clientWidth,H=el.clientHeight;if(W<24||H<24)return false;var key=W+'x'+H;
+  if(e.__key!==key){if(e.__a)e.__a.cancel();var rad=Math.max(0,(parseFloat(getComputedStyle(el).borderTopLeftRadius)||0)-1),k=rad*.293,
+      pts=[[rad,0,0],[W-rad,0,0],[W-k,k,45],[W,rad,90],[W,H-rad,90],[W-k,H-k,135],[W-rad,H,180],[rad,H,180],[k,H-k,225],[0,H-rad,270],[0,rad,270],[k,k,315],[rad,0,360]],cum=[0];
+    for(var i=1;i<pts.length;i++)cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));var P=cum[cum.length-1]||1,dur=Math.min(14000,Math.max(4200,P/150*1000));
+    e.__a=e.animate(pts.map(function(p,i){return {offset:cum[i]/P,transform:'translate('+p[0].toFixed(1)+'px,'+p[1].toFixed(1)+'px) rotate('+p[2]+'deg)'}}),{duration:dur,iterations:Infinity,delay:-Math.random()*dur,easing:'linear'});e.__key=key;live.add(e)}
+  if(e.__a.playState!=='running')e.__a.play();e.classList.add('run');return true}
+function stopStreak(el){var e=child(el,'','__e99s',false);if(!e)return;e.classList.remove('run');if(e.__a&&e.__a.playState==='running')e.__a.pause()}
+function applyTrails(){trailRaf=0;sweep();if(scrolling)return;var on=moving()&&!sBusy(),n=0,max=maxTrails(),list=[];vis.forEach(function(r,el){if(el.isConnected)list.push(el);else vis.delete(el)});
+  list.sort(function(a,b){return vis.get(a).top-vis.get(b).top});
+  list.forEach(function(el){if(on&&n<max&&runStreak(el))n++;else stopStreak(el)});
+  D.querySelectorAll('.e99-streak.run').forEach(function(e){if(!vis.has(e.parentNode)||!on)stopStreak(e.parentNode)})}
+function trailsSoon(){if(!trailRaf)trailRaf=requestAnimationFrame(applyTrails)}
+var scrollT=0;addEventListener('scroll',function(){if(!scrolling){scrolling=true;litOff();B.classList.add('e99-scrolling');D.querySelectorAll('.e99-streak.run').forEach(function(e){if(e.__a&&e.__a.playState==='running')e.__a.pause()});gridsRefresh()}
+  clearTimeout(scrollT);scrollT=setTimeout(function(){scrolling=false;B.classList.remove('e99-scrolling');gridsRefresh();trailsSoon()},220)},{passive:true});
+function watchCards(){sweep();if(!('IntersectionObserver' in window))return;if(!eio)eio=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting&&en.intersectionRatio>=.15)vis.set(en.target,en.boundingClientRect);else vis.delete(en.target)});trailsSoon()},{threshold:[0,.15,.5]});
+  eio.disconnect();vis.clear();D.querySelectorAll(CARDS).forEach(function(el){if(!skip(el))eio.observe(el)})}
+/* brilho na borda que segue o dedo ou o mouse */
+var lit=null,lpx=0,lpy=0,lraf=0,ltimer=0,pressed=false;
+function litOff(){clearTimeout(ltimer);if(lit){var e=child(lit,'','__e99g',false);if(e)e.classList.remove('lit')}lit=null}
+function litDraw(){lraf=0;if(!lit||!lit.isConnected)return;var e=child(lit,'e99-glow','__e99g',true),r=lit.getBoundingClientRect();e.style.setProperty('--mx',(lpx-r.left).toFixed(1)+'px');e.style.setProperty('--my',(lpy-r.top).toFixed(1)+'px');if(!e.classList.contains('lit'))e.classList.add('lit')}
+function litAt(ev){if(!fxOn())return;var t=ev.target,c=t&&t.closest?t.closest(CARDS):null;if(c&&skip(c))c=null;if(c!==lit){litOff();lit=c}if(!c)return;clearTimeout(ltimer);lpx=ev.clientX;lpy=ev.clientY;if(!lraf)lraf=requestAnimationFrame(litDraw)}
+D.addEventListener('pointerdown',function(ev){pressed=true;litAt(ev)},{passive:true});
+D.addEventListener('pointermove',function(ev){if(scrolling)return;if(ev.pointerType==='mouse'||pressed)litAt(ev)},{passive:true});
+['pointerup','pointercancel'].forEach(function(n){D.addEventListener(n,function(ev){pressed=false;if(ev.pointerType!=='mouse'){clearTimeout(ltimer);ltimer=setTimeout(litOff,380)}},{passive:true})});
+D.addEventListener('pointerout',function(ev){if(ev.pointerType==='mouse'&&!ev.relatedTarget)litOff()},{passive:true});
+
+D.addEventListener('visibilitychange',function(){B.classList.toggle('e99-hidden',D.hidden);gridsRefresh();trailsSoon()});
+
+/* Efeitos, "menos movimento" e "Pausar animação" valem para a grade e os rastros também */
+if(typeof window.toggleVisualEffects==='function'){var tv0=window.toggleVisualEffects;window.toggleVisualEffects=function(){var r=tv0.apply(this,arguments);setTimeout(function(){gridsRefresh();trailsSoon();if(!fxOn())litOff()},0);return r}}
+if(typeof window.e99FxPause==='function'){var fp0=window.e99FxPause;window.e99FxPause=function(){var r=fp0.apply(this,arguments);gridsRefresh();trailsSoon();return r}}
+addEventListener('resize',function(){trailsSoon()},{passive:true});
+
+/* depois de cada desenho da tela (último embrulho) */
+var r0=render;render=function(){var r=r0.apply(this,arguments);try{if(logged()){var pg=curPage();var h=pg==='home'&&D.querySelector('#view .hero-home');if(h)placeGrid('home',h);gridsRefresh();watchCards()}}catch(e){}return r};
+var ra0=renderAuth;renderAuth=function(){var r=ra0.apply(this,arguments);try{var box=D.getElementById('auth-screen');if(box&&!box.hidden){placeGrid('login',box);gridsRefresh();watchCards()}}catch(e){}return r};
+try{var box=D.getElementById('auth-screen');if(box&&!box.hidden&&!logged()){placeGrid('login',box);watchCards()}else if(logged())render()}catch(e){}
 })();
 </script>
 </body></html>

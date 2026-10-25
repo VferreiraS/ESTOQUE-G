@@ -3,6 +3,15 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 91
+
+- **Visual Tron · Daft Punk · vidro do iOS 26:** fundo preto, títulos em Oswald e o S vermelho de partículas continuam. Os destaques e as linhas do Tron agora são **ciano neon (#2EE6FF)**; o vermelho ficou só no S da marca. Os selos verificados ganharam contorno ciano brilhante.
+- **Grade de luz (Tron)** em perspectiva só na tela de entrar e no topo do Início, com brilho neon forte e pulsos de luz correndo do horizonte. Ao abrir o app, um pulso de luz acompanha o S e a grade acende do horizonte para perto.
+- **Rastros de luz** percorrem a borda dos cartões que estão na tela e do formulário de entrar; a borda brilha onde o dedo (ou o mouse) toca. Cantos dos cartões com traço de luz; separadores com linha de circuito; botões principais em ciano com "mola" ao toque.
+- **Vidro:** topo, barra de baixo, menus, janelas, avisos e formulário de entrar com vidro desfocado (sem suporte, viram fundo sólido); cartões escuros com borda clara e reflexo.
+- **Leve:** tudo para em segundo plano, fora da tela e enquanto a tela rola; a grade espera o S se montar; fica parado com Efeitos desligados, "Pausar animação" ou "menos movimento"; com a tela parada o app não gasta processador (igual à v90). Teste novo: `tests/v91_test.js`.
+- O som de abertura e a música ambiente ficaram para a versão 92.
+
 ## Versão 88
 
 - **Selo também em aparelho sem nuvem:** a lista `verificados` agora pode ser lida por qualquer aparelho (só tem uid → tipo/login; continua só o administrador gravando). Quem nunca vinculou o e-mail lê a lista pelo endereço público do Firestore (a cada 10 min) e guarda uma cópia para usar sem internet.
