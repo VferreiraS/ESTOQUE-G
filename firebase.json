@@ -12,6 +12,7 @@
       "CLAUDE.md",
       "README.md",
       "tests/**",
+      "scratchpad/**",
       "**/*.log",
       "central-agentes/**"
     ],
