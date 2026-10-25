@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="91"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="92"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -4341,7 +4341,7 @@ function show(){if(off()||document.hidden||!document.body)return;if(active&&acti
 function tudum(ctx){var t=ctx.currentTime+.02,out=ctx.createGain();out.gain.value=.75;out.connect(ctx.destination);
   function thud(at,f0,f1,len,vol){var o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(f0,at);o.frequency.exponentialRampToValueAtTime(f1,at+len);g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(vol,at+.012);g.gain.exponentialRampToValueAtTime(.0001,at+len);o.connect(g);g.connect(out);o.start(at);o.stop(at+len+.05)}
   thud(t,78,42,.32,.18);thud(t+.3,64,30,.48,.2);var lp=ctx.createBiquadFilter();lp.type='lowpass';lp.Q.value=4;lp.frequency.setValueAtTime(260,t+.32);lp.frequency.exponentialRampToValueAtTime(1800,t+1.2);var cg=ctx.createGain();cg.gain.setValueAtTime(.0001,t+.32);cg.gain.exponentialRampToValueAtTime(.045,t+.8);cg.gain.exponentialRampToValueAtTime(.0001,t+1.25);lp.connect(cg);cg.connect(out);[110,164.81,220].forEach(function(f,i){var o=ctx.createOscillator();o.type='sine';o.frequency.setValueAtTime(f,t+.32);o.connect(lp);o.start(t+.32);o.stop(t+1.35)})}
-function play(){try{if(document.hidden||typeof siteSoundEnabled!=='undefined'&&!siteSoundEnabled)return;if(navigator.userActivation&&!navigator.userActivation.hasBeenActive)return;var ctx=typeof unlockSiteAudio==='function'?unlockSiteAudio():null;if(ctx&&ctx.state==='running')tudum(ctx)}catch(x){}}
+function play(){try{if(document.hidden||typeof siteSoundEnabled!=='undefined'&&!siteSoundEnabled)return;if(navigator.userActivation&&!navigator.userActivation.hasBeenActive)return;var ctx=typeof unlockSiteAudio==='function'?unlockSiteAudio():null;if(ctx&&ctx.state==='running'){if(window.e99Sting)window.e99Sting(ctx);else tudum(ctx)}}catch(x){}}
 window.playStokIntro=function(withSound){show();if(withSound&&!off())play()};
 var en=typeof authEnter==='function'?authEnter:null;if(en)authEnter=function(){var r=en.apply(this,arguments);show();return r};
 window.replayEntrySplash=function(){show()};
@@ -6012,6 +6012,119 @@ addEventListener('resize',function(){trailsSoon()},{passive:true});
 var r0=render;render=function(){var r=r0.apply(this,arguments);try{if(logged()){var pg=curPage();var h=pg==='home'&&D.querySelector('#view .hero-home');if(h)placeGrid('home',h);gridsRefresh();watchCards()}}catch(e){}return r};
 var ra0=renderAuth;renderAuth=function(){var r=ra0.apply(this,arguments);try{var box=D.getElementById('auth-screen');if(box&&!box.hidden){placeGrid('login',box);gridsRefresh();watchCards()}}catch(e){}return r};
 try{var box=D.getElementById('auth-screen');if(box&&!box.hidden&&!logged()){placeGrid('login',box);watchCards()}else if(logged())render()}catch(e){}
+})();
+</script>
+<style id="v92-som-css">
+/* v92 · botão de música ambiente no topo e em Preferências (guardado da v91) */
+/* ---------- música ambiente: botão no topo ---------- */
+header .e99-music{position:relative;display:inline-grid!important;place-items:center;width:44px;height:44px;min-height:44px!important;padding:0!important;border-radius:12px!important;background:transparent!important;border:1px solid transparent!important;color:var(--ds-ink)!important}
+header .e99-music svg.ic{width:22px;height:22px}
+header .e99-music[aria-pressed="false"]{color:var(--ds-muted)!important}
+@media(hover:hover){header .e99-music:hover{background:var(--ds-accent-soft)!important}}
+#prefs-panel #pref-music[aria-pressed="true"] svg{color:var(--brand)}
+body:not(.fx-off) header .e99-music{transition:transform .55s var(--spring),background-color .15s,border-color .15s,box-shadow .2s,filter .15s,color .15s!important}
+body:not(.fx-off) header .e99-music:not(:disabled):active{transform:scale(.94)!important;transition-duration:.08s!important}
+@media print{header .e99-music{display:none!important}}
+</style>
+<script id="v92-som-js">
+(function(){
+'use strict';
+/* v92 (guardado da v91 a pedido do dono) · som de abertura (e99Sting) e música ambiente (e99Music) inspirados em Daft Punk,
+   sintetizados com Web Audio, sem arquivos. Só depois de um toque (regra do iPhone) e só com o som do app ligado.
+   A música começa DESLIGADA até o dono decidir (botão ♫ no topo e "Música ambiente" em Minha conta → Preferências).
+   Colar logo depois do bloco v91-js (precisa do render/renderAuth/authEnter já embrulhados pelos blocos anteriores). */
+var D=document,B=D.body;
+function curPage(){return typeof page!=='undefined'?page:''}
+function logged(){try{return !!authSession}catch(e){return false}}
+
+/* ---------- som de abertura e música ambiente (Web Audio, sem arquivos) ---------- */
+var MUSIC_KEY='lojasg.estoque99.music';
+/* começa desligada até o dono decidir; quem ligar no botão ♫ fica com ela ligada neste aparelho */
+function musicPref(){try{return localStorage.getItem(MUSIC_KEY)==='on'}catch(e){return false}}
+function soundOn(){try{return siteSoundEnabled!==false}catch(e){return true}}
+function ctxRun(){try{return siteAudio&&siteAudio.state==='running'?siteAudio:null}catch(e){return null}}
+var NOISE=null;function noise(ctx){if(NOISE&&NOISE.sampleRate===ctx.sampleRate)return NOISE;var n=Math.floor(ctx.sampleRate*1.2),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);for(var i=0;i<n;i++)d[i]=Math.random()*2-1;NOISE=b;return b}
+function env(g,t,peak,a,len){g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+len)}
+function osc(ctx,type,f,t,stop,dest,det){var o=ctx.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);if(det)o.detune.value=det;o.connect(dest);o.start(t);o.stop(stop);return o}
+var stings=0;
+/* abertura (~1,7 s, junto com a animação): arpejo que sobe com filtro abrindo, "vuuush" e, no S, o impacto com acorde largo */
+function sting(ctx){stings++;var t0=ctx.currentTime+.03,out=ctx.createGain(),comp=ctx.createDynamicsCompressor();out.gain.value=.8;comp.threshold.value=-16;comp.ratio.value=5;out.connect(comp);comp.connect(ctx.destination);
+  var f=ctx.createBiquadFilter();f.type='lowpass';f.Q.value=8;f.frequency.setValueAtTime(420,t0);f.frequency.exponentialRampToValueAtTime(4600,t0+.84);f.connect(out);
+  [146.83,174.61,220,293.66,349.23,440,587.33,698.46].forEach(function(fr,i){var at=t0+i*.1,g=ctx.createGain();env(g,at,.055,.008,.17);g.connect(f);osc(ctx,'sawtooth',fr,at,at+.2,g);osc(ctx,'square',fr/2,at,at+.2,g,4)});
+  var ns=ctx.createBufferSource(),bp=ctx.createBiquadFilter(),ng=ctx.createGain();ns.buffer=noise(ctx);bp.type='bandpass';bp.Q.value=1.4;bp.frequency.setValueAtTime(380,t0+.18);bp.frequency.exponentialRampToValueAtTime(5200,t0+.86);ng.gain.setValueAtTime(.0001,t0+.18);ng.gain.exponentialRampToValueAtTime(.07,t0+.8);ng.gain.exponentialRampToValueAtTime(.0001,t0+.93);ns.connect(bp);bp.connect(ng);ng.connect(out);ns.start(t0+.18);ns.stop(t0+1);
+  var hit=t0+.87,sg=ctx.createGain(),so=osc(ctx,'sine',96,hit,hit+.85,sg);so.frequency.exponentialRampToValueAtTime(36,hit+.6);env(sg,hit,.34,.01,.78);sg.connect(out);
+  var lp=ctx.createBiquadFilter(),cg=ctx.createGain();lp.type='lowpass';lp.Q.value=2.5;lp.frequency.setValueAtTime(5600,hit);lp.frequency.exponentialRampToValueAtTime(520,hit+1.15);env(cg,hit,.085,.02,1.3);lp.connect(cg);cg.connect(out);
+  [73.42,146.83,220,293.66,349.23,659.25].forEach(function(fr){osc(ctx,'sawtooth',fr,hit,hit+1.35,lp,-8);osc(ctx,'sawtooth',fr,hit,hit+1.35,lp,8)});
+  var cs=ctx.createBufferSource(),hp=ctx.createBiquadFilter(),hg=ctx.createGain();cs.buffer=noise(ctx);hp.type='highpass';hp.frequency.value=3200;env(hg,hit,.06,.003,.32);cs.connect(hp);hp.connect(hg);hg.connect(out);cs.start(hit);cs.stop(hit+.4);
+  setTimeout(function(){try{out.disconnect();comp.disconnect()}catch(e){}},2800)}
+window.e99Sting=function(ctx){try{ctx=ctx||ctxRun();if(ctx&&soundOn()&&!D.hidden)sting(ctx)}catch(e){}};
+/* música ambiente: groove leve em ré menor (Dm · B♭ · F · C), 100 bpm, volume baixo, em loop.
+   O "instrumento" é montado uma vez (osciladores fixos); cada nota só agenda o volume e a altura: quase nada na tela principal. */
+var M={on:false,ctx:null,N:null,timer:0,next:0,step:0,vol:.05,kill:0};
+var S16=60/100/4,CH=[[146.83,174.61,220],[116.54,146.83,174.61],[174.61,220,261.63],[130.81,164.81,196]],ROOT=[73.42,58.27,87.31,65.41],ARP=[0,1,2,3,2,1,0,1,0,2,1,3,2,1,2,0];
+function build(ctx){var N={osc:[]},m=ctx.createGain();m.gain.value=.0001;var comp=ctx.createDynamicsCompressor();comp.threshold.value=-22;comp.ratio.value=3;m.connect(comp);comp.connect(ctx.destination);N.m=m;N.comp=comp;
+  function on(o){o.start();N.osc.push(o);return o}
+  var pf=ctx.createBiquadFilter(),pg=ctx.createGain();pf.type='lowpass';pf.frequency.value=1100;pf.Q.value=.7;pg.gain.value=.0001;pf.connect(pg);pg.connect(m);N.padG=pg;N.pad=[];
+  for(var v=0;v<3;v++){var pair=[];[-7,7].forEach(function(dt){var o=ctx.createOscillator();o.type='sawtooth';o.detune.value=dt;o.frequency.value=CH[0][v];o.connect(pf);pair.push(on(o))});N.pad.push(pair)}
+  var bf=ctx.createBiquadFilter(),bg=ctx.createGain(),bo=ctx.createOscillator();bf.type='lowpass';bf.frequency.value=360;bf.Q.value=6;bg.gain.value=.0001;bo.type='sawtooth';bo.frequency.value=ROOT[0];bo.connect(bg);bg.connect(bf);bf.connect(m);N.bass=on(bo);N.bassG=bg;
+  var lfo=ctx.createOscillator(),lg=ctx.createGain();lfo.frequency.value=.07;lg.gain.value=170;lfo.connect(lg);lg.connect(bf.frequency);on(lfo);
+  var ko=ctx.createOscillator(),kg=ctx.createGain();ko.type='sine';ko.frequency.value=50;kg.gain.value=.0001;ko.connect(kg);kg.connect(m);N.kick=on(ko);N.kickG=kg;
+  var hs=ctx.createBufferSource(),hp=ctx.createBiquadFilter(),hg=ctx.createGain();hs.buffer=noise(ctx);hs.loop=true;hp.type='highpass';hp.frequency.value=7500;hg.gain.value=.0001;hs.connect(hp);hp.connect(hg);hg.connect(m);on(hs);N.hatG=hg;
+  var ao=ctx.createOscillator(),ag=ctx.createGain(),af=ctx.createBiquadFilter(),dl=ctx.createDelay(1),fb=ctx.createGain(),dlp=ctx.createBiquadFilter();ao.type='square';ag.gain.value=.0001;af.type='lowpass';af.frequency.value=2300;dl.delayTime.value=S16*3;fb.gain.value=.34;dlp.type='lowpass';dlp.frequency.value=2000;
+  ao.connect(ag);ag.connect(af);af.connect(m);af.connect(dl);dl.connect(dlp);dlp.connect(fb);fb.connect(dl);dlp.connect(m);N.arp=on(ao);N.arpG=ag;
+  return N}
+function unbuild(){var N=M.N;M.N=null;M.ctx=null;if(!N)return;N.osc.forEach(function(o){try{o.stop()}catch(e){}});try{N.m.disconnect();N.comp.disconnect()}catch(e){}}
+function note(step,t){var N=M.N,s=step%16,bar=Math.floor(step/16)%4,loop=Math.floor(step/64),ch=CH[bar];
+  if(s===0){N.pad.forEach(function(pair,v){pair.forEach(function(o){o.frequency.setTargetAtTime(ch[v],t,.05)})});N.padG.gain.setTargetAtTime(.06,t,.3);N.padG.gain.setTargetAtTime(.038,t+16*S16*.55,.6)}
+  if(s%2===0){N.bass.frequency.setValueAtTime(ROOT[bar]*(s%8===6?2:1),t);env(N.bassG,t,.22,.005,.24)}
+  if(s%4===0){N.kick.frequency.setValueAtTime(110,t);N.kick.frequency.exponentialRampToValueAtTime(42,t+.14);env(N.kickG,t,.42,.004,.26)}
+  if(s%4===2)env(N.hatG,t,.05,.002,.05);
+  if(loop%2===1||bar>=2){var i=ARP[s],f=i===3?ch[0]*2:ch[i];N.arp.frequency.setValueAtTime(f*2,t);env(N.arpG,t,.04,.005,.13)}}
+function tick(){var ctx=ctxRun();if(!M.on||!ctx||ctx!==M.ctx||!M.N)return;var until=ctx.currentTime+.9;if(M.next<ctx.currentTime)M.next=ctx.currentTime+.05;while(M.next<until){note(M.step,M.next);M.next+=S16;M.step=(M.step+1)%128}}
+function calm(){try{return B.classList.contains('fx-user-off')||window.__osReduce===true||localStorage.getItem('lojasg.estoque99.visual-effects')==='off'}catch(e){return false}}
+function wanted(){return soundOn()&&musicPref()&&logged()&&!D.hidden&&!calm()&&!B.classList.contains('e99-scrolling')}
+function start(ctx,delay){clearTimeout(M.kill);if(M.N&&M.ctx!==ctx)unbuild();if(!M.N){M.N=build(ctx);M.ctx=ctx}M.on=true;M.step=0;var t=ctx.currentTime,d=delay||0;M.next=t+d+.12;var g=M.N.m.gain;g.cancelScheduledValues(t);g.setValueAtTime(.0001,t);g.setValueAtTime(.0001,t+d);g.exponentialRampToValueAtTime(M.vol,t+d+4);
+  clearInterval(M.timer);M.timer=setInterval(tick,300);tick();buttons()}
+function stop(fast){if(!M.on)return;M.on=false;clearInterval(M.timer);M.timer=0;try{var c=M.ctx,g=M.N.m.gain;g.cancelScheduledValues(c.currentTime);g.setTargetAtTime(.0001,c.currentTime,fast?.03:.35)}catch(e){}
+  /* depois de sumir, desmonta o instrumento (nada fica tocando em silêncio) */
+  clearTimeout(M.kill);M.kill=setTimeout(function(){if(!M.on)unbuild()},fast?400:2500);buttons()}
+var syncT=0;function musicSync(delay){clearTimeout(syncT);syncT=setTimeout(function(){var ctx=ctxRun();if(wanted()&&ctx){if(!M.on||M.ctx!==ctx)start(ctx,delay)}else if(M.on)stop(!soundOn()||D.hidden||B.classList.contains('e99-scrolling'))},0)}
+/* para ao rolar a tela e com Efeitos desligados / menos movimento; volta sozinha quando a rolagem acaba */
+try{var lastCls='';new MutationObserver(function(){var k=B.classList.contains('e99-scrolling')+'|'+calm();if(k!==lastCls){lastCls=k;if(M.on||wanted())musicSync()}}).observe(B,{attributes:true,attributeFilter:['class']})}catch(e){}
+if(typeof window.toggleVisualEffects==='function'){var tv0=window.toggleVisualEffects;window.toggleVisualEffects=function(){var r=tv0.apply(this,arguments);musicSync();return r}}
+window.e99Music=function(){return {on:M.on,pref:musicPref(),stings:stings,vol:M.vol}};
+window.e99MusicToggle=function(){var on=!musicPref();try{localStorage.setItem(MUSIC_KEY,on?'on':'off')}catch(e){}
+  if(on&&!soundOn()){if(typeof notify==='function')notify('Música ligada. O som do app está desligado: ligue o som em Minha conta → Preferências para ouvir.')}
+  else if(on){try{if(typeof unlockSiteAudio==='function')unlockSiteAudio()}catch(e){}}
+  musicSync();buttons()};
+var hooked=typeof WeakSet==='function'?new WeakSet():null;
+function hookCtx(c){if(!c||!hooked||hooked.has(c))return;hooked.add(c);c.addEventListener('statechange',function(){musicSync()})}
+if(typeof unlockSiteAudio==='function'){var u0=unlockSiteAudio;unlockSiteAudio=function(){var c=u0.apply(this,arguments);try{hookCtx(c);if(c&&!M.on&&wanted())musicSync()}catch(e){}return c}}
+if(typeof toggleSiteSound==='function'){var ts0=toggleSiteSound;toggleSiteSound=function(){var r=ts0.apply(this,arguments);musicSync();buttons();return r}}
+/* entrar: o som de abertura toca com a animação; a música entra depois, devagar */
+function introWillShow(){try{return !calm()&&!D.hidden}catch(e){return !D.hidden}}
+if(typeof playSiteSound==='function'){var ps0=playSiteSound;playSiteSound=function(kind){if(kind==='login'&&introWillShow()){var c=ctxRun();if(c&&soundOn()&&!D.hidden){try{sting(c)}catch(e){}return}}return ps0.apply(this,arguments)}}
+if(typeof authEnter==='function'){var ae0=authEnter;authEnter=function(){var r=ae0.apply(this,arguments);try{musicSync(1.6)}catch(e){}return r}}
+if(typeof authLogout==='function'){var al0=authLogout;authLogout=async function(){var r=await al0.apply(this,arguments);try{if(!logged())stop(false);buttons()}catch(e){}return r}}
+D.addEventListener('visibilitychange',function(){
+  if(D.hidden){stop(true)}else if(wanted()){try{if(siteAudio&&siteAudio.state!=='running'&&siteAudio.state!=='closed')siteAudio.resume().catch(function(){})}catch(e){}musicSync()}});
+
+/* botão de música no topo e em Minha conta → Preferências */
+var NOTE='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>';
+var NOTE_OFF='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/><path d="M3 3l18 18"/></svg>';
+function audioOk(){return !!(window.AudioContext||window.webkitAudioContext)}
+function buttons(){var on=musicPref(),b=D.getElementById('music-btn');
+  if(!b&&audioOk()){var bell=D.querySelector('header .bell-btn')||D.querySelector('header button[onclick="go(\'alerts\')"]');if(bell){b=D.createElement('button');b.type='button';b.id='music-btn';b.className='e99-music';b.onclick=function(){window.e99MusicToggle()};bell.parentNode.insertBefore(b,bell)}}
+  if(b){var l='Música ambiente: '+(on?'ligada':'desligada');if(b.getAttribute('aria-label')!==l){b.setAttribute('aria-label',l);b.title=l;b.setAttribute('aria-pressed',String(on));b.innerHTML=on?NOTE:NOTE_OFF}}
+  var p=D.getElementById('pref-music');if(p&&p.getAttribute('aria-pressed')!==String(on)){p.setAttribute('aria-pressed',String(on));p.innerHTML=(on?NOTE:NOTE_OFF)+(on?'Ligada':'Desligada')}}
+function prefsRow(){var pp=D.getElementById('prefs-panel');if(!pp||D.getElementById('pref-music')||!audioOk())return;var on=musicPref(),row=D.createElement('div');row.className='pref-row';
+  row.innerHTML='<span><b>Música ambiente</b><span class="small">Música leve inspirada em Daft Punk, em volume baixo. Só toca com o som do app ligado.</span></span><button type="button" id="pref-music" aria-pressed="'+on+'" onclick="e99MusicToggle()">'+(on?NOTE:NOTE_OFF)+(on?'Ligada':'Desligada')+'</button>';
+  var snd=D.getElementById('pref-sound');var after=snd&&snd.closest('.pref-row');if(after&&after.nextSibling)pp.insertBefore(row,after.nextSibling);else pp.appendChild(row)}
+if(typeof window.e99PrefsRefresh==='function'){var pr0=window.e99PrefsRefresh;window.e99PrefsRefresh=function(){var r=pr0.apply(this,arguments);setTimeout(function(){prefsRow();buttons()},60);return r}}
+
+
+/* depois de cada desenho da tela: botão ♫ no topo e a linha em Preferências */
+var r0=render;render=function(){var r=r0.apply(this,arguments);try{if(logged()){buttons();if(curPage()==='account')prefsRow()}}catch(e){}return r};
 })();
 </script>
 </body></html>

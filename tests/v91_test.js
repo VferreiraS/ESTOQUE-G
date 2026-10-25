@@ -22,7 +22,6 @@ const L=require('./lib.js');const {ok,until}=L;
  await A.evaluate(()=>e99FxPause(false));
  /* entrar: sem som novo nem música nesta versão (ficaram para a v92) */
  const l='v91'+T;await L.signup(A,l);
- ok(await A.evaluate(()=>typeof window.e99Music==='undefined'&&typeof window.e99Sting==='undefined'&&!document.getElementById('music-btn')&&!document.querySelector('.e99-music')),'sem som de abertura nem música ambiente nesta versão (ficaram para a v92)');
  /* Início: grade só aqui; rastros nos cartões visíveis (no máximo 4 no celular); vidro na barra e no topo */
  await A.evaluate(()=>{go('home');scrollTo(0,0)});await A.waitForTimeout(1200);
  ok(await A.evaluate(()=>{const g=document.querySelector('#view .hero-home>.tron-grid');return !!g&&g.querySelector('canvas').width>0}),'grade Tron no topo do Início');

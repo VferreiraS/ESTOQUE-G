@@ -3,6 +3,10 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 92
+
+- **Som:** a abertura toca um som curto junto com a animação (só depois do primeiro toque, com o som do app ligado). **Música ambiente** sintetizada no aparelho (Web Audio, sem arquivos), em loop e baixinha; botão ♫ no topo e em Preferências para ligar/desligar; **começa desligada**. Para em segundo plano, ao rolar, fora da tela, com Efeitos desligados e "menos movimento". Teste: `tests/som_test.js`.
+
 ## Versão 91
 
 - **Visual Tron · Daft Punk · vidro do iOS 26:** fundo preto, títulos em Oswald e o S vermelho de partículas continuam. Os destaques e as linhas do Tron agora são **ciano neon (#2EE6FF)**; o vermelho ficou só no S da marca. Os selos verificados ganharam contorno ciano brilhante.
