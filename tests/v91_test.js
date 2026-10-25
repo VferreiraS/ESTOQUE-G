@@ -1,5 +1,5 @@
 /* v91 (só visual): grade Tron só no Início e na entrada, rastros de luz nos cartões visíveis, vidro com desfoque, pulso de luz
-   na abertura e ciano neon nos destaques. Tudo para em segundo plano, fora da tela, rolando, com "Pausar animação",
+   na abertura e (v93) vermelho da marca nos destaques. Tudo para em segundo plano, fora da tela, rolando, com "Pausar animação",
    com Efeitos desligados e com "menos movimento". O som de abertura e a música ambiente ficaram para a v92 (fora do ar). */
 const L=require('./lib.js');const {ok,until}=L;
 (async()=>{const b=await L.chromium.launch();const errs=[];const T=Date.now().toString(36);
@@ -30,7 +30,7 @@ const L=require('./lib.js');const {ok,until}=L;
  ok(await A.evaluate(()=>/@supports not/.test(document.getElementById('v91-css').textContent)),'sem suporte a desfoque: fundo sólido');
  ok(await A.evaluate(()=>/cubic-bezier\(0\.34, 1\.56, 0\.64, 1\)/.test(getComputedStyle(document.querySelector('#view button.primary')).transitionTimingFunction)),'botão principal com resposta de mola');
  ok(await A.evaluate(()=>{const h=document.querySelector('#view .hero h1');return parseFloat(getComputedStyle(h).letterSpacing)>=parseFloat(getComputedStyle(h).fontSize)*.035}),'títulos com espaçamento largo (Daft Punk)');
- ok(await A.evaluate(()=>{const c=x=>getComputedStyle(x).backgroundColor;const btn=document.querySelector('#view button.primary'),w=document.querySelector('#view .accent-word');return c(btn)==='rgb(46, 230, 255)'&&getComputedStyle(w).color==='rgb(46, 230, 255)'}),'destaques em ciano neon (botão principal e palavra de destaque)');
+ ok(await A.evaluate(()=>{const c=x=>getComputedStyle(x).backgroundColor;const btn=document.querySelector('#view button.primary'),w=document.querySelector('#view .accent-word');return c(btn)==='rgb(219, 35, 24)'&&getComputedStyle(btn).color==='rgb(255, 255, 255)'&&getComputedStyle(w).color==='rgb(255, 42, 31)'&&!/2EE6FF/i.test(document.documentElement.outerHTML)}),'v93: destaques no vermelho da marca (botão #DB2318 com letra branca, palavra #FF2A1F, sem ciano)');
  /* rolando: rastros somem e a grade para */
  await A.evaluate(()=>dispatchEvent(new Event('scroll')));ok(await A.evaluate(()=>document.body.classList.contains('e99-scrolling')&&[...document.querySelectorAll('.e99-streak')].every(e=>!e.__a||e.__a.playState!=='running')&&getComputedStyle(document.querySelector('.e99-streak')).display==='none'),'rolando: rastros somem e param');
  await A.waitForTimeout(600);
