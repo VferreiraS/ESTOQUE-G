@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="96"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="97"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -6348,54 +6348,98 @@ var rp=window.renderPlans;if(typeof rp==='function'){window.renderPlans=function
 .conf-hist-list li{border:1px solid var(--ds-line,#2a2a2e);border-radius:12px;padding:10px 12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .conf-hist-list li span{flex:1;min-width:180px;overflow-wrap:anywhere}
 body.conf-on #view{visibility:hidden}
-#conf-dlg{width:min(720px,100%);max-width:720px;padding:0;overflow:auto}
+.conf-cta .conf-go svg{vertical-align:-4px;margin-right:8px}
+/* v97: tela cheia, minimalista, holograma (só camada visual; a leitura usa os pixels do vídeo) */
+#conf-dlg{position:fixed;inset:0;width:100vw!important;max-width:none!important;height:100vh;height:100dvh;max-height:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:#060607!important;color:#f2f2f3;overflow:hidden}
+#conf-dlg::backdrop{background:#000}
 #conf-dlg [hidden]{display:none!important}
-#conf-dlg .cf-wrap{padding:16px;display:grid;gap:12px}
-#conf-dlg h2{margin:0;font-size:19px}
-#conf-dlg h3{margin:6px 0 0;font-size:15px}
-#conf-dlg p{margin:0}
-#conf-dlg .cf-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
-#conf-dlg .cf-head > div{min-width:0}
-#conf-dlg .cf-meta{overflow-wrap:anywhere;font-size:12px}
-#conf-dlg #cf-save{font-size:12px}
-#conf-dlg .cf-x{min-width:44px;min-height:44px;flex:none}
-#conf-dlg .cf-status{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-#conf-dlg .cf-chip{border:1px solid var(--neon,#FF2A1F);border-radius:999px;padding:4px 12px;font-weight:700;font-size:13px}
-#conf-dlg .cf-chip[data-st="pausada"]{border-color:#8a8a8a;color:#d0d0d0}
-#conf-dlg .cf-chip[data-st="finalizada"]{border-color:#3ecf8e;color:#8ff0c2}
-#conf-dlg .cf-cam{position:relative;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:4/3;max-height:40vh;max-height:40dvh;width:100%}
+#conf-dlg button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#conf-dlg button:focus-visible,#conf-dlg input:focus-visible,#conf-dlg select:focus-visible,#conf-dlg summary:focus-visible{outline:2px solid #FF8A7A;outline-offset:2px}
+#conf-dlg button:disabled{cursor:default}
+#conf-dlg h2,#conf-dlg h3,#conf-dlg p{margin:0}
+#conf-dlg .cf-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#conf-dlg .cf-bg::before{content:"";position:absolute;inset:-24px;background:radial-gradient(70% 38% at 50% 0%,rgba(255,42,31,.13),transparent 70%),radial-gradient(45% 30% at 90% 100%,rgba(127,233,255,.05),transparent 70%),repeating-linear-gradient(90deg,rgba(255,255,255,.022) 0 1px,transparent 1px 44px),repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 1px,transparent 1px 44px);transform:translate3d(calc(var(--px,0)*-6px),calc(var(--py,0)*-4px),0)}
+#conf-dlg .cf-wrap{position:relative;z-index:1}
+#conf-dlg .cf-scan{display:flex;flex-direction:column;gap:10px;height:100%;max-width:560px;margin:0 auto;padding:calc(6px + env(safe-area-inset-top)) 16px calc(12px + env(safe-area-inset-bottom))}
+#conf-dlg .cf-top{display:flex;align-items:center;gap:12px;min-height:48px;flex:none}
+#conf-dlg .cf-topt{flex:1;min-width:0}
+#conf-dlg .cf-top h2{font-size:15px;font-weight:700;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#conf-dlg .cf-sub{font-size:12px;color:#a6a6ab;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#conf-dlg .cf-st{display:inline-flex;align-items:center;gap:6px;margin-right:8px;color:#f2f2f3;font-weight:600}
+#conf-dlg .cf-st::before{content:"";width:7px;height:7px;border-radius:50%;background:#FF2A1F}
+#conf-dlg .cf-st[data-st="pausada"]::before{background:#8a8a8a}
+#conf-dlg .cf-st[data-st="finalizada"]::before{background:#3ecf8e}
+#conf-dlg .cf-ib{width:44px;height:44px;min-height:44px;flex:none;display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.14)!important;background:rgba(10,10,12,.62)!important;color:#f2f2f3!important}
+#conf-dlg .cf-ib[aria-pressed="true"]{border-color:#FF2A1F!important;color:#FF8A7A!important}
+#conf-dlg .cf-cam{position:relative;flex:1 1 auto;min-height:190px;border-radius:20px;overflow:hidden;background:#000}
 #conf-dlg .cf-cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-#conf-dlg .cf-frame{position:absolute;left:8%;right:8%;top:28%;bottom:28%;border:3px solid var(--neon,#FF2A1F);border-radius:10px;box-shadow:0 0 0 999px rgba(0,0,0,.38);pointer-events:none}
+#conf-dlg .cf-frame{position:absolute;left:9%;right:9%;top:31%;bottom:31%;border-radius:16px;border:1px solid rgba(255,138,122,.55);box-shadow:0 0 0 999px rgba(0,0,0,.3);pointer-events:none;overflow:hidden;transform:translate3d(calc(var(--px,0)*3px),calc(var(--py,0)*2px),0)}
+#conf-dlg .cf-frame::before{content:"";position:absolute;inset:-60%;background:linear-gradient(115deg,transparent 42%,rgba(255,138,122,.10) 48%,rgba(127,233,255,.06) 52%,transparent 58%);transform:translate3d(calc(var(--px,0)*22%),calc(var(--py,0)*14%),0)}
+#conf-dlg .cf-frame>i{position:absolute;inset:0;background:linear-gradient(#FF2A1F,#FF2A1F) 0 0/22px 2px,linear-gradient(#FF2A1F,#FF2A1F) 0 0/2px 22px,linear-gradient(#FF2A1F,#FF2A1F) 100% 0/22px 2px,linear-gradient(#FF2A1F,#FF2A1F) 100% 0/2px 22px,linear-gradient(#FF2A1F,#FF2A1F) 0 100%/22px 2px,linear-gradient(#FF2A1F,#FF2A1F) 0 100%/2px 22px,linear-gradient(#FF2A1F,#FF2A1F) 100% 100%/22px 2px,linear-gradient(#FF2A1F,#FF2A1F) 100% 100%/2px 22px;background-repeat:no-repeat}
 #conf-dlg .cf-cam.off .cf-frame{display:none}
-#conf-dlg .cf-camoff{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;color:#d0d0d0;font-size:15px}
-#conf-dlg .cf-camtools{position:absolute;right:8px;bottom:8px;display:flex;gap:8px}
-#conf-dlg .cf-camtools button{min-height:44px;background:#0b0b0d;border:1px solid #3a3a40;color:#fff;border-radius:12px;padding:0 12px}
-#conf-dlg .cf-camtools button[aria-pressed="true"]{border-color:var(--neon,#FF2A1F)}
-#conf-dlg .cf-msg{min-height:22px;font-size:15px}
-#conf-dlg .cf-ask{border:1px solid var(--neon,#FF2A1F);border-radius:14px;padding:12px;display:grid;gap:10px;background:#120708}
-#conf-dlg .cf-ask .cf-askbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-#conf-dlg .cf-ask button{min-height:52px}
+#conf-dlg .cf-camoff{position:absolute;inset:0;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;text-align:center;padding:16px;color:#d0d0d4;font-size:15px}
+#conf-dlg .cf-camoff button{min-height:48px;padding:0 22px;border-radius:14px;border:1px solid rgba(255,255,255,.16)!important;background:rgba(255,255,255,.06)!important}
+#conf-dlg .cf-camoff button.primary{background:#DB2318!important;border-color:#DB2318!important;color:#fff!important;font-weight:700}
+#conf-dlg .cf-tools{position:absolute;top:10px;right:10px;display:flex;gap:8px;z-index:2}
+#conf-dlg .cf-camfoot{position:absolute;left:10px;bottom:10px;right:10px;display:flex;gap:8px;flex-wrap:wrap;z-index:2}
+#conf-dlg .cf-pill{min-height:44px;display:inline-flex;align-items:center;gap:6px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.16)!important;background:rgba(10,10,12,.62)!important;color:#f2f2f3!important;font-size:13px;font-weight:600}
+#conf-dlg .cf-pill svg{width:18px;height:18px}
+@supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){#conf-dlg .cf-ib,#conf-dlg .cf-pill{-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}}
+#conf-dlg .cf-msg{flex:none;min-height:20px;font-size:14px;line-height:1.35;color:#d6d6da;text-align:center}
+#conf-dlg .cf-panel{position:relative;flex:none;display:grid;gap:10px;padding:10px 14px 4px;border-radius:20px;background:rgba(18,18,22,.78);border:1px solid rgba(255,255,255,.08);overflow:hidden}
+#conf-dlg .cf-panel::before{content:"";position:absolute;inset:-50%;pointer-events:none;background:linear-gradient(115deg,transparent 44%,rgba(255,138,122,.06) 49%,rgba(127,233,255,.035) 52%,transparent 57%);transform:translate3d(calc(var(--px,0)*18%),calc(var(--py,0)*10%),0)}
+#conf-dlg .cf-panel>*{position:relative}
+#conf-dlg .cf-countwrap{text-align:center;transform:translate3d(calc(var(--px,0)*7px),calc(var(--py,0)*5px),0)}
+#conf-dlg .cf-countbox{position:relative;display:inline-block;min-width:min(240px,70%);padding:0 18px 2px;border-radius:16px;border:1px solid rgba(255,42,31,.38);box-shadow:inset 0 0 0 1px rgba(255,138,122,.08);overflow:hidden}
+#conf-dlg .cf-countbox::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.045) 0 1px,transparent 1px 4px)}
+#conf-dlg .cf-countbox::after{content:"";position:absolute;left:0;right:0;top:0;height:28%;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(255,90,74,.16),transparent);transform:translateY(-110%);animation:cf-scanline 4.2s linear infinite}
+@keyframes cf-scanline{to{transform:translateY(400%)}}
+#conf-dlg .cf-count{font:700 88px/1.04 Oswald,'Arial Narrow',system-ui,sans-serif;letter-spacing:.02em;font-variant-numeric:tabular-nums;color:#FF2A1F;transition:transform .18s cubic-bezier(.22,1,.36,1)}
+@supports ((-webkit-background-clip:text) or (background-clip:text)){#conf-dlg .cf-count{background:linear-gradient(100deg,#FF2A1F 0%,#FF5A4A 14%,#FFD2CC 22%,#FF2A1F 30%,#FF8A7A 38%,#BFF4FF 42%,#FF2A1F 50%,#FF5A4A 64%,#FFD2CC 72%,#FF2A1F 80%,#FF8A7A 88%,#BFF4FF 92%,#FF2A1F 100%) 0 50%/200% 100% repeat-x;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:cf-shine 8s linear infinite}}
+@keyframes cf-shine{to{background-position:-200% 50%}}
+#conf-dlg .cf-count.hit{transform:scale(1.06)}
+#conf-dlg .cf-countlab{margin-top:4px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#a6a6ab}
+#conf-dlg .cf-last{text-align:center;font-size:13px;color:#a6a6ab;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#conf-dlg .cf-last code{color:#f2f2f3;font-size:13px}
+#conf-dlg .cf-next{min-height:56px;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:16px;border:0!important;background:#DB2318!important;color:#fff!important;font-size:17px;font-weight:700}
+#conf-dlg .cf-next:disabled{background:#241312!important;color:#c9a19c!important}
+#conf-dlg .cf-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#conf-dlg .cf-sec{min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:14px;border:1px solid rgba(255,255,255,.12)!important;background:rgba(255,255,255,.05)!important;font-size:15px;font-weight:600}
+#conf-dlg .cf-sec:disabled{color:#8e8e94!important}
+#conf-dlg .cf-finish{color:#FF8A7A!important}
+#conf-dlg .cf-handle{min-height:44px;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;border:0!important;background:none!important;color:#a6a6ab!important;font-size:13px}
+#conf-dlg .cf-sheet{position:absolute;left:0;right:0;bottom:0;z-index:5;margin:0 auto;max-width:560px;max-height:72%;overflow:auto;display:grid;gap:12px;padding:14px 16px calc(16px + env(safe-area-inset-bottom));background:#111114;border:1px solid rgba(255,255,255,.1);border-bottom:0;border-radius:20px 20px 0 0;animation:cf-up .22s cubic-bezier(.22,1,.36,1) backwards}
+@keyframes cf-up{from{transform:translateY(24px);opacity:0}}
+#conf-dlg .cf-shead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#conf-dlg .cf-shead h3{font-size:16px}
+#conf-dlg .cf-meta{font-size:12px;color:#a6a6ab;overflow-wrap:anywhere}
+#conf-dlg .cf-ask{border-top:1px solid #FF2A1F}
+#conf-dlg .cf-ask .cf-askbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#conf-dlg .cf-ask button{min-height:52px;border-radius:14px;border:1px solid rgba(255,255,255,.14)!important;background:rgba(255,255,255,.05)!important;font-weight:600}
+#conf-dlg .cf-ask button.primary{background:#DB2318!important;border-color:#DB2318!important;color:#fff!important}
 #conf-dlg .cf-ask code,#conf-dlg .cf-last code{overflow-wrap:anywhere}
-#conf-dlg .cf-countbox{text-align:center;border:1px solid var(--ds-line,#2a2a2e);border-radius:16px;padding:8px 8px 12px}
-#conf-dlg .cf-countbox .eyebrow{font-size:12px;letter-spacing:.08em;color:#bdbdbd}
-#conf-dlg .cf-count{font:800 96px/1 Oswald,'Arial Narrow',system-ui,sans-serif;font-variant-numeric:tabular-nums;color:#fff}
-#conf-dlg .cf-count.hit{color:var(--neon-hot,#FF8A7A)}
-#conf-dlg .cf-next{min-height:72px;width:100%;font-size:20px;font-weight:800}
-#conf-dlg .cf-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-#conf-dlg .cf-btns button{min-height:52px}
-#conf-dlg .cf-finish{border-color:var(--neon,#FF2A1F)!important}
-#conf-dlg .cf-manual{display:grid;gap:8px;border:1px solid var(--ds-line,#2a2a2e);border-radius:14px;padding:12px}
-#conf-dlg .cf-manual label{display:grid;gap:6px}
-#conf-dlg .cf-manual .cf-row{display:flex;gap:8px;flex-wrap:wrap}
-#conf-dlg .cf-manual .cf-row button{min-height:48px;flex:1}
-#conf-dlg label.cf-auto{display:flex;gap:10px;align-items:center;min-height:44px;cursor:pointer}
+#conf-dlg .cf-manual label{display:grid;gap:6px;font-size:14px}
+#conf-dlg .cf-manual input{min-height:48px}
+#conf-dlg .cf-manual button[type=submit]{min-height:52px;border-radius:14px}
+#conf-dlg label.cf-auto{display:flex;gap:10px;align-items:center;min-height:44px;cursor:pointer;font-size:14px}
 #conf-dlg label.cf-auto input{width:22px;height:22px;flex:none}
-#conf-dlg .cf-histbox summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
-#conf-dlg .cf-hist{list-style:none;margin:0;padding:0;display:grid;gap:4px;max-height:220px;overflow:auto}
-#conf-dlg .cf-hist li{display:grid;grid-template-columns:42px 72px 1fr auto;gap:8px;font-size:13px;padding:6px 4px;border-bottom:1px solid #1f1f23;align-items:center}
+#conf-dlg .cf-hist{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+#conf-dlg .cf-hist li{display:grid;grid-template-columns:42px 72px 1fr auto;gap:8px;font-size:13px;padding:8px 2px;border-bottom:1px solid #1d1d21;align-items:center}
 #conf-dlg .cf-hist li.x{opacity:.55;text-decoration:line-through}
 #conf-dlg .cf-hist li code{overflow-wrap:anywhere}
-#conf-dlg .cf-rep{display:grid;gap:12px}
+/* holograma: Efeitos desligados = parado; menos movimento = sem parallax e sem varredura; fora de foco/oculto/pausado = congela */
+#conf-dlg.holo-off .cf-count,#conf-dlg.holo-off .cf-sheet{animation:none!important}
+#conf-dlg.holo-off .cf-countbox::after,#conf-dlg.holo-calm .cf-countbox::after{display:none}
+#conf-dlg.holo-off,#conf-dlg.holo-calm{--px:0!important;--py:0!important}
+#conf-dlg.holo-pause .cf-count,#conf-dlg.holo-pause .cf-countbox::after{animation-play-state:paused!important}
+/* relatório (mesma janela) */
+#conf-dlg .cf-rep{height:100%;overflow:auto;max-width:720px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));display:grid;gap:14px;align-content:start}
+#conf-dlg .cf-rep h2{font-size:19px}
+#conf-dlg .cf-rep h3{margin:6px 0 0;font-size:15px}
+#conf-dlg .cf-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+#conf-dlg .cf-head > div{min-width:0}
+#conf-dlg .cf-head .cf-x{width:44px;height:44px;min-height:44px;flex:none;border-radius:50%;border:1px solid rgba(255,255,255,.14)!important;background:rgba(10,10,12,.62)!important}
+#conf-dlg .cf-histbox summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
 #conf-dlg .cf-kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0}
 #conf-dlg .cf-kv dt{color:#bdbdbd}
 #conf-dlg .cf-kv dd{margin:0;overflow-wrap:anywhere}
@@ -6403,22 +6447,11 @@ body.conf-on #view{visibility:hidden}
 #conf-dlg .cf-table th,#conf-dlg .cf-table td{border-bottom:1px solid #26262b;padding:7px 6px;text-align:left;overflow-wrap:anywhere}
 #conf-dlg .cf-repbtns{display:flex;gap:8px;flex-wrap:wrap}
 #conf-dlg .cf-repbtns button{min-height:48px;flex:1 1 160px}
-#conf-dlg .cf-assoc{display:grid;gap:8px;border:1px solid var(--ds-line,#2a2a2e);border-radius:14px;padding:12px}
-#conf-dlg .cf-assoc select{min-height:48px}
-#conf-dlg .cf-cmp{border-radius:14px;padding:12px;border:1px solid #3ecf8e}
+#conf-dlg .cf-assoc{display:grid;gap:8px;border:1px solid var(--ds-line,#2a2a2e);border-radius:16px;padding:12px}
+#conf-dlg .cf-assoc select,#conf-dlg .cf-assoc button{min-height:48px}
+#conf-dlg .cf-cmp{border-radius:16px;padding:12px;border:1px solid #3ecf8e}
 #conf-dlg .cf-cmp.bad{border-color:var(--neon,#FF2A1F)}
-@media (max-width:640px){
- #conf-dlg{width:100%!important;max-width:100%!important;height:100%;max-height:100vh!important;max-height:100dvh!important;margin:0!important;border-radius:0!important}
- #conf-dlg .cf-wrap{padding:12px 16px calc(16px + env(safe-area-inset-bottom))}
- #conf-dlg .cf-btns{grid-template-columns:1fr 1fr}
- #conf-dlg .cf-wrap{gap:10px}
- #conf-dlg h2{font-size:17px}
- #conf-dlg .cf-cam{aspect-ratio:16/10;max-height:30vh;max-height:30dvh}
- #conf-dlg .cf-countbox{padding:4px 8px 8px}
- #conf-dlg .cf-count{font-size:72px}
- #conf-dlg .cf-next{min-height:60px}
- #conf-dlg .cf-msg{font-size:14px}
-}
+@media (max-height:720px){#conf-dlg .cf-count{font-size:68px}#conf-dlg .cf-scan{gap:8px}#conf-dlg .cf-next{min-height:52px}}
 /* v96: às cegas também na lista — auxiliar não vê a coluna Volumes */
 body.role-aux #nf-results table th:nth-child(3),body.role-aux #nf-results table td:nth-child(3){display:none!important}
 </style>
@@ -6534,10 +6567,15 @@ function lock(id){if(!navigator.locks||!navigator.locks.request)return Promise.r
 function release(){if(lockRel){try{lockRel()}catch(e){}lockRel=null}}
 
 /* ---------- câmera e leitor ---------- */
-var cam={stream:null,track:null,timer:0,busy:false,torch:false,wake:null,token:0,devs:[],devId:'',canvas:null,reader:null,bd:null,err:''};
+/* v97: foco de perto. A v96 abria a câmera sem pedir foco/zoom e lia um recorte fixo reduzido, sem TRY_HARDER.
+   Agora: 1920×1080 a 30 qps, foco/exposição contínuos quando o aparelho deixa, zoom leve (1,5×) para ler a 15–20 cm,
+   recorte = área do retângulo na tela (com folga), quadro borrado é descartado e há 3 tentativas (cheia, metade com contraste, quadro inteiro). */
+var cam={stream:null,track:null,timer:0,busy:false,torch:false,wake:null,token:0,devs:[],devId:'',cur:'',canvas:null,reader:null,bd:null,err:'',
+  caps:{},adv:{},focus:[],zoom:0,zooms:[],refocusAt:0,okVar:0,cost:0,helpAt:0,since:0,lastOk:0,st:{n:0,blur:0,dark:0,flat:0},tip:false};
+var ZK='lojasg.estoque99.conf-zoom',BLUR_MIN=0.04,HELP_MS=5000;
 function camMsg(t){var el=$i('cf-msg');if(el)el.textContent=t}
 function hint(t,now){now=now||performance.now();if(now-M.hintAt<1500)return;M.hintAt=now;camMsg(t)}
-function stopCam(){cam.token++;clearTimeout(cam.timer);if(cam.stream){try{cam.stream.getTracks().forEach(function(t){t.stop()})}catch(e){}}cam.stream=null;cam.track=null;cam.torch=false;
+function stopCam(){cam.token++;clearTimeout(cam.timer);if(cam.stream){try{cam.stream.getTracks().forEach(function(t){t.stop()})}catch(e){}}cam.stream=null;cam.track=null;cam.torch=false;cam.adv={};cam.caps={};cam.focus=[];cam.zooms=[];cam.zoom=0;
   if(cam.wake){try{cam.wake.release()}catch(e){}cam.wake=null}var v=$i('cf-video');if(v){try{v.pause()}catch(e){}v.srcObject=null}if(M.st!=='ask')M.st='off';M.cand=null;paintCam()}
 function camError(e){var n=e&&e.name||'';cam.err=n==='NotAllowedError'||n==='SecurityError'||n==='PermissionDeniedError'?'Permissão da câmera negada. Libere a câmera para este site (no iPhone: Ajustes › Safari › Câmera › Permitir) e toque em "Tentar de novo". Você pode continuar adicionando volumes à mão.'
   :n==='NotFoundError'||n==='OverconstrainedError'||n==='DevicesNotFoundError'?'Nenhuma câmera encontrada neste aparelho. Você pode adicionar volumes à mão.'
@@ -6547,31 +6585,95 @@ function camError(e){var n=e&&e.name||'';cam.err=n==='NotAllowedError'||n==='Sec
 async function prepDecoder(){if(window.__confDecode)return;if(cam.reader||cam.bd)return;
   try{if(window.BarcodeDetector&&BarcodeDetector.getSupportedFormats){var f=await BarcodeDetector.getSupportedFormats();var want=['ean_13','ean_8','upc_a','code_128','itf'].filter(function(x){return f.indexOf(x)>=0});if(want.indexOf('ean_13')>=0&&want.indexOf('code_128')>=0){cam.bd=new BarcodeDetector({formats:want});return}}}catch(e){}
   if(typeof ZXing==='undefined'&&window.e99Need)await window.e99Need('zxing');
-  var Z=window.ZXing,h=new Map();h.set(Z.DecodeHintType.POSSIBLE_FORMATS,[Z.BarcodeFormat.EAN_13,Z.BarcodeFormat.EAN_8,Z.BarcodeFormat.UPC_A,Z.BarcodeFormat.CODE_128,Z.BarcodeFormat.ITF]);h.set(Z.DecodeHintType.ALLOWED_LENGTHS,Int32Array.from([14]));
+  var Z=window.ZXing,h=new Map();h.set(Z.DecodeHintType.POSSIBLE_FORMATS,[Z.BarcodeFormat.EAN_13,Z.BarcodeFormat.EAN_8,Z.BarcodeFormat.UPC_A,Z.BarcodeFormat.CODE_128,Z.BarcodeFormat.ITF]);h.set(Z.DecodeHintType.ALLOWED_LENGTHS,Int32Array.from([14]));h.set(Z.DecodeHintType.TRY_HARDER,true);
   var r=new Z.MultiFormatReader();r.setHints(h);cam.reader=r}
 function decodeCanvas(c){var Z=window.ZXing;try{var res=cam.reader.decodeWithState(new Z.BinaryBitmap(new Z.HybridBinarizer(new Z.HTMLCanvasElementLuminanceSource(c))));return {text:res.getText(),format:Z.BarcodeFormat[res.getBarcodeFormat()]}}catch(e){return null}finally{try{cam.reader.reset()}catch(e){}}}
-async function grab(){var v=$i('cf-video');if(!v||v.readyState<2||!v.videoWidth)return null;var vw=v.videoWidth,vh=v.videoHeight,sx=vw*.05,sy=vh*.22,sw=vw*.9,sh=vh*.56,sc=Math.min(1,1000/sw);
-  var c=cam.canvas||(cam.canvas=D.createElement('canvas'));c.width=Math.round(sw*sc);c.height=Math.round(sh*sc);var g=c.getContext('2d',{willReadFrequently:true});g.drawImage(v,sx,sy,sw,sh,0,0,c.width,c.height);
-  if(window.__confDecode)return window.__confDecode(c);
-  if(cam.bd){try{var a=await cam.bd.detect(c);return a&&a.length?{text:a[0].rawValue,format:a[0].format}:null}catch(e){return null}}
-  return cam.reader?decodeCanvas(c):null}
-function loop(){clearTimeout(cam.timer);if(!cam.stream||D.hidden||!S||S.status!=='ativa')return;var tok=cam.token;
-  cam.timer=setTimeout(async function(){if(tok!==cam.token)return;var r=null;if(!cam.busy){cam.busy=true;try{r=await grab()}catch(e){r=null}cam.busy=false;if(tok===cam.token)feed(r)}loop()},TICK)}
-async function startCam(){if(!S||S.status!=='ativa')return;stopCam();var tok=cam.token;cam.err='';camMsg('Abrindo a câmera…');paintCam();
+/* qualidade do quadro: brilho, faixa de contraste e nitidez (maior degrau entre pixels vizinhos ÷ contraste, nas duas direções) */
+function quality(c){var g=c.getContext('2d',{willReadFrequently:true}),w=c.width,h=c.height,K=9,lh=new Uint32Array(256),gx=new Uint32Array(256),gy=new Uint32Array(256),sum=0,n=0,k,i,d,L,p;
+  if(w<8||h<8)return {blur:false,dark:false,flat:true,sharp:0,range:0,mean:0,lo:0,hi:255};
+  for(k=1;k<=K;k++){d=g.getImageData(0,Math.floor(h*(.15+.7*k/(K+1))),w,1).data;p=-1;for(i=0;i<w;i++){L=(d[i*4]*77+d[i*4+1]*150+d[i*4+2]*29)>>8;lh[L]++;sum+=L;n++;if(p>=0)gx[Math.abs(L-p)]++;p=L}}
+  for(k=1;k<=K;k++){d=g.getImageData(Math.floor(w*(.1+.8*k/(K+1))),0,1,h).data;p=-1;for(i=0;i<h;i++){L=(d[i*4]*77+d[i*4+1]*150+d[i*4+2]*29)>>8;if(p>=0)gy[Math.abs(L-p)]++;p=L}}
+  function pct(hh,q){var tot=0,j;for(j=0;j<256;j++)tot+=hh[j];var lim=tot*q,acc=0;for(j=0;j<256;j++){acc+=hh[j];if(acc>=lim)return j}return 255}
+  var lo=pct(lh,.02),hi=pct(lh,.98),range=hi-lo,edge=Math.max(pct(gx,.995),pct(gy,.995)),sharp=range>0?edge/range:0,mean=n?sum/n:0;
+  return {lo:lo,hi:hi,range:range,mean:mean,sharp:sharp,flat:range<48,dark:mean<45,blur:range>=48&&sharp<BLUR_MIN}}
+/* estica o contraste (cinza normalizado) para a tentativa extra */
+function boost(c,q){var g=c.getContext('2d',{willReadFrequently:true}),im=g.getImageData(0,0,c.width,c.height),d=im.data,lo=q.lo,sc=255/Math.max(16,q.hi-q.lo);
+  for(var i=0;i<d.length;i+=4){var L=((d[i]*77+d[i+1]*150+d[i+2]*29)>>8)-lo;L=L<0?0:L*sc;if(L>255)L=255;d[i]=d[i+1]=d[i+2]=L}g.putImageData(im,0,0)}
+/* área do retângulo da tela convertida para pixels do vídeo (object-fit:cover), com folga para etiqueta grande/perto */
+function frameRect(v){var vw=v.videoWidth,vh=v.videoHeight,full={x:0,y:0,w:vw,h:vh},fr=D.querySelector('#conf-dlg .cf-frame');if(!fr)return full;
+  var vr=v.getBoundingClientRect(),r=fr.getBoundingClientRect();if(!vr.width||!vr.height||!r.width)return full;
+  var s=Math.max(vr.width/vw,vr.height/vh),ox=(vr.width-vw*s)/2,oy=(vr.height-vh*s)/2,x=(r.left-vr.left-ox)/s,y=(r.top-vr.top-oy)/s,w=r.width/s,h=r.height/s,ex=w*.2,ey=h*.4;
+  x=Math.max(0,x-ex);y=Math.max(0,y-ey);w=Math.min(vw-x,w+2*ex);h=Math.min(vh-y,h+2*ey);return w<32||h<32?full:{x:x,y:y,w:w,h:h}}
+/* tentativas: 0 = retângulo em resolução cheia (até 1280); 1 = retângulo pela metade com contraste esticado; 2 = quadro inteiro reduzido */
+var VARS=[{max:1280,full:false,boost:false},{max:640,full:false,boost:true},{max:960,full:true,boost:false}];
+function draw(v,k){var o=VARS[k],r=o.full?{x:0,y:0,w:v.videoWidth,h:v.videoHeight}:frameRect(v),sc=Math.min(1,o.max/r.w),c=D.createElement('canvas');
+  c.width=Math.max(1,Math.round(r.w*sc));c.height=Math.max(1,Math.round(r.h*sc));c.getContext('2d',{willReadFrequently:true}).drawImage(v,r.x,r.y,r.w,r.h,0,0,c.width,c.height);return c}
+async function tryDecode(c){if(cam.bd){try{var a=await cam.bd.detect(c);return a&&a.length?{text:a[0].rawValue,format:a[0].format}:null}catch(e){return null}}return cam.reader?decodeCanvas(c):null}
+/* um quadro: descarta borrado; tenta primeiro a variação que leu por último e mais uma se der tempo */
+async function scanFrame(first,more){var t0=performance.now(),q=quality(first);cam.st.n++;if(q.dark)cam.st.dark++;if(q.flat)cam.st.flat++;
+  if(q.blur){cam.st.blur++;return {blur:true,q:q}}
+  if(q.flat&&!window.__confDecode)return {q:q};/* quadro liso (sem contraste): não há código para ler */
+  if(window.__confDecode)return window.__confDecode(first);
+  var oth=[0,1,2].filter(function(k){return k!==cam.okVar}),order=[cam.okVar,oth[(cam.alt=(cam.alt|0)+1)%2]];
+  for(var i=0;i<order.length;i++){var k=order[i],c=k===order[0]&&first.__k===k?first:more(k);if(!c)continue;if(VARS[k].boost)boost(c,k===first.__k?q:quality(c));
+    var r=await tryDecode(c);if(r&&r.text){cam.okVar=k;r.q=q;return r}}
+  return {q:q}}
+async function grab(){var v=$i('cf-video');if(!v||v.readyState<2||!v.videoWidth)return null;var c=draw(v,0);c.__k=0;
+  var r=await scanFrame(c,function(k){return k===0?c:draw(v,k)});return r}
+function lastActivity(){return Math.max(cam.since,cam.lastOk,M.lastSeen||0)}
+function helpTick(now,r){if(r&&r.text){cam.lastOk=now;cam.st={n:0,blur:0,dark:0,flat:0};return}
+  if(M.st!=='armado'||now-lastActivity()<HELP_MS||now-cam.helpAt<HELP_MS)return;cam.helpAt=now;var s=cam.st,n=Math.max(1,s.n);
+  var t=s.blur/n>.4?'Fora de foco: afaste uns 15 cm, segure parado e espere o foco'+(cam.stream?' (ou toque em "Ajustar foco").':'.')
+   :s.dark/n>.5?(hasTorch()?'Pouca luz: acenda a lanterna ou procure mais luz.':'Pouca luz: procure mais luz sobre a etiqueta.')
+   :'Ainda sem leitura: aproxime ou afaste, mais luz e código reto dentro do retângulo.';
+  cam.st={n:0,blur:0,dark:0,flat:0};camMsg(t);
+  if(cam.focus.indexOf('single-shot')>=0&&now-cam.refocusAt>3000)refocus(false)}
+/* ritmo: período = maior entre 120 ms e 1,5× o tempo de leitura (aparelho lento lê menos vezes, sem travar a tela) */
+function period(){return Math.max(TICK,Math.min(600,Math.round(cam.cost*1.5)))}
+function pairWin(){return cam.stream?Math.max(PAIR_MS,Math.min(1500,Math.round(period()*2.2))):PAIR_MS}
+function loop(){clearTimeout(cam.timer);if(!cam.stream||D.hidden||!S||S.status!=='ativa')return;var tok=cam.token,wait=Math.max(40,period()-Math.round(cam.cost));
+  cam.timer=setTimeout(async function(){if(tok!==cam.token)return;var r=null;if(!cam.busy){cam.busy=true;var t0=performance.now();try{r=await grab()}catch(e){r=null}cam.cost=performance.now()-t0;cam.busy=false;
+    if(tok===cam.token){var now=performance.now();feed(r&&r.text?r:null,now);helpTick(now,r)}}loop()},wait)}
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+/* aplica uma restrição avançada mantendo as anteriores; confere em getSettings() e desfaz se o aparelho ignorou */
+async function setC(o){var t=cam.track;if(!t||!t.applyConstraints)return false;var m=Object.assign({},cam.adv,o);
+  try{await t.applyConstraints({advanced:[m]})}catch(e){try{await t.applyConstraints({advanced:[cam.adv]})}catch(x){}return false}
+  try{var s=t.getSettings&&t.getSettings()||{};for(var k in o){if(k in s&&(typeof o[k]==='number'?Math.abs(s[k]-o[k])>.05:s[k]!==o[k])){try{await t.applyConstraints({advanced:[cam.adv]})}catch(x){}return false}}}catch(e){}
+  cam.adv=m;return true}
+async function tune(tok){var t=cam.track,c={};if(!t)return;try{c=t.getCapabilities&&t.getCapabilities()||{}}catch(e){c={}}cam.caps=c;cam.adv={};
+  cam.focus=Array.isArray(c.focusMode)?c.focusMode.slice():[];
+  var fm=cam.focus.indexOf('continuous')>=0?'continuous':cam.focus.indexOf('single-shot')>=0?'single-shot':'';
+  if(fm)await setC({focusMode:fm});if(tok!==cam.token)return;
+  if(Array.isArray(c.exposureMode)&&c.exposureMode.indexOf('continuous')>=0)await setC({exposureMode:'continuous'});
+  if(Array.isArray(c.whiteBalanceMode)&&c.whiteBalanceMode.indexOf('continuous')>=0)await setC({whiteBalanceMode:'continuous'});
+  cam.zooms=[];cam.zoom=0;if(c.zoom&&typeof c.zoom.max==='number'&&c.zoom.max>=1.4){var mn=Math.max(1,+c.zoom.min||1);cam.zooms=[1,1.5,2,3].filter(function(z){return z>=mn&&z<=c.zoom.max});
+    var want=+lsGet(ZK)||1.5;if(cam.zooms.indexOf(want)<0)want=cam.zooms.indexOf(1.5)>=0?1.5:cam.zooms[0];if(tok===cam.token&&await setC({zoom:want}))cam.zoom=want;else cam.zooms=[]}
+  cam.refocusAt=performance.now();cam.tip=!fm}
+/* "Ajustar foco": com foco por toque (single-shot) pede um novo foco; sem controle de foco (iPhone) reabre a câmera, que foca de novo */
+async function refocus(manual){if(!cam.track)return;var tok=cam.token;cam.refocusAt=performance.now();
+  if(cam.focus.indexOf('single-shot')>=0){var ok=await setC({focusMode:'single-shot'});if(manual)camMsg(ok?'Focando… segure parado a uns 15 cm.':'Não deu para focar. Afaste uns 15 cm.');
+    if(ok&&cam.focus.indexOf('continuous')>=0)setTimeout(function(){if(tok===cam.token)setC({focusMode:'continuous'})},1200);return ok}
+  if(!manual)return false;camMsg('Reabrindo a câmera para focar…');await startCam('Câmera reaberta. Segure parado a uns 15 cm até focar.');return true}
+async function cycleZoom(){if(cam.zooms.length<2)return;var i=cam.zooms.indexOf(cam.zoom),z=cam.zooms[(i+1)%cam.zooms.length];if(await setC({zoom:z})){cam.zoom=z;lsSet(ZK,String(z));camMsg('Zoom '+zl(z)+'. Se a etiqueta não couber, diminua.')}else say('Zoom indisponível nesta câmera.');paintCam()}
+function zl(z){return String(z).replace('.',',')+'×'}
+async function startCam(okMsg){if(!S||S.status!=='ativa')return;stopCam();var tok=cam.token;cam.err='';camMsg('Abrindo a câmera…');paintCam();
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){camError({name:'nosupport'});return}
   var prep=prepDecoder().catch(function(e){return e});
-  var video=cam.devId?{deviceId:{exact:cam.devId},width:{ideal:1280},height:{ideal:720}}:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},stream;
+  var video=Object.assign(cam.devId?{deviceId:{exact:cam.devId}}:{facingMode:{ideal:'environment'}},{width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30}}),stream;
   try{stream=await navigator.mediaDevices.getUserMedia({video:video,audio:false})}catch(e){if(tok===cam.token){if(cam.devId&&e&&e.name==='OverconstrainedError'){cam.devId='';startCam();return}camError(e)}return}
   if(tok!==cam.token||!S||S.status!=='ativa'){stream.getTracks().forEach(function(t){t.stop()});return}
   var pe=await prep;if(pe instanceof Error){stream.getTracks().forEach(function(t){t.stop()});camMsg(pe.message||'Não foi possível abrir o leitor de código.');return}
   if(tok!==cam.token){stream.getTracks().forEach(function(t){t.stop()});return}
   cam.stream=stream;cam.track=stream.getVideoTracks()[0]||null;var v=$i('cf-video');if(v){v.muted=true;v.setAttribute('playsinline','');v.srcObject=stream;try{await v.play()}catch(e){}}
-  try{var s=cam.track&&cam.track.getSettings&&cam.track.getSettings();if(s&&s.deviceId)cam.devId=cam.devId||'';cam.cur=s&&s.deviceId||''}catch(e){}
-  try{var all=await navigator.mediaDevices.enumerateDevices();cam.devs=all.filter(function(d){return d.kind==='videoinput'})}catch(e){cam.devs=[]}
+  try{var s=cam.track&&cam.track.getSettings&&cam.track.getSettings();cam.cur=s&&s.deviceId||''}catch(e){}
+  try{await tune(tok)}catch(e){}if(tok!==cam.token)return;
+  try{var all=await navigator.mediaDevices.enumerateDevices();cam.devs=all.filter(function(d){return d.kind==='videoinput'&&d.deviceId})}catch(e){cam.devs=[]}
   try{if(navigator.wakeLock&&navigator.wakeLock.request)navigator.wakeLock.request('screen').then(function(w){if(tok===cam.token)cam.wake=w;else try{w.release()}catch(e){}}).catch(function(){})}catch(e){}
-  if(M.st!=='ask'){M.st='armado';M.cand=null}camMsg('Aponte para a etiqueta da caixa, com as barras na horizontal dentro do retângulo.');paintCam();loop()}
+  if(M.st!=='ask'){M.st='armado';M.cand=null}cam.since=performance.now();cam.st={n:0,blur:0,dark:0,flat:0};
+  camMsg(okMsg||(cam.tip?'Afaste uns 10–15 cm e aguarde o foco. Barras na horizontal dentro do retângulo.':'Aponte para a etiqueta da caixa, com as barras na horizontal dentro do retângulo.'));paintCam();loop()}
 async function switchCam(){if(cam.devs.length<2)return;var i=cam.devs.findIndex(function(d){return d.deviceId===(cam.devId||cam.cur)});cam.devId=cam.devs[(i+1)%cam.devs.length].deviceId;await startCam()}
-async function toggleTorch(){if(!cam.track)return;try{await cam.track.applyConstraints({advanced:[{torch:!cam.torch}]});cam.torch=!cam.torch}catch(e){say('Lanterna indisponível nesta câmera.')}paintCam()}
+async function toggleTorch(){if(!cam.track)return;var want=!cam.torch;if(await setC({torch:want}))cam.torch=want;else say('Lanterna indisponível nesta câmera.');paintCam()}
 function hasTorch(){try{var c=cam.track&&cam.track.getCapabilities&&cam.track.getCapabilities();return !!(c&&c.torch)}catch(e){return false}}
 
 /* ---------- máquina de estados ---------- */
@@ -6579,20 +6681,20 @@ function ruleFor(v){if(boxCode(v))return 1;var r=S.rule.codes[v.code];return r==
 function feed(r,now){now=now==null?performance.now():now;if(!S||S.status!=='ativa'||M.saving||M.st==='off'||M.st==='ask')return;var seen=!!(r&&r.text);if(seen)M.lastSeen=now;var v=seen?check(r.text,r.format):null;
   if(M.st==='travado'){if(S.mode==='auto'&&!seen&&now-M.lastSeen>=AUTO_MS){rearm('auto')}else{if(v&&v.code!==M.lockCode&&ruleFor(v)!==0&&now-M.otherAt>1500){M.otherAt=now;camMsg('Outro código na tela. Toque em "Próxima caixa" para contar.')}return}}
   if(M.st!=='armado')return;
-  if(!seen){if(M.cand&&now-M.cand.t>PAIR_MS)M.cand=null;return}
+  if(!seen){if(M.cand&&now-M.cand.t>pairWin())M.cand=null;return}
   if(!v){M.cand=null;hint('Código não aceito (formato ou dígito errado). Não contou.',now);return}
   var rule=ruleFor(v);if(rule===0){M.cand=null;hint('Código do produto: não conta. Aponte para a etiqueta da caixa.',now);return}
-  if(M.cand&&M.cand.code===v.code&&now-M.cand.t<=PAIR_MS){M.cand=null;if(rule===null)askBox(v,now);else countIt(v,now);return}
+  if(M.cand&&M.cand.code===v.code&&now-M.cand.t<=pairWin()){M.cand=null;if(rule===null)askBox(v,now);else countIt(v,now);return}
   M.cand={code:v.code,t:now}}
 async function countIt(v,now,m){M.saving=true;var x=await addRead(v.code,v.fmt,m||'c');M.saving=false;
   if(!x){M.st='armado';camMsg('Não salvo — tente de novo.');paint();return null}
   M.st='travado';M.lockCode=v.code;M.lastSeen=now==null?performance.now():now;M.otherAt=M.lastSeen;feedback();
   camMsg(S.mode==='auto'?'Contou! Tire a câmera da etiqueta e aponte para a próxima caixa.':'Contou! Toque em "Próxima caixa" e aponte para a próxima etiqueta.');
   paint();maybeCheckpoint();var nx=$i('cf-next');if(nx&&S.mode!=='auto')try{nx.focus({preventScroll:true})}catch(e){}return x}
-function rearm(){if(!S)return;M.st=cam.stream||M.fake?'armado':'off';M.cand=null;M.lockCode='';camMsg('Pronto para a próxima caixa.');paint()}
-function askBox(v,now){M.st='ask';v.now=now;M.ask=v;var box=$i('cf-ask');if(box){box.hidden=false;box.innerHTML='<p><b>Este código é da CAIXA?</b></p><p class="small">'+esc(FMT_NAME[v.fmt]||v.fmt)+' · <code>'+esc(v.code)+'</code></p><p class="small">A resposta vale para esta conferência.</p><div class="cf-askbtns"><button type="button" class="primary" id="cf-yes">Sim, é da caixa (conta 1)</button><button type="button" id="cf-no">Não, é do produto (não conta)</button></div>';var y=$i('cf-yes');if(y)try{y.focus({preventScroll:true})}catch(e){}}camMsg('Código novo nesta conferência: responda abaixo.')}
-async function answer(yes){var v=M.ask;if(!S||!v)return;M.ask=null;var box=$i('cf-ask');if(box){box.hidden=true;box.innerHTML=''}S.rule.codes[v.code]=yes?1:0;try{await putMeta()}catch(e){}cp.dirty=true;
-  if(yes){M.st='armado';await countIt(v,v.now)}else{M.st=cam.stream||M.fake?'armado':'off';camMsg('Certo: esse código não conta. Aponte para a etiqueta da caixa.');paint()}}
+function rearm(){if(!S)return;M.st=cam.stream||M.fake?'armado':'off';M.cand=null;M.lockCode='';cam.since=performance.now();camMsg('Pronto para a próxima caixa.');paint()}
+function askBox(v,now){M.st='ask';v.now=now;M.ask=v;sheet('',false);var box=$i('cf-ask');if(box){box.hidden=false;box.innerHTML='<p><b>Este código é da CAIXA?</b></p><p class="small">'+esc(FMT_NAME[v.fmt]||v.fmt)+' · <code>'+esc(v.code)+'</code></p><p class="small">A resposta vale para esta conferência.</p><div class="cf-askbtns"><button type="button" class="primary" id="cf-yes">Sim, é da caixa (conta 1)</button><button type="button" id="cf-no">Não, é do produto (não conta)</button></div>';var y=$i('cf-yes');if(y)try{y.focus({preventScroll:true})}catch(e){}}camMsg('Código novo nesta conferência: responda abaixo.')}
+async function answer(yes){var v=M.ask;if(!S||!v)return;M.ask=null;var box=$i('cf-ask');if(box){box.hidden=true;box.innerHTML=''}S.rule.codes[v.code]=yes?1:0;cp.dirty=true;var pm=putMeta().catch(function(){});
+  if(yes){M.st='armado';await countIt(v,v.now)}else{M.st=cam.stream||M.fake?'armado':'off';camMsg('Certo: esse código não conta. Aponte para a etiqueta da caixa.');paint()}await pm}
 function feedback(){try{if(window.siteSoundEnabled!==false&&typeof playSiteSound==='function')playSiteSound('tap')}catch(e){}try{if(navigator.vibrate)navigator.vibrate(60)}catch(e){}
   var c=$i('cf-count');if(c){c.classList.add('hit');setTimeout(function(){c.classList.remove('hit')},260)}}
 function maybeCheckpoint(){if(S&&cp.n>=CP_READS)checkpoint('20')}
@@ -6608,56 +6710,86 @@ async function resume(){if(!S||S.status!=='pausada')return;S.status='ativa';try{
 async function finish(){if(!S||S.status==='finalizada')return;if(!confirm('Finalizar a conferência '+S.n+' com '+valid().length+' volume(s)? Depois de finalizar não dá para contar mais nesta conferência.'))return;
   stopCam();S.status='finalizada';S.end=nowIso();try{await putMeta()}catch(e){}await checkpoint('fim');release();var id=S.id;showReport(id);say('Conferência '+S.n+' finalizada: '+valid().length+' volume(s).')}
 
-/* ---------- tela de contagem ---------- */
+/* ---------- tela de contagem (v97: tela cheia, minimalista, holograma) ---------- */
+var IC={pause:'<path d="M8 5v14M16 5v14"/>',play:'<path d="M7 5l12 7-12 7z"/>',plus:'<path d="M12 5v14M5 12h14"/>',torch:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  swap:'<path d="M4 8h13l-3-3"/><path d="M20 16H7l3 3"/>',focus:'<circle cx="12" cy="12" r="3"/><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/>',
+  undo:'<path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',done:'<path d="m5 12 5 5 9-10"/>',x:'<path d="M6 6l12 12M18 6 6 18"/>',up:'<path d="m6 15 6-6 6 6"/>',next:'<path d="M5 12h14M13 6l6 6-6 6"/>'};
+function ic(n){return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+IC[n]+'</svg>'}
+/* holograma: só camada visual por cima (a leitura usa os pixels do vídeo, nunca a tela). Parallax pelo dedo ou pela inclinação (quando o aparelho deixa sem pedir permissão). */
+var holo={x:0,y:0,raf:0,blur:false,on:false};
+function fxOn(){var b=D.body;return !(b.classList.contains('fx-off')||b.classList.contains('fx-user-off'))}
+function calmNow(){try{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return true}catch(e){}return !!window.__osReduce}
+function fxPaused(){return lsGet('lojasg.estoque99.fx-pause')==='1'}
+function holoMode(){var d=$i('conf-dlg');if(!d)return;var off=!fxOn(),calm=!off&&calmNow(),pz=D.hidden||holo.blur||fxPaused()||!S||S.status!=='ativa'||!$i('cf-count');
+  d.classList.toggle('holo-off',off);d.classList.toggle('holo-calm',calm);d.classList.toggle('holo-pause',pz);holo.live=!off&&!calm&&!pz;if(!holo.live&&(holo.x||holo.y)){holo.x=holo.y=0;parApply()}}
+function parApply(){holo.raf=0;var d=$i('conf-dlg');if(!d)return;d.style.setProperty('--px',holo.x.toFixed(3));d.style.setProperty('--py',holo.y.toFixed(3))}
+function parSet(x,y){if(!holo.live)return;holo.x=Math.max(-1,Math.min(1,x));holo.y=Math.max(-1,Math.min(1,y));if(!holo.raf)holo.raf=requestAnimationFrame(parApply)}
+function onPtr(ev){if(ev.pointerType==='mouse'||ev.buttons||ev.pointerType==='touch')parSet(ev.clientX/innerWidth*2-1,ev.clientY/innerHeight*2-1)}
+function onOri(ev){if(ev.gamma==null||ev.beta==null)return;parSet(ev.gamma/30,(ev.beta-45)/30)}
+function onWinBlur(){holo.blur=true;holoMode()}function onWinFocus(){holo.blur=false;holoMode()}
+function holoStart(){if(holo.on)return;holo.on=true;holo.blur=false;var d=dlg();d.addEventListener('pointermove',onPtr,{passive:true});
+  if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission!=='function')window.addEventListener('deviceorientation',onOri,{passive:true});
+  window.addEventListener('blur',onWinBlur);window.addEventListener('focus',onWinFocus);holoMode()}
+function holoStop(){if(!holo.on)return;holo.on=false;var d=$i('conf-dlg');if(d)d.removeEventListener('pointermove',onPtr);window.removeEventListener('deviceorientation',onOri);window.removeEventListener('blur',onWinBlur);window.removeEventListener('focus',onWinFocus);
+  if(holo.raf)cancelAnimationFrame(holo.raf);holo.raf=0;holo.x=holo.y=0;parApply()}
+function sheetOpen(){return ['cf-hsheet','cf-manual-form'].some(function(id){var e=$i(id);return e&&!e.hidden})}
+function sheet(id,show){['cf-hsheet','cf-manual-form'].forEach(function(k){var e=$i(k);if(e)e.hidden=k===id?!show:true});var hb=$i('cf-histbtn');if(hb)hb.setAttribute('aria-expanded',String(id==='cf-hsheet'&&show));
+  if(show){var f=id==='cf-manual-form'?$i('cf-mcode'):$i('cf-hclose');if(f)try{f.focus({preventScroll:true})}catch(e){}}}
 function dlg(){var d=$i('conf-dlg');if(!d){d=D.createElement('dialog');d.id='conf-dlg';d.setAttribute('aria-labelledby','cf-title');D.body.appendChild(d);
-  d.addEventListener('click',onClick);d.addEventListener('submit',function(ev){ev.preventDefault();if(ev.target&&ev.target.id==='cf-manual-form'){var i=$i('cf-mcode');manual(i?i.value:'').then(function(x){if(x){var f=$i('cf-manual-form');if(f)f.hidden=true;if(i)i.value=''}})}});
+  d.addEventListener('click',onClick);d.addEventListener('submit',function(ev){ev.preventDefault();if(ev.target&&ev.target.id==='cf-manual-form'){var i=$i('cf-mcode');manual(i?i.value:'').then(function(x){if(x){sheet('cf-manual-form',false);if(i)i.value=''}})}});
   d.addEventListener('change',function(ev){if(ev.target&&ev.target.id==='cf-autochk'&&S){S.mode=ev.target.checked?'auto':'toque';putMeta().catch(function(){});cp.dirty=true;paint()}});
-  d.addEventListener('cancel',function(ev){ev.preventDefault();closeDlg()});d.addEventListener('close',function(){D.body.classList.remove('conf-on')})}return d}
+  d.addEventListener('cancel',function(ev){ev.preventDefault();if(sheetOpen()){sheet('',false);return}closeDlg()});d.addEventListener('close',function(){D.body.classList.remove('conf-on');holoStop()})}return d}
 function openDlg(){var d=dlg();if(!d.open)try{d.showModal()}catch(x){d.setAttribute('open','')}D.body.classList.add('conf-on')}
-async function closeDlg(){var counting=!!$i('cf-count');if(S&&S.status==='ativa')await pause();var d=$i('conf-dlg');stopCam();if(d&&d.open)try{d.close()}catch(x){d.removeAttribute('open')}D.body.classList.remove('conf-on');clearInterval(tickT);tickT=0;
+async function closeDlg(){var counting=!!$i('cf-count');if(S&&S.status==='ativa')await pause();var d=$i('conf-dlg');stopCam();holoStop();if(d&&d.open)try{d.close()}catch(x){d.removeAttribute('open')}D.body.classList.remove('conf-on');clearInterval(tickT);tickT=0;
   if(counting&&S&&S.status!=='finalizada')say('Conferência '+S.n+' pausada. Continue pela tela de Notas fiscais.');if(S&&S.status==='finalizada'){S=null}try{if(typeof page!=='undefined'&&page==='nfs')render()}catch(e){}}
 function onClick(ev){var b=ev.target&&ev.target.closest&&ev.target.closest('button');if(!b)return;var id=b.id;
-  if(id==='cf-x')closeDlg();else if(id==='cf-next'){rearm()}else if(id==='cf-pause'){if(S&&S.status==='ativa')pause('Pausada. A contagem está salva.');else resume()}
-  else if(id==='cf-manual'){var f=$i('cf-manual-form');if(f){f.hidden=!f.hidden;if(!f.hidden){var i=$i('cf-mcode');if(i)try{i.focus()}catch(e){}}}}
-  else if(id==='cf-mcancel'){var f2=$i('cf-manual-form');if(f2)f2.hidden=true}
+  if(id==='cf-x')closeDlg();else if(id==='cf-next'){rearm()}else if(id==='cf-pause'){if(S&&S.status==='ativa')pause('Pausada. A contagem está salva.');else resume()}else if(id==='cf-resume')resume();
+  else if(id==='cf-manual'){var f=$i('cf-manual-form');sheet('cf-manual-form',!!(f&&f.hidden))}
+  else if(id==='cf-mcancel'||id==='cf-hclose')sheet('',false);else if(id==='cf-histbtn'){var h=$i('cf-hsheet');sheet('cf-hsheet',!!(h&&h.hidden))}
   else if(id==='cf-undo')undo();else if(id==='cf-finish')finish();else if(id==='cf-yes')answer(true);else if(id==='cf-no')answer(false);
-  else if(id==='cf-switch')switchCam();else if(id==='cf-torch')toggleTorch();else if(id==='cf-retry'){cam.err='';startCam()}
+  else if(id==='cf-switch')switchCam();else if(id==='cf-torch')toggleTorch();else if(id==='cf-retry'){cam.err='';startCam()}else if(id==='cf-focus')refocus(true);else if(id==='cf-zoom')cycleZoom();
   else if(id==='cf-csv')csv(b.dataset.id);else if(id==='cf-pdf')pdf(b.dataset.id);else if(id==='cf-assoc-go')assocSave(b.dataset.id);else if(id==='cf-close')closeDlg();
   else if(id==='cf-mark')markNF(b.dataset.id,b.dataset.st)}
-function shell(){var d=dlg();d.innerHTML='<div class="cf-wrap">'
-  +'<div class="cf-head"><div><h2 id="cf-title"></h2><p class="small cf-meta" id="cf-meta"></p></div><button type="button" class="cf-x" id="cf-x" aria-label="Fechar (a conferência fica pausada)">✕</button></div>'
-  +'<div class="cf-status"><span class="cf-chip" id="cf-st"></span><span class="small" id="cf-save" role="status"></span></div>'
-  +'<div class="cf-cam" id="cf-cam"><video id="cf-video" muted playsinline autoplay aria-label="Imagem da câmera"></video><div class="cf-frame" aria-hidden="true"></div><div class="cf-camoff" id="cf-camoff" hidden></div><div class="cf-camtools"><button type="button" id="cf-retry" hidden>Tentar de novo</button><button type="button" id="cf-switch" hidden>Trocar câmera</button><button type="button" id="cf-torch" hidden aria-pressed="false">Lanterna</button></div></div>'
+function shell(){var d=dlg();d.innerHTML='<div class="cf-bg" aria-hidden="true"></div><div class="cf-wrap cf-scan">'
+  +'<div class="cf-top"><div class="cf-topt"><h2 id="cf-title"></h2><p class="cf-sub"><span class="cf-st" id="cf-st"></span><span id="cf-save" role="status"></span></p></div><button type="button" class="cf-ib cf-x" id="cf-x" aria-label="Fechar (a conferência fica pausada)">'+ic('x')+'</button></div>'
+  +'<div class="cf-cam" id="cf-cam"><video id="cf-video" muted playsinline autoplay aria-label="Imagem da câmera"></video><div class="cf-frame" aria-hidden="true"><i></i></div>'
+  +'<div class="cf-camoff" id="cf-camoff" hidden><p id="cf-camofft"></p><button type="button" id="cf-retry" hidden>Tentar de novo</button><button type="button" class="primary" id="cf-resume" hidden>Continuar</button></div>'
+  +'<div class="cf-tools" role="toolbar" aria-label="Câmera e opções"><button type="button" class="cf-ib" id="cf-pause" aria-label="Pausar" title="Pausar">'+ic('pause')+'</button><button type="button" class="cf-ib" id="cf-manual" aria-label="Adicionar volume à mão" title="Volume à mão">'+ic('plus')+'</button>'
+  +'<button type="button" class="cf-ib" id="cf-torch" hidden aria-pressed="false" aria-label="Lanterna" title="Lanterna">'+ic('torch')+'</button><button type="button" class="cf-ib" id="cf-switch" hidden aria-label="Trocar câmera" title="Trocar câmera">'+ic('swap')+'</button></div>'
+  +'<div class="cf-camfoot"><button type="button" class="cf-pill" id="cf-focus" hidden>'+ic('focus')+'<span>Ajustar foco</span></button><button type="button" class="cf-pill" id="cf-zoom" hidden aria-label="Zoom da câmera"></button></div></div>'
   +'<p class="cf-msg" id="cf-msg" role="status" aria-live="polite"></p>'
-  +'<div class="cf-ask" id="cf-ask" hidden></div>'
-  +'<div class="cf-countbox"><div class="eyebrow" id="cf-countlab">Volumes contados</div><div class="cf-count" id="cf-count" aria-live="polite" aria-atomic="true" aria-describedby="cf-countlab">00</div></div>'
-  +'<button type="button" class="primary cf-next" id="cf-next" hidden>Próxima caixa</button>'
-  +'<div class="cf-btns"><button type="button" id="cf-pause">Pausar</button><button type="button" id="cf-manual">＋ Volume à mão</button><button type="button" id="cf-undo">Desfazer última</button><button type="button" class="cf-finish" id="cf-finish">Finalizar</button></div>'
-  +'<form class="cf-manual" id="cf-manual-form" hidden><label>Código da caixa (opcional)<input id="cf-mcode" maxlength="64" inputmode="text" autocomplete="off" spellcheck="false" placeholder="Deixe vazio se não tiver código"></label><div class="cf-row"><button type="submit" class="primary">Adicionar 1 volume</button><button type="button" id="cf-mcancel">Cancelar</button></div></form>'
-  +'<label class="cf-auto"><input type="checkbox" id="cf-autochk"> Rearme automático: conta de novo quando nenhum código aparece por 1,2 s</label>'
-  +'<p class="small cf-last">Último código: <code id="cf-last">—</code></p>'
-  +'<details class="cf-histbox"><summary>Histórico de leituras (<span id="cf-hn">0</span>)</summary><ol class="cf-hist" id="cf-hist"></ol></details>'
-  +'</div>'}
+  +'<div class="cf-panel"><div class="cf-countwrap"><div class="cf-countbox"><div class="cf-count" id="cf-count" aria-live="polite" aria-atomic="true">00</div></div><div class="cf-countlab" id="cf-countlab">volumes contados</div></div>'
+  +'<p class="cf-last">Último: <code id="cf-last">—</code></p>'
+  +'<button type="button" class="primary cf-next" id="cf-next" disabled><span>Próxima caixa</span>'+ic('next')+'</button>'
+  +'<div class="cf-row2"><button type="button" class="cf-sec" id="cf-undo">'+ic('undo')+'<span>Desfazer</span></button><button type="button" class="cf-sec cf-finish" id="cf-finish">'+ic('done')+'<span>Finalizar</span></button></div>'
+  +'<button type="button" class="cf-handle" id="cf-histbtn" aria-expanded="false" aria-controls="cf-hsheet">'+ic('up')+'<span>Histórico · <span id="cf-hn">0</span></span></button></div></div>'
+  +'<div class="cf-sheet cf-ask" id="cf-ask" hidden></div>'
+  +'<section class="cf-sheet" id="cf-hsheet" hidden aria-labelledby="cf-htitle"><div class="cf-shead"><h3 id="cf-htitle">Histórico</h3><button type="button" class="cf-ib" id="cf-hclose" aria-label="Fechar histórico">'+ic('x')+'</button></div>'
+  +'<p class="cf-meta" id="cf-meta"></p><label class="cf-auto"><input type="checkbox" id="cf-autochk"> Rearme automático: conta de novo quando nenhum código aparece por 1,2 s</label><ol class="cf-hist" id="cf-hist"></ol></section>'
+  +'<form class="cf-sheet cf-manual" id="cf-manual-form" hidden><div class="cf-shead"><h3>Volume à mão</h3><button type="button" class="cf-ib" id="cf-mcancel" aria-label="Cancelar">'+ic('x')+'</button></div><label>Código da caixa (opcional)<input id="cf-mcode" maxlength="64" inputmode="text" autocomplete="off" spellcheck="false" placeholder="Deixe vazio se não tiver código"></label><button type="submit" class="primary">Adicionar 1 volume</button></form>'}
 var ST={ativa:'Contando',pausada:'Pausada',finalizada:'Finalizada',cancelada:'Cancelada'};
-function paintCam(){if(!S)return;var box=$i('cf-cam'),off=$i('cf-camoff');if(!box)return;var on=!!cam.stream;box.classList.toggle('off',!on);
-  if(off){off.hidden=on;off.textContent=S.status==='pausada'?'Pausada. Toque em "Continuar" para ligar a câmera.':cam.err?'Câmera desligada.':'Ligando a câmera…'}
-  var r=$i('cf-retry');if(r)r.hidden=!(cam.err&&S.status==='ativa');var sw=$i('cf-switch');if(sw)sw.hidden=!(on&&cam.devs.length>1);
-  var t=$i('cf-torch');if(t){t.hidden=!(on&&hasTorch());t.setAttribute('aria-pressed',String(!!cam.torch));t.textContent=cam.torch?'Lanterna ligada':'Lanterna'}}
+function paintCam(){if(!S)return;var box=$i('cf-cam'),off=$i('cf-camoff');if(!box)return;var on=!!cam.stream,pz=S.status==='pausada';box.classList.toggle('off',!on);
+  if(off){off.hidden=on;var t=$i('cf-camofft');if(t)t.textContent=pz?'Pausada':cam.err?'Câmera desligada':'Ligando a câmera…'}
+  var r=$i('cf-retry');if(r)r.hidden=!(cam.err&&S.status==='ativa');var rs=$i('cf-resume');if(rs)rs.hidden=!pz;
+  var sw=$i('cf-switch');if(sw)sw.hidden=!(on&&cam.devs.length>1);
+  var t2=$i('cf-torch');if(t2){t2.hidden=!(on&&hasTorch());t2.setAttribute('aria-pressed',String(!!cam.torch));t2.setAttribute('aria-label',cam.torch?'Desligar lanterna':'Ligar lanterna')}
+  var fo=$i('cf-focus');if(fo)fo.hidden=!on;var z=$i('cf-zoom');if(z){z.hidden=!(on&&cam.zooms.length>1);z.textContent=cam.zoom?zl(cam.zoom):'';z.setAttribute('aria-label','Zoom da câmera: '+(cam.zoom?zl(cam.zoom):'')+'. Toque para trocar.')}
+  var p=$i('cf-pause');if(p){var a=S.status==='ativa';p.innerHTML=ic(a?'pause':'play');p.setAttribute('aria-label',a?'Pausar':'Continuar');p.title=a?'Pausar':'Continuar';p.disabled=S.status==='finalizada'}holoMode()}
+function lastTxt(r){if(!r)return '—';var c=r.code||'';return (c?c+(c.length>4?' (final '+c.slice(-4)+')':''):'sem código')+(r.m==='h'?' · à mão':'')+(r.st==='x'?' · desfeita':'')}
 function paint(){if(!S||!$i('cf-count'))return;var v=valid(),n=v.length;
-  $i('cf-title').textContent='Conferência '+S.n;$i('cf-meta').textContent=S.by+' · início '+dt(Date.parse(S.start))+' · ID '+S.id;
+  $i('cf-title').textContent='Conferência '+S.n;var mt=$i('cf-meta');if(mt)mt.textContent=S.by+' · início '+dt(Date.parse(S.start))+' · ID '+S.id;
   var st=$i('cf-st');st.textContent=ST[S.status]||S.status;st.dataset.st=S.status;
   $i('cf-save').textContent=(saveOk?'Salvo no aparelho ✓':'Não salvo — tente de novo')+' · '+syncText();
   var c=$i('cf-count');var txt=pad(n);if(c.textContent!==txt)c.textContent=txt;c.setAttribute('aria-label',n+(n===1?' volume contado':' volumes contados'));
-  var nx=$i('cf-next');nx.hidden=!(M.st==='travado'&&S.status==='ativa');
-  var p=$i('cf-pause');p.textContent=S.status==='ativa'?'Pausar':'Continuar';p.classList.toggle('primary',S.status==='pausada');
+  var nx=$i('cf-next');nx.disabled=!(M.st==='travado'&&S.status==='ativa');
   $i('cf-undo').disabled=!n;var ac=$i('cf-autochk');if(ac)ac.checked=S.mode==='auto';
-  var last=S.reads.slice(-1)[0];$i('cf-last').textContent=last?(last.code||'(sem código)')+' · '+(last.m==='h'?'manual':'câmera'):'—';
+  $i('cf-last').textContent=lastTxt(S.reads.slice(-1)[0]);
   $i('cf-hn').textContent=String(S.reads.length);
-  $i('cf-hist').innerHTML=S.reads.slice(-30).reverse().map(function(r){return '<li class="'+(r.st==='x'?'x':'')+'"><b>'+pad(r.seq)+'</b><span>'+esc(tm(r.at))+'</span><code>'+esc(r.code||'(sem código)')+'</code><span class="small">'+(r.m==='h'?'manual':'câmera')+(r.st==='x'?' · desfeita':'')+'</span></li>'}).join('');
+  $i('cf-hist').innerHTML=S.reads.slice(-50).reverse().map(function(r){return '<li class="'+(r.st==='x'?'x':'')+'"><b>'+pad(r.seq)+'</b><span>'+esc(tm(r.at))+'</span><code>'+esc(r.code||'(sem código)')+'</code><span class="small">'+(r.m==='h'?'manual':'câmera')+(r.st==='x'?' · desfeita':'')+'</span></li>'}).join('');
   paintCam()}
 function tick(){if(!S){clearInterval(tickT);tickT=0;return}if(!logged()||S.acct!==acct()){stopCam();S=null;var d=$i('conf-dlg');if(d&&d.open)try{d.close()}catch(e){}return}
   if(S.status==='ativa'&&cp.dirty&&Date.now()-cp.t>=CP_MS)checkpoint('60s');markSynced().then(function(){var el=$i('cf-save');if(el&&S)el.textContent=(saveOk?'Salvo no aparelho ✓':'Não salvo — tente de novo')+' · '+syncText()})}
-async function openCounting(s){S=s;M={st:'off',cand:null,lockCode:'',lastSeen:0,hintAt:0,otherAt:0,saving:false,ask:null};cam.err='';shell();openDlg();paint();clearInterval(tickT);tickT=setInterval(tick,3000);
+async function openCounting(s){S=s;M={st:'off',cand:null,lockCode:'',lastSeen:0,hintAt:0,otherAt:0,saving:false,ask:null};cam.err='';shell();openDlg();holoStart();paint();clearInterval(tickT);tickT=setInterval(tick,3000);
   if(S.status==='ativa')await startCam();else camMsg('Conferência pausada. Toque em "Continuar" para seguir contando.')}
 
 /* ---------- começar ---------- */
@@ -6687,7 +6819,7 @@ function compare(nf){var list=(state.confs||[]).filter(function(c){return c.nf==
   var exp=Number.isSafeInteger(nf.volumes)&&nf.volumes>0?nf.volumes:null,dec=Number.isSafeInteger(nf.declaredVolumes)?nf.declaredVolumes:null,items=[];
   (nf.items||[]).forEach(function(it){if(it&&it.ean&&byCode[it.ean]!=null)items.push([it.ean,String(it.description||'').slice(0,80),byCode[it.ean],it.quantity])});
   var want=exp!=null?exp:dec;return {sessions:list,total:total,volumes:exp,declared:dec,items:items,ok:want==null?null:total===want,want:want}}
-function showReport(id){var c=confById(id);if(!c){say('Conferência não encontrada.');return}stopCam();var d=dlg(),x=data(c),aux=isAuxNow(),nf=aux?null:nfOf(c);
+function showReport(id){var c=confById(id);if(!c){say('Conferência não encontrada.');return}stopCam();holoStop();var d=dlg(),x=data(c),aux=isAuxNow(),nf=aux?null:nfOf(c);
   var h='<div class="cf-wrap cf-rep"><div class="cf-head"><div><h2 id="cf-title">Relatório · '+esc(c.n)+'</h2><p class="small">'+esc(ST[c.status]||c.status)+'</p></div><button type="button" class="cf-x" id="cf-close" aria-label="Fechar">✕</button></div>'
    +'<dl class="cf-kv"><dt>Número</dt><dd>'+esc(c.n)+'</dd><dt>ID</dt><dd>'+esc(c.id)+'</dd><dt>Funcionário</dt><dd>'+esc(c.by)+(c.login?' ('+esc(c.login)+')':'')+'</dd><dt>Início</dt><dd>'+esc(dt(x.start))+'</dd><dt>Término</dt><dd>'+esc(x.end?dt(x.end):'—')+'</dd>'
    +(x.end?'<dt>Duração</dt><dd>'+esc(dur(x.start,x.end))+'</dd>':'')+'<dt>Total de volumes</dt><dd><b>'+x.total+'</b></dd><dt>Pela câmera</dt><dd>'+x.camN+'</dd><dt>À mão</dt><dd>'+x.manN+'</dd><dt>Desfeitas</dt><dd>'+x.undone+'</dd>'
@@ -6728,7 +6860,7 @@ function pdf(id){var c=confById(id);if(!c)return;var html=printHtml(c),w=null;tr
 function histHtml(){var me=meDev(),aux=isAuxNow(),list=(state.confs||[]).filter(function(c){return !aux||c.dev===me}).slice(0,10);if(!list.length)return '';
   return '<details class="conf-hist"><summary>Conferências por câmera ('+list.length+')</summary><ul class="conf-hist-list">'+list.map(function(c){var nf=aux?null:nfOf(c);
     return '<li><span><b>'+esc(c.n)+'</b> · '+esc(c.by)+' · '+esc(dt(Date.parse(c.start)))+' · '+(c.total|0)+' volume(s) · '+esc(ST[c.status]||c.status)+(nf?' · NF '+esc(nf.number):'')+'</span><button type="button" data-conf-rep="'+esc(c.id)+'">Relatório</button></li>'}).join('')+'</ul></details>'}
-function ctaHtml(){return '<section class="panel conf-cta" id="conf-cta" aria-label="Conferência por câmera"><button type="button" class="primary conf-go" id="conf-go" onclick="confStart()">📷 INICIAR CONFERÊNCIA POR CÂMERA</button>'
+function ctaHtml(){return '<section class="panel conf-cta" id="conf-cta" aria-label="Conferência por câmera"><button type="button" class="primary conf-go" id="conf-go" onclick="confStart()"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 8v8M11 8v8M13.5 8v8M16 8v8"/></svg>INICIAR CONFERÊNCIA POR CÂMERA</button>'
   +'<p class="small">Conte os volumes lendo a etiqueta de cada caixa (EAN-13, EAN-8, UPC-A, Code 128, ITF-14). Às cegas: a contagem não mostra a quantidade da NF. Funciona sem internet.</p><div class="conf-resume" id="conf-resume"></div>'+histHtml()+'</section>'}
 async function banner(){var box=$i('conf-resume');if(!box||!logged())return;var open=await interrupted();box=$i('conf-resume');if(!box)return;
   box.innerHTML=open.map(function(o){var tot=Array.isArray(o.reads)?o.reads.filter(function(r){return Array.isArray(r)?r[5]==='v':r.st==='v'}).length:(o.total|0);
@@ -6738,14 +6870,14 @@ D.addEventListener('click',function(ev){var b=ev.target&&ev.target.closest&&ev.t
 if(typeof upgradedNFs==='function'){var baseNFs=upgradedNFs;upgradedNFs=function(){var h=baseNFs.apply(this,arguments);try{if(logged()&&typeof h==='string'&&h.indexOf('conf-cta')<0){var at=h.indexOf('<div class="panel"><div class="panelhead"><h2>Notas fiscais');h=at>=0?h.slice(0,at)+ctaHtml()+h.slice(at):h+ctaHtml()}setTimeout(banner,0)}catch(e){}return h}}
 
 /* segundo plano / sair / voltar a rede */
-D.addEventListener('visibilitychange',function(){if(D.hidden&&S&&S.status==='ativa')pause('Pausada porque o app saiu da tela. Toque em "Continuar".')});
+D.addEventListener('visibilitychange',function(){if(D.hidden&&S&&S.status==='ativa')pause('Pausada porque o app saiu da tela. Toque em "Continuar".');holoMode()});
 window.addEventListener('pagehide',function(){if(S&&S.status==='ativa'){stopCam();S.status='pausada';putMeta().catch(function(){})}});
 window.addEventListener('online',function(){if(S&&(cp.dirty||pendingMine(S.id)))checkpoint('online')});
 window.e99ConfPurge=function(storeKey){var a=h32(storeKey);['sessions','reads'].forEach(function(st){try{run(st,'readwrite',function(o){var c=o.openCursor();c.onsuccess=function(){var cur=c.result;if(!cur)return;if(cur.value&&cur.value.acct===a)cur.delete();cur.continue()}}).catch(function(){})}catch(e){}})};
 /* para os testes (leitor falso): alimentar a máquina de estados quadro a quadro */
 window.e99Conf={check:check,feed:function(r,t){feed(r,t)},arm:function(){if(S&&S.status==='ativa'){M.fake=true;M.st='armado';M.cand=null}},state:function(){return S?{id:S.id,n:S.n,status:S.status,machine:M.st,total:valid().length,seq:S.reads.length?S.reads[S.reads.length-1].seq:0,cpSeq:cp.seq,dirty:cp.dirty,mode:S.mode,synced:S.reads.filter(function(r){return r.synced}).length}:null},
   checkpoint:function(){return checkpoint('teste')},idbReads:readsOf,
-  rawRows:function(){return idbAll('reads')},csv:function(id){var c=confById(id);return c?csvText(c):''},decodeCanvas:async function(c){await prepDecoder();return cam.reader?decodeCanvas(c):null},answer:answer,current:function(){return S}};
+  rawRows:function(){return idbAll('reads')},csv:function(id){var c=confById(id);return c?csvText(c):''},decodeCanvas:async function(c){await prepDecoder();return cam.reader?decodeCanvas(c):null},quality:quality,scan:async function(c){await prepDecoder();c.__k=0;var r=await scanFrame(c,function(k){return k===0?c:null});return r&&r.text?{text:r.text,format:r.format}:{blur:!!(r&&r.blur),sharp:r&&r.q?r.q.sharp:0}},cam:function(){return {zoom:cam.zoom,zooms:cam.zooms.slice(),focus:cam.focus.slice(),torch:cam.torch,adv:Object.assign({},cam.adv),devs:cam.devs.length,cur:cam.cur,tick:period(),cost:Math.round(cam.cost),pair:pairWin()}},feedScan:function(c,t){return this.scan(c).then(function(r){feed(r&&r.text?r:null,t);return r})},answer:answer,current:function(){return S}};
 })();
 </script>
 </body></html>
