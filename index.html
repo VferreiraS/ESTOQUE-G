@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="97"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="98"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -6407,6 +6407,8 @@ body.conf-on #view{visibility:hidden}
 #conf-dlg .cf-sec{min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:14px;border:1px solid rgba(255,255,255,.12)!important;background:rgba(255,255,255,.05)!important;font-size:15px;font-weight:600}
 #conf-dlg .cf-sec:disabled{color:#8e8e94!important}
 #conf-dlg .cf-finish{color:#FF8A7A!important}
+#conf-dlg .cf-discard{min-height:44px;width:100%;border:0!important;background:none!important;color:#FF8A7A!important;font-size:14px;font-weight:600}
+#conf-dlg .cf-discard:disabled{color:#8e8e94!important}
 #conf-dlg .cf-handle{min-height:44px;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;border:0!important;background:none!important;color:#a6a6ab!important;font-size:13px}
 #conf-dlg .cf-sheet{position:absolute;left:0;right:0;bottom:0;z-index:5;margin:0 auto;max-width:560px;max-height:72%;overflow:auto;display:grid;gap:12px;padding:14px 16px calc(16px + env(safe-area-inset-bottom));background:#111114;border:1px solid rgba(255,255,255,.1);border-bottom:0;border-radius:20px 20px 0 0;animation:cf-up .22s cubic-bezier(.22,1,.36,1) backwards}
 @keyframes cf-up{from{transform:translateY(24px);opacity:0}}
@@ -6508,6 +6510,7 @@ function run(store,mode,fn){return idb().then(function(d){return new Promise(fun
 function idbPut(store,rec){return run(store,'readwrite',function(st){st.put(rec)})}
 function idbPutMany(store,recs){return run(store,'readwrite',function(st){recs.forEach(function(r){st.put(r)})})}
 function idbAll(store){return run(store,'readonly',function(st){return st.getAll()})}
+function idbDropConf(id){return Promise.all([run('sessions','readwrite',function(st){st.delete(id)}),run('reads','readwrite',function(st){var c=st.index('conf').openCursor(IDBKeyRange.only(id));c.onsuccess=function(){var cur=c.result;if(!cur)return;cur.delete();cur.continue()}})])}
 function idbByConf(id){return run('reads','readonly',function(st){return st.index('conf').getAll(id)})}
 var keyP=null,keyFor='';
 function b64(u){var s='';for(var i=0;i<u.length;i++)s+=String.fromCharCode(u[i]);return btoa(s)}
@@ -6710,6 +6713,18 @@ async function resume(){if(!S||S.status!=='pausada')return;S.status='ativa';try{
 async function finish(){if(!S||S.status==='finalizada')return;if(!confirm('Finalizar a conferência '+S.n+' com '+valid().length+' volume(s)? Depois de finalizar não dá para contar mais nesta conferência.'))return;
   stopCam();S.status='finalizada';S.end=nowIso();try{await putMeta()}catch(e){}await checkpoint('fim');release();var id=S.id;showReport(id);say('Conferência '+S.n+' finalizada: '+valid().length+' volume(s).')}
 
+/* v98: descartar = apaga a sessão e as leituras do aparelho, sem relatório. Na equipe fica só um marcador "cancelada" sem leituras
+   (o sync não aceita apagar pelo ntfy; o aparelho dono pode atualizar, então as cópias dos outros também perdem as leituras). */
+async function discard(){if(!S||S.status==='finalizada')return;if(S.dev!==meDev()||S.acct!==acct()){say('Só quem fez a conferência, neste aparelho, pode descartar.');return}
+  if(!confirm('Descartar a conferência '+S.n+' ('+valid().length+' volume(s))? As leituras serão apagadas e não haverá relatório. Não dá para desfazer.'))return;
+  var id=S.id,n=S.n,c=compact(S);stopCam();holoStop();clearInterval(tickT);tickT=0;S=null;M.st='off';M.ask=null;release();
+  try{await idbDropConf(id)}catch(e){}
+  var list=(state.confs||[]).filter(function(x){return x&&x.id!==id});
+  if((state.confs||[]).some(function(x){return x&&x.id===id}))list.unshift(Object.assign(c,{status:'cancelada',end:nowIso(),reads:[],fixes:[],rule:{codes:{}},total:0,nf:'',assocBy:'',assocAt:'',note:''}));
+  state.confs=validateConfs(list);try{await save()}catch(e){}
+  var d=$i('conf-dlg');if(d&&d.open)try{d.close()}catch(x){d.removeAttribute('open')}D.body.classList.remove('conf-on');
+  try{if(typeof page!=='undefined'&&page==='nfs')render()}catch(e){}say('Conferência '+n+' descartada.')}
+
 /* ---------- tela de contagem (v97: tela cheia, minimalista, holograma) ---------- */
 var IC={pause:'<path d="M8 5v14M16 5v14"/>',play:'<path d="M7 5l12 7-12 7z"/>',plus:'<path d="M12 5v14M5 12h14"/>',torch:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
   swap:'<path d="M4 8h13l-3-3"/><path d="M20 16H7l3 3"/>',focus:'<circle cx="12" cy="12" r="3"/><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/>',
@@ -6746,7 +6761,7 @@ function onClick(ev){var b=ev.target&&ev.target.closest&&ev.target.closest('butt
   if(id==='cf-x')closeDlg();else if(id==='cf-next'){rearm()}else if(id==='cf-pause'){if(S&&S.status==='ativa')pause('Pausada. A contagem está salva.');else resume()}else if(id==='cf-resume')resume();
   else if(id==='cf-manual'){var f=$i('cf-manual-form');sheet('cf-manual-form',!!(f&&f.hidden))}
   else if(id==='cf-mcancel'||id==='cf-hclose')sheet('',false);else if(id==='cf-histbtn'){var h=$i('cf-hsheet');sheet('cf-hsheet',!!(h&&h.hidden))}
-  else if(id==='cf-undo')undo();else if(id==='cf-finish')finish();else if(id==='cf-yes')answer(true);else if(id==='cf-no')answer(false);
+  else if(id==='cf-undo')undo();else if(id==='cf-finish')finish();else if(id==='cf-discard')discard();else if(id==='cf-yes')answer(true);else if(id==='cf-no')answer(false);
   else if(id==='cf-switch')switchCam();else if(id==='cf-torch')toggleTorch();else if(id==='cf-retry'){cam.err='';startCam()}else if(id==='cf-focus')refocus(true);else if(id==='cf-zoom')cycleZoom();
   else if(id==='cf-csv')csv(b.dataset.id);else if(id==='cf-pdf')pdf(b.dataset.id);else if(id==='cf-assoc-go')assocSave(b.dataset.id);else if(id==='cf-close')closeDlg();
   else if(id==='cf-mark')markNF(b.dataset.id,b.dataset.st)}
@@ -6762,6 +6777,7 @@ function shell(){var d=dlg();d.innerHTML='<div class="cf-bg" aria-hidden="true">
   +'<p class="cf-last">Último: <code id="cf-last">—</code></p>'
   +'<button type="button" class="primary cf-next" id="cf-next" disabled><span>Próxima caixa</span>'+ic('next')+'</button>'
   +'<div class="cf-row2"><button type="button" class="cf-sec" id="cf-undo">'+ic('undo')+'<span>Desfazer</span></button><button type="button" class="cf-sec cf-finish" id="cf-finish">'+ic('done')+'<span>Finalizar</span></button></div>'
+  +'<button type="button" class="cf-discard" id="cf-discard">Descartar conferência</button>'
   +'<button type="button" class="cf-handle" id="cf-histbtn" aria-expanded="false" aria-controls="cf-hsheet">'+ic('up')+'<span>Histórico · <span id="cf-hn">0</span></span></button></div></div>'
   +'<div class="cf-sheet cf-ask" id="cf-ask" hidden></div>'
   +'<section class="cf-sheet" id="cf-hsheet" hidden aria-labelledby="cf-htitle"><div class="cf-shead"><h3 id="cf-htitle">Histórico</h3><button type="button" class="cf-ib" id="cf-hclose" aria-label="Fechar histórico">'+ic('x')+'</button></div>'
@@ -6782,7 +6798,7 @@ function paint(){if(!S||!$i('cf-count'))return;var v=valid(),n=v.length;
   $i('cf-save').textContent=(saveOk?'Salvo no aparelho ✓':'Não salvo — tente de novo')+' · '+syncText();
   var c=$i('cf-count');var txt=pad(n);if(c.textContent!==txt)c.textContent=txt;c.setAttribute('aria-label',n+(n===1?' volume contado':' volumes contados'));
   var nx=$i('cf-next');nx.disabled=!(M.st==='travado'&&S.status==='ativa');
-  $i('cf-undo').disabled=!n;var ac=$i('cf-autochk');if(ac)ac.checked=S.mode==='auto';
+  $i('cf-undo').disabled=!n;var dc=$i('cf-discard');if(dc)dc.disabled=S.status==='finalizada';var ac=$i('cf-autochk');if(ac)ac.checked=S.mode==='auto';
   $i('cf-last').textContent=lastTxt(S.reads.slice(-1)[0]);
   $i('cf-hn').textContent=String(S.reads.length);
   $i('cf-hist').innerHTML=S.reads.slice(-50).reverse().map(function(r){return '<li class="'+(r.st==='x'?'x':'')+'"><b>'+pad(r.seq)+'</b><span>'+esc(tm(r.at))+'</span><code>'+esc(r.code||'(sem código)')+'</code><span class="small">'+(r.m==='h'?'manual':'câmera')+(r.st==='x'?' · desfeita':'')+'</span></li>'}).join('');
@@ -6857,7 +6873,7 @@ function pdf(id){var c=confById(id);if(!c)return;var html=printHtml(c),w=null;tr
   setTimeout(function(){try{f.contentWindow.focus();f.contentWindow.print()}catch(e){say('Não deu para imprimir aqui. Use "Baixar planilha".')}setTimeout(function(){f.remove()},60000)},300);say('Na janela de impressão, escolha "Salvar como PDF".')}
 
 /* ---------- tela de Notas fiscais: botão principal, sessão interrompida e lista ---------- */
-function histHtml(){var me=meDev(),aux=isAuxNow(),list=(state.confs||[]).filter(function(c){return !aux||c.dev===me}).slice(0,10);if(!list.length)return '';
+function histHtml(){var me=meDev(),aux=isAuxNow(),list=(state.confs||[]).filter(function(c){return c.status!=='cancelada'&&(!aux||c.dev===me)}).slice(0,10);if(!list.length)return '';
   return '<details class="conf-hist"><summary>Conferências por câmera ('+list.length+')</summary><ul class="conf-hist-list">'+list.map(function(c){var nf=aux?null:nfOf(c);
     return '<li><span><b>'+esc(c.n)+'</b> · '+esc(c.by)+' · '+esc(dt(Date.parse(c.start)))+' · '+(c.total|0)+' volume(s) · '+esc(ST[c.status]||c.status)+(nf?' · NF '+esc(nf.number):'')+'</span><button type="button" data-conf-rep="'+esc(c.id)+'">Relatório</button></li>'}).join('')+'</ul></details>'}
 function ctaHtml(){return '<section class="panel conf-cta" id="conf-cta" aria-label="Conferência por câmera"><button type="button" class="primary conf-go" id="conf-go" onclick="confStart()"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 8v8M11 8v8M13.5 8v8M16 8v8"/></svg>INICIAR CONFERÊNCIA POR CÂMERA</button>'

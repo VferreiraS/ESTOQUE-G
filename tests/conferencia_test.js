@@ -198,7 +198,7 @@ const st=p=>p.evaluate(()=>e99Conf.state());
   await p.click('#cf-torch');ok(await until(p,()=>!e99Conf.cam().torch&&/"torch":false/.test(window.__ac[window.__ac.length-1]),null,3000),'v97: lanterna desliga (torch:false)');
   const lay=await p.evaluate(()=>{const d=document.getElementById('conf-dlg'),vis=[...d.querySelectorAll('button')].filter(b=>b.offsetParent),small=vis.filter(b=>{const r=b.getBoundingClientRect();return r.height<44||r.width<44}).map(b=>b.id||b.textContent),
     sec=[...document.querySelectorAll('#conf-dlg .cf-scan button')].filter(b=>b.offsetParent&&!b.closest('.cf-cam')&&b.id!=='cf-x'&&b.id!=='cf-histbtn').map(b=>b.id);return {small,sec,sx:d.scrollWidth-d.clientWidth,emoji:/\p{Extended_Pictographic}/u.test([...vis].map(b=>b.textContent).join(''))}});
-  ok(!lay.small.length&&lay.sx<=0&&lay.sec.join()==='cf-next,cf-undo,cf-finish'&&!lay.emoji,'v97: iPhone 13 (390×844): só 3 ações no painel (Próxima, Desfazer, Finalizar), toques ≥44 px, sem emoji ('+JSON.stringify(lay)+')');
+  ok(!lay.small.length&&lay.sx<=0&&lay.sec.join()==='cf-next,cf-undo,cf-finish,cf-discard'&&!lay.emoji,'v97/v98: iPhone 13 (390×844): só 3 ações no painel (Próxima, Desfazer, Finalizar) + Descartar, toques ≥44 px, sem emoji ('+JSON.stringify(lay)+')');
   await c.close()}
  /* ================= F) PC e iPhone, com e sem Efeitos, menos movimento ================= */
  for(const [nm,opt,fx] of [['PC Efeitos ligados',{viewport:{width:1280,height:800}},'on'],['PC Efeitos desligados',{viewport:{width:1280,height:800}},'off'],['iPhone Efeitos desligados',{...L.devices['iPhone 13'],viewport:{width:390,height:844}},'off'],['iPhone menos movimento',{...L.devices['iPhone 13'],viewport:{width:390,height:844},reducedMotion:'reduce'},null]]){
@@ -218,6 +218,22 @@ const st=p=>p.evaluate(()=>e99Conf.state());
   const before=await p.evaluate(()=>e99Conf.cam().cur);await p.click('#cf-switch');
   ok(await until(p,b=>{const v=document.getElementById('cf-video'),t=v.srcObject&&v.srcObject.getVideoTracks()[0];return t&&t.readyState==='live'&&t.getSettings().deviceId!==b&&e99Conf.cam().cur!==b},before,10000),'v97: "Trocar câmera" troca o track de verdade (outro deviceId)');
   ok(await until(p,()=>/sem leitura|Fora de foco|Pouca luz/.test(document.getElementById('cf-msg').textContent),null,12000),'v97: depois de ~5 s sem leitura mostra ajuda curta ("'+(await p.textContent('#cf-msg'))+'")');
+  await c.close()}
+ /* ================= G) v98: descartar a conferência ================= */
+ {const c=await b3.newContext({...L.devices['iPhone 13'],permissions:['camera']});const p=await c.newPage();p.on('pageerror',e=>errs.push('G '+e.message));let ans=false,asked=[];p.on('dialog',d=>{asked.push(d.message());ans?d.accept():d.dismiss()});
+  await openConf(p,'confg'+Date.now().toString(36));await until(p,()=>!!e99Conf.state(),null,8000);
+  for(const code of ['CX-01','CX-02']){await p.click('#cf-manual');await p.fill('#cf-mcode',code);await p.click('#cf-manual-form button[type=submit]');await p.waitForTimeout(200)}
+  await until(p,()=>e99Conf.state().total===2);await p.evaluate(()=>e99Conf.checkpoint());const id=(await st(p)).id;
+  ok(await p.isVisible('#cf-discard')&&/Descartar conferência/.test(await p.textContent('#cf-discard'))&&await p.isEnabled('#cf-discard'),'v98: botão "Descartar conferência" aparece na tela da conferência');
+  await p.click('#cf-discard');await p.waitForTimeout(300);
+  ok(asked.length===1&&/Descartar a conferência/.test(asked[0])&&(await st(p)).total===2&&await p.evaluate(()=>document.getElementById('conf-dlg').open)&&(await p.evaluate(i=>e99Conf.idbReads(i),id)).length===2,'v98: pede confirmação; "Cancelar" não apaga nada');
+  ans=true;await p.click('#cf-discard');
+  ok(await until(p,()=>!document.getElementById('conf-dlg').open&&!document.body.classList.contains('conf-on')&&!e99Conf.state(),null,5000),'v98: depois de confirmar, a conferência fecha');
+  const r=await p.evaluate(async i=>{const rows=await e99Conf.rawRows(),sess=await new Promise(ok=>{const q=indexedDB.open('estoque99-conf');q.onsuccess=()=>{const t=q.result.transaction('sessions').objectStore('sessions').getAll();t.onsuccess=()=>{ok(t.result.filter(x=>x.id===i).length);q.result.close()}}});const c=state.confs.find(x=>x.id===i);return {reads:rows.filter(x=>x.conf===i).length,sess,c:c?{st:c.status,n:c.reads.length,t:c.total}:null}},id);
+  ok(r.reads===0&&r.sess===0&&(!r.c||(r.c.st==='cancelada'&&r.c.n===0&&r.c.t===0)),'v98: descartar apaga a sessão e as leituras do IndexedDB e de state.confs ('+JSON.stringify(r)+')');
+  await until(p,()=>!!document.getElementById('conf-go'),null,5000);await p.waitForTimeout(500);
+  ok(await p.isVisible('#conf-go')&&!(await p.$('.conf-banner'))&&!(await p.evaluate(()=>(document.querySelector('.conf-hist')||{}).textContent||'')).includes('Cancelada'),'v98: volta ao início (botão "INICIAR CONFERÊNCIA", sem aviso de interrompida nem item no histórico)');
+  await p.click('#conf-go');ok(await until(p,i=>{const s=e99Conf.state();return s&&s.id!==i&&s.total===0&&+document.getElementById('cf-count').textContent===0},id,8000),'v98: nova conferência começa do zero, sem perguntar pela descartada');ok(asked.length===2,'v98: nenhuma pergunta de conferência interrompida depois de descartar');
   await c.close()}
  await b3.close();
  console.log('errors',JSON.stringify(errs));if(errs.length)console.log('FAIL erros de página');
