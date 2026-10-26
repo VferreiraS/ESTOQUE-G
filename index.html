@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="95"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="96"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -251,8 +251,17 @@ function validate(s){
  s.nfs.forEach(nfValidateExtras);
  const owners=new Set(['','todos',...s.team.map(x=>x.id)]),corridors=new Set(['',...s.corridors.map(x=>x.id)]);
  if(s.corridors.some(x=>!owners.has(x.owner))||s.tasks.some(x=>!owners.has(x.owner)||!corridors.has(x.corridor))||s.nfs.some(x=>!owners.has(x.owner)))throw Error('Backup inválido');
- return {version:1,plans:validatePlans(s.plans),team:s.team,corridors:s.corridors,tasks:s.tasks,nfs:s.nfs,ruptures:[],expiries:[],sync:validateSync(s.sync),photoKey:validPhotoKey(s.photoKey),updated:s.updated||null,alertSettings:normalizeAlertSettings(s.alertSettings),alertSnoozes:normalizeSnoozes(s.alertSnoozes)};
+ return {version:1,plans:validatePlans(s.plans),team:s.team,corridors:s.corridors,tasks:s.tasks,nfs:s.nfs,ruptures:[],expiries:[],sync:validateSync(s.sync),photoKey:validPhotoKey(s.photoKey),confs:validateConfs(s.confs),confKey:validPhotoKey(s.confKey),updated:s.updated||null,alertSettings:normalizeAlertSettings(s.alertSettings),alertSnoozes:normalizeSnoozes(s.alertSnoozes)};
 }
+/* v96: conferências às cegas por câmera (state.confs). Filtra o que estiver errado em vez de recusar a conta inteira. */
+function validateConfs(a){if(!Array.isArray(a))return [];const okId=x=>typeof x==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(x),isoOk=x=>typeof x==='string'&&x.length<=40&&/^\d{4}-\d{2}-\d{2}T/.test(x)&&!isNaN(Date.parse(x)),str=(x,n)=>typeof x==='string'?x.slice(0,n):'',CODE=/^[0-9A-Za-z\-./ ()+]{0,64}$/,seen=new Set(),out=[];
+ for(const c of a.slice(0,1000)){if(!c||typeof c!=='object'||!okId(c.id)||seen.has(c.id)||!isoOk(c.start))continue;
+  if(!Array.isArray(c.reads)||c.reads.length>5000||(c.fixes!=null&&(!Array.isArray(c.fixes)||c.fixes.length>2000)))continue;
+  let last=0,bad=false;const reads=[];for(const r of c.reads){if(!Array.isArray(r)||!Number.isSafeInteger(r[0])||r[0]<=last||!Number.isSafeInteger(r[1])||r[1]<0||typeof r[2]!=='string'||!CODE.test(r[2])||(r[4]!=='c'&&r[4]!=='h')||(r[5]!=='v'&&r[5]!=='x')){bad=true;break}last=r[0];reads.push([r[0],r[1],r[2],str(r[3],8),r[4],r[5]])}
+  if(bad)continue;const fixes=[];for(const f of (c.fixes||[])){if(Array.isArray(f)&&Number.isSafeInteger(f[0])&&isoOk(f[1])&&(f[3]==='undo'||f[3]==='add'))fixes.push([f[0],f[1],str(f[2],60),f[3],Number.isSafeInteger(f[4])?f[4]:0])}
+  const codes={};if(c.rule&&c.rule.codes&&typeof c.rule.codes==='object')Object.keys(c.rule.codes).slice(0,500).forEach(k=>{if(k&&CODE.test(k)&&(c.rule.codes[k]===0||c.rule.codes[k]===1))codes[k]=c.rule.codes[k]});
+  seen.add(c.id);out.push({id:c.id,n:str(c.n,24),by:str(c.by,60),login:str(c.login,80),role:['auxiliar','estoque','gestor'].includes(c.role)?c.role:'estoque',dev:typeof c.dev==='string'&&/^[a-z0-9]{6,40}$/.test(c.dev)?c.dev:'',start:c.start,end:isoOk(c.end)?c.end:'',status:['ativa','pausada','finalizada','cancelada'].includes(c.status)?c.status:'pausada',mode:c.mode==='auto'?'auto':'toque',rule:{codes},reads,fixes,total:reads.filter(r=>r[5]==='v').length,nf:okId(c.nf)?c.nf:'',assocBy:str(c.assocBy,60),assocAt:isoOk(c.assocAt)?c.assocAt:'',note:str(c.note,500)})}
+ return out.sort((x,y)=>x.start<y.start?1:x.start>y.start?-1:0).slice(0,300)}
 function notify(s){$('toast').textContent=s;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').textContent='',4000)}
 async function save(){idMapV++;if(!authSession)return;state.updated=new Date().toISOString();dirty=true;const snapshot=JSON.stringify(state);try{await authPersist(snapshot);storageOK=true;dirty=JSON.stringify(state)!==snapshot}catch(e){storageOK=false;notify(e.message||'Falha ao salvar. Exporte uma cópia protegida.')}renderStorage();if(fileHandle)await writeFile();}
 
@@ -531,9 +540,9 @@ function showFeatureCredits(){notify('Busca: Fuse.js 7.1.0. Calendários: Flatpi
 // Local encrypted accounts. No network identity, no shared-store administration.
 let planDraft=null,planDraftDirty=false,planPhotoBusy=false,planFilter='';
 /* Rupturas: corrige em vez de recusar, para a conta sempre abrir. Fotos ficam no IndexedDB (só ids aqui). */
-function validateSync(x){const C=['team','corridors','nfs','plans'],out={meta:{},ready:false,replace:false,pending:[],topic:''};C.forEach(c=>out.meta[c]={});if(!x||typeof x!=='object')return out;out.ready=x.ready===true;out.replace=x.replace===true;out.topic=typeof x.topic==='string'&&/^e99s-[0-9a-f]{24}$/.test(x.topic)?x.topic:'';let n=0;const okId=id=>/^[a-zA-Z0-9_-]{1,100}$/.test(id);
+function validateSync(x){const C=['team','corridors','nfs','plans','confs'],out={meta:{},ready:false,replace:false,pending:[],topic:''};C.forEach(c=>out.meta[c]={});if(!x||typeof x!=='object')return out;out.ready=x.ready===true;out.replace=x.replace===true;out.topic=typeof x.topic==='string'&&/^e99s-[0-9a-f]{24}$/.test(x.topic)?x.topic:'';let n=0;const okId=id=>/^[a-zA-Z0-9_-]{1,100}$/.test(id);
  if(x.meta&&typeof x.meta==='object')for(const c of C){const m=x.meta[c];if(!m||typeof m!=='object')continue;for(const id of Object.keys(m)){if(n>=80000)break;const v=m[id];if(okId(id)&&Array.isArray(v)&&Number.isFinite(v[0])&&typeof v[1]==='string'){out.meta[c][id]=[Math.floor(v[0]),v[1].slice(0,40),v[2]?1:0,typeof v[3]==='string'?v[3].slice(0,16):''];n++}}}
- if(Array.isArray(x.pending))out.pending=[...new Set(x.pending.filter(k=>typeof k==='string'&&/^(team|corridors|nfs|plans)\|[a-zA-Z0-9_-]{1,100}$/.test(k)))].slice(0,80000);return out}
+ if(Array.isArray(x.pending))out.pending=[...new Set(x.pending.filter(k=>typeof k==='string'&&/^(team|corridors|nfs|plans|confs)\|[a-zA-Z0-9_-]{1,100}$/.test(k)))].slice(0,80000);return out}
 function validPhotoKey(k){return typeof k==='string'&&/^[A-Za-z0-9+/]{43}=$/.test(k)?k:''}
 function validatePlans(plans){if(plans===undefined)return [];if(!Array.isArray(plans)||plans.length>500)throw Error('Planos inválidos');const ids=new Set();let photoSize=0;for(const p of plans){if(!p||!safePlanId(p.id)||ids.has(p.id)||!validDate(p.date)||typeof p.title!=='string'||!p.title.trim()||p.title.length>200||!Array.isArray(p.activities)||p.activities.length>100)throw Error('Plano inválido');ids.add(p.id);const items=new Set();for(const a of p.activities){if(!a||!safePlanId(a.id)||items.has(a.id)||typeof a.title!=='string'||!a.title.trim()||a.title.length>500||typeof a.owner!=='string'||a.owner.length>200||typeof a.notes!=='string'||a.notes.length>3000||!Array.isArray(a.photos)||a.photos.length>5||(a.done!==undefined&&typeof a.done!=='boolean')||(a.doneBy!==undefined&&(typeof a.doneBy!=='string'||a.doneBy.length>80))||(a.doneAt!==undefined&&(typeof a.doneAt!=='string'||a.doneAt.length>40))||(a.time!==undefined&&a.time!==''&&(typeof a.time!=='string'||!/^([01]\d|2[0-3]):[0-5]\d$/.test(a.time))))throw Error('Atividade do plano inválida');items.add(a.id);for(const ph of a.photos){if(!ph||!safePlanId(ph.id)||typeof ph.data!=='string'||ph.data.length>200000||!/^data:image\/jpeg;base64,\/9j\/[A-Za-z0-9+/=\r\n]+$/.test(ph.data))throw Error('Foto inválida');photoSize+=ph.data.length;}}}if(photoSize>2400000)throw Error('Fotos excedem o limite local. Exporte planos antigos e remova fotos antes de importar.');return plans}
 function safePlanId(id){return typeof id==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(id)}
@@ -2717,8 +2726,8 @@ var before=render;render=function(){var r=before.apply(this,arguments);if(authSe
 'use strict';
 /* Sincroniza NFs, planos de ação, equipe e corredores entre os aparelhos da equipe do chat.
    Canal próprio no ntfy.sh, tudo cifrado com o código da equipe. Cada item tem [quando, quem, apagado, hash]; ganha a última mudança. */
-var C=['team','corridors','nfs','plans'];
-function auxColl(c){return c==='nfs'||c==='plans'}
+var C=['team','corridors','nfs','plans','confs'];
+function auxColl(c){return c==='nfs'||c==='plans'||c==='confs'}
 function amAux(){return !!(authSession&&authSession.payload.role==='auxiliar')}
 var DEV=(function(){var k='lojasg.estoque99.device',v='';try{v=localStorage.getItem(k)||''}catch(e){}if(!/^[a-z0-9]{12}$/.test(v)){v=Array.from(crypto.getRandomValues(new Uint8Array(12)),function(b){return 'abcdefghijklmnopqrstuvwxyz0123456789'[b%36]}).join('');try{localStorage.setItem(k,v)}catch(e){}}return v})();
 var info=null,chan=null,es=null,connected=false,pubTimer=0,publishing=false,queue=Promise.resolve(),snapTimer=0,helloTimer=0,mergeTimer=0,renderTimer=0,lastSync=0,lastErr='',deferred=[],gen=0;
@@ -2801,7 +2810,7 @@ async function handle(d,ch){if(ch!==chan||!authSession)return;var o=await decStr
   if(o.k==='snap'&&snapTimer){clearTimeout(snapTimer);snapTimer=0}
   if(o.k!=='ops'&&o.k!=='snap')return;var ops=o.ops;
   if(o.att){if(!d.attachment||!d.attachment.url){lost();return}try{var r=await fetch(d.attachment.url);if(!r.ok){lost();return}ops=JSON.parse(new TextDecoder().decode(await dec(ch,await r.arrayBuffer()))).ops;lostCount=0;if(/baixar os dados/.test(lastErr))lastErr=''}catch(e){lost();return}}
-  if(!Array.isArray(ops)||ch!==chan)return;if(o.r==='auxiliar')ops=ops.filter(function(op){return op&&auxColl(op.c)&&!op.d}).map(auxPlanOp).filter(Boolean);ops=delGuard(ops,who,o.k==='snap');await applyOps(ops,o.k==='snap',who);if(!amAux()){var sm=sy();var fx=ops.filter(function(op){return op.fix&&sm.meta.plans[op.i]});if(fx.length){fx.forEach(function(op){sm.meta.plans[op.i][3]=''});if(stamp()){await persist();schedulePublish(800)}}}paintStatus()}
+  if(!Array.isArray(ops)||ch!==chan)return;if(o.r==='auxiliar')ops=ops.filter(function(op){return op&&auxColl(op.c)&&!op.d}).map(auxPlanOp).filter(Boolean);ops=ops.map(function(op){return confOp(op,o)}).filter(Boolean);ops=delGuard(ops,who,o.k==='snap');await applyOps(ops,o.k==='snap',who);if(!amAux()){var sm=sy();var fx=ops.filter(function(op){return op.fix&&sm.meta.plans[op.i]});if(fx.length){fx.forEach(function(op){sm.meta.plans[op.i][3]=''});if(stamp()){await persist();schedulePublish(800)}}}paintStatus()}
 /* v89: freio contra apagar dados dos outros pelo ntfy (o papel vem do próprio remetente, então não dá para confiar nele).
    Apagar item cuja última mudança foi do próprio remetente: vale. Apagar itens de outras pessoas: no máximo 3 por mensagem;
    acima disso as exclusões são ignoradas e o aparelho avisa. Auxiliar nunca apaga pela sincronização. */
@@ -2813,6 +2822,11 @@ function delGuard(ops,who,isSnap){var s=sy();if(isSnap&&s.replace&&!s.ready)retu
 function auxPlanOp(op){if(!op||op.c!=='plans')return op;if(op.d||!op.x||!Array.isArray(op.x.activities))return null;var cur=arr('plans').find(function(p){return p&&p.id===op.i});if(!cur)return null;
   var by={};op.x.activities.forEach(function(a){if(a&&a.id)by[a.id]=a});var acts=(cur.activities||[]).map(function(a){var r=by[a.id];if(!r)return a;var n=Object.assign({},a);if(r.done){n.done=true;n.doneBy=r.doneBy;n.doneAt=r.doneAt}else{delete n.done;delete n.doneBy;delete n.doneAt}return n});
   var nx=Object.assign({},cur,{activities:acts});return Object.assign({},op,{x:nx,fix:JSON.stringify(nx)!==JSON.stringify(op.x)})}
+/* v96: conferências — cada sessão tem um dono (aparelho dev). Só o dono muda leituras; auxiliar não associa NF; ninguém apaga pelo ntfy. */
+function confOp(op,o){if(!op||op.c!=='confs')return op;if(op.d)return null;var x=op.x;if(!x||typeof x!=='object')return null;var aux=o.r==='auxiliar',cur=arr('confs').find(function(y){return y&&y.id===op.i});
+  if(!cur){if(aux&&x.dev!==o.dev)return null;if(aux)x=Object.assign({},x,{nf:'',assocBy:'',assocAt:''});return Object.assign({},op,{x:x})}
+  if(cur.dev&&cur.dev===o.dev&&x.dev===o.dev){if(aux)x=Object.assign({},x,{nf:cur.nf||'',assocBy:cur.assocBy||'',assocAt:cur.assocAt||'',note:cur.note||''});return Object.assign({},op,{x:x})}
+  if(aux)return null;return Object.assign({},op,{x:Object.assign({},cur,{nf:typeof x.nf==='string'?x.nf:'',assocBy:typeof x.assocBy==='string'?x.assocBy:'',assocAt:typeof x.assocAt==='string'?x.assocAt:'',note:typeof x.note==='string'?x.note:''})})}
 function okOp(op){return op&&typeof op==='object'&&C.indexOf(op.c)>=0&&okId(op.i)&&Number.isFinite(op.t)&&op.t>0&&typeof op.b==='string'&&(op.d||(op.x&&typeof op.x==='object'&&op.x.id===op.i))}
 function newer(m,op){return !m||op.t>m[0]||(op.t===m[0]&&String(op.b)>String(m[1]))}
 /* aplica numa cópia, valida com as mesmas regras do site e só então grava */
@@ -2822,7 +2836,7 @@ function commit(cand){var fixedRefs=repairRefs(cand);var test={};Object.keys(sta
 async function applyOps(ops,isSnap,who){var s=sy();ops=ops.filter(okOp).slice(0,20000);
   if(isSnap&&s.replace&&!s.ready){var cand={},meta={};C.forEach(function(c){cand[c]=[];meta[c]={}});ops.forEach(function(op){meta[op.c][op.i]=[op.t,op.b.slice(0,40),op.d?1:0,''];if(!op.d)cand[op.c].push(op.x)});
     var old={};try{old=JSON.parse(localStorage.getItem(oldKey(s.topic))||'{}')||{}}catch(e){}var kept=0;
-    ['nfs','plans'].forEach(function(c){var was=new Set(Array.isArray(old[c])?old[c]:[]);arr(c).forEach(function(x){if(x&&okId(x.id)&&!meta[c][x.id]&&!was.has(x.id)){cand[c].push(x);kept++}})});
+    ['nfs','plans','confs'].forEach(function(c){var was=new Set(Array.isArray(old[c])?old[c]:[]);arr(c).forEach(function(x){if(x&&okId(x.id)&&!meta[c][x.id]&&!was.has(x.id)){cand[c].push(x);kept++}})});
     var v=commit(cand);if(!v){lastErr='Os dados recebidos da equipe são inválidos.';return}
         C.forEach(function(c){state[c]=v[c];state[c].forEach(function(x){if(meta[c][x.id])meta[c][x.id][3]=hashItem(x)});Object.keys(meta[c]).forEach(function(id){if(!meta[c][id][2]&&!state[c].some(function(x){return x.id===id}))meta[c][id]=[meta[c][id][0],meta[c][id][1],1,'']})});
     s.meta=meta;s.pending=[];s.replace=false;s.ready=true;try{localStorage.removeItem(oldKey(s.topic))}catch(e){}if(kept&&stamp())schedulePublish(500);await persist();feedAdd(who,'enviou os dados da equipe para este aparelho');notify('Dados da equipe recebidos.');scheduleRender(C);return}
@@ -2848,6 +2862,7 @@ function describe(op,prev){var x=op.x||{},p=prev||{};
    case 'nfs':return op.d?'apagou a NF '+first(p.number):!prev?'cadastrou a NF '+first(x.number):x.status!==p.status?'mudou a NF '+first(x.number)+' para '+x.status:'atualizou a NF '+first(x.number);
    case 'team':return op.d?'tirou '+first(p.name)+' da equipe':!prev?'adicionou '+first(x.name)+' à equipe':'atualizou '+first(x.name)+' na equipe';
    case 'plans':{if(op.d)return 'apagou o plano “'+first(p.title)+'”';if(!prev)return 'criou o plano “'+first(x.title)+'”';var pa=p.activities||[],newly=(x.activities||[]).filter(function(a){return a.done&&!(pa.find(function(b){return b.id===a.id})||{}).done});return newly.length?'fez “'+first(newly[0].title)+'”'+(newly.length>1?' e mais '+(newly.length-1):''):'atualizou o plano “'+first(x.title)+'”'}
+   case 'confs':return op.d?'':!prev?'começou a conferência '+first(x.n):x.status==='finalizada'&&p.status!=='finalizada'?'finalizou a conferência '+first(x.n)+' ('+(x.total|0)+' volumes)':x.nf&&x.nf!==p.nf?'associou a conferência '+first(x.n)+' a uma NF':'';
    case 'corridors':return op.d?'apagou o corredor '+first(p.number):!prev?'criou o corredor '+first(x.number):'atualizou o corredor '+first(x.number)}return ''}
 /* ---------- membros da equipe (quem já criou conta / visto por último) ---------- */
 function memKey(){return 'lojasg.estoque99.members:'+authSession.storeKey+':'+chan.topic}
@@ -2901,7 +2916,7 @@ window.syncStatus=function(){return {active:active(),ready:!!(state&&state.sync&
 function stop(){needHello=false;lostCount=0;lostPending=false;clearTimeout(pubTimer);clearTimeout(snapTimer);snapTimer=0;clearTimeout(helloTimer);clearTimeout(mergeTimer);disconnect();chan=null;info=null;lastErr='';deferred=[]}
 async function refresh(){var my=++gen;stop();var t=window.e99Team&&window.e99Team.get();info=t;if(!authSession||!t||!t.sync){paintStatus();return}
   var ch=await channel(t.code);if(my!==gen)return;chan=ch;var s=sy();
-  if(s.topic!==ch.topic){var m={};C.forEach(function(c){m[c]={}});s.meta=m;s.pending=[];s.topic=ch.topic;s.ready=!!t.owner;s.replace=!t.owner&&!!t.replace;if(s.replace)try{localStorage.setItem(oldKey(ch.topic),JSON.stringify({nfs:arr('nfs').map(function(x){return x.id}),plans:arr('plans').map(function(x){return x.id})}))}catch(e){}await persist();if(my!==gen)return}
+  if(s.topic!==ch.topic){var m={};C.forEach(function(c){m[c]={}});s.meta=m;s.pending=[];s.topic=ch.topic;s.ready=!!t.owner;s.replace=!t.owner&&!!t.replace;if(s.replace)try{localStorage.setItem(oldKey(ch.topic),JSON.stringify({nfs:arr('nfs').map(function(x){return x.id}),plans:arr('plans').map(function(x){return x.id}),confs:arr('confs').map(function(x){return x.id})}))}catch(e){}await persist();if(my!==gen)return}
   if(s.ready&&stamp()){await persist();schedulePublish(800)}else if(s.ready&&s.pending.length)schedulePublish(800);
   if(!s.ready&&!s.replace)mergeTimer=setTimeout(async function(){if(my!==gen||!active())return;var ss=sy();if(!ss.ready){ss.ready=true;dropDefaults();if(stamp())schedulePublish(500);await persist();paintStatus()}},20000);
   connect();paintStatus()}
@@ -3670,6 +3685,7 @@ function authPurgeLocalAccount(row){
   rmMine.forEach(function(k){try{localStorage.removeItem(k)}catch(x){}});
   idbDel('estoque99-profiles','p',function(k){return k==='me|'+row.key});
   idbDel('estoque99-local','remember',function(k,v){return v&&v.storeKey===row.key});
+  try{if(window.e99ConfPurge)window.e99ConfPurge(row.key)}catch(x){}
 }
 window.authDeleteAccount=function(index){
   if(!authSession||authSession.payload.role!=='gestor')return;
@@ -4206,7 +4222,7 @@ var rr=render;render=function(){var r=rr.apply(this,arguments);try{if(page==='co
 /* Apagar tudo neste aparelho: contas, equipe, dados, perfis e chats. Mantém só preferências visuais e de som.
    Pede para digitar APAGAR. Não sai da equipe nos outros aparelhos: cada aparelho precisa apagar o seu. */
 var KEEP={'lojasg.estoque99.visual-effects':1,'lojasg.estoque99.season':1,'lojasg.estoque99.sound':1,'lojasg.estoque99.install-hint':1,'lojasg.estoque99.device':1};
-var DBS=['estoque99-local','estoque99-profiles','estoque99-chat','estoque99-photos'];
+var DBS=['estoque99-local','estoque99-profiles','estoque99-chat','estoque99-photos','estoque99-conf'];
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function dropDb(n){return new Promise(function(res){try{var r=indexedDB.deleteDatabase(n);r.onsuccess=r.onerror=r.onblocked=function(){res()}}catch(x){res()}})}
 function sweep(){var rm=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('lojasg.estoque99.')===0&&!KEEP[k])rm.push(k);if(k&&k.indexOf('estoque99')===0)rm.push(k)}
@@ -6316,6 +6332,420 @@ window.colarPlanoSave=async function(){if(!M||busy)return;if(!logged()||isAuxNow
 var rp=window.renderPlans;if(typeof rp==='function'){window.renderPlans=function(){var h=rp.apply(this,arguments);
   try{var draft=typeof planDraft!=='undefined'&&planDraft;if(!draft&&logged()&&!isAuxNow()&&typeof h==='string'&&h.indexOf('colarPlanoOpen')<0)
     h=h.replace('onclick="openPlan()">＋ Novo plano</button>','onclick="openPlan()">＋ Novo plano</button><button type="button" onclick="colarPlanoOpen()">📅 Colar planejamento da semana</button>')}catch(x){}return h}}
+})();
+</script>
+<style id="conf-css">
+/* v96: conferência às cegas por câmera (Notas fiscais). Tema escuro, toques ≥44 px, sem animação nova. */
+.conf-cta{display:grid;gap:10px}
+.conf-cta .conf-go{min-height:64px;width:100%;font-size:17px;font-weight:800;letter-spacing:.05em}
+.conf-cta p{margin:0}
+.conf-resume{display:grid;gap:8px}
+.conf-banner{border:1px solid var(--neon,#FF2A1F);border-radius:14px;padding:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:rgba(255,42,31,.06)}
+.conf-banner b{flex:1;min-width:180px}
+.conf-banner button,.conf-hist-list button{min-height:44px}
+.conf-hist summary{cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px}
+.conf-hist-list{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
+.conf-hist-list li{border:1px solid var(--ds-line,#2a2a2e);border-radius:12px;padding:10px 12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.conf-hist-list li span{flex:1;min-width:180px;overflow-wrap:anywhere}
+body.conf-on #view{visibility:hidden}
+#conf-dlg{width:min(720px,100%);max-width:720px;padding:0;overflow:auto}
+#conf-dlg [hidden]{display:none!important}
+#conf-dlg .cf-wrap{padding:16px;display:grid;gap:12px}
+#conf-dlg h2{margin:0;font-size:19px}
+#conf-dlg h3{margin:6px 0 0;font-size:15px}
+#conf-dlg p{margin:0}
+#conf-dlg .cf-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+#conf-dlg .cf-head > div{min-width:0}
+#conf-dlg .cf-meta{overflow-wrap:anywhere;font-size:12px}
+#conf-dlg #cf-save{font-size:12px}
+#conf-dlg .cf-x{min-width:44px;min-height:44px;flex:none}
+#conf-dlg .cf-status{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#conf-dlg .cf-chip{border:1px solid var(--neon,#FF2A1F);border-radius:999px;padding:4px 12px;font-weight:700;font-size:13px}
+#conf-dlg .cf-chip[data-st="pausada"]{border-color:#8a8a8a;color:#d0d0d0}
+#conf-dlg .cf-chip[data-st="finalizada"]{border-color:#3ecf8e;color:#8ff0c2}
+#conf-dlg .cf-cam{position:relative;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:4/3;max-height:40vh;max-height:40dvh;width:100%}
+#conf-dlg .cf-cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+#conf-dlg .cf-frame{position:absolute;left:8%;right:8%;top:28%;bottom:28%;border:3px solid var(--neon,#FF2A1F);border-radius:10px;box-shadow:0 0 0 999px rgba(0,0,0,.38);pointer-events:none}
+#conf-dlg .cf-cam.off .cf-frame{display:none}
+#conf-dlg .cf-camoff{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;color:#d0d0d0;font-size:15px}
+#conf-dlg .cf-camtools{position:absolute;right:8px;bottom:8px;display:flex;gap:8px}
+#conf-dlg .cf-camtools button{min-height:44px;background:#0b0b0d;border:1px solid #3a3a40;color:#fff;border-radius:12px;padding:0 12px}
+#conf-dlg .cf-camtools button[aria-pressed="true"]{border-color:var(--neon,#FF2A1F)}
+#conf-dlg .cf-msg{min-height:22px;font-size:15px}
+#conf-dlg .cf-ask{border:1px solid var(--neon,#FF2A1F);border-radius:14px;padding:12px;display:grid;gap:10px;background:#120708}
+#conf-dlg .cf-ask .cf-askbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#conf-dlg .cf-ask button{min-height:52px}
+#conf-dlg .cf-ask code,#conf-dlg .cf-last code{overflow-wrap:anywhere}
+#conf-dlg .cf-countbox{text-align:center;border:1px solid var(--ds-line,#2a2a2e);border-radius:16px;padding:8px 8px 12px}
+#conf-dlg .cf-countbox .eyebrow{font-size:12px;letter-spacing:.08em;color:#bdbdbd}
+#conf-dlg .cf-count{font:800 96px/1 Oswald,'Arial Narrow',system-ui,sans-serif;font-variant-numeric:tabular-nums;color:#fff}
+#conf-dlg .cf-count.hit{color:var(--neon-hot,#FF8A7A)}
+#conf-dlg .cf-next{min-height:72px;width:100%;font-size:20px;font-weight:800}
+#conf-dlg .cf-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+#conf-dlg .cf-btns button{min-height:52px}
+#conf-dlg .cf-finish{border-color:var(--neon,#FF2A1F)!important}
+#conf-dlg .cf-manual{display:grid;gap:8px;border:1px solid var(--ds-line,#2a2a2e);border-radius:14px;padding:12px}
+#conf-dlg .cf-manual label{display:grid;gap:6px}
+#conf-dlg .cf-manual .cf-row{display:flex;gap:8px;flex-wrap:wrap}
+#conf-dlg .cf-manual .cf-row button{min-height:48px;flex:1}
+#conf-dlg label.cf-auto{display:flex;gap:10px;align-items:center;min-height:44px;cursor:pointer}
+#conf-dlg label.cf-auto input{width:22px;height:22px;flex:none}
+#conf-dlg .cf-histbox summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
+#conf-dlg .cf-hist{list-style:none;margin:0;padding:0;display:grid;gap:4px;max-height:220px;overflow:auto}
+#conf-dlg .cf-hist li{display:grid;grid-template-columns:42px 72px 1fr auto;gap:8px;font-size:13px;padding:6px 4px;border-bottom:1px solid #1f1f23;align-items:center}
+#conf-dlg .cf-hist li.x{opacity:.55;text-decoration:line-through}
+#conf-dlg .cf-hist li code{overflow-wrap:anywhere}
+#conf-dlg .cf-rep{display:grid;gap:12px}
+#conf-dlg .cf-kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0}
+#conf-dlg .cf-kv dt{color:#bdbdbd}
+#conf-dlg .cf-kv dd{margin:0;overflow-wrap:anywhere}
+#conf-dlg .cf-table{width:100%;border-collapse:collapse;font-size:14px}
+#conf-dlg .cf-table th,#conf-dlg .cf-table td{border-bottom:1px solid #26262b;padding:7px 6px;text-align:left;overflow-wrap:anywhere}
+#conf-dlg .cf-repbtns{display:flex;gap:8px;flex-wrap:wrap}
+#conf-dlg .cf-repbtns button{min-height:48px;flex:1 1 160px}
+#conf-dlg .cf-assoc{display:grid;gap:8px;border:1px solid var(--ds-line,#2a2a2e);border-radius:14px;padding:12px}
+#conf-dlg .cf-assoc select{min-height:48px}
+#conf-dlg .cf-cmp{border-radius:14px;padding:12px;border:1px solid #3ecf8e}
+#conf-dlg .cf-cmp.bad{border-color:var(--neon,#FF2A1F)}
+@media (max-width:640px){
+ #conf-dlg{width:100%!important;max-width:100%!important;height:100%;max-height:100vh!important;max-height:100dvh!important;margin:0!important;border-radius:0!important}
+ #conf-dlg .cf-wrap{padding:12px 16px calc(16px + env(safe-area-inset-bottom))}
+ #conf-dlg .cf-btns{grid-template-columns:1fr 1fr}
+ #conf-dlg .cf-wrap{gap:10px}
+ #conf-dlg h2{font-size:17px}
+ #conf-dlg .cf-cam{aspect-ratio:16/10;max-height:30vh;max-height:30dvh}
+ #conf-dlg .cf-countbox{padding:4px 8px 8px}
+ #conf-dlg .cf-count{font-size:72px}
+ #conf-dlg .cf-next{min-height:60px}
+ #conf-dlg .cf-msg{font-size:14px}
+}
+/* v96: às cegas também na lista — auxiliar não vê a coluna Volumes */
+body.role-aux #nf-results table th:nth-child(3),body.role-aux #nf-results table td:nth-child(3){display:none!important}
+</style>
+<script id="conf-js">
+/* v96: conferência às cegas por câmera.
+   Verdade local = IndexedDB "estoque99-conf" (cada registro cifrado com AES-GCM com a chave confKey guardada no estado cifrado da conta).
+   Equipe = state.confs (cópia compacta) gravada só em pontos de controle (20 leituras, 60 s, pausar, finalizar, voltar a rede) → save() → sync (ntfy).
+   Máquina de estados: ARMADO → mesmo código 2× em ≤600 ms → grava → +1 → TRAVADO → rearme (toque em "Próxima caixa" ou, opcional, 1,2 s sem código).
+   A tela de contagem nunca lê state.nfs (às cegas). Tudo que vem de código lido entra por esc()/textContent. */
+(function(){
+'use strict';
+var D=document,DBN='estoque99-conf',PAIR_MS=600,AUTO_MS=1200,TICK=120,CP_READS=20,CP_MS=60000,KEEP_DAYS=90,MAX_CONFS=200;
+var CODE_OK=/^[0-9A-Za-z\-./ ()+]{0,64}$/;
+var FMT={EAN_13:'E13',EAN_8:'E8',UPC_A:'UA',CODE_128:'C128',ITF:'ITF'},FMT_NAME={E13:'EAN-13',E8:'EAN-8',UA:'UPC-A',C128:'Code 128',ITF:'ITF-14',M:'Manual'};
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function pad(n,w){return String(n).padStart(w||2,'0')}
+function h32(str){var h=0x811c9dc5;str=String(str||'');for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
+function logged(){try{return !!authSession}catch(x){return false}}
+function role(){try{return authSession&&authSession.payload&&authSession.payload.role||''}catch(x){return ''}}
+function isAuxNow(){return role()==='auxiliar'}
+function acct(){return h32(authSession.storeKey)}
+function devBase(){var k='lojasg.estoque99.device',v='';try{v=localStorage.getItem(k)||''}catch(e){}if(!/^[a-z0-9]{12}$/.test(v)){v=Array.from(crypto.getRandomValues(new Uint8Array(12)),function(b){return 'abcdefghijklmnopqrstuvwxyz0123456789'[b%36]}).join('');try{localStorage.setItem(k,v)}catch(e){}}return v}
+function meDev(){return devBase()+h32(authSession?authSession.storeKey:'')}
+function myLogin(){try{return String(authSession.record&&authSession.record.login||'').slice(0,80)}catch(x){return ''}}
+function myName(){try{var t=window.e99Team&&window.e99Team.get();if(t&&t.name)return String(t.name).slice(0,60)}catch(e){}return myLogin().slice(0,60)||'Funcionário'}
+function nowIso(){return new Date().toISOString()}
+function dt(ms){var d=new Date(ms);return isNaN(d)?'':d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}
+function tm(ms){var d=new Date(ms);return isNaN(d)?'':d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+function dur(a,b){var s=Math.max(0,Math.round((b-a)/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return (h?h+' h ':'')+m+' min '+(s%60)+' s'}
+function say(t){try{notify(t)}catch(x){}}
+function $i(id){return D.getElementById(id)}
+
+/* ---------- validação dos códigos (EAN-13, EAN-8, UPC-A, ITF-14 com dígito; Code 128 ≥4) ---------- */
+function gtinOk(s){var n=s.length,sum=0;for(var i=0;i<n-1;i++){var d=+s.charAt(n-2-i);sum+=i%2===0?d*3:d}return (10-sum%10)%10===+s.charAt(n-1)}
+function fmtKey(f){f=String(f||'').toUpperCase().replace(/-/g,'_');if(f==='EAN13')f='EAN_13';if(f==='EAN8')f='EAN_8';if(f==='UPCA')f='UPC_A';if(f==='CODE128')f='CODE_128';return f}
+function check(text,format){var f=fmtKey(format),t=String(text==null?'':text).replace(/[\u0000-\u001f\u007f]/g,'').trim();
+  if(f==='EAN_13'&&/^\d{13}$/.test(t)&&gtinOk(t))return {code:t,fmt:'E13'};
+  if(f==='EAN_8'&&/^\d{8}$/.test(t)&&gtinOk(t))return {code:t,fmt:'E8'};
+  if(f==='UPC_A'&&/^\d{12}$/.test(t)&&gtinOk(t))return {code:t,fmt:'UA'};
+  if(f==='ITF'&&/^\d{14}$/.test(t)&&gtinOk(t))return {code:t,fmt:'ITF'};
+  if(f==='CODE_128'&&t.length>=4&&t.length<=64&&CODE_OK.test(t))return {code:t,fmt:'C128'};
+  return null}
+/* ITF-14 e SSCC (Code 128 com AI 00) são sempre etiqueta de caixa: contam direto */
+function boxCode(v){return v.fmt==='ITF'||(v.fmt==='C128'&&/^00\d{18}$/.test(v.code))}
+
+/* ---------- IndexedDB próprio, cifrado ---------- */
+var dbP=null;
+function idb(){if(dbP)return dbP;dbP=new Promise(function(ok,ko){var r;try{r=indexedDB.open(DBN,1)}catch(e){dbP=null;ko(e);return}
+  r.onupgradeneeded=function(){var d=r.result;if(!d.objectStoreNames.contains('sessions'))d.createObjectStore('sessions',{keyPath:'id'});if(!d.objectStoreNames.contains('reads')){var st=d.createObjectStore('reads',{keyPath:'id'});st.createIndex('conf','conf')}};
+  r.onsuccess=function(){var d=r.result;d.onversionchange=function(){try{d.close()}catch(x){}dbP=null};ok(d)};
+  r.onerror=function(){dbP=null;ko(r.error||Error('IndexedDB indisponível'))};r.onblocked=function(){}});return dbP}
+function run(store,mode,fn){return idb().then(function(d){return new Promise(function(ok,ko){var t;try{t=d.transaction(store,mode)}catch(e){ko(e);return}var out;try{out=fn(t.objectStore(store))}catch(e){ko(e);return}
+  t.oncomplete=function(){ok(out&&typeof out==='object'&&'result' in out&&out.readyState?out.result:out)};t.onerror=t.onabort=function(){ko(t.error||Error('Falha no IndexedDB'))}})})}
+function idbPut(store,rec){return run(store,'readwrite',function(st){st.put(rec)})}
+function idbPutMany(store,recs){return run(store,'readwrite',function(st){recs.forEach(function(r){st.put(r)})})}
+function idbAll(store){return run(store,'readonly',function(st){return st.getAll()})}
+function idbByConf(id){return run('reads','readonly',function(st){return st.index('conf').getAll(id)})}
+var keyP=null,keyFor='';
+function b64(u){var s='';for(var i=0;i<u.length;i++)s+=String.fromCharCode(u[i]);return btoa(s)}
+async function ckey(){if(!logged())throw Error('Entre na conta.');if(!state.confKey){state.confKey=b64(crypto.getRandomValues(new Uint8Array(32)));await save()}
+  if(keyP&&keyFor===state.confKey)return keyP;keyFor=state.confKey;var raw=Uint8Array.from(atob(state.confKey),function(c){return c.charCodeAt(0)});keyP=crypto.subtle.importKey('raw',raw,'AES-GCM',false,['encrypt','decrypt']);return keyP}
+async function seal(obj,aad){var k=await ckey(),iv=crypto.getRandomValues(new Uint8Array(12));var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:new TextEncoder().encode(aad)},k,new TextEncoder().encode(JSON.stringify(obj)));return {iv:iv,ct:new Uint8Array(ct)}}
+async function unseal(rec,aad){var k=await ckey();var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:rec.iv,additionalData:new TextEncoder().encode(aad)},k,rec.ct);return JSON.parse(new TextDecoder().decode(pt))}
+function rid(c,seq){return c+'-'+pad(seq,5)}
+
+/* ---------- sessão atual ---------- */
+var S=null,lockRel=null,M={st:'off',cand:null,lockCode:'',lastSeen:0,hintAt:0,otherAt:0,saving:false,ask:null},cp={n:0,t:0,seq:0,dirty:false},saveOk=true,tickT=0;
+function metaOf(s){return {id:s.id,n:s.n,by:s.by,login:s.login,role:s.role,dev:s.dev,start:s.start,end:s.end,status:s.status,mode:s.mode,rule:s.rule,fixes:s.fixes,nf:s.nf||'',assocBy:s.assocBy||'',assocAt:s.assocAt||'',note:s.note||''}}
+async function putMeta(){if(!S)return;var r=await seal(metaOf(S),'s|'+S.id);await idbPut('sessions',{id:S.id,acct:S.acct,iv:r.iv,ct:r.ct})}
+async function putRead(x){var r=await seal({seq:x.seq,at:x.at,code:x.code,fmt:x.fmt,m:x.m,st:x.st},'r|'+S.id+'|'+x.seq);return {id:rid(S.id,x.seq),acct:S.acct,conf:S.id,seq:x.seq,synced:x.synced?1:0,iv:r.iv,ct:r.ct}}
+function valid(s){return (s||S).reads.filter(function(r){return r.st==='v'})}
+function nextSeq(){return S.reads.reduce(function(m,r){return Math.max(m,r.seq)},0)+1}
+function nextNumber(){var k='lojasg.estoque99.conf-n:'+acct(),n=0;try{n=+localStorage.getItem(k)||0}catch(e){}n++;
+  (state.confs||[]).forEach(function(c){var m=String(c.n||'').match(/-(\d+)$/);if(c.dev===meDev()&&m)n=Math.max(n,+m[1]+1)});try{localStorage.setItem(k,String(n))}catch(e){}return 'CF-'+devBase().slice(0,3).toUpperCase()+'-'+pad(n,4)}
+async function addRead(code,fmt,m){var x={seq:nextSeq(),at:Date.now(),code:code,fmt:fmt,m:m,st:'v',synced:0};
+  try{await idbPut('reads',await putRead(x))}catch(e){saveOk=false;paint();return null}
+  saveOk=true;S.reads.push(x);cp.n++;cp.dirty=true;return x}
+function compact(s){var st=Date.parse(s.start)||Date.now();return {id:s.id,n:s.n,by:s.by,login:s.login,role:s.role,dev:s.dev,start:s.start,end:s.end||'',status:s.status,mode:s.mode,rule:{codes:Object.assign({},s.rule&&s.rule.codes||{})},
+  reads:s.reads.slice().sort(function(a,b){return a.seq-b.seq}).slice(-5000).map(function(r){return [r.seq,Math.max(0,Math.round((r.at-st)/1000)),r.code,r.fmt,r.m,r.st]}),fixes:(s.fixes||[]).slice(-2000),total:valid(s).length,nf:s.nf||'',assocBy:s.assocBy||'',assocAt:s.assocAt||'',note:s.note||''}}
+function expand(c){var st=Date.parse(c.start)||Date.now();return {id:c.id,n:c.n,by:c.by,login:c.login,role:c.role,dev:c.dev,start:c.start,end:c.end||'',status:c.status,mode:c.mode||'toque',rule:{codes:Object.assign({},c.rule&&c.rule.codes||{})},fixes:(c.fixes||[]).slice(),nf:c.nf||'',assocBy:c.assocBy||'',assocAt:c.assocAt||'',note:c.note||'',
+  reads:(c.reads||[]).map(function(r){return {seq:r[0],at:st+r[1]*1000,code:r[2],fmt:r[3],m:r[4],st:r[5],synced:1}})}}
+/* ponto de controle: copia para state.confs (preserva a associação feita por outro aparelho) e grava/sincroniza */
+async function checkpoint(why){if(!S||!logged()||S.acct!==acct())return false;var c=compact(S),list=(state.confs||[]).slice(),i=list.findIndex(function(x){return x&&x.id===c.id});
+  if(i>=0){var o=list[i];['nf','assocBy','assocAt','note'].forEach(function(k){if(o[k]&&!c[k])c[k]=o[k]});S.nf=c.nf;S.assocBy=c.assocBy;S.assocAt=c.assocAt;S.note=c.note;list[i]=c}else list.unshift(c);
+  state.confs=prune(list);var seq=c.reads.length?c.reads[c.reads.length-1][0]:0;cp.n=0;cp.t=Date.now();cp.dirty=false;
+  try{await save()}catch(e){}cp.seq=seq;paint();return true}
+function prune(list){var lim=Date.now()-KEEP_DAYS*864e5;list=list.filter(function(c){return !(c&&(c.status==='finalizada'||c.status==='cancelada')&&Date.parse(c.end||c.start)<lim)});
+  if(list.length>MAX_CONFS){var fin=list.filter(function(c){return c.status==='finalizada'||c.status==='cancelada'}).sort(function(a,b){return a.start<b.start?-1:1});var drop=new Set(fin.slice(0,list.length-MAX_CONFS).map(function(c){return c.id}));list=list.filter(function(c){return !drop.has(c.id)})}
+  return validateConfs(list)}
+function teamOn(){try{var s=window.syncStatus&&window.syncStatus();return !!(s&&s.active)}catch(e){return false}}
+function pendingMine(id){try{return (state.sync&&state.sync.pending||[]).indexOf('confs|'+id)>=0}catch(e){return false}}
+function syncText(){if(!S)return '';if(!teamOn())return 'Só neste aparelho (sem equipe sincronizada)';if(cp.dirty)return navigator.onLine===false?'Sem internet: fica no aparelho e envia quando voltar':'Próximo envio para a equipe em instantes';
+  if(pendingMine(S.id))return navigator.onLine===false?'Sem internet: fica no aparelho e envia quando voltar':'Enviando para a equipe…';return 'Equipe sincronizada ✓'}
+/* marca como sincronizadas no aparelho as leituras que já saíram (nunca apaga nada local) */
+async function markSynced(){if(!S||!teamOn()||cp.dirty||!cp.seq||pendingMine(S.id))return;var todo=S.reads.filter(function(r){return !r.synced&&r.seq<=cp.seq});if(!todo.length)return;
+  try{var recs=[];for(var i=0;i<todo.length;i++){todo[i].synced=1;recs.push(await putRead(todo[i]))}await idbPutMany('reads',recs)}catch(e){todo.forEach(function(r){r.synced=0})}}
+
+/* ---------- carregar / recuperar ---------- */
+async function loadMetas(){if(!logged())return [];var a=acct(),out=[];try{var rows=await idbAll('sessions');for(var i=0;i<rows.length;i++){var r=rows[i];if(!r||r.acct!==a)continue;try{out.push(await unseal(r,'s|'+r.id))}catch(e){}}}catch(e){}return out}
+async function readsOf(id){var out=[],a=acct(),rows=await idbByConf(id);for(var i=0;i<rows.length;i++){if(rows[i].acct!==a)continue;try{var x=await unseal(rows[i],'r|'+id+'|'+rows[i].seq);x.synced=rows[i].synced;out.push(x)}catch(e){}}return out.sort(function(a,b){return a.seq-b.seq})}
+async function interrupted(){if(!logged())return [];var me=meDev(),seen={},out=[],metas=await loadMetas();for(var i=0;i<metas.length;i++){var m=metas[i];if(m.dev===me&&(m.status==='ativa'||m.status==='pausada')){seen[m.id]=1;try{var st0=(state.confs||[]).find(function(c){return c.id===m.id}),rr=await readsOf(m.id),mx={};rr.forEach(function(r){mx[r.seq]=r.st});if(st0)st0.reads.forEach(function(r){if(!(r[0] in mx))mx[r[0]]=r[5]});m.total=Object.keys(mx).filter(function(k){return mx[k]==='v'}).length}catch(e){}out.push(m)}}
+  (state.confs||[]).forEach(function(c){if(!seen[c.id]&&c.dev===me&&(c.status==='ativa'||c.status==='pausada'))out.push(c)});
+  if(S&&S.status!=='finalizada'&&!out.some(function(m){return m.id===S.id}))out.unshift(S);return out}
+async function loadSession(id){var me=null;try{var row=(await idbAll('sessions')).find(function(r){return r&&r.id===id&&r.acct===acct()});if(row)me=await unseal(row,'s|'+id)}catch(e){}
+  var st=(state.confs||[]).find(function(c){return c.id===id}),s=me?Object.assign({},me):st?expand(st):null;if(!s)return null;s.acct=acct();var bySeq={};
+  if(me){try{var rows2=await idbByConf(id);for(var i=0;i<rows2.length;i++){var r=rows2[i];if(r.acct!==s.acct)continue;try{var x=await unseal(r,'r|'+id+'|'+r.seq);x.synced=r.synced;bySeq[x.seq]=x}catch(e){}}}catch(e){}}
+  var missing=[];if(st){expand(st).reads.forEach(function(x){if(!bySeq[x.seq]){bySeq[x.seq]=x;missing.push(x)}});if(!me||(st.fixes||[]).length>(s.fixes||[]).length)s.fixes=(st.fixes||[]).slice();['nf','assocBy','assocAt','note'].forEach(function(k){if(st[k])s[k]=st[k]})}
+  s.reads=Object.keys(bySeq).map(function(k){return bySeq[k]}).sort(function(a,b){return a.seq-b.seq});if(!s.rule||!s.rule.codes)s.rule={codes:{}};if(!Array.isArray(s.fixes))s.fixes=[];
+  S=s;if(!me||missing.length){try{await putMeta();var recs=[];for(var j=0;j<missing.length;j++)recs.push(await putRead(missing[j]));if(recs.length)await idbPutMany('reads',recs)}catch(e){}}
+  cp={n:0,t:Date.now(),seq:st&&st.reads.length?st.reads[st.reads.length-1][0]:0,dirty:false};return S}
+function lock(id){if(!navigator.locks||!navigator.locks.request)return Promise.resolve(true);release();
+  return new Promise(function(ok){navigator.locks.request('e99-conf-'+id,{ifAvailable:true},function(l){if(!l){ok(false);return}ok(true);return new Promise(function(r){lockRel=r})}).catch(function(){ok(true)})})}
+function release(){if(lockRel){try{lockRel()}catch(e){}lockRel=null}}
+
+/* ---------- câmera e leitor ---------- */
+var cam={stream:null,track:null,timer:0,busy:false,torch:false,wake:null,token:0,devs:[],devId:'',canvas:null,reader:null,bd:null,err:''};
+function camMsg(t){var el=$i('cf-msg');if(el)el.textContent=t}
+function hint(t,now){now=now||performance.now();if(now-M.hintAt<1500)return;M.hintAt=now;camMsg(t)}
+function stopCam(){cam.token++;clearTimeout(cam.timer);if(cam.stream){try{cam.stream.getTracks().forEach(function(t){t.stop()})}catch(e){}}cam.stream=null;cam.track=null;cam.torch=false;
+  if(cam.wake){try{cam.wake.release()}catch(e){}cam.wake=null}var v=$i('cf-video');if(v){try{v.pause()}catch(e){}v.srcObject=null}if(M.st!=='ask')M.st='off';M.cand=null;paintCam()}
+function camError(e){var n=e&&e.name||'';cam.err=n==='NotAllowedError'||n==='SecurityError'||n==='PermissionDeniedError'?'Permissão da câmera negada. Libere a câmera para este site (no iPhone: Ajustes › Safari › Câmera › Permitir) e toque em "Tentar de novo". Você pode continuar adicionando volumes à mão.'
+  :n==='NotFoundError'||n==='OverconstrainedError'||n==='DevicesNotFoundError'?'Nenhuma câmera encontrada neste aparelho. Você pode adicionar volumes à mão.'
+  :n==='NotReadableError'||n==='TrackStartError'||n==='AbortError'?'A câmera está em uso por outro app. Feche o outro app e toque em "Tentar de novo".'
+  :n==='nosupport'?'Câmera indisponível neste navegador ou nesta página. Abra o site pelo Safari/Chrome (endereço https) ou adicione volumes à mão.'
+  :'Não foi possível abrir a câmera. Toque em "Tentar de novo" ou adicione volumes à mão.';camMsg(cam.err);paintCam()}
+async function prepDecoder(){if(window.__confDecode)return;if(cam.reader||cam.bd)return;
+  try{if(window.BarcodeDetector&&BarcodeDetector.getSupportedFormats){var f=await BarcodeDetector.getSupportedFormats();var want=['ean_13','ean_8','upc_a','code_128','itf'].filter(function(x){return f.indexOf(x)>=0});if(want.indexOf('ean_13')>=0&&want.indexOf('code_128')>=0){cam.bd=new BarcodeDetector({formats:want});return}}}catch(e){}
+  if(typeof ZXing==='undefined'&&window.e99Need)await window.e99Need('zxing');
+  var Z=window.ZXing,h=new Map();h.set(Z.DecodeHintType.POSSIBLE_FORMATS,[Z.BarcodeFormat.EAN_13,Z.BarcodeFormat.EAN_8,Z.BarcodeFormat.UPC_A,Z.BarcodeFormat.CODE_128,Z.BarcodeFormat.ITF]);h.set(Z.DecodeHintType.ALLOWED_LENGTHS,Int32Array.from([14]));
+  var r=new Z.MultiFormatReader();r.setHints(h);cam.reader=r}
+function decodeCanvas(c){var Z=window.ZXing;try{var res=cam.reader.decodeWithState(new Z.BinaryBitmap(new Z.HybridBinarizer(new Z.HTMLCanvasElementLuminanceSource(c))));return {text:res.getText(),format:Z.BarcodeFormat[res.getBarcodeFormat()]}}catch(e){return null}finally{try{cam.reader.reset()}catch(e){}}}
+async function grab(){var v=$i('cf-video');if(!v||v.readyState<2||!v.videoWidth)return null;var vw=v.videoWidth,vh=v.videoHeight,sx=vw*.05,sy=vh*.22,sw=vw*.9,sh=vh*.56,sc=Math.min(1,1000/sw);
+  var c=cam.canvas||(cam.canvas=D.createElement('canvas'));c.width=Math.round(sw*sc);c.height=Math.round(sh*sc);var g=c.getContext('2d',{willReadFrequently:true});g.drawImage(v,sx,sy,sw,sh,0,0,c.width,c.height);
+  if(window.__confDecode)return window.__confDecode(c);
+  if(cam.bd){try{var a=await cam.bd.detect(c);return a&&a.length?{text:a[0].rawValue,format:a[0].format}:null}catch(e){return null}}
+  return cam.reader?decodeCanvas(c):null}
+function loop(){clearTimeout(cam.timer);if(!cam.stream||D.hidden||!S||S.status!=='ativa')return;var tok=cam.token;
+  cam.timer=setTimeout(async function(){if(tok!==cam.token)return;var r=null;if(!cam.busy){cam.busy=true;try{r=await grab()}catch(e){r=null}cam.busy=false;if(tok===cam.token)feed(r)}loop()},TICK)}
+async function startCam(){if(!S||S.status!=='ativa')return;stopCam();var tok=cam.token;cam.err='';camMsg('Abrindo a câmera…');paintCam();
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){camError({name:'nosupport'});return}
+  var prep=prepDecoder().catch(function(e){return e});
+  var video=cam.devId?{deviceId:{exact:cam.devId},width:{ideal:1280},height:{ideal:720}}:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},stream;
+  try{stream=await navigator.mediaDevices.getUserMedia({video:video,audio:false})}catch(e){if(tok===cam.token){if(cam.devId&&e&&e.name==='OverconstrainedError'){cam.devId='';startCam();return}camError(e)}return}
+  if(tok!==cam.token||!S||S.status!=='ativa'){stream.getTracks().forEach(function(t){t.stop()});return}
+  var pe=await prep;if(pe instanceof Error){stream.getTracks().forEach(function(t){t.stop()});camMsg(pe.message||'Não foi possível abrir o leitor de código.');return}
+  if(tok!==cam.token){stream.getTracks().forEach(function(t){t.stop()});return}
+  cam.stream=stream;cam.track=stream.getVideoTracks()[0]||null;var v=$i('cf-video');if(v){v.muted=true;v.setAttribute('playsinline','');v.srcObject=stream;try{await v.play()}catch(e){}}
+  try{var s=cam.track&&cam.track.getSettings&&cam.track.getSettings();if(s&&s.deviceId)cam.devId=cam.devId||'';cam.cur=s&&s.deviceId||''}catch(e){}
+  try{var all=await navigator.mediaDevices.enumerateDevices();cam.devs=all.filter(function(d){return d.kind==='videoinput'})}catch(e){cam.devs=[]}
+  try{if(navigator.wakeLock&&navigator.wakeLock.request)navigator.wakeLock.request('screen').then(function(w){if(tok===cam.token)cam.wake=w;else try{w.release()}catch(e){}}).catch(function(){})}catch(e){}
+  if(M.st!=='ask'){M.st='armado';M.cand=null}camMsg('Aponte para a etiqueta da caixa, com as barras na horizontal dentro do retângulo.');paintCam();loop()}
+async function switchCam(){if(cam.devs.length<2)return;var i=cam.devs.findIndex(function(d){return d.deviceId===(cam.devId||cam.cur)});cam.devId=cam.devs[(i+1)%cam.devs.length].deviceId;await startCam()}
+async function toggleTorch(){if(!cam.track)return;try{await cam.track.applyConstraints({advanced:[{torch:!cam.torch}]});cam.torch=!cam.torch}catch(e){say('Lanterna indisponível nesta câmera.')}paintCam()}
+function hasTorch(){try{var c=cam.track&&cam.track.getCapabilities&&cam.track.getCapabilities();return !!(c&&c.torch)}catch(e){return false}}
+
+/* ---------- máquina de estados ---------- */
+function ruleFor(v){if(boxCode(v))return 1;var r=S.rule.codes[v.code];return r===0||r===1?r:null}
+function feed(r,now){now=now==null?performance.now():now;if(!S||S.status!=='ativa'||M.saving||M.st==='off'||M.st==='ask')return;var seen=!!(r&&r.text);if(seen)M.lastSeen=now;var v=seen?check(r.text,r.format):null;
+  if(M.st==='travado'){if(S.mode==='auto'&&!seen&&now-M.lastSeen>=AUTO_MS){rearm('auto')}else{if(v&&v.code!==M.lockCode&&ruleFor(v)!==0&&now-M.otherAt>1500){M.otherAt=now;camMsg('Outro código na tela. Toque em "Próxima caixa" para contar.')}return}}
+  if(M.st!=='armado')return;
+  if(!seen){if(M.cand&&now-M.cand.t>PAIR_MS)M.cand=null;return}
+  if(!v){M.cand=null;hint('Código não aceito (formato ou dígito errado). Não contou.',now);return}
+  var rule=ruleFor(v);if(rule===0){M.cand=null;hint('Código do produto: não conta. Aponte para a etiqueta da caixa.',now);return}
+  if(M.cand&&M.cand.code===v.code&&now-M.cand.t<=PAIR_MS){M.cand=null;if(rule===null)askBox(v,now);else countIt(v,now);return}
+  M.cand={code:v.code,t:now}}
+async function countIt(v,now,m){M.saving=true;var x=await addRead(v.code,v.fmt,m||'c');M.saving=false;
+  if(!x){M.st='armado';camMsg('Não salvo — tente de novo.');paint();return null}
+  M.st='travado';M.lockCode=v.code;M.lastSeen=now==null?performance.now():now;M.otherAt=M.lastSeen;feedback();
+  camMsg(S.mode==='auto'?'Contou! Tire a câmera da etiqueta e aponte para a próxima caixa.':'Contou! Toque em "Próxima caixa" e aponte para a próxima etiqueta.');
+  paint();maybeCheckpoint();var nx=$i('cf-next');if(nx&&S.mode!=='auto')try{nx.focus({preventScroll:true})}catch(e){}return x}
+function rearm(){if(!S)return;M.st=cam.stream||M.fake?'armado':'off';M.cand=null;M.lockCode='';camMsg('Pronto para a próxima caixa.');paint()}
+function askBox(v,now){M.st='ask';v.now=now;M.ask=v;var box=$i('cf-ask');if(box){box.hidden=false;box.innerHTML='<p><b>Este código é da CAIXA?</b></p><p class="small">'+esc(FMT_NAME[v.fmt]||v.fmt)+' · <code>'+esc(v.code)+'</code></p><p class="small">A resposta vale para esta conferência.</p><div class="cf-askbtns"><button type="button" class="primary" id="cf-yes">Sim, é da caixa (conta 1)</button><button type="button" id="cf-no">Não, é do produto (não conta)</button></div>';var y=$i('cf-yes');if(y)try{y.focus({preventScroll:true})}catch(e){}}camMsg('Código novo nesta conferência: responda abaixo.')}
+async function answer(yes){var v=M.ask;if(!S||!v)return;M.ask=null;var box=$i('cf-ask');if(box){box.hidden=true;box.innerHTML=''}S.rule.codes[v.code]=yes?1:0;try{await putMeta()}catch(e){}cp.dirty=true;
+  if(yes){M.st='armado';await countIt(v,v.now)}else{M.st=cam.stream||M.fake?'armado':'off';camMsg('Certo: esse código não conta. Aponte para a etiqueta da caixa.');paint()}}
+function feedback(){try{if(window.siteSoundEnabled!==false&&typeof playSiteSound==='function')playSiteSound('tap')}catch(e){}try{if(navigator.vibrate)navigator.vibrate(60)}catch(e){}
+  var c=$i('cf-count');if(c){c.classList.add('hit');setTimeout(function(){c.classList.remove('hit')},260)}}
+function maybeCheckpoint(){if(S&&cp.n>=CP_READS)checkpoint('20')}
+
+/* ---------- ações ---------- */
+async function undo(){if(!S||S.status==='finalizada')return;var l=valid().slice(-1)[0];if(!l){say('Nada para desfazer.');return}var old=l.st;l.st='x';l.synced=0;
+  try{await idbPut('reads',await putRead(l))}catch(e){l.st=old;saveOk=false;paint();say('Não salvo — tente de novo.');return}
+  S.fixes.push([S.fixes.length+1,nowIso(),myName(),'undo',l.seq]);try{await putMeta()}catch(e){}cp.n++;cp.dirty=true;if(M.st==='travado'&&M.lockCode===l.code)rearm();camMsg('Leitura '+pad(l.seq)+' desfeita.');paint();maybeCheckpoint()}
+async function manual(code){if(!S||S.status==='finalizada')return null;code=String(code||'').replace(/[\u0000-\u001f\u007f]/g,'').trim().slice(0,64);if(!CODE_OK.test(code)){say('Código inválido: use só letras, números, - . / ( ) +');return null}
+  var x=await addRead(code,'M','h');if(!x){say('Não salvo — tente de novo.');return null}S.fixes.push([S.fixes.length+1,nowIso(),myName(),'add',x.seq]);try{await putMeta()}catch(e){}feedback();camMsg('Volume adicionado à mão.');paint();maybeCheckpoint();return x}
+async function pause(why){if(!S||S.status!=='ativa')return;stopCam();S.status='pausada';try{await putMeta()}catch(e){}await checkpoint('pausa');paint();if(why)camMsg(why)}
+async function resume(){if(!S||S.status!=='pausada')return;S.status='ativa';try{await putMeta()}catch(e){}paint();try{if(typeof unlockSiteAudio==='function')unlockSiteAudio()}catch(e){}await startCam()}
+async function finish(){if(!S||S.status==='finalizada')return;if(!confirm('Finalizar a conferência '+S.n+' com '+valid().length+' volume(s)? Depois de finalizar não dá para contar mais nesta conferência.'))return;
+  stopCam();S.status='finalizada';S.end=nowIso();try{await putMeta()}catch(e){}await checkpoint('fim');release();var id=S.id;showReport(id);say('Conferência '+S.n+' finalizada: '+valid().length+' volume(s).')}
+
+/* ---------- tela de contagem ---------- */
+function dlg(){var d=$i('conf-dlg');if(!d){d=D.createElement('dialog');d.id='conf-dlg';d.setAttribute('aria-labelledby','cf-title');D.body.appendChild(d);
+  d.addEventListener('click',onClick);d.addEventListener('submit',function(ev){ev.preventDefault();if(ev.target&&ev.target.id==='cf-manual-form'){var i=$i('cf-mcode');manual(i?i.value:'').then(function(x){if(x){var f=$i('cf-manual-form');if(f)f.hidden=true;if(i)i.value=''}})}});
+  d.addEventListener('change',function(ev){if(ev.target&&ev.target.id==='cf-autochk'&&S){S.mode=ev.target.checked?'auto':'toque';putMeta().catch(function(){});cp.dirty=true;paint()}});
+  d.addEventListener('cancel',function(ev){ev.preventDefault();closeDlg()});d.addEventListener('close',function(){D.body.classList.remove('conf-on')})}return d}
+function openDlg(){var d=dlg();if(!d.open)try{d.showModal()}catch(x){d.setAttribute('open','')}D.body.classList.add('conf-on')}
+async function closeDlg(){var counting=!!$i('cf-count');if(S&&S.status==='ativa')await pause();var d=$i('conf-dlg');stopCam();if(d&&d.open)try{d.close()}catch(x){d.removeAttribute('open')}D.body.classList.remove('conf-on');clearInterval(tickT);tickT=0;
+  if(counting&&S&&S.status!=='finalizada')say('Conferência '+S.n+' pausada. Continue pela tela de Notas fiscais.');if(S&&S.status==='finalizada'){S=null}try{if(typeof page!=='undefined'&&page==='nfs')render()}catch(e){}}
+function onClick(ev){var b=ev.target&&ev.target.closest&&ev.target.closest('button');if(!b)return;var id=b.id;
+  if(id==='cf-x')closeDlg();else if(id==='cf-next'){rearm()}else if(id==='cf-pause'){if(S&&S.status==='ativa')pause('Pausada. A contagem está salva.');else resume()}
+  else if(id==='cf-manual'){var f=$i('cf-manual-form');if(f){f.hidden=!f.hidden;if(!f.hidden){var i=$i('cf-mcode');if(i)try{i.focus()}catch(e){}}}}
+  else if(id==='cf-mcancel'){var f2=$i('cf-manual-form');if(f2)f2.hidden=true}
+  else if(id==='cf-undo')undo();else if(id==='cf-finish')finish();else if(id==='cf-yes')answer(true);else if(id==='cf-no')answer(false);
+  else if(id==='cf-switch')switchCam();else if(id==='cf-torch')toggleTorch();else if(id==='cf-retry'){cam.err='';startCam()}
+  else if(id==='cf-csv')csv(b.dataset.id);else if(id==='cf-pdf')pdf(b.dataset.id);else if(id==='cf-assoc-go')assocSave(b.dataset.id);else if(id==='cf-close')closeDlg();
+  else if(id==='cf-mark')markNF(b.dataset.id,b.dataset.st)}
+function shell(){var d=dlg();d.innerHTML='<div class="cf-wrap">'
+  +'<div class="cf-head"><div><h2 id="cf-title"></h2><p class="small cf-meta" id="cf-meta"></p></div><button type="button" class="cf-x" id="cf-x" aria-label="Fechar (a conferência fica pausada)">✕</button></div>'
+  +'<div class="cf-status"><span class="cf-chip" id="cf-st"></span><span class="small" id="cf-save" role="status"></span></div>'
+  +'<div class="cf-cam" id="cf-cam"><video id="cf-video" muted playsinline autoplay aria-label="Imagem da câmera"></video><div class="cf-frame" aria-hidden="true"></div><div class="cf-camoff" id="cf-camoff" hidden></div><div class="cf-camtools"><button type="button" id="cf-retry" hidden>Tentar de novo</button><button type="button" id="cf-switch" hidden>Trocar câmera</button><button type="button" id="cf-torch" hidden aria-pressed="false">Lanterna</button></div></div>'
+  +'<p class="cf-msg" id="cf-msg" role="status" aria-live="polite"></p>'
+  +'<div class="cf-ask" id="cf-ask" hidden></div>'
+  +'<div class="cf-countbox"><div class="eyebrow" id="cf-countlab">Volumes contados</div><div class="cf-count" id="cf-count" aria-live="polite" aria-atomic="true" aria-describedby="cf-countlab">00</div></div>'
+  +'<button type="button" class="primary cf-next" id="cf-next" hidden>Próxima caixa</button>'
+  +'<div class="cf-btns"><button type="button" id="cf-pause">Pausar</button><button type="button" id="cf-manual">＋ Volume à mão</button><button type="button" id="cf-undo">Desfazer última</button><button type="button" class="cf-finish" id="cf-finish">Finalizar</button></div>'
+  +'<form class="cf-manual" id="cf-manual-form" hidden><label>Código da caixa (opcional)<input id="cf-mcode" maxlength="64" inputmode="text" autocomplete="off" spellcheck="false" placeholder="Deixe vazio se não tiver código"></label><div class="cf-row"><button type="submit" class="primary">Adicionar 1 volume</button><button type="button" id="cf-mcancel">Cancelar</button></div></form>'
+  +'<label class="cf-auto"><input type="checkbox" id="cf-autochk"> Rearme automático: conta de novo quando nenhum código aparece por 1,2 s</label>'
+  +'<p class="small cf-last">Último código: <code id="cf-last">—</code></p>'
+  +'<details class="cf-histbox"><summary>Histórico de leituras (<span id="cf-hn">0</span>)</summary><ol class="cf-hist" id="cf-hist"></ol></details>'
+  +'</div>'}
+var ST={ativa:'Contando',pausada:'Pausada',finalizada:'Finalizada',cancelada:'Cancelada'};
+function paintCam(){if(!S)return;var box=$i('cf-cam'),off=$i('cf-camoff');if(!box)return;var on=!!cam.stream;box.classList.toggle('off',!on);
+  if(off){off.hidden=on;off.textContent=S.status==='pausada'?'Pausada. Toque em "Continuar" para ligar a câmera.':cam.err?'Câmera desligada.':'Ligando a câmera…'}
+  var r=$i('cf-retry');if(r)r.hidden=!(cam.err&&S.status==='ativa');var sw=$i('cf-switch');if(sw)sw.hidden=!(on&&cam.devs.length>1);
+  var t=$i('cf-torch');if(t){t.hidden=!(on&&hasTorch());t.setAttribute('aria-pressed',String(!!cam.torch));t.textContent=cam.torch?'Lanterna ligada':'Lanterna'}}
+function paint(){if(!S||!$i('cf-count'))return;var v=valid(),n=v.length;
+  $i('cf-title').textContent='Conferência '+S.n;$i('cf-meta').textContent=S.by+' · início '+dt(Date.parse(S.start))+' · ID '+S.id;
+  var st=$i('cf-st');st.textContent=ST[S.status]||S.status;st.dataset.st=S.status;
+  $i('cf-save').textContent=(saveOk?'Salvo no aparelho ✓':'Não salvo — tente de novo')+' · '+syncText();
+  var c=$i('cf-count');var txt=pad(n);if(c.textContent!==txt)c.textContent=txt;c.setAttribute('aria-label',n+(n===1?' volume contado':' volumes contados'));
+  var nx=$i('cf-next');nx.hidden=!(M.st==='travado'&&S.status==='ativa');
+  var p=$i('cf-pause');p.textContent=S.status==='ativa'?'Pausar':'Continuar';p.classList.toggle('primary',S.status==='pausada');
+  $i('cf-undo').disabled=!n;var ac=$i('cf-autochk');if(ac)ac.checked=S.mode==='auto';
+  var last=S.reads.slice(-1)[0];$i('cf-last').textContent=last?(last.code||'(sem código)')+' · '+(last.m==='h'?'manual':'câmera'):'—';
+  $i('cf-hn').textContent=String(S.reads.length);
+  $i('cf-hist').innerHTML=S.reads.slice(-30).reverse().map(function(r){return '<li class="'+(r.st==='x'?'x':'')+'"><b>'+pad(r.seq)+'</b><span>'+esc(tm(r.at))+'</span><code>'+esc(r.code||'(sem código)')+'</code><span class="small">'+(r.m==='h'?'manual':'câmera')+(r.st==='x'?' · desfeita':'')+'</span></li>'}).join('');
+  paintCam()}
+function tick(){if(!S){clearInterval(tickT);tickT=0;return}if(!logged()||S.acct!==acct()){stopCam();S=null;var d=$i('conf-dlg');if(d&&d.open)try{d.close()}catch(e){}return}
+  if(S.status==='ativa'&&cp.dirty&&Date.now()-cp.t>=CP_MS)checkpoint('60s');markSynced().then(function(){var el=$i('cf-save');if(el&&S)el.textContent=(saveOk?'Salvo no aparelho ✓':'Não salvo — tente de novo')+' · '+syncText()})}
+async function openCounting(s){S=s;M={st:'off',cand:null,lockCode:'',lastSeen:0,hintAt:0,otherAt:0,saving:false,ask:null};cam.err='';shell();openDlg();paint();clearInterval(tickT);tickT=setInterval(tick,3000);
+  if(S.status==='ativa')await startCam();else camMsg('Conferência pausada. Toque em "Continuar" para seguir contando.')}
+
+/* ---------- começar ---------- */
+window.confStart=async function(){if(!logged())return;try{if(typeof unlockSiteAudio==='function')unlockSiteAudio()}catch(e){}
+  if(S&&S.status!=='finalizada'&&S.acct===acct()){openCounting(S);if(S.status==='pausada')resume();return}
+  var open=await interrupted();if(open.length){var o=open[0],tot=(o.reads||[]).filter(function(r){return Array.isArray(r)?r[5]==='v':r.st==='v'}).length||o.total||0;
+    if(confirm('Existe a conferência '+o.n+' interrompida. Continuar essa?\n\nOK = continuar · Cancelar = começar uma nova')){return window.confResume(o.id)}}
+  var id='cf-'+devBase()+'-'+Date.now().toString(36);
+  try{await ckey()}catch(e){say(e.message||'Não foi possível preparar a conferência.');return}
+  if(!(await lock(id))){say('Esta conferência está aberta em outra aba.');return}
+  var s={id:id,acct:acct(),n:nextNumber(),by:myName(),login:myLogin(),role:['auxiliar','estoque','gestor'].indexOf(role())>=0?role():'estoque',dev:meDev(),start:nowIso(),end:'',status:'ativa',mode:'toque',rule:{codes:{}},fixes:[],reads:[],nf:'',assocBy:'',assocAt:'',note:''};
+  S=s;cp={n:0,t:Date.now(),seq:0,dirty:true};try{await putMeta()}catch(e){saveOk=false;say('Este navegador não deixa salvar a conferência no aparelho (modo privado?). A contagem fica só na memória até o próximo ponto de controle.')}
+  await openCounting(s);checkpoint('inicio')};
+window.confResume=async function(id){if(!logged())return;if(S&&S.id===id&&S.status!=='finalizada'){openCounting(S).then(function(){if(S&&S.status==='pausada')resume()});return}
+  if(!(await lock(id))){say('Esta conferência está aberta em outra aba.');return}var s=await loadSession(id);if(!s){release();say('Conferência não encontrada neste aparelho.');return}
+  if(s.status==='ativa')s.status='pausada';await openCounting(s);await resume()};
+window.confReport=function(id){showReport(id)};
+
+/* ---------- relatório ---------- */
+function confById(id){if(S&&S.id===id)return compact(S);return (state.confs||[]).find(function(c){return c.id===id})||null}
+function data(c){var st=Date.parse(c.start)||0,rs=c.reads||[],v=rs.filter(function(r){return r[5]==='v'}),codes={};v.forEach(function(r){var k=r[2]||'(sem código)';codes[k]=(codes[k]||0)+1});
+  return {c:c,total:v.length,camN:v.filter(function(r){return r[4]==='c'}).length,manN:v.filter(function(r){return r[4]==='h'}).length,undone:rs.filter(function(r){return r[5]==='x'}).length,
+    codes:Object.keys(codes).map(function(k){return [k,codes[k]]}).sort(function(a,b){return b[1]-a[1]||(a[0]<b[0]?-1:1)}),reads:rs.map(function(r){return {seq:r[0],at:st+r[1]*1000,code:r[2],fmt:r[3],m:r[4],st:r[5]}}),fixes:c.fixes||[],start:st,end:Date.parse(c.end)||0}}
+function nfOf(c){return c&&c.nf?(state.nfs||[]).find(function(n){return n.id===c.nf})||null:null}
+function compare(nf){var list=(state.confs||[]).filter(function(c){return c.nf===nf.id&&c.status==='finalizada'}),total=list.reduce(function(s,c){return s+(c.total|0)},0),byCode={};
+  list.forEach(function(c){(c.reads||[]).forEach(function(r){if(r[5]==='v'&&r[2])byCode[r[2]]=(byCode[r[2]]||0)+1})});
+  var exp=Number.isSafeInteger(nf.volumes)&&nf.volumes>0?nf.volumes:null,dec=Number.isSafeInteger(nf.declaredVolumes)?nf.declaredVolumes:null,items=[];
+  (nf.items||[]).forEach(function(it){if(it&&it.ean&&byCode[it.ean]!=null)items.push([it.ean,String(it.description||'').slice(0,80),byCode[it.ean],it.quantity])});
+  var want=exp!=null?exp:dec;return {sessions:list,total:total,volumes:exp,declared:dec,items:items,ok:want==null?null:total===want,want:want}}
+function showReport(id){var c=confById(id);if(!c){say('Conferência não encontrada.');return}stopCam();var d=dlg(),x=data(c),aux=isAuxNow(),nf=aux?null:nfOf(c);
+  var h='<div class="cf-wrap cf-rep"><div class="cf-head"><div><h2 id="cf-title">Relatório · '+esc(c.n)+'</h2><p class="small">'+esc(ST[c.status]||c.status)+'</p></div><button type="button" class="cf-x" id="cf-close" aria-label="Fechar">✕</button></div>'
+   +'<dl class="cf-kv"><dt>Número</dt><dd>'+esc(c.n)+'</dd><dt>ID</dt><dd>'+esc(c.id)+'</dd><dt>Funcionário</dt><dd>'+esc(c.by)+(c.login?' ('+esc(c.login)+')':'')+'</dd><dt>Início</dt><dd>'+esc(dt(x.start))+'</dd><dt>Término</dt><dd>'+esc(x.end?dt(x.end):'—')+'</dd>'
+   +(x.end?'<dt>Duração</dt><dd>'+esc(dur(x.start,x.end))+'</dd>':'')+'<dt>Total de volumes</dt><dd><b>'+x.total+'</b></dd><dt>Pela câmera</dt><dd>'+x.camN+'</dd><dt>À mão</dt><dd>'+x.manN+'</dd><dt>Desfeitas</dt><dd>'+x.undone+'</dd>'
+   +(nf?'<dt>NF associada</dt><dd>NF '+esc(nf.number)+' · '+esc(nf.supplier)+'</dd>':c.nf&&!aux?'<dt>NF associada</dt><dd>(NF apagada)</dd>':'')+'</dl>'
+   +'<h3>Quantidade por código</h3>'+(x.codes.length?'<table class="cf-table"><thead><tr><th>Código</th><th>Volumes</th></tr></thead><tbody>'+x.codes.map(function(r){return '<tr><td><code>'+esc(r[0])+'</code></td><td>'+r[1]+'</td></tr>'}).join('')+'</tbody></table>':'<p class="small">Nenhuma leitura válida.</p>')
+   +'<h3>Correções</h3>'+(x.fixes.length?'<ul>'+x.fixes.map(function(f){return '<li class="small">'+esc(dt(Date.parse(f[1])))+' · '+esc(f[2])+' · '+(f[3]==='undo'?'desfez a leitura ':'adicionou à mão a leitura ')+pad(f[4])+'</li>'}).join('')+'</ul>':'<p class="small">Nenhuma correção.</p>');
+  if(!aux&&c.status==='finalizada'){h+='<div class="cf-assoc"><h3>Associar a uma NF</h3><p class="small">Depois de associar, o app compara o total contado com a NF.</p><label>Nota fiscal<select id="cf-assoc-sel"><option value="">— escolha a NF —</option>'
+     +(state.nfs||[]).slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'')}).slice(0,300).map(function(n){return '<option value="'+esc(n.id)+'"'+(n.id===c.nf?' selected':'')+'>NF '+esc(n.number)+' · '+esc(n.supplier)+' · '+esc(date(n.date))+'</option>'}).join('')+'</select></label><button type="button" id="cf-assoc-go" data-id="'+esc(c.id)+'">Associar</button></div>';
+    if(nf){var k=compare(nf),bad=k.ok===false;h+='<div class="cf-cmp'+(bad?' bad':'')+'" id="cf-cmp"><h3>Comparação com a NF '+esc(nf.number)+'</h3><dl class="cf-kv"><dt>Contados (todas as conferências desta NF)</dt><dd><b>'+k.total+'</b> em '+k.sessions.length+' conferência(s)</dd><dt>Volumes na NF</dt><dd>'+(k.volumes==null?'não informado':k.volumes)+'</dd><dt>Volumes no XML</dt><dd>'+(k.declared==null?'não informado':k.declared)+'</dd></dl>'
+      +(k.items.length?'<table class="cf-table"><thead><tr><th>EAN</th><th>Item</th><th>Lidos</th><th>XML</th></tr></thead><tbody>'+k.items.map(function(r){return '<tr><td><code>'+esc(r[0])+'</code></td><td>'+esc(r[1])+'</td><td>'+r[2]+'</td><td>'+esc(r[3])+'</td></tr>'}).join('')+'</tbody></table><p class="small">Por código é só informativo: um EAN de produto pode ter várias unidades por caixa.</p>':'')
+      +(k.ok===null?'<p class="small">A NF não tem volumes informados para comparar.</p>':bad?'<p><b>Divergência:</b> contados '+k.total+' de '+k.want+' volumes.</p><div class="cf-repbtns"><button type="button" id="cf-mark" data-id="'+esc(c.id)+'" data-st="Em divergência">Marcar NF em divergência</button></div>':'<p><b>Confere:</b> '+k.total+' de '+k.want+' volumes.</p><div class="cf-repbtns"><button type="button" id="cf-mark" data-id="'+esc(c.id)+'" data-st="Conferido">Marcar NF como Conferido</button></div>')+'</div>'}}
+  h+='<div class="cf-repbtns"><button type="button" class="primary" id="cf-csv" data-id="'+esc(c.id)+'">Baixar planilha (Excel/CSV)</button><button type="button" id="cf-pdf" data-id="'+esc(c.id)+'">PDF / Imprimir</button></div>'
+   +'<details class="cf-histbox"><summary>Todas as leituras ('+x.reads.length+')</summary><ol class="cf-hist">'+x.reads.slice().reverse().map(function(r){return '<li class="'+(r.st==='x'?'x':'')+'"><b>'+pad(r.seq)+'</b><span>'+esc(tm(r.at))+'</span><code>'+esc(r.code||'(sem código)')+'</code><span class="small">'+(r.m==='h'?'manual':'câmera')+(r.st==='x'?' · desfeita':'')+'</span></li>'}).join('')+'</ol></details></div>';
+  d.innerHTML=h;openDlg()}
+async function assocSave(id){if(isAuxNow()){say('Só gestor ou estoque associa a NF.');return}var sel=$i('cf-assoc-sel'),nfId=sel?sel.value:'';if(!nfId){say('Escolha a NF.');return}
+  var list=(state.confs||[]).slice(),i=list.findIndex(function(c){return c.id===id});if(i<0)return;if(list[i].status!=='finalizada'){say('Finalize a conferência antes de associar.');return}
+  list[i]=Object.assign({},list[i],{nf:nfId,assocBy:myName(),assocAt:nowIso()});state.confs=validateConfs(list);if(S&&S.id===id){S.nf=nfId;S.assocBy=list[i].assocBy;S.assocAt=list[i].assocAt}await save();say('Conferência associada à NF.');showReport(id)}
+async function markNF(id,st){if(isAuxNow())return;var c=confById(id),nf=nfOf(c);if(!nf)return;var k=compare(nf);if(st!=='Em divergência'&&st!=='Conferido')return;
+  if(!confirm(st==='Conferido'?'Marcar a NF '+nf.number+' como Conferido?':'Marcar a NF '+nf.number+' em divergência?'))return;
+  if(st==='Em divergência'){var note=prompt('Nota da divergência:',('Contados '+k.total+' de '+k.want+' volumes ('+k.sessions.map(function(s){return s.n}).join(', ')+'). '+(nf.notes||'')).trim().slice(0,10000));if(note===null)return;if(!note.trim()){say('Descreva a divergência.');return}nf.notes=note.trim().slice(0,10000)}
+  nf.status=st;await save();try{checkAlerts()}catch(e){}say('NF '+nf.number+': '+st+'.');showReport(id)}
+function csvText(c){var x=data(c),nf=isAuxNow()?null:nfOf(c),rows=[['Conferência',c.n],['ID',c.id],['Funcionário',c.by],['Login',c.login],['Início',dt(x.start)],['Término',x.end?dt(x.end):''],['Status',ST[c.status]||c.status],['Total de volumes',x.total],['Leituras pela câmera',x.camN],['Adicionados à mão',x.manN],['Leituras desfeitas',x.undone],['NF associada',nf?nf.number+' · '+nf.supplier:''],[],['Código','Quantidade']];
+  x.codes.forEach(function(r){rows.push([r[0],r[1]])});rows.push([],['Seq','Data/hora','Código','Formato','Método','Status']);x.reads.forEach(function(r){rows.push([r.seq,dt(r.at)+':'+pad(new Date(r.at).getSeconds()),r.code,FMT_NAME[r.fmt]||r.fmt,r.m==='h'?'Manual':'Câmera',r.st==='v'?'Válida':'Desfeita'])});
+  rows.push([],['Correção','Data/hora','Quem','Tipo','Leitura']);x.fixes.forEach(function(f){rows.push([f[0],dt(Date.parse(f[1])),f[2],f[3]==='undo'?'Desfez':'Adicionou à mão',f[4]])});
+  return '﻿'+rows.map(function(r){return r.map(csvCell).join(';')}).join('\r\n')}
+function csv(id){var c=confById(id);if(!c)return;planDownload(csvText(c),'conferencia-'+c.n+'-'+String(c.start).slice(0,10)+'.csv','text/csv;charset=utf-8');say('Planilha baixada (abre no Excel). Confira os downloads.')}
+function printHtml(c){var x=data(c),nf=isAuxNow()?null:nfOf(c);return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Conferência '+esc(c.n)+'</title><style>body{font:13px -apple-system,Segoe UI,system-ui,sans-serif;color:#111;background:#fff;margin:28px}h1{font-size:18px;margin:0 0 6px}h2{font-size:14px;margin:18px 0 6px}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #ddd;padding:6px 8px;text-align:left}th{font-size:11px;text-transform:uppercase;color:#555}.x{color:#888;text-decoration:line-through}</style></head><body>'
+  +'<h1>Conferência de volumes '+esc(c.n)+'</h1><table><tbody>'+[['Funcionário',c.by+(c.login?' ('+c.login+')':'')],['ID',c.id],['Início',dt(x.start)],['Término',x.end?dt(x.end):'—'],['Total de volumes',x.total],['Pela câmera',x.camN],['À mão',x.manN],['Desfeitas',x.undone],['NF associada',nf?'NF '+nf.number+' · '+nf.supplier:'—']].map(function(r){return '<tr><th>'+esc(r[0])+'</th><td>'+esc(r[1])+'</td></tr>'}).join('')+'</tbody></table>'
+  +'<h2>Quantidade por código</h2><table><thead><tr><th>Código</th><th>Volumes</th></tr></thead><tbody>'+x.codes.map(function(r){return '<tr><td>'+esc(r[0])+'</td><td>'+r[1]+'</td></tr>'}).join('')+'</tbody></table>'
+  +'<h2>Correções</h2>'+(x.fixes.length?'<table><tbody>'+x.fixes.map(function(f){return '<tr><td>'+esc(dt(Date.parse(f[1])))+'</td><td>'+esc(f[2])+'</td><td>'+(f[3]==='undo'?'Desfez':'Adicionou à mão')+' a leitura '+pad(f[4])+'</td></tr>'}).join('')+'</tbody></table>':'<p>Nenhuma.</p>')
+  +'<h2>Leituras</h2><table><thead><tr><th>Seq</th><th>Hora</th><th>Código</th><th>Método</th></tr></thead><tbody>'+x.reads.map(function(r){return '<tr class="'+(r.st==='x'?'x':'')+'"><td>'+pad(r.seq)+'</td><td>'+esc(tm(r.at))+'</td><td>'+esc(r.code||'(sem código)')+'</td><td>'+(r.m==='h'?'Manual':'Câmera')+(r.st==='x'?' (desfeita)':'')+'</td></tr>'}).join('')+'</tbody></table></body></html>'}
+function pdf(id){var c=confById(id);if(!c)return;var html=printHtml(c),w=null;try{w=window.open('','_blank')}catch(e){}
+  if(w){w.document.open();w.document.write(html);w.document.close();setTimeout(function(){try{w.focus();w.print()}catch(e){}},300);say('Na janela de impressão, escolha "Salvar como PDF".');return}
+  var f=D.createElement('iframe');f.setAttribute('aria-hidden','true');f.style.cssText='position:fixed;width:0;height:0;border:0;right:0;bottom:0';D.body.appendChild(f);var fd=f.contentDocument;fd.open();fd.write(html);fd.close();
+  setTimeout(function(){try{f.contentWindow.focus();f.contentWindow.print()}catch(e){say('Não deu para imprimir aqui. Use "Baixar planilha".')}setTimeout(function(){f.remove()},60000)},300);say('Na janela de impressão, escolha "Salvar como PDF".')}
+
+/* ---------- tela de Notas fiscais: botão principal, sessão interrompida e lista ---------- */
+function histHtml(){var me=meDev(),aux=isAuxNow(),list=(state.confs||[]).filter(function(c){return !aux||c.dev===me}).slice(0,10);if(!list.length)return '';
+  return '<details class="conf-hist"><summary>Conferências por câmera ('+list.length+')</summary><ul class="conf-hist-list">'+list.map(function(c){var nf=aux?null:nfOf(c);
+    return '<li><span><b>'+esc(c.n)+'</b> · '+esc(c.by)+' · '+esc(dt(Date.parse(c.start)))+' · '+(c.total|0)+' volume(s) · '+esc(ST[c.status]||c.status)+(nf?' · NF '+esc(nf.number):'')+'</span><button type="button" data-conf-rep="'+esc(c.id)+'">Relatório</button></li>'}).join('')+'</ul></details>'}
+function ctaHtml(){return '<section class="panel conf-cta" id="conf-cta" aria-label="Conferência por câmera"><button type="button" class="primary conf-go" id="conf-go" onclick="confStart()">📷 INICIAR CONFERÊNCIA POR CÂMERA</button>'
+  +'<p class="small">Conte os volumes lendo a etiqueta de cada caixa (EAN-13, EAN-8, UPC-A, Code 128, ITF-14). Às cegas: a contagem não mostra a quantidade da NF. Funciona sem internet.</p><div class="conf-resume" id="conf-resume"></div>'+histHtml()+'</section>'}
+async function banner(){var box=$i('conf-resume');if(!box||!logged())return;var open=await interrupted();box=$i('conf-resume');if(!box)return;
+  box.innerHTML=open.map(function(o){var tot=Array.isArray(o.reads)?o.reads.filter(function(r){return Array.isArray(r)?r[5]==='v':r.st==='v'}).length:(o.total|0);
+    return '<div class="conf-banner" role="status"><b>Conferência '+esc(o.n)+' interrompida · '+tot+' volume(s) salvos</b><button type="button" class="primary" data-conf-res="'+esc(o.id)+'">Continuar</button><button type="button" data-conf-rep="'+esc(o.id)+'">Ver</button></div>'}).join('')}
+D.addEventListener('click',function(ev){var b=ev.target&&ev.target.closest&&ev.target.closest('[data-conf-res],[data-conf-rep]');if(!b||!logged())return;
+  if(b.hasAttribute('data-conf-res'))window.confResume(b.getAttribute('data-conf-res'));else{var id=b.getAttribute('data-conf-rep');if(confById(id))showReport(id);else say('Toque em "Continuar" para abrir essa conferência.')}});
+if(typeof upgradedNFs==='function'){var baseNFs=upgradedNFs;upgradedNFs=function(){var h=baseNFs.apply(this,arguments);try{if(logged()&&typeof h==='string'&&h.indexOf('conf-cta')<0){var at=h.indexOf('<div class="panel"><div class="panelhead"><h2>Notas fiscais');h=at>=0?h.slice(0,at)+ctaHtml()+h.slice(at):h+ctaHtml()}setTimeout(banner,0)}catch(e){}return h}}
+
+/* segundo plano / sair / voltar a rede */
+D.addEventListener('visibilitychange',function(){if(D.hidden&&S&&S.status==='ativa')pause('Pausada porque o app saiu da tela. Toque em "Continuar".')});
+window.addEventListener('pagehide',function(){if(S&&S.status==='ativa'){stopCam();S.status='pausada';putMeta().catch(function(){})}});
+window.addEventListener('online',function(){if(S&&(cp.dirty||pendingMine(S.id)))checkpoint('online')});
+window.e99ConfPurge=function(storeKey){var a=h32(storeKey);['sessions','reads'].forEach(function(st){try{run(st,'readwrite',function(o){var c=o.openCursor();c.onsuccess=function(){var cur=c.result;if(!cur)return;if(cur.value&&cur.value.acct===a)cur.delete();cur.continue()}}).catch(function(){})}catch(e){}})};
+/* para os testes (leitor falso): alimentar a máquina de estados quadro a quadro */
+window.e99Conf={check:check,feed:function(r,t){feed(r,t)},arm:function(){if(S&&S.status==='ativa'){M.fake=true;M.st='armado';M.cand=null}},state:function(){return S?{id:S.id,n:S.n,status:S.status,machine:M.st,total:valid().length,seq:S.reads.length?S.reads[S.reads.length-1].seq:0,cpSeq:cp.seq,dirty:cp.dirty,mode:S.mode,synced:S.reads.filter(function(r){return r.synced}).length}:null},
+  checkpoint:function(){return checkpoint('teste')},idbReads:readsOf,
+  rawRows:function(){return idbAll('reads')},csv:function(id){var c=confById(id);return c?csvText(c):''},decodeCanvas:async function(c){await prepDecoder();return cam.reader?decodeCanvas(c):null},answer:answer,current:function(){return S}};
 })();
 </script>
 </body></html>
