@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="98"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="99"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -4431,6 +4431,16 @@ function nome(){try{var t=window.e99Team&&window.e99Team.get();if(t&&t.name)retu
 function user(){return appP&&window.firebase&&firebase.apps.length?firebase.app().auth().currentUser:null}
 function msg(x){var c=x&&x.code||'';return c==='auth/invalid-email'?'E-mail inválido. Confira o endereço.':c==='auth/network-request-failed'?'Sem internet. Tente de novo quando conectar.':c==='auth/too-many-requests'?'Muitas tentativas. Espere alguns minutos.':c==='auth/user-disabled'?'Esta conta foi desativada.':(x&&x.message)||'Não foi possível conectar à nuvem.'}
 function soft(x){var c=x&&x.code||'';return !c||c==='auth/network-request-failed'||c==='auth/internal-error'||c==='unavailable'}
+/* v99: "Sem internet" no PC com internet. Quando o Firebase dá falha de rede, testa cada serviço e diz qual está bloqueado
+   (firewall da loja, antivírus que inspeciona HTTPS, bloqueador de anúncios, relógio do computador errado). */
+function netNtfy(){try{var o=new URLSearchParams(location.search).get('ntfy');if(o&&(location.hostname==='localhost'||location.hostname==='127.0.0.1'))return o.replace(/\/+$/,'')}catch(x){}return 'https://ntfy.sh'}
+async function probe(u){var ac=typeof AbortController==='function'?new AbortController():null,t=setTimeout(function(){if(ac)ac.abort()},8000);try{await fetch(u,{mode:'no-cors',cache:'no-store',signal:ac?ac.signal:undefined});return true}catch(x){return false}finally{clearTimeout(t)}}
+window.e99NetWhy=async function(){if(navigator.onLine===false)return 'Este aparelho está sem internet. Confira o Wi-Fi ou o cabo e tente de novo.';
+  var list=[['login da nuvem (identitytoolkit.googleapis.com)','https://identitytoolkit.googleapis.com/v1/projects?key='+FB.apiKey],['banco da nuvem (firestore.googleapis.com)','https://firestore.googleapis.com/'],['arquivos do Firebase (www.gstatic.com)','https://www.gstatic.com/firebasejs/'+FBV+'/firebase-app-compat.js'],['equipe e chat (ntfy.sh)',netNtfy()+'/v1/health']];
+  var r=await Promise.all(list.map(function(x){return probe(x[1])})),bad=list.filter(function(x,i){return !r[i]}).map(function(x){return x[0]});
+  if(!bad.length)return 'A nuvem não respondeu a tempo, mas este aparelho tem internet. Tente de novo em instantes.';
+  if(bad.length===list.length)return 'Sem acesso à internet por este navegador. Se o computador tem internet, confira a data e a hora do Windows (relógio errado bloqueia sites seguros), o proxy da rede e o antivírus.';
+  return 'Este computador tem internet, mas a rede, o antivírus ou um bloqueador de anúncios está barrando: '+bad.join(', ')+'. Libere esse endereço, desligue o bloqueador para este site ou teste em outra rede (ex.: roteador do celular).'};
 
 /* guarda a senha digitada só na memória, por 10 minutos, para ligar a conta da nuvem logo depois do login */
 var decBefore=authDecrypt;authDecrypt=async function(record,password){var r=await decBefore.apply(this,arguments);if(record&&typeof password==='string')stash={login:authLoginName(record.login),pw:password,t:Date.now()};return r};
@@ -4512,7 +4522,7 @@ window.e99CloudLink=async function(ev){ev.preventDefault();if(linkBusy||!authSes
   if(!pw){linkErr='Digite sua senha.';showLink();return}
   if(!freshPw()){try{await decBefore(authSession.record,pw)}catch(x){linkErr='Senha incorreta.';showLink();return}stash={login:authLoginName(authSession.record.login),pw:pw,t:Date.now()}}
   linkBusy=true;showLink();try{await link(v.email,pw);linkBusy=false;var d=document.getElementById('cloud-link');if(d)d.close();var u=user();notify(u&&!u.emailVerified?'E-mail vinculado! Abra a mensagem que enviamos para '+u.email+' e toque no link de confirmação.':'E-mail vinculado à nuvem.');if(page==='account')render()}
-  catch(x){linkBusy=false;linkErr=msg(x);linkSoft=soft(x);showLink()}};
+  catch(x){linkBusy=false;linkErr=msg(x);linkSoft=soft(x);showLink();if(x&&x.code==='auth/network-request-failed')window.e99NetWhy().then(function(t){if(linkErr===msg(x)){linkErr=t;showLink()}}).catch(function(){})}};
 
 /* ao entrar na conta */
 async function onEnter(){if(!authSession)return;var pc=!!ls('lojasg.estoque99.pc-account:'+authSession.storeKey);/* conta do PC do estoque: e-mail interno automático */var s=authSession,c;try{c=await load()}catch(x){return}if(authSession!==s)return;var u=c.auth.currentUser,em=pc?'pc-'+(await sha('pc|'+authLoginName(s.record.login))).slice(0,24)+'@pc.stok-e99.app':myEmail(),pw=freshPw();
@@ -5095,7 +5105,7 @@ window.mrGo=async function(ev){ev.preventDefault();if(busy)return;var v=readForm
     ls('lojasg.estoque99.cloud-email:'+storeKey,email);var d2=await derive(login,v.password);try{await u.updatePassword(d2)}catch(x){}
     grab(login,v.password);vault();var dd=document.getElementById('mail-rec');if(dd)dd.close();busy=false;
     notify(record&&vd&&vd.salt===record.salt?'Conta recuperada com todos os dados! Anote o novo código em Minha conta.':(localStorage.getItem('lojasg.estoque99.chat:'+storeKey)?'Conta recuperada e de volta à equipe! Anote o novo código em Minha conta.':'Conta recuperada! Para voltar à equipe, peça o convite (Chat → Convidar) a quem está na equipe. Anote o novo código em Minha conta.'));try{go('account')}catch(x){}}
-  catch(x){busy=false;err=code(x);paint()}};
+  catch(x){busy=false;err=code(x);paint();if(x&&x.code==='auth/network-request-failed'&&window.e99NetWhy)window.e99NetWhy().then(function(t){if(err==='Sem internet.'){err=t;paint()}}).catch(function(){})}};
 /* link na tela de entrar */
 var raB=renderAuth;renderAuth=function(){raB.apply(this,arguments);try{var f=document.getElementById('auth-form');if(f&&!authRecoveryShow&&!authPending&&(authMode==='login'||authMode==='recover')&&!document.getElementById('mr-link')){var b=document.createElement('button');b.type='button';b.id='mr-link';b.className='mr-link';b.textContent='Esqueci a senha e o código · recuperar pelo e-mail';b.onclick=window.mrOpen;f.after(b)}}catch(x){}};
 if(typeof authSession!=='undefined'&&!authSession&&document.getElementById('auth-form'))renderAuth();
@@ -5221,7 +5231,7 @@ window.cpGo=async function(ev){ev.preventDefault();if(st.busy)return;var v=readF
   st.login=login;st.email=email;st.pass=p;st.err='';if(!EMAIL.test(email)){st.err='Digite um e-mail válido.';paint();return}st.busy=true;paint();
   try{var c=await window.e99Cloud.load();if(c.auth.currentUser)try{await c.auth.signOut()}catch(x){}var u;
     var T9=window.e99CloudTry,w9=T9?T9.wait():0;if(w9)throw Error('Muitas tentativas neste aparelho. Espere '+w9+' min e tente de novo.');
-    try{u=(await c.auth.signInWithEmailAndPassword(email,await derive(login,p))).user;if(T9)T9.ok()}catch(x){if(x.code==='auth/network-request-failed')throw Error('Sem internet. Tente de novo com sinal.');if(T9)T9.fail();throw Error('E-mail, login ou senha não conferem com a conta da nuvem. Se esqueceu a senha, use "recuperar pelo e-mail".')}
+    try{u=(await c.auth.signInWithEmailAndPassword(email,await derive(login,p))).user;if(T9)T9.ok()}catch(x){if(x.code==='auth/network-request-failed')throw Error(await window.e99NetWhy());if(T9)T9.fail();throw Error('E-mail, login ou senha não conferem com a conta da nuvem. Se esqueceu a senha, use "recuperar pelo e-mail".')}
     var ud=null;try{ud=(await c.db.collection('usuarios').doc(u.uid).get()).data()}catch(x){}
     var lg=authLoginName((ud&&ud.login)||login);if(await exists(lg)){st.busy=false;st.err='';document.getElementById('cloud-pull').close();notify('A conta já está neste aparelho: entre com login e senha.');return}
     /* v89: mantém o papel salvo na nuvem; nunca promove a gestor */
