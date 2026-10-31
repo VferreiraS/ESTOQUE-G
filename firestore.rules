@@ -8,7 +8,7 @@ rules_version = '2';
 //   Dados particulares da pessoa (tem e-mail = dado pessoal): só o dono lê/grava.
 //   - email: string (obrigatório, = e-mail do login)
 //   - login: string (1..80)       - nome: string (0..40)
-//   - role: 'gestor'|'auxiliar'|'estoque'  (informativo; 'gestor' só se já era ou se verificados/{uid}.tipo=='s')
+//   - role: 'gestor'|'auxiliar'|'estoque'  (informativo; 'gestor' só se verificados/{uid}.tipo=='s' (v101))
 //   - loja: string (0..64)        - criado, visto: int
 //   - verificado: bool (= e-mail confirmado no token)
 //
@@ -96,11 +96,10 @@ service cloud.firestore {
         (l.size() < 6 || isStr(l[5], 0, 40));
     }
 
-    // v89: ninguém se promove a gestor pela nuvem. 'gestor' só vale se o documento já era gestor
-    // ou se o administrador marcou o uid em verificados com tipo 's' (gestor da loja).
+    // v89: ninguém se promove a gestor pela nuvem. v101: 'gestor' só vale se o administrador marcou o uid
+    // em verificados com tipo 's' (o "já era gestor" saiu: contas antigas tinham ganhado 'gestor' sem ser o dono).
     function gestorOk(uid) {
       return request.resource.data.role != 'gestor' ||
-        (resource != null && resource.data.role == 'gestor') ||
         (exists(/databases/$(database)/documents/verificados/$(uid)) &&
           get(/databases/$(database)/documents/verificados/$(uid)).data.tipo == 's');
     }
