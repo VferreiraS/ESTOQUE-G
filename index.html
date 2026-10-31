@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="103"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="104"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -7017,4 +7017,46 @@ var mo=new MutationObserver(function(){if(authSession&&page==='nfs')try{deco()}c
 .chat-msg .chat-del-btn:hover,.chat-msg .chat-del-btn:focus-visible{opacity:1}
 .conf-hist-list li .danger,.conf-banner .danger{margin-left:6px}
 </style>
+<style id="v104-css">
+.e99-clock,#view .panel.e99-clock{position:relative;margin:4px 0 18px;padding:18px 22px;border:1px solid var(--line,rgba(255,255,255,.12));border-radius:18px;background:#0b0b0d;color:#f5f5f7;text-align:center;contain:layout paint}
+.e99-clock .clk-time{font-family:Oswald,'Arial Narrow',system-ui,sans-serif;font-weight:600;font-size:clamp(56px,13vw,148px);line-height:1;letter-spacing:.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.e99-clock .clk-s{font-size:.42em;opacity:.6;margin-left:.08em;vertical-align:.95em}
+.e99-clock .clk-date{margin-top:10px;font-size:clamp(16px,2.6vw,28px);color:#c9c9cf}
+.e99-clock .clk-full{position:absolute;right:10px;top:10px;min-height:44px;font-size:13px;background:transparent;border:1px solid var(--line,rgba(255,255,255,.18));border-radius:10px;color:#c9c9cf;padding:6px 10px}
+.e99-clock:fullscreen{display:flex;flex-direction:column;justify-content:center;align-items:center;border:0;border-radius:0;margin:0;background:#000}
+.e99-clock:fullscreen .clk-time{font-size:min(24vw,40vh)}
+.e99-clock:fullscreen .clk-date{font-size:min(4.5vw,6vh)}
+.e99-clock.clk-calm .clk-s{display:none}
+@media(max-width:600px){.e99-clock{padding:14px 12px 16px}.e99-clock .clk-full{position:static;margin-top:10px}}
+</style>
+<script id="v104-js">
+(function(){
+'use strict';
+/* v104 (pedido do dono): relógio grande com data e hora no Início, para deixar o site aberto no PC como papel de parede.
+   Só troca texto: 1 vez por segundo (alinhado ao segundo). Com Efeitos desligados, "menos movimento" ou "Pausar animação":
+   sem segundos, 1 vez por minuto. Parado com a aba em segundo plano ou fora do Início. "Tela cheia" deixa só o relógio. */
+var D=document,timer=0,el=null;
+function calm(){var B=D.body;try{return B.classList.contains('fx-off')||B.classList.contains('fx-user-off')||window.__osReduce===true||localStorage.getItem('lojasg.estoque99.visual-effects')==='off'||localStorage.getItem('lojasg.estoque99.fx-pause')==='1'||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)}catch(e){return false}}
+function p2(n){return (n<10?'0':'')+n}
+var lastDate='';
+function paint(){if(!el||!el.isConnected)return;var d=new Date(),c=calm();el.classList.toggle('clk-calm',c);
+  var t=el.querySelector('.clk-hm'),s=el.querySelector('.clk-s'),dt=el.querySelector('.clk-date');var hm=p2(d.getHours())+':'+p2(d.getMinutes());if(t.textContent!==hm)t.textContent=hm;s.textContent=':'+p2(d.getSeconds());
+  var ds=d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});ds=ds.charAt(0).toUpperCase()+ds.slice(1);if(ds!==lastDate||dt.textContent!==ds){dt.textContent=ds;lastDate=ds}
+  el.setAttribute('aria-label','Agora: '+hm+', '+ds)}
+function stop(){clearTimeout(timer);timer=0}
+function tick(){stop();if(!el||!el.isConnected||D.hidden||!authSession||page!=='home')return;paint();var now=Date.now(),ms=calm()?60000-now%60000:1000-now%1000;timer=setTimeout(tick,ms+15)}
+function html(){return '<section class="panel e99-clock" role="timer" aria-live="off"><div class="clk-time"><span class="clk-hm">--:--</span><span class="clk-s">:--</span></div><div class="clk-date"></div>'+(D.fullscreenEnabled&&D.documentElement.requestFullscreen?'<button type="button" class="clk-full">Tela cheia</button>':'')+'</section>'}
+/* o relógio entra junto com o topo do Início (no mesmo desenho da tela), para os efeitos da v91 já o enxergarem como cartão */
+var h0=hero;hero=function(){var h=h0.apply(this,arguments);try{if(authSession&&page==='home')h+=html()}catch(e){}return h};
+function mount(){if(!authSession||page!=='home'){stop();el=null;return}var v=D.getElementById('view');if(!v)return;var cur=v.querySelector('.e99-clock');
+  if(!cur){var hr=v.querySelector('.hero');if(!hr)return;hr.insertAdjacentHTML('afterend',html());cur=v.querySelector('.e99-clock')}
+  if(cur!==el){el=cur;var fb=el.querySelector('.clk-full');if(fb)fb.addEventListener('click',function(){try{if(D.fullscreenElement)D.exitFullscreen();else el.requestFullscreen()}catch(e){}})}
+  paint();tick()}
+D.addEventListener('fullscreenchange',function(){var b=el&&el.querySelector('.clk-full');if(b)b.textContent=D.fullscreenElement===el?'Sair da tela cheia':'Tela cheia'});
+D.addEventListener('visibilitychange',function(){if(D.hidden)stop();else if(el)tick()});
+addEventListener('storage',function(){if(el)tick()});
+var r0=render;render=function(){var r=r0.apply(this,arguments);try{mount()}catch(x){}return r};
+window.e99Clock={running:function(){return !!timer},el:function(){return el}};
+})();
+</script>
 </body></html>
