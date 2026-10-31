@@ -2,7 +2,7 @@
    (B) conta que não é do dono (ex.: PC com 'gestor' antigo) não vê nem abre Administração e não faz ações de gestor. */
 const L=require('./lib.js');const {ok,until}=L;
 async function shut(p){await p.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()))}
-async function seed(p,login,role){return p.evaluate(async([l,r])=>{const s=await authCreate(l,'Loja '+l,'1234',authEmpty(),r);authSaveNewAccount(s);return s.storeKey},[login,role])}
+async function seed(p,login,role){return p.evaluate(async([l,r])=>{const s=await authCreate(l,'Loja '+l,'1234',authEmpty(),r,l.replace(/[^a-z0-9]/gi,'')+'.'+Date.now().toString(36)+'@teste.com');/* v105: toda conta tem e-mail */authSaveNewAccount(s);return s.storeKey},[login,role])}
 (async()=>{const b=await L.chromium.launch();const errs=[];const T=Date.now();
  const G=await (await b.newContext({viewport:{width:1300,height:900}})).newPage(),A=await (await b.newContext(L.devices['iPhone 13'])).newPage();[G,A].forEach(p=>{p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept())});
  /* ---------- A: Equipe ---------- */

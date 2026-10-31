@@ -1,7 +1,7 @@
 /* v102: Agentes e Agenda fora do menu e das rotas; Administração funciona para o gestor (PC e celular): lista, bloqueia, apaga e redefine senha com código. */
 const L=require('./lib.js');const {ok,until}=L;
 async function shut(p){await p.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()))}
-async function seed(p,login,role){return p.evaluate(async([l,r])=>{const s=await authCreate(l,'Loja '+l,'1234',authEmpty(),r);authSaveNewAccount(s);return s.recoveryCode},[login,role])}
+async function seed(p,login,role){return p.evaluate(async([l,r])=>{const s=await authCreate(l,'Loja '+l,'1234',authEmpty(),r,l.replace(/[^a-z0-9]/gi,'')+'.'+Date.now().toString(36)+'@teste.com');/* v105: toda conta tem e-mail */authSaveNewAccount(s);return s.recoveryCode},[login,role])}
 (async()=>{const b=await L.chromium.launch();const errs=[];const T=Date.now();
  for(const [nome,opts] of [['PC',{viewport:{width:1440,height:900}}],['celular',L.devices['iPhone 13']]]){
   const P=await (await b.newContext(opts)).newPage();P.on('pageerror',e=>errs.push(e.message));const ans=[];P.on('dialog',d=>{const v=ans.length?ans.shift():undefined;v===undefined?d.accept():d.accept(v)});

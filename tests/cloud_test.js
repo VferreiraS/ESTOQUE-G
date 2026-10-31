@@ -49,12 +49,12 @@ const doc=(path,tok)=>j(`${FS}/v1/projects/${P}/databases/(default)/documents/${
  const cg2=await j(`${FS}/v1/projects/${P}/databases/(default)/documents:runQuery`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+at},body:JSON.stringify({structuredQuery:{from:[{collectionId:'membros',allDescendants:true}]}})});ok(cg2.s===403,'outros não listam membros de todas as lojas');
  const w=await j(`${FS}/v1/projects/${P}/databases/(default)/documents/lojas/${sid}/membros/${bUid}`,{method:'PATCH',headers:{'Content-Type':'application/json',Authorization:'Bearer '+at},body:JSON.stringify({fields:{login:{stringValue:'x'},role:{stringValue:'gestor'},criado:{integerValue:1},visto:{integerValue:1},verificado:{booleanValue:true}}})});ok(w.s===403,'gestor não altera o membro do auxiliar');
  // conta antiga (sem e-mail): ao entrar com a senha, pede para vincular
- await A.evaluate(()=>{localStorage.removeItem('lojasg.estoque99.cloud-email:'+authSession.storeKey)});await A.evaluate(()=>e99Cloud.load().then(c=>c.auth.signOut()));
+ /* v105: conta antiga = sem e-mail na conta cifrada e sem cloud-email; agora a tela obrigatória pede o e-mail e liga a nuvem sozinha */await A.evaluate(async()=>{localStorage.removeItem('lojasg.estoque99.cloud-email:'+authSession.storeKey);delete authSession.payload.email;await authPersist(JSON.stringify(state))});await A.evaluate(()=>e99Cloud.load().then(c=>c.auth.signOut()));
  await A.evaluate(()=>{window.confirm=()=>true});await A.evaluate(()=>authLogout());await A.waitForTimeout(1500);await L.login(A,gl);
- ok(await until(A,()=>{const d=document.getElementById('cloud-link');return !!(d&&d.open)},null,10000),'conta antiga: pede para vincular o e-mail');
- ok(!(await A.$('#cloud-link input[name=password]')),'não pede a senha de novo logo depois do login');
- await A.fill('#cloud-link input[name=email]',aEmail);await L.terms(A,'#cloud-link');await A.click('#cloud-link button.primary');
- ok(await until(A,()=>!document.getElementById('cloud-link').open&&!!e99Cloud.user(),null,15000),'vinculou com o mesmo e-mail');
+ ok(await until(A,()=>{const d=document.getElementById('email-gate');return !!(d&&d.open)},null,10000),'conta antiga: pede o e-mail (tela obrigatória v105)');
+ ok(!(await A.$('#email-gate input[name=password]')),'não pede a senha de novo logo depois do login');
+ await A.fill('#email-gate input[name=email]',aEmail);await A.click('#email-gate button.primary');
+ ok(await until(A,e=>!document.getElementById('email-gate').open&&!(document.getElementById('cloud-link')||{}).open&&!!e99Cloud.user()&&e99Cloud.user().email===e,aEmail,15000),'vinculou com o mesmo e-mail');
  // entrar digitando o e-mail no lugar do login
  await A.evaluate(()=>authLogout());await A.waitForTimeout(1500);await L.login(A,aEmail);ok(await A.evaluate(()=>!!authSession),'entra com o e-mail no lugar do login');
  // permissões
