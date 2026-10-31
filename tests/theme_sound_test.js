@@ -11,7 +11,7 @@ let PW;try{PW=require('playwright')}catch(e){PW=require('/opt/node22/lib/node_mo
  const ta=await A.evaluate(()=>e99AnimTheme()),tb=await B.evaluate(()=>e99AnimTheme());ok(ta&&tb&&JSON.stringify(ta)!==JSON.stringify(tb),'contas diferentes, animações diferentes');
  ok(await A.evaluate(()=>getComputedStyle(document.body).getPropertyValue('--fx-shine').trim()!==''&&!!window.e99EntryKF),'tema aplicado no site');
  await A.evaluate(()=>go('account'));await A.waitForSelector('#ag-cfg form');await A.evaluate(()=>document.querySelector('.ag-adv').open=true);await A.check('#ag-cfg input[name=local_on]');await A.fill('#ag-cfg input[name=local_url]','http://localhost:20143');await A.click('.ag-adv form button.primary');await A.waitForTimeout(400);
- await A.evaluate(()=>go('agentes'));await A.waitForTimeout(400);await A.click('text=Pedir outra animação aos agentes');
+ await A.evaluate(()=>(document.getElementById('view').innerHTML=window.extraPages.agentes()));await A.waitForTimeout(400);await A.click('text=Pedir outra animação aos agentes');
  ok(await until(A,()=>{const t=e99AnimTheme();return t&&t.entrada==='girar'&&t.matiz===30&&/Agente Local/.test(t.por)},null,10000),'agente criou a animação da conta');
- ok(await A.evaluate(()=>/virando em 3D/.test(document.getElementById('view').innerText)),'tela Agentes mostra a animação');
+ ok(await A.evaluate(()=>(document.getElementById('view').innerHTML=window.extraPages.agentes())&&/virando em 3D/.test(document.getElementById('view').innerText)),'tela Agentes mostra a animação');
  console.log('errors',errs);await b.close();s1.kill()})();

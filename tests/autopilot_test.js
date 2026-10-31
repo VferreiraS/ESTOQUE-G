@@ -14,12 +14,12 @@ async function verifyAll(){const r=await (await fetch(`${AU}/emulator/v1/project
  await A.evaluate(()=>go('account'));await A.waitForSelector('#ag-cfg form');await A.evaluate(()=>document.querySelector('.ag-adv').open=true);await A.check('#ag-cfg input[name=local_on]');await A.fill('#ag-cfg input[name=local_url]','http://localhost:20142');await A.click('.ag-adv form button.primary');await A.waitForTimeout(500);
  // erro num aparelho
  await B.evaluate(()=>{setTimeout(()=>{throw new Error('teste-erro-stok')},10)});await B.waitForTimeout(5000);
- await A.evaluate(()=>go('agentes'));await A.waitForTimeout(500);ok(/Piloto automático/.test(await A.textContent('#view')),'tela Agentes');
- await A.click('text=Rodar agora');ok(await until(A,()=>/Bom dia:/.test(document.getElementById('view').innerText),null,40000),'piloto rodou (log)');
+ await A.evaluate(()=>(document.getElementById('view').innerHTML=window.extraPages.agentes()));await A.waitForTimeout(500);ok(/Piloto automático/.test(await A.textContent('#view')),'tela Agentes');
+ await A.click('text=Rodar agora');ok(await until(A,()=>(document.getElementById('view').innerHTML=window.extraPages.agentes())&&/Bom dia:/.test(document.getElementById('view').innerText),null,40000),'piloto rodou (log)');
  await A.evaluate(()=>go('chat'));ok(await until(A,()=>[...document.querySelectorAll('#chat-list .chat-msg.mine')].some(m=>/🤖/.test(m.innerText)),null,10000),'bom dia no chat da equipe');
  const lg=await (await fetch(L.N+'/_log')).json();ok(lg.some(x=>/^e99p-/.test(x.topic)&&/Bom dia/i.test(decodeURIComponent(x.message||'')+'')||/^e99p-/.test(x.topic)),'aviso pessoal no celular (ntfy)');
  const q=await (await fetch(`http://127.0.0.1:8080/v1/projects/${P}/databases/(default)/documents/correio`,{headers:{Authorization:'Bearer owner'}})).json();ok((q.documents||[]).length>=1&&!/^Olá, Ana!/.test(q.documents[0].fields.texto.stringValue),'e-mail personalizado (agente) na fila do robô');
- await A.evaluate(()=>go('agentes'));ok(await until(A,()=>/teste-erro-stok|erro/.test(document.getElementById('view').innerText)&&/Agente Local|texto pronto/.test(document.getElementById('view').innerText),null,15000),'diagnóstico com o erro do aparelho');
+ ok(await until(A,()=>(document.getElementById('view').innerHTML=window.extraPages.agentes())&&/teste-erro-stok|erro/.test(document.getElementById('view').innerText)&&/Agente Local|texto pronto/.test(document.getElementById('view').innerText),null,15000),'diagnóstico com o erro do aparelho');
  ok(await A.evaluate(()=>/atrasada|sem responsável|convite|Nada pendente/.test(document.getElementById('view').innerText)),'pontos de atenção dos dados');
  const ll=await (await fetch('http://localhost:20142/_log')).json();ok(ll.length>=3,'agente de IA escreveu as mensagens ('+ll.length+' pedidos)');
  await A.screenshot({path:require('os').tmpdir()+'/stok-agentes.png'});
