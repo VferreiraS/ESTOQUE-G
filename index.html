@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="102"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="103"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -2459,6 +2459,7 @@ addEventListener('online',revive);document.addEventListener('visibilitychange',r
 function disconnect(){clearTimeout(retryTimer);if(es){es.close();es=null}connected=false}
 async function receive(d){var t=team;if(!t)return;var msg=await decMsg(d.message);if(!msg||t!==team)return;
   if(d.time)try{var prev=+localStorage.getItem(sinceKey())||0;if(d.time>prev)localStorage.setItem(sinceKey(),String(d.time))}catch(e){}
+  if(delSet().indexOf(msg.id)>=0)return;
   var key=t.topic+'|'+msg.id;var exists=await cop('msgs','readonly',function(st){return st.get(key)}).catch(function(){return null});
   if(own[msg.id]){/* minha própria mensagem: quem envia já guarda; se a confirmação do envio se perdeu, guarda pelo eco */
     if(!exists){await putMsg({topic:t.topic,id:msg.id,at:msg.at||new Date().toISOString(),payload:d.message,mine:true,hasImg:false,rx:Date.now()});if((msg.img||msg.audio)&&d.attachment&&d.attachment.url)await fetchImg(msg.id,d.attachment.url);if(page==='chat')paint(true)}return}
@@ -2523,7 +2524,7 @@ async function paint(scroll){var box=document.getElementById('chat-list');if(!bo
   var html='',lastDay='',people={};
   for(var i=0;i<l.length;i++){var r=l[i];var m=mem[r.topic+'|'+r.id]||(mem[r.topic+'|'+r.id]=await decMsg(r.payload));if(!m)continue;people[m.from]=1;var dd=day(m.at);if(dd!==lastDay){html+='<div class="chat-day">'+esc2(dd)+'</div>';lastDay=dd}
     snip[r.id]={from:m.from,t:m.text?m.text.slice(0,140):(m.img?'📷 Foto':m.audio?'🎤 Áudio':'')};
-    html+='<div class="chat-msg'+(r.mine?' mine':'')+(m.text&&window.e99IsMention&&window.e99IsMention(m.text)&&!r.mine?' mentioned':'')+'" data-id="'+esc2(r.id)+'" data-at="'+esc2(m.at)+'" data-from="'+esc2(m.from)+'">'+(r.mine?'':'<span class="who">'+esc2(m.from)+'</span>')+(m.re?'<button type="button" class="chat-quote" onclick="chatJump(\''+esc2(m.re.id)+'\')"><b>'+esc2(m.re.from===cfg.name?'Você':m.re.from)+'</b><span>'+esc2(m.re.t||'Mensagem')+'</span></button>':'')+(m.img?(r.hasImg?'<img data-chat-img="'+esc2(r.id)+'" alt="Foto enviada por '+esc2(m.from)+'" decoding="async" width="260" height="195">':'<span class="img-wait">📷 Foto (baixando… fotos ficam no servidor só por 3 horas)</span>'):'')+(m.audio?(r.hasImg?'<span class="chat-audio"><audio data-chat-audio="'+esc2(r.id)+'" data-mime="'+esc2(m.audio.mime)+'" controls preload="metadata" aria-label="Áudio de '+esc2(m.from)+'"></audio><span class="dur">'+mmss(m.audio.dur)+'</span></span>':'<span class="img-wait">🎤 Áudio de '+mmss(m.audio.dur)+' (baixando… áudios ficam no servidor só por 3 horas)</span>'):'')+(m.text?(window.e99Mentions?window.e99Mentions(esc2(m.text)):esc2(m.text)):'')+'<span class="when">'+time(m.at)+'</span><button type="button" class="chat-re-btn" aria-label="Responder" title="Responder" onclick="chatReply(\''+esc2(r.id)+'\')">↩</button><span class="swipe-ico" aria-hidden="true">↩</span></div>'}
+    html+='<div class="chat-msg'+(r.mine?' mine':'')+(m.text&&window.e99IsMention&&window.e99IsMention(m.text)&&!r.mine?' mentioned':'')+'" data-id="'+esc2(r.id)+'" data-at="'+esc2(m.at)+'" data-from="'+esc2(m.from)+'">'+(r.mine?'':'<span class="who">'+esc2(m.from)+'</span>')+(m.re?'<button type="button" class="chat-quote" onclick="chatJump(\''+esc2(m.re.id)+'\')"><b>'+esc2(m.re.from===cfg.name?'Você':m.re.from)+'</b><span>'+esc2(m.re.t||'Mensagem')+'</span></button>':'')+(m.img?(r.hasImg?'<img data-chat-img="'+esc2(r.id)+'" alt="Foto enviada por '+esc2(m.from)+'" decoding="async" width="260" height="195">':'<span class="img-wait">📷 Foto (baixando… fotos ficam no servidor só por 3 horas)</span>'):'')+(m.audio?(r.hasImg?'<span class="chat-audio"><audio data-chat-audio="'+esc2(r.id)+'" data-mime="'+esc2(m.audio.mime)+'" controls preload="metadata" aria-label="Áudio de '+esc2(m.from)+'"></audio><span class="dur">'+mmss(m.audio.dur)+'</span></span>':'<span class="img-wait">🎤 Áudio de '+mmss(m.audio.dur)+' (baixando… áudios ficam no servidor só por 3 horas)</span>'):'')+(m.text?(window.e99Mentions?window.e99Mentions(esc2(m.text)):esc2(m.text)):'')+'<span class="when">'+time(m.at)+'</span><button type="button" class="chat-re-btn" aria-label="Responder" title="Responder" onclick="chatReply(\''+esc2(r.id)+'\')">↩</button><button type="button" class="chat-del-btn" aria-label="Apagar mensagem" title="Apagar mensagem (neste aparelho)" onclick="chatDelete(\''+esc2(r.id)+'\')">🗑</button><span class="swipe-ico" aria-hidden="true">↩</span></div>'}
   /* nada mudou: não refaz a lista (evita piscar fotos/áudios e travadinhas a cada sincronização) */
   if(box.__h===html&&box.firstChild){if(keepBottom)box.scrollTop=box.scrollHeight;return}box.__h=html;
   var keep={};box.querySelectorAll('audio[data-chat-audio]').forEach(function(a){if(a.src)keep[a.getAttribute('data-chat-audio')]=a});
@@ -2550,6 +2551,13 @@ window.renderChat=function(){if(!cfg){return hero('Chat da equipe','')+'<div cla
 var replyTo=null,snip={};
 function replyBar(){var b=document.getElementById('chat-reply');if(!b)return;if(!replyTo){b.hidden=true;b.innerHTML='';return}b.hidden=false;
   b.innerHTML='<div><b>Respondendo a '+esc2(replyTo.from===cfg.name?'você':replyTo.from)+'</b><span>'+esc2(replyTo.t||'Mensagem')+'</span></div><button type="button" aria-label="Cancelar resposta" onclick="chatReplyCancel()">✕</button>'}
+/* v103: apagar mensagem deste aparelho (fica anotada para não voltar quando o ntfy reenviar) */
+function delKey(){return 'lojasg.estoque99.chat-del:'+(team?team.topic:'-')}
+function delSet(){try{var o=JSON.parse(localStorage.getItem(delKey())||'[]');return Array.isArray(o)?o:[]}catch(e){return []}}
+window.chatDelete=async function(id){if(!team||typeof id!=='string'||!/^[a-zA-Z0-9_-]{1,60}$/.test(id))return;if(!confirm('Apagar esta mensagem deste aparelho? Quem já recebeu continua vendo.'))return;
+  var l=delSet();if(l.indexOf(id)<0)l.push(id);try{localStorage.setItem(delKey(),JSON.stringify(l.slice(-500)))}catch(e){}
+  var k=team.topic+'|'+id;try{await cop('msgs','readwrite',function(st){return st.delete(k)})}catch(e){}try{await cop('imgs','readwrite',function(st){return st.delete(k)})}catch(e){}
+  if(replyTo&&replyTo.id===id){replyTo=null;replyBar()}paint();badges();notify('Mensagem apagada deste aparelho.')};
 window.chatReply=function(id){var s=snip[id];if(!s)return;replyTo={id:id,from:s.from,t:s.t};replyBar();var t=document.getElementById('chat-text');if(t)t.focus();try{if(navigator.vibrate)navigator.vibrate(12)}catch(e){}};
 window.chatReplyCancel=function(){replyTo=null;replyBar()};window.e99ChatReplyTo=function(){return replyTo};window.e99ChatSnip=function(id){return snip[id]||null};
 window.chatJump=function(id){var box=document.getElementById('chat-list');if(!box)return;var el=box.querySelector('.chat-msg[data-id="'+id.replace(/[^a-zA-Z0-9_-]/g,'')+'"]');if(!el){notify('A mensagem original não está mais neste aparelho.');return}el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash')};
@@ -6896,12 +6904,21 @@ function pdf(id){var c=confById(id);if(!c)return;var html=printHtml(c),w=null;tr
 /* ---------- tela de Notas fiscais: botão principal, sessão interrompida e lista ---------- */
 function histHtml(){var me=meDev(),aux=isAuxNow(),list=(state.confs||[]).filter(function(c){return c.status!=='cancelada'&&(!aux||c.dev===me)}).slice(0,10);if(!list.length)return '';
   return '<details class="conf-hist"><summary>Conferências por câmera ('+list.length+')</summary><ul class="conf-hist-list">'+list.map(function(c){var nf=aux?null:nfOf(c);
-    return '<li><span><b>'+esc(c.n)+'</b> · '+esc(c.by)+' · '+esc(dt(Date.parse(c.start)))+' · '+(c.total|0)+' volume(s) · '+esc(ST[c.status]||c.status)+(nf?' · NF '+esc(nf.number):'')+'</span><button type="button" data-conf-rep="'+esc(c.id)+'">Relatório</button></li>'}).join('')+'</ul></details>'}
+    return '<li><span><b>'+esc(c.n)+'</b> · '+esc(c.by)+' · '+esc(dt(Date.parse(c.start)))+' · '+(c.total|0)+' volume(s) · '+esc(ST[c.status]||c.status)+(nf?' · NF '+esc(nf.number):'')+'</span><button type="button" data-conf-rep="'+esc(c.id)+'">Relatório</button>'+(c.dev===me?'<button type="button" class="danger" data-conf-del="'+esc(c.id)+'">Excluir</button>':'')+'</li>'}).join('')+'</ul></details>'}
 function ctaHtml(){return '<section class="panel conf-cta" id="conf-cta" aria-label="Conferência por câmera"><button type="button" class="primary conf-go" id="conf-go" onclick="confStart()"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 8v8M11 8v8M13.5 8v8M16 8v8"/></svg>INICIAR CONFERÊNCIA POR CÂMERA</button>'
   +'<p class="small">Conte os volumes lendo a etiqueta de cada caixa (EAN-13, EAN-8, UPC-A, Code 128, ITF-14). Às cegas: a contagem não mostra a quantidade da NF. Funciona sem internet.</p><div class="conf-resume" id="conf-resume"></div>'+histHtml()+'</section>'}
 async function banner(){var box=$i('conf-resume');if(!box||!logged())return;var open=await interrupted();box=$i('conf-resume');if(!box)return;
   box.innerHTML=open.map(function(o){var tot=Array.isArray(o.reads)?o.reads.filter(function(r){return Array.isArray(r)?r[5]==='v':r.st==='v'}).length:(o.total|0);
-    return '<div class="conf-banner" role="status"><b>Conferência '+esc(o.n)+' interrompida · '+tot+' volume(s) salvos</b><button type="button" class="primary" data-conf-res="'+esc(o.id)+'">Continuar</button><button type="button" data-conf-rep="'+esc(o.id)+'">Ver</button></div>'}).join('')}
+    return '<div class="conf-banner" role="status"><b>Conferência '+esc(o.n)+' interrompida · '+tot+' volume(s) salvos</b><button type="button" class="primary" data-conf-res="'+esc(o.id)+'">Continuar</button><button type="button" data-conf-rep="'+esc(o.id)+'">Ver</button><button type="button" class="danger" data-conf-del="'+esc(o.id)+'">Excluir</button></div>'}).join('')}
+/* v103: excluir uma conferência (finalizada ou interrompida). Só o aparelho/conta que fez; fica só o marcador 'cancelada' (como no Descartar). */
+async function delConf(id){if(S&&S.id===id&&S.status!=='finalizada')return discard();var c=(state.confs||[]).find(function(x){return x&&x.id===id})||null,rec=null;if(!c){try{rec=(await idbAll('sessions')).find(function(x){return x&&x.id===id})}catch(e){}}
+  var dev=c?c.dev:(rec&&rec.dev),n=c?c.n:(rec&&rec.n)||'';if(dev&&dev!==meDev()){say('Só quem fez a conferência, neste aparelho, pode excluir.');return}
+  if(!confirm('Excluir a conferência '+n+'? As leituras e o relatório serão apagados. Não dá para desfazer.'))return;
+  if(S&&S.id===id){S=null;M.st='off'}try{await idbDropConf(id)}catch(e){}
+  if(c){var list=(state.confs||[]).filter(function(x){return x&&x.id!==id});list.unshift(Object.assign({},c,{status:'cancelada',end:c.end||nowIso(),reads:[],fixes:[],rule:{codes:{}},total:0,nf:'',assocBy:'',assocAt:'',note:''}));state.confs=validateConfs(list);try{await save()}catch(e){}}
+  try{if(typeof page!=='undefined'&&page==='nfs')render()}catch(e){}say('Conferência '+n+' excluída.')}
+window.e99ConfDelete=delConf;
+D.addEventListener('click',function(ev){var x=ev.target&&ev.target.closest&&ev.target.closest('[data-conf-del]');if(!x||!logged())return;ev.stopPropagation();delConf(x.getAttribute('data-conf-del'))},true);
 D.addEventListener('click',function(ev){var b=ev.target&&ev.target.closest&&ev.target.closest('[data-conf-res],[data-conf-rep]');if(!b||!logged())return;
   if(b.hasAttribute('data-conf-res'))window.confResume(b.getAttribute('data-conf-res'));else{var id=b.getAttribute('data-conf-rep');if(confById(id))showReport(id);else say('Toque em "Continuar" para abrir essa conferência.')}});
 if(typeof upgradedNFs==='function'){var baseNFs=upgradedNFs;upgradedNFs=function(){var h=baseNFs.apply(this,arguments);try{if(logged()&&typeof h==='string'&&h.indexOf('conf-cta')<0){var at=h.indexOf('<div class="panel"><div class="panelhead"><h2>Notas fiscais');h=at>=0?h.slice(0,at)+ctaHtml()+h.slice(at):h+ctaHtml()}setTimeout(banner,0)}catch(e){}return h}}
@@ -6977,4 +6994,27 @@ var e0=authEnter;authEnter=function(){var r=e0.apply(this,arguments);strip();try
 strip();
 })();
 </script>
+<script id="v103-js">
+(function(){
+'use strict';
+/* v103 (pedido do dono): excluir sem precisar abrir o editor. Usa o mesmo removeRecord (confirmação, limpa responsáveis, sync).
+   Auxiliar não vê (o sync não aceita exclusão de auxiliar pelo ntfy). */
+window.e99Del=async function(kind,id){if(!authSession||(window.isAux&&isAux())){notify('Só o gestor ou o estoque pode excluir.');return}if(['nf','corridor','person'].indexOf(kind)<0)return;
+  var list=state[{nf:'nfs',corridor:'corridors',person:'team'}[kind]]||[];if(!list.some(function(x){return x.id===id}))return;editing={kind:kind,id:id};try{await removeRecord()}finally{editing=null}};
+function btn(kind,id,label){var b=document.createElement('button');b.type='button';b.className='danger e99-del';b.textContent='Excluir';b.setAttribute('aria-label','Excluir '+label);b.addEventListener('click',function(ev){ev.stopPropagation();e99Del(kind,id)});return b}
+function idFrom(el,kind){var m=String(el.getAttribute('onclick')||'').match(new RegExp("openEditor\\('"+kind+"','([^']+)'\\)"));return m?m[1]:''}
+function deco(){if(!authSession||(window.isAux&&isAux()))return;var v=document.getElementById('view');if(!v)return;
+  if(page==='nfs')v.querySelectorAll('button.nf-open').forEach(function(o){if(o.parentNode.querySelector('.e99-del'))return;var id=idFrom(o,'nf');if(id)o.insertAdjacentElement('afterend',btn('nf',id,'NF'))});
+  if(page==='corridors')v.querySelectorAll('.corridor-card .cardtop > button[onclick^="openEditor(\'corridor\'"]').forEach(function(o){if(o.parentNode.querySelector('.e99-del'))return;var id=idFrom(o,'corridor');if(id)o.insertAdjacentElement('afterend',btn('corridor',id,'corredor'))});
+  if(page==='team')v.querySelectorAll('.cards .card .cardtop > button[onclick^="openEditor(\'person\'"]').forEach(function(o){if(o.parentNode.querySelector('.e99-del'))return;var id=idFrom(o,'person');if(id)o.insertAdjacentElement('afterend',btn('person',id,'pessoa'))})}
+var r0=render;render=function(){var r=r0.apply(this,arguments);try{deco()}catch(x){}return r};
+var mo=new MutationObserver(function(){if(authSession&&page==='nfs')try{deco()}catch(x){}});function watch(){var v=document.getElementById('view');if(v)mo.observe(v,{childList:true,subtree:true});else setTimeout(watch,500)}watch();
+})();
+</script>
+<style id="v103-css">
+.cardtop .e99-del,.nf-actions .e99-del{margin-left:6px}
+.chat-msg .chat-del-btn{background:transparent;border:0;opacity:.55;font-size:13px;min-width:44px;min-height:44px;padding:0;cursor:pointer}
+.chat-msg .chat-del-btn:hover,.chat-msg .chat-del-btn:focus-visible{opacity:1}
+.conf-hist-list li .danger,.conf-banner .danger{margin-left:6px}
+</style>
 </body></html>
