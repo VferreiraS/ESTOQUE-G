@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="99"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="100"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -2921,6 +2921,17 @@ async function refresh(){var my=++gen;stop();var t=window.e99Team&&window.e99Tea
   if(!s.ready&&!s.replace)mergeTimer=setTimeout(async function(){if(my!==gen||!active())return;var ss=sy();if(!ss.ready){ss.ready=true;dropDefaults();if(stamp())schedulePublish(500);await persist();paintStatus()}},20000);
   connect();paintStatus()}
 if(window.e99Team)window.e99Team.onChange(function(){refresh()});
+/* v100: "no PC não aparecem os dados das outras contas". Os dados ficam no aparelho que os criou; outro aparelho só recebe
+   pela equipe (sincronização). O Início diz isso e mostra o caminho: convite / mesmo login, ou abrir o Stok no outro aparelho. */
+function hereKey(){return 'lojasg.estoque99.local-note:'+(authSession?authSession.storeKey:'')}
+function hereHTML(){if(!authSession)return '';var t=window.e99Team&&window.e99Team.get(),s=state&&state.sync||{};
+  if(!t){if(amAux())return '';try{if(localStorage.getItem(hereKey()))return ''}catch(e){}
+    return '<div class="panel help" id="local-note"><h2>Dados só neste aparelho</h2><p>Cada aparelho guarda as próprias contas e dados. As NFs, planos, equipe e corredores de outro aparelho (ex.: o iPhone) só aparecem aqui pela equipe.</p><p class="small">Para trazer: no iPhone, abra Chat → Convidar e use o convite aqui; ou saia e entre aqui com o mesmo login e e-mail do iPhone (o app traz a conta da nuvem e volta para a equipe).</p><div class="row toolbar"><button type="button" class="primary" onclick="go(\'chat\')">Abrir o Chat</button><button type="button" onclick="e99LocalNoteOk()">Entendi</button></div></div>'}
+  if(t.sync&&!s.ready)return '<div class="panel help" id="local-note"><h2>Aguardando os dados da equipe</h2><p>Os dados vêm de outro aparelho da equipe. Abra o Stok no iPhone (com internet) e deixe aberto por um minuto: tudo chega aqui sozinho.</p><div class="row toolbar"><button type="button" onclick="syncNow()">Sincronizar agora</button></div></div>';
+  if(!t.sync&&!amAux())return '<div class="panel help" id="local-note"><h2>Sincronização desligada</h2><p>Este aparelho está na equipe, mas não recebe NFs, planos, equipe e corredores. Ligue em Chat → "Compartilhar NFs, planos…".</p><div class="row toolbar"><button type="button" onclick="go(\'chat\')">Abrir o Chat</button></div></div>';
+  return ''}
+window.e99LocalNoteOk=function(){try{localStorage.setItem(hereKey(),'1')}catch(e){}var n=document.getElementById('local-note');if(n)n.remove()};
+var renderHere=render;render=function(){var r=renderHere.apply(this,arguments);try{if(authSession&&page==='home'&&!document.getElementById('local-note')){var h=hereHTML(),hero=h&&document.querySelector('#view .hero');if(hero)hero.insertAdjacentHTML('afterend',h)}}catch(e){}return r};
 var logoutBefore=authLogout;authLogout=async function(){var r=await logoutBefore.apply(this,arguments);if(!authSession){gen++;stop();paintStatus()}return r};
 setInterval(function(){if(!document.hidden)paintStatus()},30000);
 window.addEventListener('online',function(){if(active()){lastErr='';schedulePublish(500);if(!es||es.readyState===2)connect();if(needHello)setTimeout(function(){sendHello()},1500)}});
@@ -3730,7 +3741,7 @@ renderAdmin=function(){
       if(self||prot)return '<div class="panel help"><b>'+escDel(r.login)+'</b> · <span class="small">'+(self?'Sua conta (gestor)':'Protegida')+'</span></div>';
       return '<div class="panel help" style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><span><b>'+escDel(r.login)+'</b><br><span class="small">Excluir remove esta conta deste navegador.</span></span><button type="button" class="danger" onclick="authDeleteAccount('+i+')">Excluir conta</button></div>';
     }).join('');
-    return h+bulk+(list?'<h2 style="margin-top:18px">Contas neste aparelho</h2>'+list:'');
+    return h+bulk+(list?'<h2 style="margin-top:18px">Contas neste aparelho</h2><p class="small" id="acc-local-note">Cada aparelho guarda só as contas que entraram nele. Contas criadas no iPhone não aparecem aqui até entrarem neste aparelho (mesmo login e e-mail, ou convite).</p>'+list:'');
   }catch(x){}
   return h;
 };
