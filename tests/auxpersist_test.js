@@ -4,7 +4,7 @@ const L=require('./lib.js');const {ok,until}=L;
  ok(await L.gestorWithTeam(A,'gp'+T),'gestor team');const link=await L.makeInvite(A,'Ana');
  // aux: open invite, type code, create account — then the tab "loses" the join info (closed / app opened elsewhere)
  await B.goto(L.inviteUrl(link));await B.waitForTimeout(2500);
- const KEY=await A.evaluate(()=>{const k=Object.keys(localStorage).find(k=>k.startsWith('lojasg.estoque99.aux-invites:'));return JSON.parse(localStorage.getItem(k))[0].key});
+ const KEY=await A.evaluate(()=>{const k='lojasg.estoque99.aux-invites:'+authSession.storeKey;return JSON.parse(localStorage.getItem(k))[0].key});
  await B.fill('#aux-form input[name=pin]',KEY);await B.click('#aux-form button[type=submit]');await B.waitForTimeout(3000);
  await B.fill('#aux-form input[name=email]',L.mail('ana'));await B.fill('#aux-form input[name=password]','4321');await B.fill('#aux-form input[name=confirmation]','4321');await L.terms(B,'#aux-form');await B.click('#aux-form button[type=submit]');await B.waitForTimeout(3000);
  await B.evaluate(()=>{sessionStorage.removeItem('e99-aux-join')});

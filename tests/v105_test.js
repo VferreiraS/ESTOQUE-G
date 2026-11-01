@@ -68,7 +68,7 @@ async function fillFields(p,l,email){await p.fill('#auth-screen input[name=store
  ok(await L.gestorWithTeam(G,'gv5'+T),'gestor com equipe');
  for(const [nome,opts] of [['PC',{viewport:{width:1440,height:900}}],['celular',L.devices['iPhone 13']]]){
   const link=await L.makeInvite(G,'Aux '+nome);const B=await (await b.newContext(opts)).newPage();B.on('pageerror',e=>errs.push('B '+e.message));B.on('dialog',d=>d.accept());
-  await B.goto(L.inviteUrl(link));await B.waitForTimeout(2500);await B.fill('#aux-form input[name=pin]',await G.evaluate(()=>{const k=Object.keys(localStorage).find(k=>k.startsWith('lojasg.estoque99.aux-invites:'));return JSON.parse(localStorage.getItem(k))[0].key}));
+  await B.goto(L.inviteUrl(link));await B.waitForTimeout(2500);await B.fill('#aux-form input[name=pin]',await G.evaluate(()=>{const k='lojasg.estoque99.aux-invites:'+authSession.storeKey;return JSON.parse(localStorage.getItem(k))[0].key}));
   await B.click('#aux-form button[type=submit]');await B.waitForTimeout(3000);
   ok(await B.evaluate(()=>{const i=document.querySelector('#aux-form input[name=email]');return !!i&&i.required}),nome+': convite pede e-mail (obrigatório)');
   await B.fill('#aux-form input[name=password]','2468');await B.fill('#aux-form input[name=confirmation]','2468');await L.terms(B,'#aux-form');

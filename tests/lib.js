@@ -12,7 +12,7 @@ async function login(p,l,pw){await p.fill('#auth-form input[name=login]',l);awai
 async function until(p,fn,arg,ms=20000){const t=Date.now();while(Date.now()-t<ms){try{if(await p.evaluate(fn,arg))return true}catch(e){}await new Promise(r=>setTimeout(r,250))}return false}
 async function makeInvite(A,name,pin){await A.evaluate(()=>go('chat'));await A.waitForTimeout(500);await A.click('#aux-box summary');await A.fill('#aux-box input[name=name]',name);
  await A.evaluate(()=>{navigator.share=t=>{window.__inv=t.text;return Promise.resolve()}});await A.click('#aux-box button.primary');await A.waitForTimeout(2500);
- const text=await A.evaluate(()=>window.__inv);const link=text.match(/(http\S+#auxiliar=[A-Za-z0-9_-]+)/)[1];KEYS[link]=await A.evaluate(()=>{const k=Object.keys(localStorage).find(k=>k.startsWith('lojasg.estoque99.aux-invites:'));return JSON.parse(localStorage.getItem(k))[0].key});return link}
+ const text=await A.evaluate(()=>window.__inv);const link=text.match(/(http\S+#auxiliar=[A-Za-z0-9_-]+)/)[1];KEYS[link]=await A.evaluate(()=>{const k='lojasg.estoque99.aux-invites:'+authSession.storeKey;return JSON.parse(localStorage.getItem(k))[0].key});return link}
 const KEYS={};
 function inviteUrl(link){return link.replace('#','index.html?ntfy='+N+'#').replace('/index.htmlindex.html','/index.html')}
 async function auxAccept(B,link,pin,pw){await B.goto('about:blank');await B.goto(inviteUrl(link));await B.waitForTimeout(2500);await B.fill('#aux-form input[name=pin]',KEYS[link]||pin);await B.click('#aux-form button[type=submit]');await B.waitForTimeout(3000);

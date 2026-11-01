@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="110"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="111"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -251,7 +251,7 @@ function validate(s){
  s.nfs.forEach(nfValidateExtras);
  const owners=new Set(['','todos',...s.team.map(x=>x.id)]),corridors=new Set(['',...s.corridors.map(x=>x.id)]);
  if(s.corridors.some(x=>!owners.has(x.owner))||s.tasks.some(x=>!owners.has(x.owner)||!corridors.has(x.corridor))||s.nfs.some(x=>!owners.has(x.owner)))throw Error('Backup inválido');
- return {version:1,plans:validatePlans(s.plans),team:s.team,corridors:s.corridors,tasks:s.tasks,nfs:s.nfs,ruptures:[],expiries:[],sync:validateSync(s.sync),photoKey:validPhotoKey(s.photoKey),confs:validateConfs(s.confs),confKey:validPhotoKey(s.confKey),updated:s.updated||null,alertSettings:normalizeAlertSettings(s.alertSettings),alertSnoozes:normalizeSnoozes(s.alertSnoozes)};
+ return {version:1,plans:validatePlans(s.plans),team:s.team,corridors:s.corridors,tasks:s.tasks,nfs:s.nfs,ruptures:[],expiries:[],sync:validateSync(s.sync),photoKey:validPhotoKey(s.photoKey),confs:validateConfs(s.confs),confKey:validPhotoKey(s.confKey),sealKey:validPhotoKey(s.sealKey),sealed:validSealed(s.sealed),updated:s.updated||null,alertSettings:normalizeAlertSettings(s.alertSettings),alertSnoozes:normalizeSnoozes(s.alertSnoozes)};
 }
 /* v96: conferências às cegas por câmera (state.confs). Filtra o que estiver errado em vez de recusar a conta inteira. */
 function validateConfs(a){if(!Array.isArray(a))return [];const okId=x=>typeof x==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(x),isoOk=x=>typeof x==='string'&&x.length<=40&&/^\d{4}-\d{2}-\d{2}T/.test(x)&&!isNaN(Date.parse(x)),str=(x,n)=>typeof x==='string'?x.slice(0,n):'',CODE=/^[0-9A-Za-z\-./ ()+]{0,64}$/,seen=new Set(),out=[];
@@ -544,6 +544,8 @@ function validateSync(x){const C=['team','corridors','nfs','plans','confs'],out=
  if(x.meta&&typeof x.meta==='object')for(const c of C){const m=x.meta[c];if(!m||typeof m!=='object')continue;for(const id of Object.keys(m)){if(n>=80000)break;const v=m[id];if(okId(id)&&Array.isArray(v)&&Number.isFinite(v[0])&&typeof v[1]==='string'){out.meta[c][id]=[Math.floor(v[0]),v[1].slice(0,40),v[2]?1:0,typeof v[3]==='string'?v[3].slice(0,16):''];n++}}}
  if(Array.isArray(x.pending))out.pending=[...new Set(x.pending.filter(k=>typeof k==='string'&&/^(team|corridors|nfs|plans|confs)\|[a-zA-Z0-9_-]{1,100}$/.test(k)))].slice(0,80000);return out}
 function validPhotoKey(k){return typeof k==='string'&&/^[A-Za-z0-9+/]{43}=$/.test(k)?k:''}
+/* v111: dados pessoais do aparelho guardados dentro da conta cifrada (members:, aux-invites:, agent-brief:) */
+function validSealed(o){const out={};if(!o||typeof o!=='object'||Array.isArray(o))return out;let total=0;for(const k of Object.keys(o).slice(0,400)){const v=o[k];if(typeof k!=='string'||k.length>200||!/^(members|aux-invites|agent-brief):/.test(k)||typeof v!=='string'||v.length>300000)continue;total+=v.length;if(total>2000000)break;out[k]=v}return out}
 function validatePlans(plans){if(plans===undefined)return [];if(!Array.isArray(plans)||plans.length>500)throw Error('Planos inválidos');const ids=new Set();let photoSize=0;for(const p of plans){if(!p||!safePlanId(p.id)||ids.has(p.id)||!validDate(p.date)||typeof p.title!=='string'||!p.title.trim()||p.title.length>200||!Array.isArray(p.activities)||p.activities.length>100)throw Error('Plano inválido');ids.add(p.id);const items=new Set();for(const a of p.activities){if(!a||!safePlanId(a.id)||items.has(a.id)||typeof a.title!=='string'||!a.title.trim()||a.title.length>500||typeof a.owner!=='string'||a.owner.length>200||typeof a.notes!=='string'||a.notes.length>3000||!Array.isArray(a.photos)||a.photos.length>5||(a.done!==undefined&&typeof a.done!=='boolean')||(a.doneBy!==undefined&&(typeof a.doneBy!=='string'||a.doneBy.length>80))||(a.doneAt!==undefined&&(typeof a.doneAt!=='string'||a.doneAt.length>40))||(a.time!==undefined&&a.time!==''&&(typeof a.time!=='string'||!/^([01]\d|2[0-3]):[0-5]\d$/.test(a.time))))throw Error('Atividade do plano inválida');items.add(a.id);for(const ph of a.photos){if(!ph||!safePlanId(ph.id)||typeof ph.data!=='string'||ph.data.length>200000||!/^data:image\/jpeg;base64,\/9j\/[A-Za-z0-9+/=\r\n]+$/.test(ph.data))throw Error('Foto inválida');photoSize+=ph.data.length;}}}if(photoSize>2400000)throw Error('Fotos excedem o limite local. Exporte planos antigos e remova fotos antes de importar.');return plans}
 function safePlanId(id){return typeof id==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(id)}
 function planById(id){return (state.plans||[]).find(p=>p.id===id)}
@@ -3600,8 +3602,9 @@ function e(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return 
 function norm(v){return String(v||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim()}
 function open(){if(db)return Promise.resolve(db);return new Promise(function(res,rej){var r=indexedDB.open(DB,1);r.onupgradeneeded=function(){r.result.createObjectStore('p')};r.onsuccess=function(){db=r.result;res(db)};r.onerror=function(){rej(r.error)}})}
 function idb(mode,fn){return open().then(function(d){return new Promise(function(res,rej){var t=d.transaction('p',mode),st=t.objectStore('p'),out=fn(st);t.oncomplete=function(){res(out&&'result' in out?out.result:out)};t.onerror=function(){rej(t.error)}})})}
-function get(k){return idb('readonly',function(st){return st.get(k)}).catch(function(){return null})}
-function put(k,v){return idb('readwrite',function(st){st.put(v,k)}).catch(function(){})}
+/* v111: cada registro é cifrado com a chave da conta (state.sealKey, bloco v111-js); registro antigo em claro é cifrado ao ser lido */
+function get(k){return idb('readonly',function(st){return st.get(k)}).then(function(v){var S=window.e99Seal;if(!S||v==null)return v;if(S.isSealed(v))return S.open(v,'prof|'+k);if(authSession)put(k,v);return v}).catch(function(){return null})}
+function put(k,v){var S=window.e99Seal;return Promise.resolve(S&&authSession&&v!=null?S.seal(v,'prof|'+k).catch(function(){return v}):v).then(function(x){return idb('readwrite',function(st){st.put(x,k)})}).catch(function(){})}
 function topic(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(i)return i.topic;var t=window.e99Team&&window.e99Team.get();return t?t.topic:''}
 function chatName(){try{var t=window.e99Team&&window.e99Team.get();if(t&&t.name)return t.name}catch(x){}return authSession?authSession.record.login:''}
 function roleName(r){return r==='gestor'?'Gestor':r==='auxiliar'?'Auxiliar':'Estoque'}
@@ -4595,7 +4598,7 @@ function load(){if(appP)return appP;appP=(async function(){var b='https://www.gs
   appP.catch(function(){appP=null});return appP}
 function sk(){return authSession?authSession.storeKey:''}
 function myEmail(){return sk()?(ls('lojasg.estoque99.cloud-email:'+sk())||''):''}
-function setMyEmail(v){if(sk())ls('lojasg.estoque99.cloud-email:'+sk(),v);try{var m=JSON.parse(ls('lojasg.estoque99.cloud-logins')||'{}')||{};m[v]=authSession.record.login;ls('lojasg.estoque99.cloud-logins',JSON.stringify(m))}catch(x){}}
+function setMyEmail(v){if(sk())ls('lojasg.estoque99.cloud-email:'+sk(),v);try{window.e99MailIdx.set(v,authSession.record.login)}catch(x){}}
 async function derive(login,pw){return authCloudDerive(login,pw)}
 function topic(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(i)return i.topic;var t=window.e99Team&&window.e99Team.get();return t?t.topic:''}
 async function sid(){var t=topic();return t?(await sha('loja|'+t)).slice(0,32):''}
@@ -4708,7 +4711,7 @@ var enterBefore=authEnter;authEnter=function(){var r=enterBefore.apply(this,argu
 var logoutBefore=authLogout;authLogout=async function(){var r=await logoutBefore.apply(this,arguments);if(!authSession){if(memUnsub){memUnsub();memUnsub=null;memSid=''}cloudMem={};stash=null;load().then(function(c){return c.auth.signOut()}).catch(function(){})}return r};
 var cpBefore=authChangePassword;authChangePassword=async function(ev){var v=readForm(ev.target),s=authSession,rev=s&&s.record.revision;var r=await cpBefore.apply(this,arguments);
   if(s&&authSession===s&&s.record.revision!==rev&&v.password){var u=user();if(u)try{var nd=await derive(s.record.login,v.password);try{await u.updatePassword(nd)}catch(x){if(x.code!=='auth/requires-recent-login')throw x;await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email,await derive(s.record.login,v.current)));await u.updatePassword(nd)}if(authSession)await pwSet(authSession,(await sha(nd)).slice(0,16))}catch(x){try{console.warn('Stok nuvem senha:',x.code||x)}catch(y){}}}return r};
-window.e99LoginForEmail=function(v){v=String(v||'').trim().toLowerCase();if(v.indexOf('@')<0)return '';try{return (JSON.parse(ls('lojasg.estoque99.cloud-logins')||'{}')||{})[v]||''}catch(x){return ''}};
+window.e99LoginForEmail=function(v){v=String(v||'').trim().toLowerCase();if(v.indexOf('@')<0)return '';try{return window.e99MailIdx.get(v)}catch(x){return ''}};
 setInterval(function(){if(authSession&&!document.hidden&&user())after(false).catch(function(){})},5*60000);
 document.addEventListener('visibilitychange',function(){if(!document.hidden&&authSession&&user()){var u=user();if(!u.emailVerified)after(false).catch(function(){})}});
 
@@ -7246,7 +7249,7 @@ function ok(m){return typeof m==='string'&&m.length<=120&&RE.test(m)}
 function testOff(){try{return (location.hostname==='localhost'||location.hostname==='127.0.0.1')&&localStorage.getItem('e99-no-email-gate')==='1'}catch(x){return false}}
 function isPc(s){return !!ls('lojasg.estoque99.pc-account:'+s.storeKey)}
 function cloudEm(s){var m=String(ls('lojasg.estoque99.cloud-email:'+s.storeKey)||'').trim().toLowerCase();return ok(m)?m:''}
-function mapLogin(s,m){try{var o=JSON.parse(ls('lojasg.estoque99.cloud-logins')||'{}')||{};if(o[m]!==s.record.login){o[m]=s.record.login;ls('lojasg.estoque99.cloud-logins',JSON.stringify(o))}}catch(x){}}
+function mapLogin(s,m){try{window.e99MailIdx.set(m,s.record.login)}catch(x){}}
 async function persist(s){if(authSession!==s)return;try{await authPersist(JSON.stringify(state))}catch(x){try{console.warn('Stok e-mail da conta:',x&&x.message||x)}catch(y){}}}
 window.e99AccountEmail=function(){var s=authSession;if(!s||!s.payload)return '';return ok(s.payload.email)?s.payload.email:cloudEm(s)};
 function needs(){var s=authSession;return !!(s&&s.payload&&!ok(s.payload.email)&&!cloudEm(s)&&!testOff())}
@@ -7273,7 +7276,7 @@ window.e99EmailGateSave=async function(ev){ev.preventDefault();var s=authSession
   if(!m){err='Informe seu e-mail. Toda conta do Stok precisa de um e-mail.';paint();return}
   if(!ok(m)){err='Digite um e-mail válido (ex.: voce@gmail.com).';paint();return}
   /* o mesmo e-mail não pode ficar em duas contas deste aparelho (o login pelo e-mail e a nuvem ficariam confusos) */
-  try{var o=JSON.parse(ls('lojasg.estoque99.cloud-logins')||'{}')||{},other=o[m];if(other&&authLoginName(other)!==authLoginName(s.record.login)&&localStorage.getItem(await authStorageKey(other))){err='Este e-mail já é de outra conta deste aparelho ('+other+'). Use outro e-mail.';paint();return}}catch(x){}
+  try{var other=window.e99MailIdx.get(m);if(other&&authLoginName(other)!==authLoginName(s.record.login)&&localStorage.getItem(await authStorageKey(other))){err='Este e-mail já é de outra conta deste aparelho ('+other+'). Use outro e-mail.';paint();return}}catch(x){}
   busy=true;err='';paint();try{s.payload.email=m;if(!isPc(s)){ls('lojasg.estoque99.cloud-email:'+s.storeKey,m);mapLogin(s,m)}await persist(s)}finally{busy=false}
   if(authSession!==s)return;shut();notify('E-mail salvo na sua conta.');
   if(!isPc(s)&&window.e99Cloud&&typeof window.e99Cloud.onEnter==='function')setTimeout(function(){if(authSession===s)window.e99Cloud.onEnter()},400)};
@@ -7465,6 +7468,74 @@ var sb=authSubmit;authSubmit=async function(event){var pw='',login=false;try{log
   var before=authSession;var r=await sb.apply(this,arguments);if(login&&authSession&&authSession!==before&&authPinOld(pw)){authSession.weakPw=true;since(authSession);setTimeout(check,900)}return r};
 var en=authEnter;authEnter=function(){later={};err='';return en.apply(this,arguments)};
 setInterval(function(){if(!D.hidden)check()},3000);
+})();
+</script>
+<script id="v111-js">
+/* v111: índice e-mail → login sem o e-mail em claro (SHA-256 síncrono, só para isto) */
+(function(){
+var K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+function sha256hex(str){var b=new TextEncoder().encode(str),l=b.length,n=((l+9+63)>>6)<<6,m=new Uint8Array(n);m.set(b);m[l]=0x80;var bits=l*8;m[n-4]=bits>>>24;m[n-3]=(bits>>>16)&255;m[n-2]=(bits>>>8)&255;m[n-1]=bits&255;
+  var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19],W=new Array(64);
+  for(var o=0;o<n;o+=64){for(var t=0;t<16;t++)W[t]=(m[o+4*t]<<24)|(m[o+4*t+1]<<16)|(m[o+4*t+2]<<8)|m[o+4*t+3];
+    for(t=16;t<64;t++){var x=W[t-15],y=W[t-2];var s0=((x>>>7)|(x<<25))^((x>>>18)|(x<<14))^(x>>>3),s1=((y>>>17)|(y<<15))^((y>>>19)|(y<<13))^(y>>>10);W[t]=(W[t-16]+s0+W[t-7]+s1)|0}
+    var a=H[0],c=H[1],d=H[2],e=H[3],f=H[4],g=H[5],h=H[6],k=H[7];
+    for(t=0;t<64;t++){var S1=((f>>>6)|(f<<26))^((f>>>11)|(f<<21))^((f>>>25)|(f<<7)),ch=(f&g)^(~f&h),T1=(k+S1+ch+K[t]+W[t])|0,S0=((a>>>2)|(a<<30))^((a>>>13)|(a<<19))^((a>>>22)|(a<<10)),mj=(a&c)^(a&d)^(c&d),T2=(S0+mj)|0;k=h;h=g;g=f;f=(e+T1)|0;e=d;d=c;c=a;a=(T1+T2)|0}
+    H[0]=(H[0]+a)|0;H[1]=(H[1]+c)|0;H[2]=(H[2]+d)|0;H[3]=(H[3]+e)|0;H[4]=(H[4]+f)|0;H[5]=(H[5]+g)|0;H[6]=(H[6]+h)|0;H[7]=(H[7]+k)|0}
+  return H.map(function(v){return ('00000000'+(v>>>0).toString(16)).slice(-8)}).join('')}
+var OLD='lojasg.estoque99.cloud-logins',NEW='lojasg.estoque99.cloud-logins2';
+function h(m){return sha256hex('e99-mail|'+String(m||'').trim().toLowerCase()).slice(0,32)}
+function rd(){try{var o=JSON.parse(localStorage.getItem(NEW)||'{}');return o&&typeof o==='object'?o:{}}catch(x){return {}}}
+function wr(o){try{localStorage.setItem(NEW,JSON.stringify(o));return true}catch(x){return false}}
+/* migração: copia o índice antigo (e-mail em claro) para o novo e só então apaga o antigo */
+try{var old=localStorage.getItem(OLD);if(old){var o=JSON.parse(old)||{},n=rd();Object.keys(o).forEach(function(m){if(typeof o[m]==='string'&&!n[h(m)])n[h(m)]=o[m]});if(wr(n)&&localStorage.getItem(NEW))localStorage.removeItem(OLD)}}catch(x){}
+window.e99MailIdx={get:function(m){return rd()[h(m)]||''},set:function(m,login){var o=rd();if(o[h(m)]!==login){o[h(m)]=login;wr(o)}},del:function(m){var o=rd();delete o[h(m)];wr(o)},hash:h,sha256hex:sha256hex};
+})();
+(function(){
+'use strict';
+/* v111 (pedido do dono): dados pessoais do aparelho cifrados com a conta.
+   - members:, aux-invites: e agent-brief: (por conta) deixam o localStorage em claro e passam a morar dentro do estado cifrado da
+     conta (state.sealed, AES-GCM com a senha, como o resto). O app continua lendo/gravando pelo localStorage de sempre: este bloco
+     intercepta só essas chaves da conta aberta. Dado antigo em claro é levado para dentro da conta na primeira leitura e só é
+     apagado do localStorage depois que a conta foi gravada com ele (nada se perde).
+   - cloud-logins (e-mail → login, usado para entrar pelo e-mail antes de abrir a conta) vira um índice mínimo: SHA-256 do e-mail → login.
+     O login já fica visível no registro da conta; o e-mail não fica mais em claro.
+   - Fotos e perfis (IndexedDB estoque99-profiles) são cifrados com uma chave aleatória guardada no estado cifrado (state.sealKey);
+     os registros antigos em claro são cifrados quando são lidos. */
+var LS=window.localStorage,SP=Storage.prototype,G=SP.getItem,S=SP.setItem,R=SP.removeItem;
+var PRE=['lojasg.estoque99.members:','lojasg.estoque99.aux-invites:','lojasg.estoque99.agent-brief:'];
+var cur='',vault=null,moved={},timer=0;
+function sess(){try{return authSession}catch(x){return null}}
+function vk(k){var s=sess();if(!s||!s.storeKey)return '';for(var i=0;i<PRE.length;i++){var p=PRE[i];if(k.indexOf(p)===0){var rest=k.slice(p.length);if(rest===s.storeKey||rest.indexOf(s.storeKey+':')===0)return p.slice('lojasg.estoque99.'.length)+rest.slice(s.storeKey.length)}}return ''}
+function full(v){var s=sess();var i=v.indexOf(':');return 'lojasg.estoque99.'+v.slice(0,i+1)+s.storeKey+v.slice(i+1)}
+function V(){var s=sess();if(!s||typeof state!=='object'||!state)return null;if(cur!==s.storeKey||!vault){cur=s.storeKey;moved={};vault=state.sealed&&typeof state.sealed==='object'?state.sealed:{}}
+  if(state.sealed!==vault)state.sealed=vault;return vault}
+function persist(now){clearTimeout(timer);timer=setTimeout(flush,now?0:800)}
+function flush(){var s=sess();if(!s||cur!==s.storeKey)return;V();var mv=moved,keys=Object.keys(mv);
+  Promise.resolve(authPersist(JSON.stringify(state))).then(function(){if(sess()!==s)return;keys.forEach(function(k){/* só apaga o antigo em claro se ele não mudou desde que foi copiado */if(mv[k]===G.call(LS,k))R.call(LS,k);delete moved[k]})}).catch(function(x){try{console.warn('Stok dados cifrados:',x&&x.message||x)}catch(y){}})}
+SP.getItem=function(k){if(this===LS){k=String(k);var v=vk(k);if(v){var o=V();if(o){if(Object.prototype.hasOwnProperty.call(o,v))return o[v];var raw=G.call(LS,k);if(raw!=null){o[v]=raw;moved[k]=raw;persist()}return raw}}}return G.apply(this,arguments)};
+SP.setItem=function(k,val){if(this===LS){k=String(k);var v=vk(k);if(v){var o=V();if(o){o[v]=String(val);if(G.call(LS,k)!=null)moved[k]=moved[k]||G.call(LS,k);persist(/aux-invites/.test(k));return}}}return S.apply(this,arguments)};
+SP.removeItem=function(k){if(this===LS){k=String(k);var v=vk(k);if(v){var o=V();if(o){delete o[v];R.call(LS,k);persist();return}}}return R.apply(this,arguments)};
+/* para quem precisa listar (testes e limpeza): as chaves cifradas da conta aberta, no mesmo formato do localStorage */
+window.e99SealedKeys=function(){var o=V();return o?Object.keys(o).map(full):[]};
+/* migra tudo o que estiver em claro assim que a conta abre */
+function sweep(){var s=sess();if(!s)return;var o=V();if(!o)return;var n=0;for(var i=0;i<LS.length;i++){var k=LS.key(i);if(k&&vk(k)){var raw=G.call(LS,k);if(raw==null)continue;if(!Object.prototype.hasOwnProperty.call(o,vk(k)))o[vk(k)]=raw;moved[k]=raw;n++}}if(n)persist(true)}
+var en=authEnter;authEnter=function(){var r=en.apply(this,arguments);try{V();sweep();keyFor='';setTimeout(ensureKey,50)}catch(x){}return r};
+var lo=authLogout;authLogout=async function(){var r=await lo.apply(this,arguments);if(!sess()){clearTimeout(timer);cur='';vault=null;moved={};keyFor='';keyP=null}return r};
+var ap=authPersist;authPersist=function(snap){try{var o=V();if(o&&Object.keys(o).length&&typeof snap==='string'&&snap.indexOf('"sealed":')<0){var j=JSON.parse(snap);j.sealed=o;snap=JSON.stringify(j)}}catch(x){}return ap.call(this,snap)};
+window.addEventListener('pagehide',function(){if(timer){clearTimeout(timer);timer=0;flush()}});
+
+/* ---------- chave das fotos/perfis (state.sealKey) ---------- */
+var keyP=null,keyFor='';
+function b64(b){return authB64(b)}function un64(s){return authUn64(s)}
+async function ensureKey(){var s=sess();if(!s||typeof state!=='object')return null;if(!state.sealKey){var k=b64(crypto.getRandomValues(new Uint8Array(32)));state.sealKey=k;try{await authPersist(JSON.stringify(state))}catch(x){if(state.sealKey===k)state.sealKey='';return null}}
+  if(keyP&&keyFor===state.sealKey)return keyP;keyFor=state.sealKey;keyP=crypto.subtle.importKey('raw',un64(state.sealKey),'AES-GCM',false,['encrypt','decrypt']);return keyP}
+function ready(){var s=sess();return !!(s&&typeof state==='object'&&state&&state.sealKey&&keyP&&keyFor===state.sealKey)}
+function aad(tag){var s=sess();return authBytes('e99seal|'+(s?authLoginName(s.record.login):'')+'|'+tag)}
+window.e99Seal={ready:ready,ensure:ensureKey,
+  isSealed:function(v){return !!(v&&typeof v==='object'&&v.__e99s===1&&typeof v.iv==='string'&&typeof v.c==='string')},
+  seal:async function(obj,tag){var key=await ensureKey();if(!key)throw Error('sem chave');var iv=crypto.getRandomValues(new Uint8Array(12));var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:aad(tag)},key,authBytes(JSON.stringify(obj)));return {__e99s:1,iv:b64(iv),c:b64(new Uint8Array(ct))}},
+  open:async function(v,tag){try{var key=await ensureKey();if(!key)return null;var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:un64(v.iv),additionalData:aad(tag)},key,un64(v.c));return JSON.parse(new TextDecoder().decode(pt))}catch(x){return null}}};
+if(sess())setTimeout(function(){try{V();sweep()}catch(x){}ensureKey()},300);
 })();
 </script>
 </body></html>

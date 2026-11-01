@@ -30,7 +30,7 @@ const vals=(p,sk)=>p.evaluate(sk=>({inv:localStorage.getItem('lojasg.estoque99.a
   ok(await P.evaluate(l=>e99LoginForEmail('A.segredo.email@exemplo.com')===l,la),nome+': entrar pelo e-mail continua achando a conta');
   ok(raw.includes('Convidado Secreto A')&&raw.includes('Convidado Secreto B'),nome+': antes de entrar, os dados antigos ainda estão lá (ninguém perde nada)');
   /* entra na conta A: migra */
-  await L.login(P,'A.segredo.email@exemplo.com','1234');ok(await P.evaluate(l=>!!authSession&&authSession.record.login===l,la),nome+': entra pela conta A (login pelo e-mail)');
+  await L.login(P,'A.segredo.email@exemplo.com','1234');ok(await P.evaluate(l=>!!authSession&&authSession.record.login===l.toLowerCase(),la),nome+': entra pela conta A (login pelo e-mail)');
   await P.waitForTimeout(2500);
   const va=await vals(P,ska);
   ok(/Convidado Secreto A/.test(va.inv)&&/Membro Escondido A/.test(va.mem)&&va.brief==='BRIEF-SECRETO A',nome+': o app continua lendo os dados (nada se perdeu)');
@@ -38,7 +38,7 @@ const vals=(p,sk)=>p.evaluate(sk=>({inv:localStorage.getItem('lojasg.estoque99.a
   ok(!raw.includes('Convidado Secreto A')&&!raw.includes('Membro Escondido A')&&!raw.includes('BRIEF-SECRETO A'),nome+': dados da conta A não ficam mais em claro no localStorage');
   ok(raw.includes('Convidado Secreto B')&&raw.includes('BRIEF-SECRETO B'),nome+': dados da conta B continuam guardados até ela entrar');
   ok(await until(P,()=>new Promise(res=>{const r=indexedDB.open('estoque99-profiles',1);r.onsuccess=()=>{const db=r.result,tx=db.transaction('p','readonly'),q=tx.objectStore('p').get('me|'+authSession.storeKey);tx.oncomplete=()=>{db.close();res(!!q.result&&q.result.__e99s===1)}}}),null,10000),nome+': perfil/foto da conta A fica cifrado no IndexedDB');
-  ok(!(await rawProf(P)).includes(Buffer.from('FOTO-SECRETA'.repeat(20)).toString('base64').slice(0,40)),nome+': foto da conta A não fica em claro');
+  
   ok(await P.evaluate(()=>{const r=JSON.parse(localStorage.getItem(authSession.storeKey));return !JSON.stringify(r).includes('Convidado')}),nome+': registro da conta está cifrado (sem os dados em claro)');
   /* novo dado gravado também fica cifrado */
   await P.evaluate(sk=>localStorage.setItem('lojasg.estoque99.agent-brief:'+sk,'NOVO-BRIEF-XYZ'),ska);await P.waitForTimeout(1500);
@@ -62,6 +62,7 @@ const vals=(p,sk)=>p.evaluate(sk=>({inv:localStorage.getItem('lojasg.estoque99.a
   ok((await vals(P,ska)).inv===null,nome+': conta B não lê os dados da conta A');
   const vb=await vals(P,skb);ok(/Convidado Secreto B/.test(vb.inv)&&vb.brief==='BRIEF-SECRETO B',nome+': conta B continua com os dados dela');
   raw=await rawLS(P);ok(!SECRETS.some(s=>raw.includes(s)),nome+': nada dos dados de exemplo fica em claro no localStorage');
+  ok(await until(P,f=>new Promise(res=>{const r=indexedDB.open('estoque99-profiles',1);r.onsuccess=()=>{const db=r.result,tx=db.transaction('p','readonly'),q=tx.objectStore('p').getAll();tx.oncomplete=()=>{db.close();res(!JSON.stringify(q.result).includes(f))}}}),Buffer.from('FOTO-SECRETA'.repeat(20)).toString('base64').slice(0,40),10000),nome+': nenhuma foto/perfil fica em claro no IndexedDB (A e B)');
   await P.close();
  }
  /* convite de auxiliar continua funcionando com a lista cifrada */

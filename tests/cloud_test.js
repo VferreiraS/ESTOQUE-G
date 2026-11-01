@@ -19,7 +19,7 @@ const doc=(path,tok)=>j(`${FS}/v1/projects/${P}/databases/(default)/documents/${
  await A.evaluate(()=>{window.__mail='';const o=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){if(/^mailto:/.test(this.href)){window.__mail=this.href;return}return o.call(this)}});
  await A.evaluate(()=>go('chat'));await A.waitForTimeout(500);await A.click('#aux-box summary');await A.fill('#aux-box input[name=name]','Ana');await A.fill('#aux-box input[name=email]','ana.'+Date.now()%1e6+'@teste.com');await A.click('#aux-box button.primary');await A.waitForTimeout(2500);
  const mailto=await A.evaluate(()=>window.__mail);ok(/^mailto:ana\./.test(mailto)&&/auxiliar%3D|auxiliar=/.test(decodeURIComponent(mailto)),'convite por e-mail (mailto com o link)');
- const link=decodeURIComponent(mailto).match(/(http\S+#auxiliar=[A-Za-z0-9_-]+)/)[1];const KEY=await A.evaluate(()=>{const k=Object.keys(localStorage).find(k=>k.startsWith('lojasg.estoque99.aux-invites:'));return JSON.parse(localStorage.getItem(k))[0].key});
+ const link=decodeURIComponent(mailto).match(/(http\S+#auxiliar=[A-Za-z0-9_-]+)/)[1];const KEY=await A.evaluate(()=>{const k='lojasg.estoque99.aux-invites:'+authSession.storeKey;return JSON.parse(localStorage.getItem(k))[0].key});
  await B.goto(L.inviteUrl(link));await B.waitForTimeout(2500);await B.fill('#aux-form input[name=pin]',KEY);await B.click('#aux-form button[type=submit]');await B.waitForTimeout(3000);
  ok(/^ana\./.test(await B.inputValue('#aux-form input[name=email]')),'e-mail do convite já vem preenchido');
  await B.fill('#aux-form input[name=password]','4321');await B.fill('#aux-form input[name=confirmation]','4321');await L.terms(B,'#aux-form');await B.click('#aux-form button[type=submit]');await B.waitForTimeout(3000);
@@ -27,7 +27,7 @@ const doc=(path,tok)=>j(`${FS}/v1/projects/${P}/databases/(default)/documents/${
  ok(await until(B,()=>!!(window.e99Cloud&&e99Cloud.user()),null,20000),'auxiliar ligado à nuvem');const bUid=await B.evaluate(()=>e99Cloud.user().uid);
  ok(await until(B,async(a)=>{const r=await fetch('http://127.0.0.1:8080/v1/projects/gen-lang-client-0167474823/databases/(default)/documents/lojas/'+a[0]+'/membros/'+a[1],{headers:{Authorization:'Bearer owner'}});if(r.status!==200)return false;const d=await r.json();return !!(d.fields.inviteId&&d.fields.inviteId.stringValue)},[sid,bUid],60000),'membro do auxiliar na loja (com o convite)');
  // o gestor perde o que veio pelo ntfy e recupera pela nuvem
- await A.evaluate(()=>{Object.keys(localStorage).filter(k=>k.startsWith('lojasg.estoque99.members:')).forEach(k=>localStorage.removeItem(k));e99Cloud.relisten()});
+ await A.evaluate(()=>{[...Object.keys(localStorage),...(window.e99SealedKeys?e99SealedKeys():[])].filter(k=>k.startsWith('lojasg.estoque99.members:')).forEach(k=>localStorage.removeItem(k));e99Cloud.relisten()});
  ok(await until(A,()=>Object.keys(syncMembers()).some(k=>/^u/.test(k)&&syncMembers()[k].role==='auxiliar'),null,15000),'gestor recebe o membro pela nuvem');
  await A.evaluate(()=>{go('chat')});await A.waitForTimeout(800);const card=await A.evaluate(()=>e99AuxCardHTML());ok(/Ana[\s\S]*✓ Conta criada/.test(card),'convite marcado como Conta criada');ok(/e-mail a confirmar/.test(card),'mostra e-mail a confirmar');
  // confirmar e-mails (links do emulador) e atualizar
