@@ -1,6 +1,6 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
 const CACHE_PREFIX = 'estoque99-';
-const CACHE = 'estoque99-v111';
+const CACHE = 'estoque99-v112';
 const VERSION = (CACHE.match(/-v(\d+)$/) || [])[1] || '';
 const CORE = [
   './index.html',
@@ -18,7 +18,12 @@ const CORE = [
   './vendor/flatpickr.min.js',
   './vendor/flatpickr.css',
   './vendor/fonts/oswald-latin.woff2',
-  './vendor/fonts/oswald-latin-ext.woff2'
+  './vendor/fonts/oswald-latin-ext.woff2',
+  /* v112: fontes novas (títulos Space Grotesk, texto Inter) */
+  './vendor/fonts/inter-latin.woff2',
+  './vendor/fonts/inter-latin-ext.woff2',
+  './vendor/fonts/space-grotesk-latin.woff2',
+  './vendor/fonts/space-grotesk-latin-ext.woff2'
 ];
 
 self.addEventListener('install', (event) => {

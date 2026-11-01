@@ -91,3 +91,8 @@ INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
 DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
+
+----
+v112: este mesmo arquivo de licença (SIL Open Font License 1.1) também cobre:
+- Inter (inter-latin*.woff2) — Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
+- Space Grotesk (space-grotesk-latin*.woff2) — Copyright 2020 The Space Grotesk Project Authors (https://github.com/floriankarsten/space-grotesk)

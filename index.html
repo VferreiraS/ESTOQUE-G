@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="111"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="112"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -7536,6 +7536,121 @@ window.e99Seal={ready:ready,ensure:ensureKey,
   seal:async function(obj,tag){var key=await ensureKey();if(!key)throw Error('sem chave');var iv=crypto.getRandomValues(new Uint8Array(12));var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:aad(tag)},key,authBytes(JSON.stringify(obj)));return {__e99s:1,iv:b64(iv),c:b64(new Uint8Array(ct))}},
   open:async function(v,tag){try{var key=await ensureKey();if(!key)return null;var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:un64(v.iv),additionalData:aad(tag)},key,un64(v.c));return JSON.parse(new TextDecoder().decode(pt))}catch(x){return null}}};
 if(sess())setTimeout(function(){try{V();sweep()}catch(x){}ensureKey()},300);
+})();
+</script>
+<style id="v112-css">
+/* v112 (pedido do dono): 3 temas escuros escolhíveis em Preferências (Lilás = padrão, Violeta + Lima, Cinza + Lima) e fontes novas
+   (títulos e números: Space Grotesk; texto: Inter — arquivos no próprio site, vendor/fonts, pré-cacheados no sw.js).
+   Só troca tokens e aparência; o S de partículas, o logo e o selo verificado continuam no vermelho da marca (identidade das Lojas G
+   e preferência do dono pelo selo vermelho). Sempre escuro. Último bloco: vence os anteriores. */
+@font-face{font-family:'Inter';font-style:normal;font-weight:400 700;font-display:swap;src:url(vendor/fonts/inter-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Inter';font-style:normal;font-weight:400 700;font-display:swap;src:url(vendor/fonts/inter-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:400 700;font-display:swap;src:url(vendor/fonts/space-grotesk-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:400 700;font-display:swap;src:url(vendor/fonts/space-grotesk-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+/* ---------- tokens por tema ---------- */
+html[data-e99-theme] body,html[data-e99-theme] body.dark{--font-text:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;--font-head:'Space Grotesk','Inter',system-ui,sans-serif;--e99-radius:22px}
+html[data-e99-theme="lilas"],html[data-e99-theme="lilas"] body,html[data-e99-theme="lilas"] body.dark{
+  --neon:#E7B8EF;--neon-rgb:231,184,239;--neon-hot:#F4DCF8;--neon-hot-rgb:244,220,248;--neon-btn:#C79BD0;--neon-btn-hover:#D9B3E1;--neon-ink:#1B0F1E;
+  --brand:#E7B8EF;--red:#E7B8EF;--red2:#C79BD0;--accent-2:#8E5A99;--accent-2-rgb:142,90,153;
+  --grid:rgba(199,155,208,.30);--e99-bg:#0B090D;--e99-bg-grad:radial-gradient(120vmax 80vmax at 85% -10%,rgba(92,44,98,.55),transparent 60%),radial-gradient(90vmax 70vmax at -10% 110%,rgba(60,26,66,.5),transparent 60%),#0B090D;
+  --glass-card:#16111A;--glass-solid:#151018;--glass-bar:rgba(16,11,19,.82);--glass-pop:rgba(20,14,23,.94);--glass-edge:rgba(231,184,239,.14);
+  --ds-bg:#0B090D;--ds-surface:#16111A;--ds-line:#2F2535;--ds-ink:#F5EEF7;--ds-muted:#B8A9BD;--e99-mine:#2A1B30;--e99-mine-edge:rgba(231,184,239,.32)}
+html[data-e99-theme="violeta"],html[data-e99-theme="violeta"] body,html[data-e99-theme="violeta"] body.dark{
+  --neon:#C6FF34;--neon-rgb:198,255,52;--neon-hot:#E2FF9A;--neon-hot-rgb:226,255,154;--neon-btn:#C6FF34;--neon-btn-hover:#D6FF6A;--neon-ink:#0B0B0B;
+  --brand:#C6FF34;--red:#C6FF34;--red2:#7F3AED;--accent-2:#7F3AED;--accent-2-rgb:127,58,237;
+  --grid:rgba(127,58,237,.42);--e99-bg:#000000;--e99-bg-grad:radial-gradient(110vmax 70vmax at 90% -15%,rgba(127,58,237,.42),transparent 58%),radial-gradient(80vmax 60vmax at -10% 105%,rgba(127,58,237,.22),transparent 60%),#000000;
+  --glass-card:#0F0B17;--glass-solid:#0E0A15;--glass-bar:rgba(8,6,13,.84);--glass-pop:rgba(14,10,21,.95);--glass-edge:rgba(127,58,237,.30);
+  --ds-bg:#000000;--ds-surface:#0F0B17;--ds-line:#2A1F42;--ds-ink:#F4F2FA;--ds-muted:#B3ABC6;--e99-mine:#1F1436;--e99-mine-edge:rgba(127,58,237,.6)}
+html[data-e99-theme="cinza"],html[data-e99-theme="cinza"] body,html[data-e99-theme="cinza"] body.dark{
+  --neon:#C7FF2E;--neon-rgb:199,255,46;--neon-hot:#E3FF94;--neon-hot-rgb:227,255,148;--neon-btn:#C7FF2E;--neon-btn-hover:#D7FF66;--neon-ink:#0A0A0A;
+  --brand:#C7FF2E;--red:#C7FF2E;--red2:#6F7780;--accent-2:#6F7780;--accent-2-rgb:111,119,128;
+  --grid:rgba(201,208,214,.22);--e99-bg:#0A0A0A;--e99-bg-grad:radial-gradient(110vmax 70vmax at 90% -15%,rgba(111,119,128,.28),transparent 58%),#0A0A0A;
+  --glass-card:#141516;--glass-solid:#131415;--glass-bar:rgba(12,12,13,.84);--glass-pop:rgba(18,19,20,.95);--glass-edge:rgba(201,208,214,.14);
+  --ds-bg:#0A0A0A;--ds-surface:#141516;--ds-line:#2A2D31;--ds-ink:#F7F7F1;--ds-muted:#C9D0D6;--e99-mine:#1E2124;--e99-mine-edge:rgba(199,255,46,.35)}
+
+/* ---------- fontes ---------- */
+html[data-e99-theme] body{font-family:var(--font-text)!important}
+html[data-e99-theme] body :is(h1,h2,h3),html[data-e99-theme] body.dark :is(.auth-card h1,.pn-card h2,.panelhead h2,.stat strong,.pn-kpi strong,.hero h1){font-family:var(--font-head)!important;letter-spacing:-.01em}
+html[data-e99-theme] .e99-clock .clk-time{font-family:var(--font-head)!important;font-weight:600;letter-spacing:-.02em}
+html[data-e99-theme] #conf-dlg .cf-count{font-family:var(--font-head)!important;letter-spacing:-.01em}
+html[data-e99-theme] body :is(input,select,textarea,button){font-family:inherit}
+
+/* ---------- layout: painel estilo dashboard ---------- */
+html[data-e99-theme] body.dark{background:var(--e99-bg-grad)!important;background-attachment:fixed!important;color:var(--ds-ink)}
+html[data-e99-theme] body.dark::before{background:none!important}
+html[data-e99-theme] body.dark #view :is(.panel,.stat,.card,.pn-card),html[data-e99-theme] body.dark #view .stats .stat:first-child{border-radius:var(--e99-radius)!important;background:var(--glass-card)!important;border:1px solid var(--glass-edge)!important;box-shadow:0 1px 0 rgba(255,255,255,.04) inset!important}
+html[data-e99-theme] body.dark #view .stats .stat:first-child{background:linear-gradient(150deg,rgba(var(--neon-rgb),.20),rgba(var(--accent-2-rgb),.10) 60%,var(--glass-card))!important}
+html[data-e99-theme] body.dark :is(button.primary,.primary,#view .toolbar button.primary,.hero button.primary,#auth-screen button.primary,#conf-dlg .cf-camoff button.primary,#conf-dlg .cf-ask button.primary,#view .chat-fail-acts .chat-retry){background:var(--neon-btn)!important;background-image:none!important;border-color:var(--neon-btn)!important;color:var(--neon-ink)!important;border-radius:999px!important;box-shadow:none!important}
+html[data-e99-theme] body.dark button.primary:hover{background:var(--neon-btn-hover)!important;border-color:var(--neon-btn-hover)!important}
+html[data-e99-theme] body.dark :is(#view .toolbar button,.hero button,#prefs-panel button,.more-actions>button,#auth-screen button){border-radius:999px!important}
+html[data-e99-theme] body.dark :is(.nav button.active,#mobile-bottom button.active){background:rgba(var(--neon-rgb),.16)!important;background-image:none!important;color:var(--neon)!important;box-shadow:inset 0 0 0 1px rgba(var(--neon-rgb),.45)!important}
+html[data-e99-theme] body.dark .accent-word{color:var(--neon)!important;text-shadow:none!important}
+html[data-e99-theme] body.dark :is(input,select,textarea):focus{border-color:var(--neon)!important;box-shadow:0 0 0 3px rgba(var(--neon-rgb),.25)!important}
+html[data-e99-theme] body.dark :is(.chat-quote,.chat-reply){border-left-color:var(--neon)!important}
+html[data-e99-theme] body.dark .chat-msg.mine{background:var(--e99-mine)!important;border-color:var(--e99-mine-edge)!important}
+html[data-e99-theme] body.dark :is(.chat-msg .who,.prof-user b,#view .chat-msg .chat-more){color:var(--neon)!important}
+html[data-e99-theme] body.dark .chat-msg .reacts button.me{border-color:var(--neon);background:rgba(var(--neon-rgb),.16)}
+html[data-e99-theme] #conf-dlg .cf-count{background:linear-gradient(100deg,var(--neon) 0%,var(--neon-hot) 22%,var(--neon) 40%,var(--neon-hot) 60%,var(--neon) 100%) 0 0/300% 100%!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important}
+html[data-e99-theme] #conf-dlg :is(.cf-finish,.cf-discard){color:var(--neon-hot)!important}
+html[data-e99-theme] #conf-dlg .cf-ib[aria-pressed="true"]{border-color:var(--neon)!important;color:var(--neon)!important}
+html[data-e99-theme] #conf-dlg .cf-st::before{background:var(--neon)}
+html[data-e99-theme] #conf-dlg .cf-frame>i{filter:hue-rotate(0)}
+html[data-e99-theme] body.dark .bell-btn .alert-count{background:var(--neon-btn)!important;color:var(--neon-ink)!important}
+html[data-e99-theme] #colar-dlg :is(.cp-check input,.cp-on){accent-color:var(--neon-btn)}
+html[data-e99-theme] .prof-cover,html[data-e99-theme] #prof-edit .pe-cover{background:linear-gradient(135deg,var(--neon-btn),rgba(var(--accent-2-rgb),.6) 55%,var(--e99-bg))}
+
+/* Space Grotesk é mais larga que a Oswald: no celular o título do Início não pode entrar na faixa do S de partículas (v94) */
+@media (max-width:760px){html[data-e99-theme] #view .hero-home h1{max-width:calc(100% - 112px)!important;overflow-wrap:anywhere}}
+/* ---------- escolha do tema (Preferências) ---------- */
+#pref-theme{display:flex;gap:8px;flex-wrap:wrap}
+#pref-theme button{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px}
+#pref-theme .sw{width:18px;height:18px;border-radius:50%;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+#pref-theme button[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--neon)!important}
+
+/* ---------- gráfico do Início ---------- */
+.e99-trend{padding:18px 18px 12px}
+.e99-trend h2{margin:0 0 2px;font-size:1.05rem}
+.e99-trend .tr-sub{margin:0 0 10px;color:var(--ds-muted);font-size:.875rem}
+.e99-trend svg{display:block;width:100%;height:auto;overflow:visible}
+.e99-trend .tr-line{fill:none;stroke:var(--neon);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.e99-trend .tr-dot{fill:var(--neon)}
+.e99-trend .tr-axis{fill:var(--ds-muted);font:500 11px var(--font-text,system-ui)}
+.e99-trend .tr-base{stroke:var(--ds-line);stroke-width:1}
+@media (forced-colors:active){.e99-trend .tr-line{stroke:CanvasText}}
+</style>
+<script id="v112-js">
+(function(){
+'use strict';
+/* v112: tema do aparelho (lojasg.estoque99.ui-theme = lilas | violeta | cinza; padrão lilas), gráfico de linha suave no Início. */
+var D=document,K='lojasg.estoque99.ui-theme',LIST=[['lilas','Lilás','#E7B8EF','#0B090D'],['violeta','Violeta + Lima','#C6FF34','#000000'],['cinza','Cinza + Lima','#C7FF2E','#0A0A0A']];
+function cur(){var t='';try{t=localStorage.getItem(K)||''}catch(x){}return LIST.some(function(l){return l[0]===t})?t:'lilas'}
+function apply(t){D.documentElement.setAttribute('data-e99-theme',t);var bg=(LIST.filter(function(l){return l[0]===t})[0]||LIST[0])[3];var m=D.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',bg)}
+window.e99Theme={get:cur,list:function(){return LIST.map(function(l){return l[0]})},set:function(t){if(!LIST.some(function(l){return l[0]===t}))return;try{localStorage.setItem(K,t)}catch(x){}apply(t);
+  try{if(typeof render==='function'&&typeof authSession!=='undefined'&&authSession)render()}catch(x){}row(true);try{notify('Tema: '+LIST.filter(function(l){return l[0]===t})[0][1]+'.')}catch(x){}}};
+apply(cur());
+function row(force){var pp=D.getElementById('prefs-panel');if(!pp)return;var old=D.getElementById('pref-theme-row');if(old&&!force)return;if(old)old.remove();var t=cur(),r=D.createElement('div');r.className='pref-row';r.id='pref-theme-row';
+  r.innerHTML='<span><b>Aparência</b><span class="small">Tema escuro deste aparelho.</span></span><div id="pref-theme" role="group" aria-label="Tema">'+LIST.map(function(l){return '<button type="button" data-theme="'+l[0]+'" aria-pressed="'+(l[0]===t)+'" onclick="e99Theme.set(\''+l[0]+'\')"><span class="sw" aria-hidden="true" style="background:'+l[2]+'"></span>'+l[1]+'</button>'}).join('')+'</div>';
+  var h=pp.querySelector('h2');if(h&&h.nextSibling)pp.insertBefore(r,h.nextElementSibling&&h.nextElementSibling.classList.contains('small')?h.nextElementSibling.nextSibling:h.nextSibling);else pp.appendChild(r)}
+/* gráfico: notas fiscais por dia nos últimos 14 dias (só aparece se houver alguma) */
+function iso(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+function series(){var out=[],now=new Date();now.setHours(12,0,0,0);var cnt={};try{(state.nfs||[]).forEach(function(n){var k=String(n.date||'').slice(0,10);cnt[k]=(cnt[k]||0)+1})}catch(x){}
+  for(var i=13;i>=0;i--){var d=new Date(now.getTime()-i*86400000);out.push({d:d,v:cnt[iso(d)]||0})}return out}
+function path(pts){if(pts.length<2)return '';var s='M'+pts[0][0].toFixed(1)+' '+pts[0][1].toFixed(1);for(var i=0;i<pts.length-1;i++){var p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+  var c1x=p1[0]+(p2[0]-p0[0])/6,c1y=p1[1]+(p2[1]-p0[1])/6,c2x=p2[0]-(p3[0]-p1[0])/6,c2y=p2[1]-(p3[1]-p1[1])/6;s+=' C'+c1x.toFixed(1)+' '+c1y.toFixed(1)+' '+c2x.toFixed(1)+' '+c2y.toFixed(1)+' '+p2[0].toFixed(1)+' '+p2[1].toFixed(1)}return s}
+function trend(){var v=D.getElementById('view');if(!v||typeof page==='undefined'||page!=='home'||v.querySelector('.e99-trend'))return;var s=series(),tot=s.reduce(function(a,b){return a+b.v},0);if(!tot)return;
+  var W=640,H=150,P=8,max=Math.max.apply(null,s.map(function(x){return x.v}))||1,pts=s.map(function(x,i){return [P+i*(W-2*P)/(s.length-1),H-24-(x.v/max)*(H-44)]});
+  var line=path(pts),area=line+' L'+pts[pts.length-1][0].toFixed(1)+' '+(H-24)+' L'+pts[0][0].toFixed(1)+' '+(H-24)+' Z',gid='trg'+Date.now().toString(36),fmt=function(d){return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)};
+  var desc='Notas fiscais por dia: '+s.filter(function(x){return x.v}).map(function(x){return fmt(x.d)+': '+x.v}).join(', ');
+  var el=D.createElement('section');el.className='panel e99-trend';el.setAttribute('aria-labelledby',gid+'h');
+  el.innerHTML='<h2 id="'+gid+'h">Notas fiscais por dia</h2><p class="tr-sub">Últimos 14 dias · '+tot+' no total</p><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+desc.replace(/"/g,'')+'"><defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--neon)" stop-opacity=".35"/><stop offset="1" stop-color="var(--neon)" stop-opacity="0"/></linearGradient></defs>'
+   +'<line class="tr-base" x1="'+P+'" x2="'+(W-P)+'" y1="'+(H-24)+'" y2="'+(H-24)+'"/><path d="'+area+'" fill="url(#'+gid+')"/><path class="tr-line" d="'+line+'"/>'
+   +pts.map(function(p,i){return s[i].v?'<circle class="tr-dot" cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3.5"/>':''}).join('')
+   +[0,7,13].map(function(i){return '<text class="tr-axis" x="'+pts[i][0].toFixed(1)+'" y="'+(H-6)+'" text-anchor="'+(i===0?'start':i===13?'end':'middle')+'">'+fmt(s[i].d)+'</text>'}).join('')+'</svg>';
+  var after=v.querySelector('.e99-clock')||v.querySelector('.hero');if(after&&after.parentNode)after.parentNode.insertBefore(el,after.nextSibling);else v.insertBefore(el,v.firstChild)}
+var r0=render;render=function(){var r=r0.apply(this,arguments);try{trend();row(false)}catch(x){}return r};
+if(typeof window.e99PrefsRefresh==='function'){var pr=window.e99PrefsRefresh;window.e99PrefsRefresh=function(){var r=pr.apply(this,arguments);setTimeout(function(){row(false)},90);return r}}
+setInterval(function(){if(!D.hidden)try{row(false)}catch(x){}},1500);
 })();
 </script>
 </body></html>
