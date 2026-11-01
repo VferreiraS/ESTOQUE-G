@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="114"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="115"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -7680,6 +7680,8 @@ setInterval(function(){if(!D.hidden)try{row(false)}catch(x){}},1500);
 #nv-form .fields{display:grid;gap:10px}
 #nv-form textarea{min-height:110px}
 @media (max-width:600px){.nv-item{padding:12px}}
+/* v115: no celular o botão "Pausar animação" fica abaixo do título nas telas que não são o Início (não cobre o título) */
+@media (max-width:760px){html body #view .hero:not(.hero-home) .fx-pause{position:static!important;inset:auto!important;transform:none!important;display:inline-flex!important;align-items:center;height:auto!important;min-height:44px;margin:10px 0 0!important;align-self:flex-start}html body #view .hero:not(.hero-home){height:auto!important;min-height:0!important;flex-wrap:wrap}}
 </style>
 <script id="v113-js">
 (function(){
@@ -7694,7 +7696,10 @@ function isGestor(){return !!(authSession&&authSession.payload&&authSession.payl
 function seenKey(){return 'lojasg.estoque99.nv-seen:'+(authSession?authSession.storeKey:'-')}
 function seen(){try{var o=JSON.parse(localStorage.getItem(seenKey())||'[]');return Array.isArray(o)?o:[]}catch(x){return []}}
 function keyOf(r){return r.extra?'x:'+r.id+':'+(r.at||0):'v'+r.v}
-function load(){if(official)return Promise.resolve(official);if(loading)return loading;loading=fetch('novidades.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw Error(r.status);return r.json()}).then(function(j){official=(j&&Array.isArray(j.versoes)?j.versoes:[]).filter(function(x){return x&&Number.isInteger(x.v)&&/^\d{4}-\d{2}-\d{2}$/.test(x.data)&&CATS[x.cat]});loading=null;return official}).catch(function(){loading=null;return null});return loading}
+var loadErr=false;
+function getJson(){return fetch('novidades.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw Error(r.status);return r.json()}).catch(function(x){/* v115: sem rede (ou resposta ruim no iPhone): usa a cópia guardada pelo service worker */if(!window.caches)throw x;return caches.keys().then(function(ks){ks=ks.filter(function(k){return k.indexOf('estoque99-')===0});var i=0;function next(){if(i>=ks.length)throw x;return caches.open(ks[i++]).then(function(c){return c.match('./novidades.json')}).then(function(r){return r?r.json():next()})}return next()})})}
+function load(){if(official)return Promise.resolve(official);if(loading)return loading;loadErr=false;loading=getJson().then(function(j){official=(j&&Array.isArray(j.versoes)?j.versoes:[]).filter(function(x){return x&&Number.isInteger(x.v)&&/^\d{4}-\d{2}-\d{2}$/.test(x.data)&&CATS[x.cat]});loading=null;return official}).catch(function(){loading=null;loadErr=true;return null});return loading}
+window.e99NvRetry=function(){loadErr=false;load().then(function(){render()});render()};
 window.e99NovidadesLoad=load;
 function all(){var l=(official||[]).map(function(x){return {v:x.v,data:x.data,titulo:x.titulo,descricao:x.descricao,cat:x.cat}});
   (Array.isArray(state.news)?state.news:[]).forEach(function(x){l.push({extra:true,id:x.id,v:x.v,data:x.data,titulo:x.titulo,descricao:x.descricao,cat:x.cat,at:x.at})});
@@ -7714,7 +7719,7 @@ function form(){var x=editing||{v:'',data:new Date().toISOString().slice(0,10),t
    +'<label>Categoria<select name="cat">'+Object.keys(CATS).map(function(k){return '<option value="'+k+'"'+(x.cat===k?' selected':'')+'>'+CATS[k][0]+' '+CATS[k][1]+'</option>'}).join('')+'</select></label>'
    +'<label>Título<input name="titulo" required maxlength="140" value="'+e(x.titulo)+'"></label><label>Descrição<textarea name="descricao" maxlength="3000">'+e(x.descricao)+'</textarea></label>'
    +'<div class="nv-acts"><button class="primary" type="submit">'+(editing&&editing.id?'Salvar alterações':'Cadastrar')+'</button>'+(editing&&editing.id?'<button type="button" onclick="e99NvCancel()">Cancelar</button>':'')+'</div></div></form></div>'}
-function nvPage(){if(!official){load().then(function(){if(page==='novidades')render()});return hero('O que mudou?','Histórico de versões do Stok')+'<div class="panel"><p>Carregando o histórico…</p></div>'}
+function nvPage(){if(!official){if(!loadErr)load().then(function(){if(page==='novidades')render()});return hero('O que mudou?','Histórico de versões do Stok')+'<div class="panel nv-wait" role="status">'+(loadErr?'<p>Não foi possível carregar o histórico agora.</p><button type="button" class="primary" onclick="e99NvRetry()">Tentar de novo</button>':'<p>Carregando o histórico…</p>')+'</div>'}
   var s=seen(),set={},first=!localStorage.getItem(seenKey());s.forEach(function(k){set[k]=1});var l=all(),un={};l.forEach(function(r){if(first||!set[keyOf(r)])un[keyOf(r)]=1});
   var shown=filt?l.filter(function(r){return r.cat===filt}):l;
   setTimeout(markSeen,1200);
@@ -7722,6 +7727,7 @@ function nvPage(){if(!official){load().then(function(){if(page==='novidades')ren
    +'<div class="nv-filter" role="group" aria-label="Filtrar por categoria"><button type="button" aria-pressed="'+(!filt)+'" onclick="e99NvFilter(\'\')">Todas</button>'+Object.keys(CATS).map(function(k){return '<button type="button" aria-pressed="'+(filt===k)+'" onclick="e99NvFilter(\''+k+'\')"><span aria-hidden="true">'+CATS[k][0]+'</span> '+CATS[k][1]+'</button>'}).join('')+'</div>'
    +'<ol class="nv-list" aria-label="Versões">'+shown.map(function(r){return item(r,un)}).join('')+'</ol></div>'}
 window.extraPages=window.extraPages||{};window.extraPages.novidades=nvPage;
+var gNv=go;go=function(p){var was=page;var r=gNv.apply(this,arguments);if(p==='novidades'&&was!=='novidades')try{scrollTo(0,0)}catch(x){}return r};
 window.e99NvFilter=function(c){filt=CATS[c]?c:'';render()};
 window.e99NvEdit=function(id){if(!isGestor())return;var x=(state.news||[]).find(function(n){return n.id===id});if(!x)return;editing=JSON.parse(JSON.stringify(x));render();var f=D.getElementById('nv-admin');if(f)f.scrollIntoView({block:'start'})};
 window.e99NvCancel=function(){editing=null;render()};

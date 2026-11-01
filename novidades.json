@@ -2,6 +2,13 @@
  "fonte": "CLAUDE.md (tabela de versões) + git log",
  "versoes": [
   {
+   "v": 115,
+   "data": "2026-11-01",
+   "titulo": "\"O que mudou?\" no iPhone: lista aparece e título não fica sob o botão",
+   "descricao": "A aba abre sempre no topo; se o arquivo do histórico não vier pela rede, o app usa a cópia guardada no aparelho (e mostra \"Tentar de novo\" se nem isso houver). No celular o botão \"Pausar animação\" fica abaixo do título. O número do sino é o da central de Alertas; as novidades não vistas aparecem no item \"O que mudou?\" do menu.",
+   "cat": "correcao"
+  },
+  {
    "v": 114,
    "data": "2026-11-01",
    "titulo": "Novos selos: Soldado Comum e Rei (xadrez)",
