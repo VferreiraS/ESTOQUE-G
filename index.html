@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="108"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="109"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -2475,7 +2475,7 @@ var retry=0,retryTimer=0;
 function revive(){if(team&&!document.hidden&&(!es||es.readyState===2)){retry=0;connect()}}
 addEventListener('online',revive);document.addEventListener('visibilitychange',revive);
 function disconnect(){clearTimeout(retryTimer);if(es){es.close();es=null}connected=false}
-async function receive(d){var t=team;if(!t)return;var msg=await decMsg(d.message);if(!msg||t!==team)return;
+async function receive(d){var t=team;if(!t)return;if(typeof d.message==='string'&&d.message.indexOf('E99D:')===0){await recvDel(d,t);return}var msg=await decMsg(d.message);if(!msg||t!==team)return;
   if(d.time)try{var prev=+localStorage.getItem(sinceKey())||0;if(d.time>prev)localStorage.setItem(sinceKey(),String(d.time))}catch(e){}
   if(delSet().indexOf(msg.id)>=0)return;
   var key=t.topic+'|'+msg.id;var exists=await cop('msgs','readonly',function(st){return st.get(key)}).catch(function(){return null});
@@ -2663,6 +2663,30 @@ window.chatDelete=async function(id){if(!team||typeof id!=='string'||!/^[a-zA-Z0
   var l=delSet();if(l.indexOf(id)<0)l.push(id);try{localStorage.setItem(delKey(),JSON.stringify(l.slice(-500)))}catch(e){}
   var k=team.topic+'|'+id;try{await cop('msgs','readwrite',function(st){return st.delete(k)})}catch(e){}try{await cop('imgs','readwrite',function(st){return st.delete(k)})}catch(e){}
   if(replyTo&&replyTo.id===id){replyTo=null;replyBar()}await paint();badges();notify('Mensagem apagada deste aparelho.');var bx=document.getElementById('chat-list');if(bx&&(!document.activeElement||document.activeElement===document.body))try{bx.focus({preventScroll:true})}catch(e){}};
+/* v109: "Apagar para todos". Mensagem nova no protocolo do chat, com outro prefixo (E99D:) para que aparelhos com versão antiga
+   a ignorem (o leitor antigo só aceita E99:) em vez de mostrar uma mensagem vazia. Nesses aparelhos antigos a mensagem original
+   continua aparecendo. Só quem enviou (mesmo nome) ou o gestor da equipe pode apagar para todos; os outros aparelhos conferem. */
+function okId(x){return typeof x==='string'&&/^[a-zA-Z0-9_-]{1,60}$/.test(x)}
+/* gestor da equipe = quem criou a equipe (dono do código). Os outros aparelhos conferem pelo papel que a sincronização registrou (não auxiliar). */
+function iAmGestor(){return !!(cfg&&cfg.owner===true)}
+function gestorNames(){var out={};try{var m=window.syncMembers?window.syncMembers():{};Object.keys(m).forEach(function(k){var x=m[k];if(x&&x.role==='gestor'&&x.name)out[String(x.name).slice(0,60)]=1})}catch(e){}return out}
+async function origOf(t,id){var r=await cop('msgs','readonly',function(st){return st.get(t.topic+'|'+id)}).catch(function(){return null});if(!r)return null;var m=mem[t.topic+'|'+id]||await decMsg(r.payload);return m?{rec:r,msg:m}:null}
+async function dropLocal(t,id){var l;try{l=JSON.parse(localStorage.getItem('lojasg.estoque99.chat-del:'+t.topic)||'[]');if(!Array.isArray(l))l=[]}catch(e){l=[]}if(l.indexOf(id)<0)l.push(id);try{localStorage.setItem('lojasg.estoque99.chat-del:'+t.topic,JSON.stringify(l.slice(-500)))}catch(e){}
+  var k=t.topic+'|'+id;delete mem[k];try{await cop('msgs','readwrite',function(st){return st.delete(k)})}catch(e){}try{await cop('imgs','readwrite',function(st){return st.delete(k)})}catch(e){}if(replyTo&&replyTo.id===id){replyTo=null;replyBar()}}
+/* quem pode: a minha mensagem (gravada como minha ou com o meu nome) ou qualquer uma se eu sou o gestor */
+window.e99CanDelAll=async function(id){if(!team||!cfg||!okId(id))return false;var o=await origOf(team,id);if(!o)return false;return !!(o.rec.mine||o.msg.from===cfg.name||iAmGestor())};
+async function recvDel(d,t){var o=null;try{o=JSON.parse(new TextDecoder().decode(await dec(un64(d.message.slice(5)))))}catch(e){return}
+  if(!o||o.v!==1||o.t!=='del'||!okId(o.id)||!okId(o.ref))return;if(d.time)try{var prev=+localStorage.getItem(sinceKey())||0;if(d.time>prev)localStorage.setItem(sinceKey(),String(d.time))}catch(e){}
+  var from=String(o.from||'').slice(0,60),org=await origOf(t,o.ref);if(t!==team)return;
+  if(org){var allowed=org.msg.from===from||(o.g===1&&!!gestorNames()[from]);if(!allowed)return}
+  /* sem a original neste aparelho: só anota para ela não aparecer se chegar depois */
+  await dropLocal(t,o.ref);if(page==='chat'&&team===t){await paint(false);if(org)window.e99ChatSay('Uma mensagem foi apagada por '+from+'.')}badges()}
+window.chatDeleteAll=async function(id){if(!team||!cfg||!okId(id)||sending)return false;var t=team;if(!(await window.e99CanDelAll(id))){notify('Só quem enviou a mensagem ou o gestor pode apagar para todos.');return false}
+  if(!confirm('Apagar esta mensagem para todos da equipe? Quem ainda usa uma versão antiga do app continua vendo.'))return false;
+  var obj={v:1,t:'del',id:msgId(),ref:id,from:cfg.name,at:new Date().toISOString(),g:iAmGestor()?1:0},r;
+  try{r=await fetch(NTFY+'/'+t.topic,{method:'POST',body:'E99D:'+b64(await enc(authBytes(JSON.stringify(obj))))})}catch(e){r=null}
+  if(!r||!r.ok){notify(failMsg(r?r.status:0).replace('enviar','apagar para todos'));return false}
+  if(t!==team)return false;await dropLocal(t,id);await paint();badges();notify('Mensagem apagada para todos.');return true};
 window.chatReply=function(id){var s=snip[id];if(!s)return;replyTo={id:id,from:s.from,t:s.t};replyBar();var t=document.getElementById('chat-text');if(t)t.focus();try{if(navigator.vibrate)navigator.vibrate(12)}catch(e){}};
 window.chatReplyCancel=function(){var had=document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#chat-reply');replyTo=null;replyBar();if(had){var t=document.getElementById('chat-text');if(t)t.focus()}};window.e99ChatReplyTo=function(){return replyTo};window.e99ChatSnip=function(id){return snip[id]||null};
 window.chatJump=function(id){var box=document.getElementById('chat-list');if(!box)return;var el=box.querySelector('.chat-msg[data-id="'+id.replace(/[^a-zA-Z0-9_-]/g,'')+'"]');if(!el){notify('A mensagem original não está mais neste aparelho.');return}el.scrollIntoView({behavior:calm()?'auto':'smooth',block:'center'});el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');try{el.focus({preventScroll:true})}catch(e){}};
@@ -4846,15 +4870,16 @@ document.addEventListener('contextmenu',function(ev){var m=ev.target.closest&&ev
 function menu(id,back){if(!id)return;try{if(navigator.vibrate)navigator.vibrate(15)}catch(x){}var old=document.getElementById('msg-menu');if(old)old.remove();var sn=window.e99ChatSnip&&window.e99ChatSnip(id)||{};back=back||document.activeElement;
   var d=document.createElement('div');d.id='msg-menu';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.setAttribute('aria-label','Opções da mensagem');
   /* v106: sem emoji nas ações; "Apagar deste aparelho" também aqui (no celular o botão some da bolha); Esc fecha e o foco volta */
-  d.innerHTML='<div class="mm"><div class="emo" role="group" aria-label="Reagir">'+REACT_OK.map(function(k,i){return '<button type="button" data-emo="'+i+'" aria-label="Reagir com '+['curti','coração','risada','surpresa','triste','obrigado'][i]+'">'+k+'</button>'}).join('')+'</div><div class="act"><button type="button" data-a="reply">Responder</button><button type="button" data-a="pin">Fixar no topo</button><button type="button" data-a="fwd">Encaminhar</button><button type="button" data-a="copy">Copiar texto</button><button type="button" data-a="del" class="danger">Apagar deste aparelho</button><button type="button" data-a="close">Fechar</button></div></div>';
+  d.innerHTML='<div class="mm"><div class="emo" role="group" aria-label="Reagir">'+REACT_OK.map(function(k,i){return '<button type="button" data-emo="'+i+'" aria-label="Reagir com '+['curti','coração','risada','surpresa','triste','obrigado'][i]+'">'+k+'</button>'}).join('')+'</div><div class="act"><button type="button" data-a="reply">Responder</button><button type="button" data-a="pin">Fixar no topo</button><button type="button" data-a="fwd">Encaminhar</button><button type="button" data-a="copy">Copiar texto</button><button type="button" data-a="delall" class="danger" hidden>Apagar para todos</button><button type="button" data-a="del" class="danger">Apagar deste aparelho</button><button type="button" data-a="close">Fechar</button></div></div>';
   function close(){d.remove();document.removeEventListener('keydown',key,true);try{if(back&&back.isConnected)back.focus({preventScroll:true});else{var t=document.getElementById('chat-text');if(t)t.focus({preventScroll:true})}}catch(x){}}
   function key(ev){if(!d.isConnected){document.removeEventListener('keydown',key,true);return}if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();close();return}
     if(ev.key==='Tab'){var bs=[].slice.call(d.querySelectorAll('button'));var i=bs.indexOf(document.activeElement);if(ev.shiftKey&&i<=0){ev.preventDefault();bs[bs.length-1].focus()}else if(!ev.shiftKey&&i===bs.length-1){ev.preventDefault();bs[0].focus()}}}
   document.addEventListener('keydown',key,true);
   d.addEventListener('click',function(ev){var b=ev.target.closest('button');if(ev.target===d){close();return}if(!b)return;var k=b.getAttribute('data-emo'),a=b.getAttribute('data-a');close();
-    if(k!=null)window.e99React(id,REACT_OK[+k]);else if(a==='reply')window.chatReply(id);else if(a==='pin')pin(id,sn);else if(a==='del')window.chatDelete(id);else if(a==='copy'){try{navigator.clipboard.writeText(sn.t||'');notify('Texto copiado.')}catch(x){}}
+    if(k!=null)window.e99React(id,REACT_OK[+k]);else if(a==='reply')window.chatReply(id);else if(a==='pin')pin(id,sn);else if(a==='del')window.chatDelete(id);else if(a==='delall')window.chatDeleteAll(id);else if(a==='copy'){try{navigator.clipboard.writeText(sn.t||'');notify('Texto copiado.')}catch(x){}}
     else if(a==='fwd'){var t=document.getElementById('chat-text');if(t){t.value='↪ Encaminhada de '+(sn.from||'?')+': '+(sn.t||'');t.dispatchEvent(new Event('input',{bubbles:true}));t.focus()}}});
-  document.body.appendChild(d);var f=d.querySelector('.emo button');if(f)f.focus()}
+  document.body.appendChild(d);var f=d.querySelector('.emo button');if(f)f.focus();
+  if(window.e99CanDelAll)window.e99CanDelAll(id).then(function(y){var b=d.querySelector('[data-a=delall]');if(b&&y&&d.isConnected)b.hidden=false}).catch(function(){})}
 window.e99MsgMenu=menu;
 
 /* ---------- mensagem fixada ---------- */
