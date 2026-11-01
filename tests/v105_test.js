@@ -1,6 +1,6 @@
 /* v105: e-mail obrigatório para ter conta e acesso (PC 1440×900 e iPhone 13).
    Criar conta sem e-mail ou com e-mail inválido é recusada; convite de auxiliar exige e-mail; conta antiga sem e-mail entra,
-   mas a tela obrigatória pede o e-mail (sem "Agora não") até ser informado; conta com e-mail entra normal; o e-mail fica cifrado
+   mas a tela pede o e-mail (v107: com "Agora não" só para a sessão) até ser informado; conta com e-mail entra normal; o e-mail fica cifrado
    dentro da conta; o e-mail não muda o papel. */
 const L=require('./lib.js');const {ok,until}=L;
 async function seed(p,login,role,email){return p.evaluate(async([l,r,m])=>{const s=await authCreate(l,'Loja '+l,'1234',authEmpty(),r,m||undefined);authSaveNewAccount(s);return s.storeKey},[login,role,email||''])}
@@ -39,7 +39,7 @@ async function fillFields(p,l,email){await p.fill('#auth-screen input[name=store
   const l4='antiga'+nome+T,m4=L.mail(l4);await seed(P,l4,'estoque');await L.login(P,l4,'1234');
   ok(await until(P,()=>{const d=document.getElementById('email-gate');return !!(d&&d.open)},null,5000),nome+': conta antiga sem e-mail entra e vê a tela de informar o e-mail');
   ok(await P.evaluate(()=>!!authSession),nome+': ninguém fica trancado para fora (a conta abre)');
-  ok(!(await P.$('#email-gate button:has-text("Agora não")')),nome+': sem "Agora não"');
+  ok(!!(await P.$('#email-gate button:has-text("Agora não")')),nome+': tem "Agora não" (v107)');
   await P.keyboard.press('Escape');await P.waitForTimeout(300);await P.keyboard.press('Escape');await P.waitForTimeout(300);ok(await gateOpen(P),nome+': Esc não fecha a tela');
   await P.evaluate(()=>document.getElementById('email-gate').close());ok(await until(P,()=>{const d=document.getElementById('email-gate');return !!(d&&d.open)},null,5000),nome+': se alguém fechar, a tela volta');
   await P.click('#email-gate button.primary');await P.waitForTimeout(300);ok(/Informe seu e-mail/.test(await P.textContent('#email-gate .eg-err'))&&await gateOpen(P),nome+': tela recusa e-mail vazio');

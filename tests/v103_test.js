@@ -36,8 +36,8 @@ async function oneConf(p,manual){await p.evaluate(()=>go('nfs'));await p.waitFor
   ok(await until(P,i=>!document.querySelector('.conf-banner')&&(state.confs.find(x=>x.id===i)||{status:'cancelada'}).status==='cancelada',id2,8000),nome+': exclui conferência interrompida');
   /* chat */
   await P.evaluate(()=>go('chat'));await P.waitForTimeout(500);await P.fill('#chat-text','apagar esta');await P.press('#chat-text','Enter');
-  ok(await until(P,()=>[...document.querySelectorAll('#chat-list .chat-msg')].some(m=>/apagar esta/.test(m.innerText))),nome+': mensagem enviada');
-  await P.evaluate(()=>[...document.querySelectorAll('#chat-list .chat-msg')].find(m=>/apagar esta/.test(m.innerText)).querySelector('.chat-del-btn').click());
+  ok(await until(P,()=>[...document.querySelectorAll('#chat-list .chat-msg[data-id]')].some(m=>/apagar esta/.test(m.innerText))),nome+': mensagem enviada');
+  await P.evaluate(()=>[...document.querySelectorAll('#chat-list .chat-msg[data-id]')].find(m=>/apagar esta/.test(m.innerText)).querySelector('.chat-del-btn').click());
   ok(await until(P,()=>![...document.querySelectorAll('#chat-list .chat-msg')].some(m=>/apagar esta/.test(m.innerText))),nome+': apaga mensagem do chat');
   await P.reload();await P.waitForTimeout(1500);await L.login(P,'del'+nome+T);await P.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));await P.evaluate(()=>go('chat'));await P.waitForTimeout(4000);
   ok(await P.evaluate(()=>![...document.querySelectorAll('#chat-list .chat-msg')].some(m=>/apagar esta/.test(m.innerText))),nome+': mensagem apagada não volta (ntfy reenviando)');
