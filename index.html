@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="113"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="114"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -3685,12 +3685,13 @@ function verApply(n,nl){n[VUID]=n[VUID]||'s';if(!nl[VUID])nl[VUID]='vferrreiras,
 /* o uid da nuvem desta conta fica guardado no aparelho: sem internet o gestor mantém o S */
 function myUid(){var u=window.e99Cloud&&window.e99Cloud.user&&window.e99Cloud.user(),k=authSession?'lojasg.estoque99.my-uid:'+authSession.storeKey:'';if(u&&u.uid){if(k)try{if(localStorage.getItem(k)!==u.uid)localStorage.setItem(k,u.uid)}catch(x){}return u.uid}try{return k?localStorage.getItem(k)||'':''}catch(x){return ''}}
 function verByLogin(lg){lg=lg?authLoginName(lg):'';if(!lg)return '';for(var id in VERL){if(!VER[id])continue;if(String(VERL[id]).split(',').some(function(x){return authLoginName(x)===lg}))return VER[id]}return ''}
+/* v114: selos de xadrez. Rei = só o uid com tipo 's' em verificados (nunca pelo login, nem pelo ntfy); todo o resto = Soldado Comum (peão). Não muda papel nem permissão. */
 function vTipo(r){if(!r)return '';
-  if(r.me){var id=myUid();if(id)return VER[id]||'';var lg=myLogin();if(authSession&&authSession.payload.role==='gestor'&&OWNER_LOGINS.indexOf(lg)>=0)return 's';return verByLogin(lg)}
-  var us=r.uids||(r.uid?[r.uid]:[]);for(var i=0;i<us.length;i++)if(VER[us[i]])return VER[us[i]];
-  return r.ntfy&&r.login?verByLogin(r.login):''}
-function isV(r){return !!vTipo(r)}
-function vb(r){var t=vTipo(r);if(!t)return '';return '<span class="vbadge vbadge-'+(t==='raio'?'raio':'s')+'" data-vbadge="'+(t==='raio'?'raio':'s')+'" role="img" aria-label="Conta verificada"></span>'}
+  if(r.me){var id=myUid();return id&&VER[id]==='s'?'rei':'peao'}
+  var us=r.uids||(r.uid?[r.uid]:[]);for(var i=0;i<us.length;i++)if(VER[us[i]]==='s')return 'rei';
+  return 'peao'}
+function isV(r){return vTipo(r)==='rei'}
+function vb(r){var t=vTipo(r);if(!t)return '';var sv=window.e99ChessSvg?window.e99ChessSvg(t):'';return '<span class="vbadge vbadge-'+t+(sv?' vbadge-chess" data-cb="'+t:'')+'" data-vbadge="'+t+'" role="img" aria-label="'+(t==='rei'?'Selo Rei':'Selo Soldado Comum')+'" title="'+(t==='rei'?'Rei':'Soldado Comum')+'">'+sv+'</span>'}
 window.e99VerTipo=vTipo;window.e99Ver=function(){return Object.assign({},VER)};
 /* com nuvem: escuta a lista ao vivo. Sem nuvem: lê pelo endereço público do Firestore (a cada 10 min, com cópia no aparelho) */
 var verUnsub=null;async function verStart(){if(verUnsub)return;var d;try{d=await fb()}catch(x){return}if(verUnsub)return;
@@ -4180,27 +4181,28 @@ function ParticleBadge(host,kind){
   return host._pb;
 }
 
+/* v114: selo = peça de xadrez em SVG (peão = Soldado Comum, rei = Rei). Cores pelos tokens do tema. */
+var CHESS={
+ peao:'M12 3.2a3.1 3.1 0 1 1 0 6.2a3.1 3.1 0 1 1 0-6.2zM9.2 10.6h5.6l-.9 1.3c1 1.9 1.6 3.9 1.9 6H8.2c.3-2.1.9-4.1 1.9-6zM5.8 18.6h12.4a1 1 0 0 1 1 1v1.2a.9.9 0 0 1-.9.9H5.7a.9.9 0 0 1-.9-.9v-1.2a1 1 0 0 1 1-1z',
+ rei:'M11 1.4h2v1.9h1.9v1.9H13v2h-2v-2H9.1V3.3H11zM7.4 9.6c0-1.7 2.1-2.6 4.6-2.6s4.6.9 4.6 2.6l-1.4 2.6H8.8zM9 12.9h6c.7 1.8 1.3 3.6 1.7 5.4H7.3c.4-1.8 1-3.6 1.7-5.4zM5.8 18.9h12.4a1 1 0 0 1 1 1v1a.9.9 0 0 1-.9.9H5.7a.9.9 0 0 1-.9-.9v-1a1 1 0 0 1 1-1z'};
+var HL={peao:'M10.3 5.2a2 2 0 0 1 1.5-1.1M10.6 12.6c-.7 1.6-1.1 3.1-1.3 4.6',rei:'M9 9.4c.3-.8 1.4-1.3 2.7-1.4M10 13.8c-.5 1.4-.9 2.8-1.2 4'};
+function chessSvg(k){return '<svg class="cb-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="cb-body" d="'+CHESS[k]+'"/><path class="cb-hl" d="'+HL[k]+'"/><path class="cb-edge" d="'+CHESS[k]+'"/></svg>'}
+window.e99ChessSvg=function(k){return chessSvg(k==='rei'?'rei':'peao')};
 function mountAll(root){
   root=root||document;
-  var nodes=root.querySelectorAll ? root.querySelectorAll('[data-vbadge], .vbadge-s:not(.vbadge-particle), .vbadge-raio:not(.vbadge-particle)') : [];
+  var nodes=root.querySelectorAll?root.querySelectorAll('[data-vbadge], .vbadge-s, .vbadge-raio'):[];
   for(var i=0;i<nodes.length;i++){
-    var el=nodes[i];
-    if(el._pb) continue;
-    if(el.tagName==='SVG'){
-      var span=document.createElement('span');
-      span.setAttribute('data-vbadge','1');
-      span.className='vbadge vbadge-s';
-      span.setAttribute('role','img');
-      span.setAttribute('aria-label','Conta verificada');
-      if(el.parentNode) el.parentNode.replaceChild(span, el);
-      ParticleBadge(span,'s');
-    } else {
-      var k=el.getAttribute('data-vbadge')==='raio'||el.classList.contains('vbadge-raio')?'raio':'s';
-      el.setAttribute('data-vbadge',k);
-      ParticleBadge(el,k);
-    }
+    var el=nodes[i],k=el.getAttribute('data-vbadge')==='rei'?'rei':'peao';
+    if(el._cb===k||(el.getAttribute('data-cb')===k&&el.querySelector('.cb-svg'))){el._cb=k;continue}
+    if(el.tagName&&el.tagName.toLowerCase()==='svg'){var sp=document.createElement('span');if(el.parentNode)el.parentNode.replaceChild(sp,el);el=sp}
+    el._cb=k;el.innerHTML=chessSvg(k);
+    el.className='vbadge vbadge-chess vbadge-'+k;el.setAttribute('data-vbadge',k);
+    el.setAttribute('role','img');el.setAttribute('aria-label',k==='rei'?'Selo Rei':'Selo Soldado Comum');el.setAttribute('title',k==='rei'?'Rei':'Soldado Comum');
   }
 }
+function stillSync(){var p=false;try{p=localStorage.getItem('lojasg.estoque99.fx-pause')==='1'}catch(e){}document.documentElement.classList.toggle('cb-still',p)}
+stillSync();
+if(window.e99FxPause&&!window.e99FxPause.__cb){var of=window.e99FxPause;window.e99FxPause=function(){var r=of.apply(this,arguments);stillSync();return r};window.e99FxPause.__cb=true}
 
 /* v87/v88: o selo vem da lista "verificados" (profile-js: vTipo/vb — uid; login só do próprio documento da lista). O antigo patchBadge dava o S a qualquer
    perfil com login 'vferreiras' ou a qualquer gestor — brecha fechada, não reintroduzir. */
@@ -7733,5 +7735,32 @@ addLabel();
 var r0=render;render=function(){addLabel();var r=r0.apply(this,arguments);try{if(authSession){if(official)badge();else load().then(badge)}}catch(x){}return r};
 if(typeof authSession!=='undefined'&&authSession)load().then(badge);
 })();
+</script>
+<style id="v114-selo-css">
+html{--cb-peao:var(--neon,#E7B8EF);--cb-rei:#B57BC2}
+html[data-e99-theme="violeta"]{--cb-rei:#9B5CFF}
+html[data-e99-theme="cinza"]{--cb-rei:#C9D0D6}
+.vbadge.vbadge-chess{display:inline-block;width:1.05em;height:1.05em;min-width:16px;min-height:16px;margin-left:.3em;vertical-align:-.16em;flex:none;animation:none!important;background:none!important;--cb:var(--cb-peao)}
+.vbadge.vbadge-rei{--cb:var(--cb-rei)}
+.vbadge-chess .cb-svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 1.5px var(--cb)) drop-shadow(0 1px 0 rgba(0,0,0,.6))}
+.vbadge-chess .cb-body{fill:#141118;fill:color-mix(in srgb,var(--cb) 14%,#0b0a0d)}
+.vbadge-chess .cb-edge{fill:none;stroke:var(--cb);stroke-width:1.25;stroke-linejoin:round}
+.vbadge-chess .cb-hl{fill:none;stroke:#fff;stroke-width:1.1;stroke-linecap:round;opacity:.35}
+@keyframes cb-light{0%,70%,100%{opacity:.25}82%{opacity:.85}}
+body:not(.fx-user-off):not(.fx-off):not(.e99-scrolling) .vbadge-chess .cb-hl{animation:cb-light 5s ease-in-out infinite}
+html.cb-still .vbadge-chess .cb-hl{animation:none!important}
+@media (prefers-reduced-motion:reduce){.vbadge-chess .cb-hl{animation:none!important}}
+</style>
+<script id="v114-logo-js">
+/* v114: a logo (S da marca) segue a cor de destaque do tema (--neon-hot → --neon-btn), mesma forma e brilho. Ícones instalados (PNG do manifest) ficam como estão. */
+(function(){var PRE='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InIi';
+var S='M42 14h30.5a7.5 7.5 0 0 1 0 15H42a3.5 3.5 0 0 0 0 7H58a21 21 0 0 1 0 42H27.5a7.5 7.5 0 0 1 0-15H58a6 6 0 0 0 0-12H42a18.5 18.5 0 0 1 0-37z',last='';
+function tok(n,d){var v='';try{v=getComputedStyle(document.body||document.documentElement).getPropertyValue(n).trim()}catch(e){}return /^#[0-9a-f]{3,8}$/i.test(v)?v:d}
+function src(){var a=tok('--neon-hot','#ff6a48'),b=tok('--neon-btn','#d9140b');return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+a+'"/><stop offset="1" stop-color="'+b+'"/></linearGradient></defs><path fill="url(#r)" d="'+S+'"/></svg>')}
+function paint(force){var u=src();if(u===last&&!force){mark();return}last=u;mark()}
+function mark(){var l=document.querySelectorAll('img');for(var i=0;i<l.length;i++){var im=l[i];if(im.dataset.e99Logo||(im.getAttribute('src')||'').indexOf(PRE)===0){im.dataset.e99Logo='1';if(im.getAttribute('src')!==last)im.setAttribute('src',last)}}}
+window.e99LogoPaint=function(){paint(true)};
+function boot(){paint(true);try{new MutationObserver(function(){paint()}).observe(document.documentElement,{attributes:true,attributeFilter:['data-e99-theme']});}catch(e){}['render','renderAuth'].forEach(function(n){var f=window[n];if(typeof f!=='function'||f.__lg)return;var w=function(){var r=f.apply(this,arguments);try{mark()}catch(e){}return r};w.__lg=true;window[n]=w})}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();setTimeout(boot,500)})();
 </script>
 </body></html>

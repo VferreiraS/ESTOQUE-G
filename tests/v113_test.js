@@ -20,7 +20,7 @@ const J=JSON.parse(fs.readFileSync(path.join(__dirname,'..','novidades.json'),'u
  ok(await until(G,()=>{const b=document.querySelector('[onclick="go(\'novidades\')"] .nav-unread');return !!b&&+b.textContent>=39},null,8000),'indicador de novidades não vistas no menu');
  await G.evaluate(()=>go('novidades'));await G.waitForTimeout(1500);
  const vs=await G.evaluate(()=>[...document.querySelectorAll('.nv-item .nv-ver')].map(x=>+x.textContent.slice(1)));
- ok(vs[0]===113&&vs.includes(73)&&vs.length>=40,'lista com v113 primeiro e até a v73');
+ ok(vs[0]>=113&&vs.includes(73)&&vs.length>=40,'lista com a versão mais nova primeiro e até a v73');
  ok(await G.evaluate(()=>{const d=[...document.querySelectorAll('.nv-item time')].map(t=>t.getAttribute('datetime'));return d.every((x,i)=>i===0||d[i-1]>=x)}),'ordem por data (mais recente primeiro)');
  ok(await G.evaluate(()=>{const it=document.querySelector('.nv-item');const det=it.querySelector('details');det.open=true;return !!it.querySelector('.nv-cat')&&det.querySelector('p').textContent.length>20}),'categoria e descrição expansível');
  ok(await G.evaluate(()=>document.querySelectorAll('.nv-item.unseen').length>=39),'itens não vistos marcados como "Nova"');

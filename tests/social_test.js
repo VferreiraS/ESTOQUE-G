@@ -27,7 +27,7 @@ async function verifyAll(){const r=await j(`${AU}/emulator/v1/projects/${P}/oobC
  ok(await A.evaluate(()=>!!document.querySelector('#view .prof-head h1 .vbadge')),'selo verificado no meu perfil');
  const names=await A.evaluate(()=>[...document.querySelectorAll('.prof-people button b')].map(b=>b.textContent));ok(names.filter(n=>/^Ana/.test(n)).length===1,'Ana aparece uma vez só em Pessoas ('+names.join(', ')+')');
  // B vê o selo do gestor e não tem selo
- await B.evaluate(()=>go('profile'));ok(await until(B,()=>{const l=[...document.querySelectorAll('.prof-people button')];return l.some(x=>/Vitor/.test(x.innerText)&&x.querySelector('.vbadge'))&&!document.querySelector('.prof-head h1 .vbadge')},null,30000),'aux vê o selo só no Vitor');
+ await B.evaluate(()=>go('profile'));ok(await until(B,()=>{const l=[...document.querySelectorAll('.prof-people button')];return l.some(x=>/Vitor/.test(x.innerText)&&x.querySelector('.vbadge[data-vbadge=rei]'))&&!!document.querySelector('.prof-head h1 .vbadge[data-vbadge=peao]')},null,30000),'aux vê o Rei só no Vitor (ela tem peão)');
  // digitando
  await A.evaluate(()=>go('chat'));await B.evaluate(()=>go('chat'));await B.waitForTimeout(1500);await B.type('#chat-text','oi',{delay:80});
  ok(await until(A,()=>/digitando/.test((document.getElementById('chat-typing')||{}).textContent||''),null,15000),'gestor vê "Ana está digitando…"');await B.fill('#chat-text','');

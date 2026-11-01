@@ -2,6 +2,13 @@
  "fonte": "CLAUDE.md (tabela de versões) + git log",
  "versoes": [
   {
+   "v": 114,
+   "data": "2026-11-01",
+   "titulo": "Novos selos: Soldado Comum e Rei (xadrez)",
+   "descricao": "O selo de partículas (S e raio) foi trocado por peças de xadrez nas cores do tema. Todas as contas têm o selo Soldado Comum (peão); o Rei é só da conta do dono, reconhecida pela nuvem. O selo não muda permissões. A luz da peça para com Efeitos desligados, menos movimento e Pausar animação.",
+   "cat": "melhoria"
+  },
+  {
    "v": 113,
    "data": "2026-11-01",
    "titulo": "Aba \"O que mudou?\" com o histórico de versões",
