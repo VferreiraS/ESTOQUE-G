@@ -1,6 +1,6 @@
 let PW;try{PW=require('playwright')}catch(e){PW=require('/opt/node22/lib/node_modules/playwright')}const devices=PW.devices;
 /* todo navegador de teste usa o emulador do Firebase e não mostra o passo de permissões */
-const INIT=()=>{try{sessionStorage.setItem('e99-intro','1');localStorage.setItem('e99-fb-emu','127.0.0.1:9099|127.0.0.1:8080');if(!localStorage.getItem('e99-test-perm'))localStorage.setItem('e99-no-perm-step','1');if(!localStorage.getItem('e99-test-note'))localStorage.setItem('e99-no-cookie-note','1')}catch(e){}};
+const INIT=()=>{try{sessionStorage.setItem('e99-intro','1');localStorage.setItem('e99-fb-emu','127.0.0.1:9099|127.0.0.1:8080');if(localStorage.getItem('e99-test-strong'))localStorage.removeItem('e99-test-weak-pw');else localStorage.setItem('e99-test-weak-pw','1');if(!localStorage.getItem('e99-test-perm'))localStorage.setItem('e99-no-perm-step','1');if(!localStorage.getItem('e99-test-note'))localStorage.setItem('e99-no-cookie-note','1')}catch(e){}};
 const chromium={launch:async(o)=>{const b=await PW.chromium.launch(o);const nc=b.newContext.bind(b);b.newContext=async(opts)=>{const c=await nc(opts);await c.addInitScript(INIT);return c};const np=b.newPage.bind(b);b.newPage=async(opts)=>{const c=await b.newContext(opts);return c.newPage()};return b}};
 let EMN=0;const RUN=Date.now().toString(36);const mail=(l)=>String(l).toLowerCase().replace(/[^a-z0-9]/g,'')+'.'+RUN+(++EMN)+'@teste.com';
 const N='http://localhost:20130';

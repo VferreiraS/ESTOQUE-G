@@ -19,12 +19,12 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão:** 109 (`meta estoque99-version` + `CACHE` `estoque99-v109` no `sw.js`), publicada em 01/11/2026 no GitHub Pages e no Firebase Hosting.
+- **Versão:** 110 (`meta estoque99-version` + `CACHE` `estoque99-v110` no `sw.js`), publicada em 01/11/2026 no GitHub Pages e no Firebase Hosting.
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
 
-### Mudanças recentes (v73 → v109) — não desfazer sem pedido
+### Mudanças recentes (v73 → v110) — não desfazer sem pedido
 
 | Versão | O quê |
 |--------|--------|
@@ -62,6 +62,7 @@
 | v107 | **"Agora não" na tela do e-mail** (pedido do dono; bloco `v105-js`). Conta antiga sem e-mail vê a tela `#email-gate` com **Agora não** (`e99EmailGateLater`): entra sem e-mail e a tela não volta na mesma sessão (só na memória, `later[storeKey]`); volta a pedir ao sair e entrar de novo e ao recarregar a página. Quem adiou também não recebe o convite de ligar o e-mail à nuvem (`showLink` respeita `e99EmailGateSkipped`). Teste `tests/v107_test.js`; `v105_test` atualizado; `v103_test` sem corrida com a bolha "Enviando…". |
 | v108 | **Mensagens não enviadas do chat guardadas no aparelho** (`chat-js`). Bolha "Não enviada" (e a que estava "Enviando…" quando a página fechou) vai para o IndexedDB `estoque99-chat-out` (chave `storeKey|tópico|id`), cifrada AES-GCM com a chave da conta (`authSession.key`, AAD `chat-out|login|tópico`). Volta ao recarregar/entrar; Tentar de novo (mesmo id, não duplica) e Descartar apagam o registro; o eco do ntfy também. Sair da equipe e "Apagar tudo" limpam. Protocolo do chat igual. Teste `tests/v108_test.js`. |
 | v109 | **Chat: "Apagar para todos"** (`chat-js` + menu "⋯" no `social-js`). Mensagem nova no protocolo com **outro prefixo** `E99D:` (cifrada com a chave da equipe: `{v:1,t:'del',id,ref,from,at,g}`), para os aparelhos antigos (que só leem `E99:`) ignorarem em vez de mostrar mensagem vazia — **nesses aparelhos antigos a mensagem original continua aparecendo**. Pode apagar para todos: quem enviou (mesmo nome) ou o gestor da equipe (= quem criou a equipe, `cfg.owner`); quem recebe confere: `from` igual ao da original, ou `g:1` e o nome é não-auxiliar na lista da sincronização (papel declarado, mesmo risco já anotado do ntfy). Apagada vai para `chat-del:<tópico>` (não volta pelo ntfy). Teste `tests/v109_test.js` (dona, gestor, auxiliar, forjada, leitor antigo). |
+| v110 | **Senha mais forte** (`authPasswordCheck`, `authCloudDerive` + bloco `v110-css`/`v110-js`). Toda senha **nova** (criar conta, convite, trocar, recuperar, redefinir pelo gestor) = 8+ caracteres com letras e números; campos de senha sem teclado só de números. Senha da nuvem: senha antiga só de números → fórmula antiga `Stk#`+SHA-256 (nada muda na nuvem de quem não trocou); senha forte → `Stk2#`+PBKDF2-SHA-256 600 mil voltas, sal = SHA-256('e99-cloud-v2\|login'). As três cópias de `derive()` usam `authCloudDerive`. Login com senha antiga continua; o app marca `authSession.weakPw` e mostra `#pw-upgrade`: "Agora não" nos primeiros 30 dias (prazo em `lojasg.estoque99.pw-upgrade:<conta>`), depois obrigatória (só Trocar ou Sair). A troca usa `authChangePassword` (conta recifrada, novo código de recuperação, senha da nuvem atualizada pelo `cloud-js`). Se a troca da nuvem falhar sem internet, o `onEnter` tenta de novo no próximo login com a sessão do Firebase aberta. Testes: `e99-test-weak-pw` (só localhost, ligado pelo `tests/lib.js`) deixa os testes antigos criarem contas com 1234; `tests/v110_test.js` desliga (`e99-test-strong`). |
 
 Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o site); o que vale no ar é o `index.html` + `sw.js` publicados.
 
@@ -87,7 +88,7 @@ Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o sit
 - **E-mail obrigatório (v105/v107):** desde a v107 a tela tem "Agora não" (vale só para a sessão). O e-mail não é confirmado na hora (a confirmação chega pelo e-mail da nuvem, como antes).
 - **Apagar mensagem do chat para todos (v109):** feito com `E99D:`; aparelhos com versão antiga continuam mostrando a original.
 - **Quem é gestor (v101):** só `vferreiras`/`vferrreiras` ou uid com 'S' em `verificados`. A conta "Estoque 99" (semente do PC) e contas que ganharam 'gestor' sem ser o dono viraram 'estoque'. Outro gestor = marcar o uid com `node scripts/verificar.js <uid> s`.
-- **Força da senha da nuvem:** ainda é SHA-256(login + PIN 4–8 dígitos). Só foi posto limite de tentativas no aparelho. Trocar por senha aleatória exige migrar contas.
+- **Força da senha (v110):** senha forte + PBKDF2 para contas novas; antigas migram ao trocar (prazo de 30 dias, depois obrigatória).
 - **Authenticator:** v89 passou a pedir a chave anotada para recuperar; quem já tinha precisa ativar de novo. Confirmar se o dono aceita esse modelo.
 - **Dados pessoais no aparelho (S15):** `cloud-logins`, `members:`, `aux-invites:`, `agent-brief:` e fotos (IndexedDB) seguem em claro; avisos do ntfy com nomes. Cifrar exige mudar como o app acha a conta antes do login.
 - **P5 (carregar chat/perfil/sync/agentes/social/plano-aux/autopilot só depois do login):** não feito — os blocos se embrulham (`render`, `authEnter`) na ordem do HTML; mudar a ordem pode quebrar. Fazer com testes dedicados.
