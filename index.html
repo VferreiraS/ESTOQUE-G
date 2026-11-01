@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="112"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="113"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -251,7 +251,7 @@ function validate(s){
  s.nfs.forEach(nfValidateExtras);
  const owners=new Set(['','todos',...s.team.map(x=>x.id)]),corridors=new Set(['',...s.corridors.map(x=>x.id)]);
  if(s.corridors.some(x=>!owners.has(x.owner))||s.tasks.some(x=>!owners.has(x.owner)||!corridors.has(x.corridor))||s.nfs.some(x=>!owners.has(x.owner)))throw Error('Backup inválido');
- return {version:1,plans:validatePlans(s.plans),team:s.team,corridors:s.corridors,tasks:s.tasks,nfs:s.nfs,ruptures:[],expiries:[],sync:validateSync(s.sync),photoKey:validPhotoKey(s.photoKey),confs:validateConfs(s.confs),confKey:validPhotoKey(s.confKey),sealKey:validPhotoKey(s.sealKey),sealed:validSealed(s.sealed),updated:s.updated||null,alertSettings:normalizeAlertSettings(s.alertSettings),alertSnoozes:normalizeSnoozes(s.alertSnoozes)};
+ return {version:1,plans:validatePlans(s.plans),team:s.team,corridors:s.corridors,tasks:s.tasks,nfs:s.nfs,ruptures:[],expiries:[],sync:validateSync(s.sync),photoKey:validPhotoKey(s.photoKey),confs:validateConfs(s.confs),confKey:validPhotoKey(s.confKey),sealKey:validPhotoKey(s.sealKey),sealed:validSealed(s.sealed),news:validateNews(s.news),updated:s.updated||null,alertSettings:normalizeAlertSettings(s.alertSettings),alertSnoozes:normalizeSnoozes(s.alertSnoozes)};
 }
 /* v96: conferências às cegas por câmera (state.confs). Filtra o que estiver errado em vez de recusar a conta inteira. */
 function validateConfs(a){if(!Array.isArray(a))return [];const okId=x=>typeof x==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(x),isoOk=x=>typeof x==='string'&&x.length<=40&&/^\d{4}-\d{2}-\d{2}T/.test(x)&&!isNaN(Date.parse(x)),str=(x,n)=>typeof x==='string'?x.slice(0,n):'',CODE=/^[0-9A-Za-z\-./ ()+]{0,64}$/,seen=new Set(),out=[];
@@ -540,10 +540,12 @@ function showFeatureCredits(){notify('Busca: Fuse.js 7.1.0. Calendários: Flatpi
 // Local encrypted accounts. No network identity, no shared-store administration.
 let planDraft=null,planDraftDirty=false,planPhotoBusy=false,planFilter='';
 /* Rupturas: corrige em vez de recusar, para a conta sempre abrir. Fotos ficam no IndexedDB (só ids aqui). */
-function validateSync(x){const C=['team','corridors','nfs','plans','confs'],out={meta:{},ready:false,replace:false,pending:[],topic:''};C.forEach(c=>out.meta[c]={});if(!x||typeof x!=='object')return out;out.ready=x.ready===true;out.replace=x.replace===true;out.topic=typeof x.topic==='string'&&/^e99s-[0-9a-f]{24}$/.test(x.topic)?x.topic:'';let n=0;const okId=id=>/^[a-zA-Z0-9_-]{1,100}$/.test(id);
+function validateSync(x){const C=['team','corridors','nfs','plans','confs','news'],out={meta:{},ready:false,replace:false,pending:[],topic:''};C.forEach(c=>out.meta[c]={});if(!x||typeof x!=='object')return out;out.ready=x.ready===true;out.replace=x.replace===true;out.topic=typeof x.topic==='string'&&/^e99s-[0-9a-f]{24}$/.test(x.topic)?x.topic:'';let n=0;const okId=id=>/^[a-zA-Z0-9_-]{1,100}$/.test(id);
  if(x.meta&&typeof x.meta==='object')for(const c of C){const m=x.meta[c];if(!m||typeof m!=='object')continue;for(const id of Object.keys(m)){if(n>=80000)break;const v=m[id];if(okId(id)&&Array.isArray(v)&&Number.isFinite(v[0])&&typeof v[1]==='string'){out.meta[c][id]=[Math.floor(v[0]),v[1].slice(0,40),v[2]?1:0,typeof v[3]==='string'?v[3].slice(0,16):''];n++}}}
  if(Array.isArray(x.pending))out.pending=[...new Set(x.pending.filter(k=>typeof k==='string'&&/^(team|corridors|nfs|plans|confs)\|[a-zA-Z0-9_-]{1,100}$/.test(k)))].slice(0,80000);return out}
 function validPhotoKey(k){return typeof k==='string'&&/^[A-Za-z0-9+/]{43}=$/.test(k)?k:''}
+/* v113: registros extras do histórico "O que mudou?" (cadastrados pelo gestor; vão para a equipe pela sincronização) */
+function validateNews(l){const C={novo:1,melhoria:1,ajuste:1,correcao:1};if(!Array.isArray(l))return [];return l.filter(x=>x&&typeof x==='object'&&typeof x.id==='string'&&/^[a-zA-Z0-9_-]{1,60}$/.test(x.id)&&Number.isInteger(x.v)&&x.v>0&&x.v<10000&&typeof x.data==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.data)&&C[x.cat]&&typeof x.titulo==='string'&&x.titulo.trim()).slice(0,500).map(x=>({id:x.id,v:x.v,data:x.data,cat:x.cat,titulo:x.titulo.trim().slice(0,140),descricao:typeof x.descricao==='string'?x.descricao.slice(0,3000):'',at:Number.isFinite(x.at)?x.at:0}))}
 /* v111: dados pessoais do aparelho guardados dentro da conta cifrada (members:, aux-invites:, agent-brief:) */
 function validSealed(o){const out={};if(!o||typeof o!=='object'||Array.isArray(o))return out;let total=0;for(const k of Object.keys(o).slice(0,400)){const v=o[k];if(typeof k!=='string'||k.length>200||!/^(members|aux-invites|agent-brief):/.test(k)||typeof v!=='string'||v.length>300000)continue;total+=v.length;if(total>2000000)break;out[k]=v}return out}
 function validatePlans(plans){if(plans===undefined)return [];if(!Array.isArray(plans)||plans.length>500)throw Error('Planos inválidos');const ids=new Set();let photoSize=0;for(const p of plans){if(!p||!safePlanId(p.id)||ids.has(p.id)||!validDate(p.date)||typeof p.title!=='string'||!p.title.trim()||p.title.length>200||!Array.isArray(p.activities)||p.activities.length>100)throw Error('Plano inválido');ids.add(p.id);const items=new Set();for(const a of p.activities){if(!a||!safePlanId(a.id)||items.has(a.id)||typeof a.title!=='string'||!a.title.trim()||a.title.length>500||typeof a.owner!=='string'||a.owner.length>200||typeof a.notes!=='string'||a.notes.length>3000||!Array.isArray(a.photos)||a.photos.length>5||(a.done!==undefined&&typeof a.done!=='boolean')||(a.doneBy!==undefined&&(typeof a.doneBy!=='string'||a.doneBy.length>80))||(a.doneAt!==undefined&&(typeof a.doneAt!=='string'||a.doneAt.length>40))||(a.time!==undefined&&a.time!==''&&(typeof a.time!=='string'||!/^([01]\d|2[0-3]):[0-5]\d$/.test(a.time))))throw Error('Atividade do plano inválida');items.add(a.id);for(const ph of a.photos){if(!ph||!safePlanId(ph.id)||typeof ph.data!=='string'||ph.data.length>200000||!/^data:image\/jpeg;base64,\/9j\/[A-Za-z0-9+/=\r\n]+$/.test(ph.data))throw Error('Foto inválida');photoSize+=ph.data.length;}}}if(photoSize>2400000)throw Error('Fotos excedem o limite local. Exporte planos antigos e remova fotos antes de importar.');return plans}
@@ -2889,7 +2891,7 @@ var before=render;render=function(){var r=before.apply(this,arguments);if(authSe
 'use strict';
 /* Sincroniza NFs, planos de ação, equipe e corredores entre os aparelhos da equipe do chat.
    Canal próprio no ntfy.sh, tudo cifrado com o código da equipe. Cada item tem [quando, quem, apagado, hash]; ganha a última mudança. */
-var C=['team','corridors','nfs','plans','confs'];
+var C=['team','corridors','nfs','plans','confs','news'];
 function auxColl(c){return c==='nfs'||c==='plans'||c==='confs'}
 function amAux(){return !!(authSession&&authSession.payload.role==='auxiliar')}
 var DEV=(function(){var k='lojasg.estoque99.device',v='';try{v=localStorage.getItem(k)||''}catch(e){}if(!/^[a-z0-9]{12}$/.test(v)){v=Array.from(crypto.getRandomValues(new Uint8Array(12)),function(b){return 'abcdefghijklmnopqrstuvwxyz0123456789'[b%36]}).join('');try{localStorage.setItem(k,v)}catch(e){}}return v})();
@@ -2911,7 +2913,7 @@ async function encStr(ch,o){return 'S99:'+authB64(await enc(ch,authBytes(JSON.st
 async function decStr(ch,str){if(typeof str!=='string'||str.indexOf('S99:')!==0)return null;try{return JSON.parse(new TextDecoder().decode(await dec(ch,authUn64(str.slice(4)))))}catch(e){return null}}
 /* ---------- marcar mudanças locais (roda antes de cada gravação) ---------- */
 function stamp(){if(!active())return false;var s=sy();if(!s.ready||s.topic!==chan.topic)return false;var now=Date.now(),by=info.name,touched=false,pend=new Set(s.pending);
-  C.forEach(function(c){if(amAux()&&!auxColl(c))return;var meta=s.meta[c],seen={};arr(c).forEach(function(x){if(!x||!okId(x.id))return;seen[x.id]=1;var h=hashItem(x),m=meta[x.id];if(!m||m[2]||m[3]!==h){meta[x.id]=[Math.max(now,m?m[0]+1:0),by,0,h];pend.add(c+'|'+x.id);touched=true}});
+  C.forEach(function(c){if(amAux()&&!auxColl(c))return;/* v113: só o gestor (dono) publica o histórico extra */if(c==='news'&&!(authSession&&authSession.payload&&authSession.payload.role==='gestor'))return;var meta=s.meta[c],seen={};arr(c).forEach(function(x){if(!x||!okId(x.id))return;seen[x.id]=1;var h=hashItem(x),m=meta[x.id];if(!m||m[2]||m[3]!==h){meta[x.id]=[Math.max(now,m?m[0]+1:0),by,0,h];pend.add(c+'|'+x.id);touched=true}});
     Object.keys(meta).forEach(function(id){var m=meta[id];if(!seen[id]&&!m[2]){meta[id]=[Math.max(now,m[0]+1),by,1,''];pend.add(c+'|'+id);touched=true}else if(m[2]&&now-m[0]>30*864e5&&!pend.has(c+'|'+id))delete meta[id]})});
   s.pending=Array.from(pend);return touched}
 var baseSave=save;
@@ -3150,7 +3152,7 @@ window.planActsFor=function(name){var n=normalText(name),lim=new Date();lim.setD
 ['tasks','ruptures','expiry'].forEach(function(k){delete labels[k];delete icons[k]});
 if(labels.plans){var ks=Object.keys(labels),pos=ks.indexOf('home');ks.slice(pos+1).filter(function(k){return k!=='plans'}).forEach(function(k){var v=labels[k];delete labels[k];labels[k]=v})}
 var FULL=null;function snapshot(){FULL={labels:Object.assign({},labels),icons:Object.assign({},icons)}}
-var ALLOWED={home:1,nfs:1,plans:1,chat:1,account:1,profile:1,'mobile-menu':1};
+var ALLOWED={home:1,nfs:1,plans:1,chat:1,account:1,profile:1,'mobile-menu':1,novidades:1};
 function applyRole(){if(!FULL)snapshot();if(isAux()){Object.keys(labels).forEach(function(k){if(!ALLOWED[k]){delete labels[k];delete icons[k]}})}else{var extra={};Object.keys(labels).forEach(function(k){if(!(k in FULL.labels))extra[k]=[labels[k],icons[k]]});Object.keys(labels).forEach(function(k){delete labels[k];delete icons[k]});
     Object.keys(FULL.labels).forEach(function(k){labels[k]=FULL.labels[k];icons[k]=FULL.icons[k]});Object.keys(extra).forEach(function(k){labels[k]=extra[k][0];icons[k]=extra[k][1]})}document.body.classList.toggle('role-aux',isAux())}
 var logoutRole=authLogout;authLogout=async function(){var r=await logoutRole.apply(this,arguments);if(!authSession)document.body.classList.remove('role-aux');return r};
@@ -7637,7 +7639,7 @@ function iso(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+
 function series(){var out=[],now=new Date();now.setHours(12,0,0,0);var cnt={};try{(state.nfs||[]).forEach(function(n){var k=String(n.date||'').slice(0,10);cnt[k]=(cnt[k]||0)+1})}catch(x){}
   for(var i=13;i>=0;i--){var d=new Date(now.getTime()-i*86400000);out.push({d:d,v:cnt[iso(d)]||0})}return out}
 function path(pts){if(pts.length<2)return '';var s='M'+pts[0][0].toFixed(1)+' '+pts[0][1].toFixed(1);for(var i=0;i<pts.length-1;i++){var p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
-  var c1x=p1[0]+(p2[0]-p0[0])/6,c1y=p1[1]+(p2[1]-p0[1])/6,c2x=p2[0]-(p3[0]-p1[0])/6,c2y=p2[1]-(p3[1]-p1[1])/6;s+=' C'+c1x.toFixed(1)+' '+c1y.toFixed(1)+' '+c2x.toFixed(1)+' '+c2y.toFixed(1)+' '+p2[0].toFixed(1)+' '+p2[1].toFixed(1)}return s}
+  var c1x=p1[0]+(p2[0]-p0[0])/6,c1y=p1[1]+(p2[1]-p0[1])/6,c2x=p2[0]-(p3[0]-p1[0])/6,c2y=p2[1]-(p3[1]-p1[1])/6;/* não passa da linha de base (zero) */var lo=Math.max(p1[1],p2[1]);c1y=Math.min(c1y,lo);c2y=Math.min(c2y,lo);s+=' C'+c1x.toFixed(1)+' '+c1y.toFixed(1)+' '+c2x.toFixed(1)+' '+c2y.toFixed(1)+' '+p2[0].toFixed(1)+' '+p2[1].toFixed(1)}return s}
 function trend(){var v=D.getElementById('view');if(!v||typeof page==='undefined'||page!=='home'||v.querySelector('.e99-trend'))return;var s=series(),tot=s.reduce(function(a,b){return a+b.v},0);if(!tot)return;
   var W=640,H=150,P=8,max=Math.max.apply(null,s.map(function(x){return x.v}))||1,pts=s.map(function(x,i){return [P+i*(W-2*P)/(s.length-1),H-24-(x.v/max)*(H-44)]});
   var line=path(pts),area=line+' L'+pts[pts.length-1][0].toFixed(1)+' '+(H-24)+' L'+pts[0][0].toFixed(1)+' '+(H-24)+' Z',gid='trg'+Date.now().toString(36),fmt=function(d){return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)};
@@ -7651,6 +7653,85 @@ function trend(){var v=D.getElementById('view');if(!v||typeof page==='undefined'
 var r0=render;render=function(){var r=r0.apply(this,arguments);try{trend();row(false)}catch(x){}return r};
 if(typeof window.e99PrefsRefresh==='function'){var pr=window.e99PrefsRefresh;window.e99PrefsRefresh=function(){var r=pr.apply(this,arguments);setTimeout(function(){row(false)},90);return r}}
 setInterval(function(){if(!D.hidden)try{row(false)}catch(x){}},1500);
+})();
+</script>
+<style id="v113-css">
+/* v113: aba "O que mudou?" (histórico de versões) */
+.nv-wrap{max-width:920px}
+.nv-filter{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.nv-filter button{min-height:44px;border-radius:999px}
+.nv-filter button[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--neon)!important}
+.nv-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.nv-item{border:1px solid var(--glass-edge,#2a2a2e);background:var(--glass-card,#121216);border-radius:var(--e99-radius,18px);padding:14px 16px}
+.nv-item.unseen{box-shadow:inset 3px 0 0 var(--neon)}
+.nv-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.nv-ver{font-family:var(--font-head,inherit);font-weight:700;font-size:1.05rem}
+.nv-date{color:var(--ds-muted,#a3a3a8);font-size:.875rem}
+.nv-cat{font-size:.8125rem;font-weight:600;padding:2px 10px;border-radius:999px;background:rgba(255,255,255,.06)}
+.nv-new{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--neon-btn,#DB2318);color:var(--neon-ink,#fff)}
+.nv-extra{font-size:.75rem;color:var(--ds-muted,#a3a3a8)}
+.nv-item h3{margin:6px 0 4px;font-size:1rem;line-height:1.35;overflow-wrap:anywhere}
+.nv-item details summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:var(--neon);font-weight:600}
+.nv-item details p{margin:4px 0 0;color:var(--ds-ink,#f2f2f2);line-height:1.55;overflow-wrap:anywhere;white-space:pre-wrap}
+.nv-acts{display:flex;gap:8px;margin-top:8px}
+.nv-acts button{min-height:44px}
+#nv-form .fields{display:grid;gap:10px}
+#nv-form textarea{min-height:110px}
+@media (max-width:600px){.nv-item{padding:12px}}
+</style>
+<script id="v113-js">
+(function(){
+'use strict';
+/* v113: aba "O que mudou?". Histórico oficial = novidades.json (versionado, pré-cacheado no sw.js, igual em todos os aparelhos).
+   Registros extras do gestor = state.news (coleção "news" da sincronização: vai para a equipe; auxiliar não envia; os oficiais nunca são apagados).
+   "Não vistas" = por conta neste aparelho (lojasg.estoque99.nv-seen:<conta>). */
+var D=document,official=null,loading=null,filt='',editing=null;
+var CATS={novo:['🟢','Novo recurso'],melhoria:['🔵','Melhoria'],ajuste:['🟡','Ajuste'],correcao:['🔴','Correção']};
+function e(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function isGestor(){return !!(authSession&&authSession.payload&&authSession.payload.role==='gestor')}
+function seenKey(){return 'lojasg.estoque99.nv-seen:'+(authSession?authSession.storeKey:'-')}
+function seen(){try{var o=JSON.parse(localStorage.getItem(seenKey())||'[]');return Array.isArray(o)?o:[]}catch(x){return []}}
+function keyOf(r){return r.extra?'x:'+r.id+':'+(r.at||0):'v'+r.v}
+function load(){if(official)return Promise.resolve(official);if(loading)return loading;loading=fetch('novidades.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw Error(r.status);return r.json()}).then(function(j){official=(j&&Array.isArray(j.versoes)?j.versoes:[]).filter(function(x){return x&&Number.isInteger(x.v)&&/^\d{4}-\d{2}-\d{2}$/.test(x.data)&&CATS[x.cat]});loading=null;return official}).catch(function(){loading=null;return null});return loading}
+window.e99NovidadesLoad=load;
+function all(){var l=(official||[]).map(function(x){return {v:x.v,data:x.data,titulo:x.titulo,descricao:x.descricao,cat:x.cat}});
+  (Array.isArray(state.news)?state.news:[]).forEach(function(x){l.push({extra:true,id:x.id,v:x.v,data:x.data,titulo:x.titulo,descricao:x.descricao,cat:x.cat,at:x.at})});
+  l.sort(function(a,b){return a.data<b.data?1:a.data>b.data?-1:(b.v||0)-(a.v||0)||(b.at||0)-(a.at||0)});return l}
+window.e99Novidades=function(){return all()};
+function unseenCount(){if(!official||!authSession)return 0;var s=seen();if(!s.length&&!localStorage.getItem(seenKey()))return all().length;var set={};s.forEach(function(k){set[k]=1});return all().filter(function(r){return !set[keyOf(r)]}).length}
+window.e99NovidadesUnseen=unseenCount;
+function markSeen(){if(!authSession)return;try{localStorage.setItem(seenKey(),JSON.stringify(all().map(keyOf).slice(0,2000)))}catch(x){}badge()}
+function badge(){var n=unseenCount();D.querySelectorAll('[onclick="go(\'novidades\')"]').forEach(function(b){var s=b.querySelector('.nav-unread');if(n>0){if(!s){s=D.createElement('span');s.className='nav-unread';b.appendChild(s)}s.textContent=n>99?'99+':String(n);s.setAttribute('aria-label',n+' novidades não vistas')}else if(s)s.remove()})}
+function item(r,unseenSet){var c=CATS[r.cat]||CATS.melhoria,k=keyOf(r),un=unseenSet[k];
+  return '<li class="nv-item'+(un?' unseen':'')+'" data-key="'+e(k)+'" data-cat="'+e(r.cat)+'"><div class="nv-top"><span class="nv-ver">v'+e(r.v)+'</span><time class="nv-date" datetime="'+e(r.data)+'">'+e(r.data.split('-').reverse().join('/'))+'</time><span class="nv-cat"><span aria-hidden="true">'+c[0]+'</span> '+c[1]+'</span>'+(un?'<span class="nv-new">Nova</span>':'')+(r.extra?'<span class="nv-extra">(registro do gestor)</span>':'')+'</div>'
+   +'<h3>'+e(r.titulo)+'</h3>'+(r.descricao?'<details><summary>Ver detalhes</summary><p>'+e(r.descricao)+'</p></details>':'')
+   +(r.extra&&isGestor()?'<div class="nv-acts"><button type="button" onclick="e99NvEdit(\''+e(r.id)+'\')">Editar</button><button type="button" class="danger" onclick="e99NvDel(\''+e(r.id)+'\')">Excluir</button></div>':'')+'</li>'}
+function form(){var x=editing||{v:'',data:new Date().toISOString().slice(0,10),titulo:'',descricao:'',cat:'novo'};
+  return '<div class="panel help" id="nv-admin"><h2>'+(editing&&editing.id?'Editar registro':'Cadastrar registro')+'</h2><p class="small">Só o gestor vê. O registro vai para a equipe pela sincronização. Os registros oficiais (do arquivo do site) não podem ser apagados aqui.</p>'
+   +'<form id="nv-form" onsubmit="e99NvSave(event)"><div class="fields"><label>Versão<input name="v" type="number" min="1" max="9999" required value="'+e(x.v)+'"></label><label>Data<input name="data" type="date" required value="'+e(x.data)+'"></label>'
+   +'<label>Categoria<select name="cat">'+Object.keys(CATS).map(function(k){return '<option value="'+k+'"'+(x.cat===k?' selected':'')+'>'+CATS[k][0]+' '+CATS[k][1]+'</option>'}).join('')+'</select></label>'
+   +'<label>Título<input name="titulo" required maxlength="140" value="'+e(x.titulo)+'"></label><label>Descrição<textarea name="descricao" maxlength="3000">'+e(x.descricao)+'</textarea></label>'
+   +'<div class="nv-acts"><button class="primary" type="submit">'+(editing&&editing.id?'Salvar alterações':'Cadastrar')+'</button>'+(editing&&editing.id?'<button type="button" onclick="e99NvCancel()">Cancelar</button>':'')+'</div></div></form></div>'}
+function nvPage(){if(!official){load().then(function(){if(page==='novidades')render()});return hero('O que mudou?','Histórico de versões do Stok')+'<div class="panel"><p>Carregando o histórico…</p></div>'}
+  var s=seen(),set={},first=!localStorage.getItem(seenKey());s.forEach(function(k){set[k]=1});var l=all(),un={};l.forEach(function(r){if(first||!set[keyOf(r)])un[keyOf(r)]=1});
+  var shown=filt?l.filter(function(r){return r.cat===filt}):l;
+  setTimeout(markSeen,1200);
+  return hero('O que mudou?','Histórico de versões do Stok, da mais nova para a mais antiga.')+'<div class="nv-wrap">'+(isGestor()?form():'')
+   +'<div class="nv-filter" role="group" aria-label="Filtrar por categoria"><button type="button" aria-pressed="'+(!filt)+'" onclick="e99NvFilter(\'\')">Todas</button>'+Object.keys(CATS).map(function(k){return '<button type="button" aria-pressed="'+(filt===k)+'" onclick="e99NvFilter(\''+k+'\')"><span aria-hidden="true">'+CATS[k][0]+'</span> '+CATS[k][1]+'</button>'}).join('')+'</div>'
+   +'<ol class="nv-list" aria-label="Versões">'+shown.map(function(r){return item(r,un)}).join('')+'</ol></div>'}
+window.extraPages=window.extraPages||{};window.extraPages.novidades=nvPage;
+window.e99NvFilter=function(c){filt=CATS[c]?c:'';render()};
+window.e99NvEdit=function(id){if(!isGestor())return;var x=(state.news||[]).find(function(n){return n.id===id});if(!x)return;editing=JSON.parse(JSON.stringify(x));render();var f=D.getElementById('nv-admin');if(f)f.scrollIntoView({block:'start'})};
+window.e99NvCancel=function(){editing=null;render()};
+window.e99NvSave=async function(ev){ev.preventDefault();if(!isGestor())return;var v=readForm(ev.target);var rec={id:editing&&editing.id||('nv'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)),v:parseInt(v.v,10),data:String(v.data||''),cat:String(v.cat||''),titulo:String(v.titulo||'').trim().slice(0,140),descricao:String(v.descricao||'').trim().slice(0,3000),at:Date.now()};
+  if(!Number.isInteger(rec.v)||rec.v<1||!/^\d{4}-\d{2}-\d{2}$/.test(rec.data)||!CATS[rec.cat]||!rec.titulo){notify('Preencha versão, data, categoria e título.');return}
+  var l=Array.isArray(state.news)?state.news.slice():[];var i=l.findIndex(function(n){return n.id===rec.id});if(i>=0)l[i]=rec;else l.push(rec);state.news=validateNews(l);editing=null;await save();notify(i>=0?'Registro atualizado.':'Registro cadastrado.');render()};
+window.e99NvDel=async function(id){if(!isGestor())return;if(!confirm('Excluir este registro do histórico? Os registros oficiais do site continuam.'))return;state.news=(state.news||[]).filter(function(n){return n.id!==id});if(editing&&editing.id===id)editing=null;await save();notify('Registro excluído.');render()};
+/* menu: "O que mudou?" logo depois de Alertas */
+function addLabel(){if(typeof labels!=='object'||labels.novidades)return;var o={},done=false;Object.keys(labels).forEach(function(k){o[k]=labels[k];if(k==='alerts'){o.novidades='O que mudou?';done=true}});if(!done)o.novidades='O que mudou?';Object.keys(labels).forEach(function(k){delete labels[k]});Object.keys(o).forEach(function(k){labels[k]=o[k]});if(typeof icons==='object')icons.novidades='🕘'}
+addLabel();
+var r0=render;render=function(){addLabel();var r=r0.apply(this,arguments);try{if(authSession){if(official)badge();else load().then(badge)}}catch(x){}return r};
+if(typeof authSession!=='undefined'&&authSession)load().then(badge);
 })();
 </script>
 </body></html>

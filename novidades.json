@@ -1,0 +1,285 @@
+{
+ "fonte": "CLAUDE.md (tabela de versões) + git log",
+ "versoes": [
+  {
+   "v": 113,
+   "data": "2026-11-01",
+   "titulo": "Aba \"O que mudou?\" com o histórico de versões",
+   "descricao": "Nova aba no menu com todas as versões (da mais nova para a mais antiga), categoria de cada mudança e aviso de novidades ainda não vistas. O histórico oficial vem do arquivo novidades.json (vale em todos os aparelhos); o gestor pode cadastrar, editar e excluir registros extras, que vão para a equipe pela sincronização.",
+   "cat": "novo"
+  },
+  {
+   "v": 112,
+   "data": "2026-11-01",
+   "titulo": "3 temas escuros (Lilás, Violeta + Lima, Cinza + Lima), fontes Space Grotesk/Inter e gráfico de NFs",
+   "descricao": "3 temas escuros + fontes novas + gráfico no Início (pedido do dono; blocos v112-css/v112-js + script curto no <head> que aplica o tema antes da 1ª pintura). Temas por aparelho em Preferências → Aparência (e99Theme.set, chave lojasg.estoque99.ui-theme — a antiga …theme é apagada pelo restoreSiteTheme): Lilás (padrão; fundo ameixa, destaque #E7B8EF, botão #C79BD0 com letra escura), Violeta + Lima (#000, violeta #7F3AED decorativo, lima #C6FF34 nos destaques/botões com letra escura) e Cinza + Lima (#0A0A0A, #6F7780/#C9D0D6, lima #C7FF2E, texto #F7F7F1). Só troca tokens (--neon*, --brand, --red*, --glass-*, --ds-*, --e99-bg-grad) + cartões 22 px e botões em pílula; contraste AA conferido no teste. S de partículas, logo e selo continuam no vermelho da marca (identidade + selo vermelho pedido pelo dono). Fontes: títulos/números/relógio/contador da conferência em Space Grotesk, texto em Inter (arquivos em vendor/fonts, OFL, pré-cacheados no sw.js; Oswald não é mais usada nos títulos). No celular o título do Início fica fora da faixa do S (max-width no .hero-home h1). Gráfico de linha suave \"Notas fiscais por dia\" (14 dias, SVG estático com aria-label) no Início quando há NFs. Teste tests/v112_test.js (3 temas × PC/iPhone, prints com SHOTS=); v91_test agora confere o Lilás. Nuvem única no Drive ficou para depois (Google Cloud pediu cartão).",
+   "cat": "novo"
+  },
+  {
+   "v": 111,
+   "data": "2026-11-01",
+   "titulo": "Dados pessoais do aparelho cifrados com a conta (com migração)",
+   "descricao": "Dados pessoais do aparelho cifrados (bloco v111-js + validSealed no validate, get/put do profile-js, e99MailIdx no lugar de cloud-logins). members:, aux-invites: e agent-brief: da conta aberta passam a morar em state.sealed (dentro da conta cifrada); o bloco intercepta localStorage.getItem/setItem/removeItem só dessas chaves (o resto do app não mudou). Dado antigo em claro é copiado na 1ª leitura (ou ao entrar) e só apagado do localStorage depois de a conta ser gravada com ele. Sem conta aberta essas chaves dão null. cloud-logins (e-mail→login) virou cloud-logins2 = SHA-256('e99-mail|e-mail')→login (migrado ao abrir, antigo apagado). Fotos/perfis (estoque99-profiles) cifrados AES-GCM com state.sealKey (aleatória, dentro da conta; sobrevive à troca de senha); registro antigo em claro é cifrado ao ser lido. e99SealedKeys() lista as chaves cifradas (testes usam aux-invites:+storeKey). Teste tests/v111_test.js. Ainda em claro (fora do pedido): cloud-email:<conta>.",
+   "cat": "melhoria"
+  },
+  {
+   "v": 110,
+   "data": "2026-11-01",
+   "titulo": "Senha forte (8+ letras e números) e senha da nuvem com PBKDF2; contas antigas migram",
+   "descricao": "Senha mais forte (authPasswordCheck, authCloudDerive + bloco v110-css/v110-js). Toda senha nova (criar conta, convite, trocar, recuperar, redefinir pelo gestor) = 8+ caracteres com letras e números; campos de senha sem teclado só de números. Senha da nuvem: senha antiga só de números → fórmula antiga Stk#+SHA-256 (nada muda na nuvem de quem não trocou); senha forte → Stk2#+PBKDF2-SHA-256 600 mil voltas, sal = SHA-256('e99-cloud-v2|login'). As três cópias de derive() usam authCloudDerive. Login com senha antiga continua; o app marca authSession.weakPw e mostra #pw-upgrade: \"Agora não\" nos primeiros 30 dias (prazo em lojasg.estoque99.pw-upgrade:<conta>), depois obrigatória (só Trocar ou Sair). A troca usa authChangePassword (conta recifrada, novo código de recuperação, senha da nuvem atualizada pelo cloud-js). Se a troca da nuvem falhar sem internet, o onEnter tenta de novo no próximo login com a sessão do Firebase aberta. Testes: e99-test-weak-pw (só localhost, ligado pelo tests/lib.js) deixa os testes antigos criarem contas com 1234; tests/v110_test.js desliga (e99-test-strong).",
+   "cat": "melhoria"
+  },
+  {
+   "v": 109,
+   "data": "2026-11-01",
+   "titulo": "Chat com \"Apagar para todos\"",
+   "descricao": "Chat: \"Apagar para todos\" (chat-js + menu \"⋯\" no social-js). Mensagem nova no protocolo com outro prefixo E99D: (cifrada com a chave da equipe: {v:1,t:'del',id,ref,from,at,g}), para os aparelhos antigos (que só leem E99:) ignorarem em vez de mostrar mensagem vazia — nesses aparelhos antigos a mensagem original continua aparecendo. Pode apagar para todos: quem enviou (mesmo nome) ou o gestor da equipe (= quem criou a equipe, cfg.owner); quem recebe confere: from igual ao da original, ou g:1 e o nome é não-auxiliar na lista da sincronização (papel declarado, mesmo risco já anotado do ntfy). Apagada vai para chat-del:<tópico> (não volta pelo ntfy). Teste tests/v109_test.js (dona, gestor, auxiliar, forjada, leitor antigo).",
+   "cat": "novo"
+  },
+  {
+   "v": 108,
+   "data": "2026-11-01",
+   "titulo": "Chat guarda as mensagens não enviadas (cifradas) no aparelho",
+   "descricao": "Mensagens não enviadas do chat guardadas no aparelho (chat-js). Bolha \"Não enviada\" (e a que estava \"Enviando…\" quando a página fechou) vai para o IndexedDB estoque99-chat-out (chave storeKey|tópico|id), cifrada AES-GCM com a chave da conta (authSession.key, AAD chat-out|login|tópico). Volta ao recarregar/entrar; Tentar de novo (mesmo id, não duplica) e Descartar apagam o registro; o eco do ntfy também. Sair da equipe e \"Apagar tudo\" limpam. Protocolo do chat igual. Teste tests/v108_test.js.",
+   "cat": "melhoria"
+  },
+  {
+   "v": 107,
+   "data": "2026-11-01",
+   "titulo": "\"Agora não\" na tela do e-mail das contas antigas",
+   "descricao": "\"Agora não\" na tela do e-mail (pedido do dono; bloco v105-js). Conta antiga sem e-mail vê a tela #email-gate com Agora não (e99EmailGateLater): entra sem e-mail e a tela não volta na mesma sessão (só na memória, later[storeKey]); volta a pedir ao sair e entrar de novo e ao recarregar a página. Quem adiou também não recebe o convite de ligar o e-mail à nuvem (showLink respeita e99EmailGateSkipped). Teste tests/v107_test.js; v105_test atualizado; v103_test sem corrida com a bolha \"Enviando…\".",
+   "cat": "ajuste"
+  },
+  {
+   "v": 106,
+   "data": "2026-10-31",
+   "titulo": "Chat da equipe melhorado (tela, acessibilidade e visual)",
+   "descricao": "Chat melhorado: função, acessibilidade e visual (pedido do dono; chat-js + trechos no social-js/agents-js + bloco v106-chat-css no fim). Protocolo igual (sem campo novo; chatSend(text,foto,audio,{id}) só reaproveita o id ao tentar de novo). Rolagem: abre e fica no fim (stuck); quem sobe para ler não é puxado — aparece \"N novas mensagens\" (#chat-jump); MutationObserver/ResizeObserver mantêm o fim quando reações/\"visto\"/avatares entram; o redesenho da tela guarda a posição. Separador \"Mensagens novas\" só para o que chegou antes de abrir (unreadFrom/unreadTo). Altura da lista calculada (fit()) para lista + campo caberem acima da barra de baixo. content-visibility desligado nas bolhas do chat (estimava altura e a lista nunca chegava ao fim). Envio: bolha \"Enviando…\" na hora; falha = \"Não enviada\" + Tentar de novo (mesmo id, não duplica; eco do ntfy tira da lista) ou Descartar; só na memória. Rascunho guardado na memória (redesenho da sincronização e troca de tela não apagam; some ao trocar de equipe/sair). Enter envia, Shift+Enter quebra linha, enterkeyhint=send, campo cresce até 160 px, aviso \"Faltam N\" perto de 1000. Mensagem longa (>420) com \"Ver mais\". Dias com nome da semana. Mensagens seguidas da mesma pessoa (≤5 min) agrupadas. Acessibilidade: lista role=log com aria-live=off + #chat-ann (role=status) anuncia só a mensagem nova/falha/gravação (e99ChatSay); câmera/galeria viraram botões; rótulos em tudo; .chat-sr diz o remetente; contorno de foco; botão \"⋯\" (chatOptions → e99MsgMenu) com aria-modal, Esc e foco que volta; \"Apagar deste aparelho\" também no menu; reações com aria-pressed/rótulo e área de toque maior; fixada vira botão; toques ≥44 px no celular; rem para textos; parado com \"menos movimento\", Efeitos desligados e \"Pausar animação\" (.chat-wrap.still). Visual: coluna central ≤920 px no PC, bolhas ≤620 px, minhas em vermelho escuro (#2a0f0c), dos outros cinza com borda; ações ao lado da bolha (PC ao passar o mouse/Tab; celular só \"⋯\"); \"Sair da equipe\" foi para baixo; sincronização e contas dos auxiliares vão para baixo do campo (#chat-extras); ícones SVG (sem emoji novo). Teste tests/chat_melhorias_test.js (PC 1440×900 + iPhone 13).",
+   "cat": "melhoria"
+  },
+  {
+   "v": 105,
+   "data": "2026-10-31",
+   "titulo": "E-mail obrigatório para ter conta e acesso ao site",
+   "descricao": "E-mail obrigatório para ter conta e acesso (pedido do dono; bloco v105-css/v105-js + trechos no authSubmit, auxCreate, authCreate). Criar conta e convite de auxiliar só criam com e-mail válido (mensagem clara se faltar ou estiver errado; também na caixa \"Conta do PC\", onde o e-mail fica só como contato e a nuvem do PC segue com o login interno pc-…@pc.stok-e99.app). O e-mail vai dentro da conta cifrada (payload.email, novo 6º parâmetro de authCreate; authPersist, trocar senha, exportar e redefinir pelo gestor preservam). Nenhum dado novo em claro: o cloud-email:<conta> (que já existia) continua sendo o e-mail da nuvem e fica igual ao payload.email (align()). Conta antiga sem e-mail não fica trancada para fora: entra, mas a tela obrigatória #email-gate (sem \"Agora não\"; Esc/fechar reabre; só \"Salvar e continuar\" ou \"Sair da conta\") aparece até informar o e-mail; conta que já tinha cloud-email migra sozinha, sem tela. Recusa e-mail de outra conta do mesmo aparelho. Depois de salvar liga a nuvem (e99Cloud.onEnter). \"Trazer da nuvem\" (cpGo) e recuperar pelo e-mail (mrGo) já criam a conta com o e-mail. O e-mail não dá papel (gestor continua só o dono). Testes: em localhost, e99-no-email-gate=1 desliga a tela (nenhum teste usa hoje). Teste tests/v105_test.js (PC e iPhone 13); pc_account_test (conta do PC agora pede e-mail) e as sementes de v101/v102 (contas com e-mail) foram atualizados.",
+   "cat": "novo"
+  },
+  {
+   "v": 104,
+   "data": "2026-10-31",
+   "titulo": "Relógio grande com data e hora no Início (papel de parede no PC)",
+   "descricao": "Relógio com data e hora no Início (pedido do dono: deixar o site aberto no PC como papel de parede; blocos v104-css/v104-js). .panel.e99-clock logo abaixo do topo do Início (entra pelo hero() no mesmo desenho, para a v91 tratá-lo como cartão — o rastro de luz é o mesmo dos outros cartões e para com \"Pausar animação\"): hora Oswald grande (148 px no PC, 56 px no iPhone; em \"Tela cheia\" ocupa a tela), segundos menores, data por extenso. Só troca texto, alinhado ao segundo (setTimeout); com Efeitos desligados, \"menos movimento\" ou \"Pausar animação\" some o segundo e atualiza 1×/min; para com a aba em segundo plano e fora do Início (e99Clock.running()). Botão \"Tela cheia\" (Fullscreen API, só onde existe). Sem animação própria. Teste tests/v104_test.js (PC 1440×900 e iPhone 13).",
+   "cat": "novo"
+  },
+  {
+   "v": 103,
+   "data": "2026-10-31",
+   "titulo": "Excluir/cancelar onde faltava (NF na lista, corredor, pessoa, conferências por câmera, mensagens do chat)",
+   "descricao": "Excluir/cancelar onde faltava (pedido do dono; bloco v103-js/v103-css + trechos no chat-js e conf-js). Já existiam: Excluir NF/corredor/pessoa dentro do editor (removeRecord), Excluir plano, Remover atividade/foto, Cancelar plano, Remover convite, Sair do chat, Descartar conferência em andamento, Desfazer leitura, Tirar foto/capa do perfil. Novo: Excluir visível na lista de NFs, no cartão do corredor e no cartão da pessoa (e99Del(kind,id) → removeRecord, com confirmação; auxiliar não vê); Excluir conferência finalizada (lista \"Conferências por câmera\") e interrompida (aviso) — delConf no conf-js, só o aparelho que fez, apaga o IndexedDB e deixa o marcador cancelada (igual ao Descartar); Apagar mensagem do chat (🗑, só neste aparelho: apaga do IndexedDB e anota em lojasg.estoque99.chat-del:<tópico> para o ntfy não trazer de volta; quem já recebeu continua vendo). Teste tests/v103_test.js (PC e iPhone).",
+   "cat": "novo"
+  },
+  {
+   "v": 102,
+   "data": "2026-10-31",
+   "titulo": "Agentes e Agenda fora do menu e das rotas; Administração do dono funcional (PC e celular)",
+   "descricao": "Sem Agentes e Agenda; Administração do dono (bloco v102-js). Pedido do dono: Agentes e Agenda saem do menu (strip() apaga labels.agentes/agenda a cada render e depois do applyRole) e das rotas (go: agenda→Plano, agentes→Início; botão \"Abrir agenda\" vira \"Abrir plano de ação\"). O código continua (piloto roda sozinho; extraPages.agentes ainda existe — os testes do piloto/tema montam a tela por ele). Administração: conta estoque cujo uid da nuvem tem 'S' em verificados vira gestor (promote(), no render e a cada 15 s) — a conta do dono feita em \"Criar conta\" não via Administração. Testado no PC e no iPhone: lista, bloqueia, apaga (digitando o login) e redefine senha de auxiliar com o código; auxiliar e conta comum não veem nem abrem. Teste tests/v102_test.js.",
+   "cat": "ajuste"
+  },
+  {
+   "v": 101,
+   "data": "2026-10-31",
+   "titulo": "Equipe mostra as contas da equipe; papel de gestor só do dono (conta do PC não abre Administração)",
+   "descricao": "Equipe mostra as contas + papel de gestor só do dono (bloco v101-js no fim do index.html). (A) A aba Equipe só listava state.team (colaboradores à mão + convites); quem entrou pelo código ou só tem perfil na equipe não aparecia. Agora teamCards() acrescenta cartões .e99-acc (foto, @usuário, cargo, \"Ver perfil\") para os perfis da equipe (e99ProfilesAll), membros do sync (syncMembers) e o próprio dono \"(você)\", sem repetir quem já está em state.team (login/nome). (B) Contas que não são do dono tinham role:'gestor' guardado (semente \"Estoque 99\" do PC, \"conta perdida vira gestor\" v59–v88, usuarios.role antigo) e abriam Administração (bloquear/apagar contas, redefinir senha), Piloto automático e envio diário. Agora authEnter rebaixa para estoque quem não é login vferreiras/vferrreiras nem uid com 'S' em verificados (papel antigo anotado em lojasg.estoque99.role-was:<conta>); go/render tiram Administração do menu de quem não é gestor. Regra gestorOk: 'gestor' em usuarios só com verificados/{uid}.tipo=='s' (saiu o \"já era gestor\"). Teste tests/v101_test.js. Atenção: a conta \"Estoque 99\" (semente) deixou de ser gestor.",
+   "cat": "novo"
+  },
+  {
+   "v": 100,
+   "data": "2026-10-31",
+   "titulo": "Início explica que os dados ficam no aparelho e mostra como trazê-los ao PC (equipe/convite/mesmo login)",
+   "descricao": "\"No PC não aparecem os dados das outras contas\" — não é bug, é o modelo: contas e dados ficam no aparelho que os criou; o PC só recebe NFs/planos/equipe/corredores/conferências pela equipe (ntfy, cifrado), e só quando outro aparelho da equipe está aberto (o ntfy guarda 12 h; um aparelho novo manda hello e quem estiver aberto responde com snap). Reproduzido no teste: mesmo login trazido da nuvem (cpGo restaura a equipe de equipes/{uid}) e convite recebem tudo; conta criada à parte no PC fica vazia. Mudou só a tela: Início (sync-js, #local-note) mostra \"Dados só neste aparelho\" (sem equipe; botão Abrir o Chat e Entendi — lojasg.estoque99.local-note:<conta>), \"Aguardando os dados da equipe\" (equipe sem dados ainda; Sincronizar agora) ou \"Sincronização desligada\"; Administração explica que lista só as contas deste aparelho (#acc-local-note). Teste tests/pc_dados_test.js. Detalhe conhecido: gestor dono da equipe trazido da nuvem fica ready na hora e mostra \"Equipe sincronizada\" mesmo antes do snap chegar. Sincronizar contas inteiras entre aparelhos = decisão do dono (não feito).",
+   "cat": "ajuste"
+  },
+  {
+   "v": 99,
+   "data": "2026-10-27",
+   "titulo": "No PC, falha de rede da nuvem diz qual serviço está bloqueado (não mais \"Sem internet\")",
+   "descricao": "\"Sem internet\" no PC com internet (dono: no PC não conseguia criar conta nem entrar por convite; o app dizia que não havia conexão). No ambiente de testes o fluxo do PC (1440×900, sem toque) funciona: criar conta e convite são locais (cripto no aparelho); o aviso vinha da nuvem — auth/network-request-failed do Firebase virava \"Sem internet\" em \"Trazer sua conta da nuvem\" (cpGo, login no PC de conta criada no iPhone), no vincular e-mail (e99CloudLink) e no recuperar pelo e-mail (mrGo). Causa provável: rede da loja/antivírus que inspeciona HTTPS/bloqueador barrando identitytoolkit/firestore.googleapis.com, www.gstatic.com ou ntfy.sh (não deu para confirmar sem o PC do dono). Agora window.e99NetWhy() (no cloud-js) testa cada serviço (fetch no-cors, 8 s) e diz qual está bloqueado (ou relógio/proxy se tudo falha; \"sem internet\" só com navigator.onLine===false). Teste tests/pc_account_test.js (PC: criar conta comum, convite, rede bloqueada). Falta o dono mandar a mensagem nova que aparece no PC (navegador e rede).",
+   "cat": "correcao"
+  },
+  {
+   "v": 98,
+   "data": "2026-10-26",
+   "titulo": "Botão \"Descartar conferência\" na conferência por câmera",
+   "descricao": "Descartar conferência (pedido do dono: \"apenas um botão\"). Botão de texto #cf-discard \"Descartar conferência\" no painel da tela de contagem (abaixo de Desfazer/Finalizar). discard() no conf-js: só o aparelho dono; confirm(); apaga do IndexedDB estoque99-conf a sessão e as leituras (idbDropConf, cursor no índice conf); em state.confs fica só um marcador status:'cancelada' sem leituras/correções/NF (o sync não aceita apagar pelo ntfy — confOp devolve null para op.d —, mas aceita atualização do aparelho dono, então as cópias da equipe também perdem as leituras; prune tira em 90 dias); fecha a tela e volta para Notas fiscais. Canceladas não aparecem na lista \"Conferências por câmera\". Teste tests/conferencia_test.js (bloco G).",
+   "cat": "novo"
+  },
+  {
+   "v": 97,
+   "data": "2026-10-26",
+   "titulo": "Conferência por câmera lê de perto (foco/zoom, quadro borrado descartado) + tela cheia minimalista com holograma",
+   "descricao": "Foco de perto + tela cheia minimalista com holograma na conferência por câmera (só conf-css/conf-js). Causa do \"não lê de perto\" no iPhone: a v96 abria a câmera em 1280×720 sem pedir foco/zoom (câmera tenta focar a 2–5 cm e não consegue; o iPhone não foca abaixo de ~10–15 cm), lia um recorte fixo reduzido para 1000 px (desalinhado do retângulo com object-fit:cover) e o ZXing rodava sem TRY_HARDER. Agora: getUserMedia 1920×1080/30 qps traseira; tune() aplica (quando getCapabilities() deixa) foco contínuo (ou single-shot com refoco), exposição/balanço contínuos e zoom 1,5× (botão 1×/1,5×/2×/3×, lembrado em lojasg.estoque99.conf-zoom) — cada restrição por setC() que confere em getSettings() e desfaz se o aparelho ignorar. \"Ajustar foco\": single-shot se houver; senão reabre a câmera (no iPhone é o que força novo foco). Dica \"Afaste uns 10–15 cm e aguarde o foco\" quando não há controle de foco. Leitura: recorte = retângulo da tela convertido para pixels do vídeo (+20%/+40% de folga), quality() mede brilho/contraste/nitidez e descarta quadro borrado (BLUR_MIN 0,04) e não decodifica quadro liso (sem contraste); 3 variações (retângulo até 1280 px; metade com contraste esticado; quadro inteiro 960 px — é a que lê etiqueta maior que o retângulo), 2 por quadro, a que leu por último vai primeiro; ZXing com TRY_HARDER, só os 5 formatos. Ritmo = maior entre 120 ms e 1,5× o custo; janela do par = máx(600 ms, 2,2× período) só com câmera real. Ajuda após 5 s sem leitura (fora de foco / pouca luz / genérica). Tela: dialog em tela cheia (coluna ≤560 px no PC), câmera em cima com retângulo fino, ícones no canto (Pausar/Continuar, volume à mão, lanterna só se torch, trocar câmera só com 2+), \"Ajustar foco\" + zoom embaixo; painel com contador Oswald, \"Último: código (final )\" e só 3 ações (Próxima caixa — fica inativa até contar —, Desfazer, Finalizar); histórico e rearme automático numa gaveta (#cf-hsheet), volume à mão em folha (#cf-manual-form), pergunta \"é da CAIXA?\" em folha. Sem emoji (SVG próprios IC). Atenção: body.dark dialog button:not(.primary) usa !important — as cores dos botões da conferência também usam. Holograma (pedido do dono): contador com brilho iridescente (cf-shine, só background-position, vermelho + toque de ciano #BFF4FF/rgba(127,233,255)), scanlines estáticas + faixa de varredura (cf-scanline, transform), borda fina; reflexo no retângulo e no painel + parallax em 3 camadas (número 7 px, retângulo 3 px, fundo −6 px) por --px/--py só em evento (dedo; deviceorientation só onde não pede permissão). holo-off com Efeitos desligados (parado), holo-calm sem varredura/parallax, holo-pause com aba oculta, janela sem foco, conferência pausada ou \"Pausar animação\". A leitura usa os pixels do vídeo, nunca a tela: o holograma não interfere. Teste tests/conferencia_test.js 98 PASS (64 antigos + etiqueta de perto com vídeo falso, quadro borrado, foco/zoom/lanterna com getCapabilities simulado, 2 câmeras, PC/iPhone com e sem Efeitos, CSV/PDF com as linhas reais). Fotos scratchpad/v97/.",
+   "cat": "correcao"
+  },
+  {
+   "v": 96,
+   "data": "2026-10-26",
+   "titulo": "Conferência às cegas por câmera nas Notas fiscais",
+   "descricao": "Conferência às cegas por câmera (blocos conf-css/conf-js no fim do index.html; motor no próprio index.html — sem arquivo extra, mesma versão do app e já funciona sem internet). Notas fiscais ganha o painel \"📷 INICIAR CONFERÊNCIA POR CÂMERA\" (confStart), aviso de conferência interrompida (Continuar) e lista \"Conferências por câmera\". Leitor: ZXing (e99Need('zxing'), MultiFormatReader só EAN-13/EAN-8/UPC-A/Code 128/ITF, ITF só 14 dígitos com DV) ou BarcodeDetector quando existir; recorte da área do retângulo a cada 120 ms. Máquina de estados: ARMADO → mesmo código 2× em ≤600 ms → grava no IndexedDB → +1 → TRAVADO → rearme por toque em \"Próxima caixa\" (padrão) ou automático com 1,2 s sem código (opcional). Na 1ª leitura de cada código pergunta \"é da CAIXA?\" (vale para a sessão; ITF-14/SSCC contam direto). Pausar/Continuar, volume à mão, desfazer (marca \"desfeita\", não apaga), Finalizar com confirmação, trocar câmera, lanterna se getCapabilities().torch, Wake Lock, erros de permissão tratados. Som = playSiteSound('tap') (sem som novo) + navigator.vibrate quando houver. Dados: IndexedDB estoque99-conf (stores sessions/reads, cada registro AES-GCM com state.confKey, que fica no estado cifrado da conta) + state.confs (cópia compacta, validateConfs() no validate(); ids determinísticos cf-<dev>-<t36> e seq) gravada só em pontos de controle (20 leituras, 60 s, pausar, finalizar, voltar a rede) → save() → sync (confs em C, auxColl, validateSync; confOp: só o aparelho dono muda leituras, auxiliar não associa NF, ninguém apaga pelo ntfy). Às cegas: a tela de contagem não lê state.nfs e esconde o #view (body.conf-on); auxiliar não vê a coluna Volumes. Relatório: total, câmera, manuais, desfeitas, quantidade por código, correções; CSV (Excel) e PDF (impressão); gestor/estoque associam a NF e comparam (oferece \"Em divergência\"/\"Conferido\"). \"Apagar tudo\" e apagar conta limpam o banco novo. Teste tests/conferencia_test.js (câmera falsa do Chromium com vídeo EAN-13 + leitor falso e99Conf.feed, iPhone 13, equipe pelo ntfy). Falta o dono testar no iPhone (foco de perto, lanterna, permissão no app da tela inicial; vibração não existe no Safari).",
+   "cat": "novo"
+  },
+  {
+   "v": 95,
+   "data": "2026-10-25",
+   "titulo": "Colar planejamento da semana no Plano (um plano por dia a partir da mensagem do WhatsApp)",
+   "descricao": "Colar planejamento da semana (blocos v95-colar-css/v95-colar-js no fim do index.html). Botão \"📅 Colar planejamento da semana\" no topo do Plano (vai para \"Mais ações\"; auxiliar não vê nem abre). Janela #colar-dlg: caixa para colar a mensagem do WhatsApp, \"Semana começando na segunda\" (padrão: próxima segunda; não encaixa na segunda — a data escolhida é a da SEGUNDA da mensagem; avisa se não for segunda), responsável padrão TODOS (ou alguém da Equipe) e \"Incluir as orientações gerais na descrição\" (marcada). Leitor window.e99ColarParse(texto, segunda): dia = SEGUNDA…DOMINGO (ou 2ª–6ª feira) no começo da linha com \":\"/\"-\", asteriscos, maiúsculas ou linha só com o dia (o texto vem da linha seguinte); \"segunda-feira\" no meio da frase não vira dia. Tira emoji/*/_/~, título em letra normal (\"Mutirão no setor de X\" → \"Mutirão: X\"), o resto vira orientação geral (≤3000; título de lista antes dos dias, ex. \"NOSSA MISSÃO DIÁRIA:\", sai). Prévia editável (caixa por dia, data e atividade). Salvar: um plano \"Planejamento da semana\" por data (se já houver um com esse nome na data, a atividade entra nele), owner escolhido; mesmo dia + mesma atividade → pula e avisa (\"Nada novo…\"); validatePlans + await save() (vai para a equipe). Tudo do texto colado passa por esc()/.value. Teste tests/colar_plano_test.js com a mensagem real (tests/fixtures/planejamento-27-10.txt). Atenção: no calendário de 2026, 27/10 é terça — a segunda é 26/10.",
+   "cat": "novo"
+  },
+  {
+   "v": 94,
+   "data": "2026-10-25",
+   "titulo": "Topo do Início sem sobreposição (S de partículas e grade Tron em faixas separadas; Pausar animação junto do Novo plano)",
+   "descricao": "Topo do Início sem sobreposição (print do dono: S de partículas por cima da grade e do botão de pausar). O topo é dividido em faixas por homeZones()/window.e99HomeZones (space-js): S de partículas (e estrelas) recortado (clip) na faixa dele ao lado do título; grade Tron só na faixa de baixo (fitHome no v91-js: PC = coluna da direita abaixo do S; celular = entre a data e o \"Novo plano\", que ganhou margin-top:84px). Botão \"Pausar animação\" foi para a .toolbar junto do \"Novo plano\" (fundo sólido #0b0b0d). Não voltar a pôr grade ou S no hero inteiro. Teste tests/v94_test.js (pixels do canvas × retângulo da grade, celular e PC, Efeitos ligados/desligados).",
+   "cat": "correcao"
+  },
+  {
+   "v": 93,
+   "data": "2026-10-25",
+   "titulo": "Som de abertura destravado no iPhone e vermelho da marca no lugar do ciano",
+   "descricao": "Som que não saía no iPhone + vermelho no lugar do ciano. O dono testou a v92 no iPhone: nenhum som. Causas prováveis (o Chromium dos testes não reproduz o iPhone): (1) Web Audio no iOS usa a sessão \"ambient\" e fica mudo com a chave de silêncio; (2) o iOS só destrava o áudio em toque que termina (touchend/click), não no pointerdown; (3) resume() é assíncrono e a abertura (playSiteSound('login') / play() do intro-js) desistia calada se o áudio ainda não estava running. Correção: unlockSiteAudio põe navigator.audioSession.type='playback', retoma dentro do gesto e toca 1 amostra muda; ouve pointerdown+touchend+click; a abertura espera o resume() (até 2,5 s) em vez de desistir. Efeito colateral aceito: a sessão \"playback\" pode pausar música de outro app do iPhone ao tocar no Stok. Música continua desligada até o botão ♫. Cores: ciano da v91 trocado pelo vermelho da marca (--neon:#FF2A1F, --neon-hot:#FF8A7A, grade/rastros/cantos, contorno dos selos, abertura); botão principal --neon-btn:#DB2318 com letra branca (4,9:1). Não há mais 2EE6FF. Teste novo tests/som_ios_test.js (simula iOS: contexto suspenso, resume lento, sessão de áudio). Som confirmado só no emulador — falta o dono testar no iPhone.",
+   "cat": "correcao"
+  },
+  {
+   "v": 92,
+   "data": "2026-10-25",
+   "titulo": "Som de abertura e música ambiente (começa desligada)",
+   "descricao": "Som de abertura e música ambiente (blocos v92-som-css/v92-som-js no fim do index.html; intro-js chama e99Sting). Web Audio, sem arquivos; música estilo Daft Punk (Dm·B♭·F·C, 100 bpm, volume 0,05) em loop; botão ♫ no topo (#music-btn) e em Preferências (#pref-music). Começa desligada (musicPref() só liga com lojasg.estoque99.music='on') até o dono confirmar. Só depois do toque e com o som do app ligado; para em segundo plano, ao sair, ao rolar (e99-scrolling), com Efeitos desligados e \"menos movimento\" (calm()). Teste tests/som_test.js.",
+   "cat": "novo"
+  },
+  {
+   "v": 91,
+   "data": "2026-10-25",
+   "titulo": "Visual Tron (grade, rastros, pulso), ciano neon nos destaques e vidro do iOS 26",
+   "descricao": "Visual Tron · Daft Punk · vidro iOS 26 (blocos v91-css/v91-js no fim do index.html; plano \"Tudo, mas sutil\" + pedidos do dono: Tron forte e ciano; só visual). Cores: destaques e linhas do Tron em ciano neon #2EE6FF (tokens --neon, --neon-rgb, --neon-hot, e --brand/--red/--red2 reapontados); botão principal ciano com letra escura --neon-ink (12,5:1); vermelho só no S da marca (logo, S de partículas, S da abertura) e na bolinha de erro dos agentes (.ag-dot.bad). Selos com contorno ciano brilhante (drop-shadow no .vbadge-canvas; a cor do selo não mudou). Grade Tron só na entrada (#auth-screen>.tron-grid, fixa) e no topo do Início (.hero-home>.tron-grid, some atrás do título): desenhada uma vez num canvas só na área com desenho (drawGrid, adiado com requestIdleCallback) + 3 pulsos 2D (.tg-run, WAAPI); onda de luz na abertura (tg-wave) e pulso no #stok-intro::before/::after. A grade e os rastros esperam o S de partículas se montar (sBusy lê e99Fx()). Rastros = .e99-streak (WAAPI só transform; display:none quando parado e durante a rolagem) nos cartões visíveis (até 4 no celular/6 no PC) e no formulário de entrar; brilho que segue o toque = .e99-glow; cantos com traço de luz em caixinhas ::before/::after de 96 px. Vidro: cartões grandes com cor única --glass-card (gradiente em cartão comprido custava ~6 qps na rolagem no teste com CPU 4x) e gradiente --glass só nos cartões pequenos do Início; desfoque (mesmo raio da v90) no topo, barra de baixo, menus, janelas, avisos e formulário de entrar; @supports → sólido. Não usar máscara CSS nem 3D animado na grade, sombra grande borrada em cartões, nem will-change parado. Não pôr duas animações de opacidade no mesmo elemento (a \"respiração\" tg-breath fica no span.tron-grid e o acender da abertura no canvas): o Chromium tira as duas da placa de vídeo e recalcula o estilo a cada quadro. Animação WAAPI rodando num elemento que saiu da página (o app redesenha o #view) faz o Chromium trabalhar a cada quadro para sempre: sweep() cancela as dos rastros desconectados e gridState pausa a grade que saiu (isConnected). Conferir com document.getAnimations() não basta (não lista elemento desconectado): medir UpdateLayoutTree parado (tem que dar 0, igual à v90). Animações de entrada com animation-fill-mode:backwards (com both o cartão virava \"backdrop root\" e o vidro não desfocava). Títulos Oswald .04em, mola nos botões (--spring), separadores com linha de circuito. Tudo para em segundo plano, fora da tela, durante a rolagem (body.e99-scrolling), com \"Pausar animação\", Efeitos desligados e \"menos movimento\". Sem som novo: o dono dividiu — som de abertura e música ambiente ficaram fora do ar (removidos do index.html; o tests/v91_test.js confere que não há e99Music/e99Sting) e foram guardados para a v92 em scratchpad/som-v92/ da sessão da v91 (blocos v92-som-css/v92-som-js, troca de uma linha no intro-js, som_test.js com 13 PASS e LEIA-ME). Teste tests/v91_test.js.",
+   "cat": "melhoria"
+  },
+  {
+   "v": 90,
+   "data": "2026-10-24",
+   "titulo": "Desempenho e acessibilidade (partículas, NFs, cartões 3D, toques, tabelas)",
+   "descricao": "Desempenho e acessibilidade: partículas a 30 qps e param ~4 s após assentar + botão \"Pausar animação\" (lojasg.estoque99.fx-pause, e99Fx()); NFs 50 por vez + \"Mostrar mais\", busca espera 150 ms e esconde linhas (nfSearch); Agenda 50 por vez; render base não monta mais a tabela antiga de NFs; filtros de NF com aria-pressed, \"Mais ações\" sem role=menu; nome do perfil é <button>; tabelas com role table/row/cell (app e páginas legais) + \"Pular para o conteúdo\"; h2 escondidos em Equipe/Corredores; copyright #8a8a8a 12 px e toques ≥44 px; fotos do chat com tamanho reservado; temporizadores pausam em segundo plano; \"Remover convite\" confirma; login: dado salvo inválido ≠ \"Senha incorreta\"; cartões 3D inclinam no toque (eventos touch, também no arrasto vertical; ouvinte de visibilidade único); nomes longos quebram, \"Ver planos\" visível; aviso de prazos compacto logo após entrar; SW espera a rede 2,5 s; Firebase baixa em paralelo + preconnect; placeTools por matchMedia. Teste tests/v90_test.js.",
+   "cat": "melhoria"
+  },
+  {
+   "v": 89,
+   "data": "2026-10-24",
+   "titulo": "Segurança da auditoria (reações, Authenticator, papel, sync, regras, SW, CORS, contraste)",
+   "descricao": "Segurança (auditoria): reação do chat só com 6 emojis fixos (REACT_OK, sem onclick com dado da rede; regra igual). Authenticator: chave não fica mais em claro (totp: guarda w + s cifrado com a senha; recuperar pede a chave anotada + código; registros antigos são apagados e o app pede \"Ative de novo\"); e99Totp saiu do global. \"Trazer da nuvem\"/\"recuperar pelo e-mail\" mantêm o papel salvo (estoque não vira gestor). Regra usuarios: role:'gestor' só se já era ou se verificados/{uid}.tipo=='s'. Sync: auxiliar não apaga pelo ntfy; apagar >3 itens de outras pessoas numa mensagem é barrado (delGuard). Regras: erros.at ≤ agora+1 min e ≥ agora−1 dia; correio id loja_para_AAAAMMDD, texto ≤4000, de/para membros; perfis.at ≤ agora+1 dia. Perfil: só adota o meu do doc do meu uid; ntfy com meu login é ignorado; entradas da nuvem por uid. Backup na nuvem desligado (avisa). cloud-pw agora cifrado com a chave da conta + limite de tentativas (e99CloudTry). SW guarda outras páginas pelo próprio endereço. \"Apagar tudo\" só limpa caches estoque99-*. Central de Agentes: CORS só localhost e vferreiras.github.io. Botão principal #DB2318 (4,9:1). Workflows apply-*.yml e scripts/apply-*.mjs apagados. Testes tests/seguranca_test.js, tests/sw_test.js.",
+   "cat": "melhoria"
+  },
+  {
+   "v": 88,
+   "data": "2026-10-24",
+   "titulo": "Selo também em aparelho sem nuvem (lista verificados pública + login do documento)",
+   "descricao": "Selo sem nuvem: verificados com allow read: if true (write continua false). O app lê a lista pelo REST público do Firestore (verFetch, a cada 10 min, cache lojasg.estoque99.verificados + …verificados-login) e, com nuvem, pelo onSnapshot. Regra do selo (vTipo no profile-js): próprio = uid guardado na lista; se o aparelho nunca entrou na nuvem, role gestor + login vferreiras/vferrreiras → S (só visual, só no próprio aparelho). Outros = uid do perfil da nuvem (perfis/{uid}) na lista; perfil só pelo ntfy → login igual ao campo login do documento verificados/{uid} (logins separados por vírgula). O uid que viesse pelo ntfy é ignorado. Gravados: gestor login:'vferrreiras,vferreiras', leonardo69 login:'leonardo69' (node scripts/verificar.js <uid> <tipo> [STK] --login a,b). Teste tests/selo_semnuvem_test.js. Risco aceito: alguém dentro da equipe que mande perfil pelo ntfy com o login de um verificado ganha o selo nos aparelhos sem nuvem (visual).",
+   "cat": "novo"
+  },
+  {
+   "v": 87,
+   "data": "2026-10-24",
+   "titulo": "Selo pelo uid (lista verificados) + raio vermelho; fecha brecha do login",
+   "descricao": "Selo pelo uid, não pelo login: coleção verificados/{uid} (tipo:'s'|'raio', stkId), regra read logado / write: if false. profile-js: vTipo/vb leem a lista (onSnapshot + cache lojasg.estoque99.verificados) e o uid guardado por conta (lojasg.estoque99.my-uid:*) para o gestor offline. O patchBadge (login vferreiras/qualquer gestor) foi removido — não reintroduzir. Novo selo raio vermelho (#FF2A1F) no motor do particle-badge-js. Gravados: gestor TConyCs…=s e leonardo69 5mB4IsIggFeQInmVCX5Id5ChIxB3=raio (STK-0091ZHBQ21YE). Gravar outros com node scripts/verificar.js <uid> <s|raio> [STK-…]. Teste tests/verificados_test.js. Atenção: no Firestore o login do gestor é vferrreiras (3 r) — por isso só o uid vale.",
+   "cat": "correcao"
+  },
+  {
+   "v": 86,
+   "data": "2026-10-24",
+   "titulo": "Auditoria de design — consertos, telas mais limpas, cartões 3D e app mais rápido",
+   "descricao": "Auditoria de design aplicada (blocos v86-css / v86-js no fim do index.html): topo 56 px com sino (.bell-btn, #alert-total), títulos curtos + \"Mais ações\" (.more-actions) em Notas/Corredores/Plano/Equipe, ícones SVG (e99Icon), cartões planos, cartões 3D no Início (.stats.tilt-on), Preferências em Minha conta (#prefs-panel; no PC as opções ficam no rodapé da barra lateral), respeita \"menos movimento\" (__osReduceSystem; Efeitos começam desligados), Administração montada antes do menu para role==='gestor'. ZXing, Fuse e flatpickr saíram do HTML → vendor/*.js carregados por e99Need() e pré-cacheados no sw.js. Cache em memória do localStorage (Storage.prototype).",
+   "cat": "melhoria"
+  },
+  {
+   "v": 85,
+   "data": "2026-10-24",
+   "titulo": "IA grátis sem cartão — Workers AI (sem chave) no Worker e Google Gemini no Apps Script",
+   "descricao": "IA grátis sem cartão: Worker Cloudflare usa Workers AI (env.AI, binding AI no wrangler.jsonc, modelo @cf/meta/llama-3.3-70b-instruct-fp8-fast) sem chave; NVIDIA só com nvidia/… + segredo opcional NVIDIA_API_KEY; só SENHA é obrigatória. ia.gs ganhou Google Gemini (GEMINI_API_KEY, endpoint OpenAI-compatível, gemini-3.8-flash). Assistente: \"Google Gemini (grátis)\" e \"Workers AI (grátis, sem chave)\" / \"NVIDIA (com chave)\". Teste tests/ia_free_test.js.",
+   "cat": "novo"
+  },
+  {
+   "v": 84,
+   "data": "2026-10-24",
+   "titulo": "Abertura nova (prateleiras → S), mais curta e sem bloquear o login",
+   "descricao": "Abertura nova: prateleiras acendem, scanner vermelho e o S; ~1,7 s; não bloqueia o login; tela 'Toque para abrir' removida — no iPhone o som da abertura só toca se já houve toque.",
+   "cat": "melhoria"
+  },
+  {
+   "v": 83,
+   "data": "2026-10-24",
+   "titulo": "Tela de entrar limpa, licença ZXing em Dados e ajuda, fluidez e selo de partículas mais leve",
+   "descricao": "Tela de entrar limpa (links \"Esqueci a senha\" → folha #auth-sheet com e-mail / Authenticator / código; \"Criar conta\" = #auth-create), licença ZXing em Dados e ajuda (#lic-panel), fluidez (blocos login-clean-*, fluid-css) e selo de partículas mais leve.",
+   "cat": "melhoria"
+  },
+  {
+   "v": 82,
+   "data": "2026-10-24",
+   "titulo": "Isola o cache do Stok (só os caches próprios) e alinha o robo.html",
+   "descricao": "Limita leitura/limpeza do CacheStorage aos caches próprios do Stok (CACHE_PREFIX) e alinha robo.html.",
+   "cat": "ajuste"
+  },
+  {
+   "v": 81,
+   "data": "2026-10-22",
+   "titulo": "Selo verificado com S de partículas vermelhas",
+   "descricao": "Selo verificado = S de partículas vermelhas (mesmo path da logo + canvas estilo Field/sampleG). Script particle-badge-js. Login vferreiras / gestor recebem selo mesmo offline.",
+   "cat": "novo"
+  },
+  {
+   "v": 80,
+   "data": "2026-10-22",
+   "titulo": "Administração no menu + selo S da logo",
+   "descricao": "Bug do menu: applyRole apagava labels.admin — corrigido (não pular admin). Administração deve aparecer para role gestor.",
+   "cat": "correcao"
+  },
+  {
+   "v": 79,
+   "data": "2026-10-22",
+   "titulo": "Selo verificado S vermelho com efeito vivo",
+   "descricao": "",
+   "cat": "novo"
+  },
+  {
+   "v": 78,
+   "data": "2026-10-22",
+   "titulo": "Backup cifrado + gestor redefine senha auxiliar",
+   "descricao": "Híbrido: backup cifrado tentando Firebase backups/; gestor redefine senha de auxiliar com código de recuperação (authAdminResetPassword em hybrid-admin-js).",
+   "cat": "melhoria"
+  },
+  {
+   "v": 77,
+   "data": "2026-10-22",
+   "titulo": "Apagar todas as contas locais exceto gestor/vferreiras",
+   "descricao": "Gestor pode apagar contas neste navegador (authDeleteAccount, authDeleteAllOtherAccounts). Contas protegidas: vferreiras, estoque 99, sessão atual.",
+   "cat": "novo"
+  },
+  {
+   "v": 76,
+   "data": "2026-10-22",
+   "titulo": "ID unico por conta (STK-XXXXXXXXXXXX)",
+   "descricao": "Typo vferreiras corrigido; SW network-first estável (sem injeção HTML); ID de conta STK-… em cada conta (authNewAccountId / authEnsureId no index.html).",
+   "cat": "novo"
+  },
+  {
+   "v": 74,
+   "data": "2026-10-22",
+   "titulo": "Service worker CACHE estoque99-v74",
+   "descricao": "",
+   "cat": "ajuste"
+  },
+  {
+   "v": 73,
+   "data": "2026-10-22",
+   "titulo": "Service worker resiliente, typo login, deploy também em main",
+   "descricao": "Typo vferreiras corrigido; SW network-first estável (sem injeção HTML); ID de conta STK-… em cada conta (authNewAccountId / authEnsureId no index.html).",
+   "cat": "correcao"
+  }
+ ]
+}
