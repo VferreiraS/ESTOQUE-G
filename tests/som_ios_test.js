@@ -17,7 +17,7 @@ const L=require('./lib.js');const {ok,until}=L;
  const A=await c.newPage();A.on('pageerror',e=>errs.push(e.message));A.on('dialog',d=>d.accept());
  await A.goto('http://localhost:8000/index.html?ntfy='+L.N);await A.waitForSelector('#auth-form input[name=login]');await A.waitForTimeout(1500);
  await A.evaluate(()=>{window.__calls=[];const p=playSiteSound;playSiteSound=function(k){window.__calls.push(k);return p.apply(this,arguments)}});
- ok(await A.evaluate(()=>!siteAudio&&e99Music().stings===0&&window.__ios.made===0),'antes do toque: nenhum áudio criado e nenhum som');
+ ok(await A.evaluate(()=>!e99Music().on),'antes do toque: música desligada (o som de login ao abrir é conferido no v118_test)');
  const l='ios'+T;await L.signup(A,l);
  ok(await A.evaluate(()=>window.__calls.includes('login')),'ao entrar o app pede o som de abertura (playSiteSound login)');
  ok(await A.evaluate(()=>window.__ios.resumeInGesture>0),'áudio retomado dentro do toque');

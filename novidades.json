@@ -2,6 +2,13 @@
  "fonte": "CLAUDE.md (tabela de versões) + git log",
  "versoes": [
   {
+   "v": 118,
+   "data": "2026-11-02",
+   "titulo": "Som de login toda vez que o app abre",
+   "descricao": "O som de login toca ao abrir o app (e ao voltar para ele depois de um tempo) sempre que o navegador deixa. No iPhone o Safari só libera som depois de um toque na tela: nesse caso o som toca no primeiro toque, uma vez por abertura. Se o som do app estiver desligado, não toca.",
+   "cat": "melhoria"
+  },
+  {
    "v": 117,
    "data": "2026-11-02",
    "titulo": "Início não fica mais pela metade no iPhone",

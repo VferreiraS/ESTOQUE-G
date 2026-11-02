@@ -6,7 +6,7 @@ const L=require('./lib.js');const {ok,until}=L;
  const c=await b.newContext({...L.devices['iPhone 13']});await c.addInitScript(()=>{try{localStorage.removeItem('lojasg.estoque99.music')}catch(e){}});
  const A=await c.newPage();A.on('pageerror',e=>errs.push(e.message));A.on('dialog',d=>d.accept());
  await A.goto('http://localhost:8000/index.html?ntfy='+L.N);await A.waitForSelector('#auth-form input[name=login]');await A.waitForTimeout(1500);
- ok(await A.evaluate(()=>!siteAudio&&!e99Music().on&&e99Music().stings===0),'sem toque: nada de som nem música (regra do iPhone)');
+ ok(await A.evaluate(()=>!e99Music().on),'sem toque: música desligada (v118: o som de login toca ao abrir onde o navegador deixa)');
  /* entrar: abertura com som (depois do toque), música começa desligada */
  const l='som'+T;await L.signup(A,l);
  ok(await until(A,()=>e99Music().stings>=1,null,4000),'som de abertura toca junto com a animação ao entrar');

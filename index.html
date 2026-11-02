@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="117"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="118"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -7807,6 +7807,31 @@ function settle(){clearTimeout(t);t=setTimeout(function(){B.classList.add('e99-n
 var r0=render;render=function(){var p=typeof page!=='undefined'?page:'';if(p!==last){last=p;B.classList.remove('e99-norise');void B.offsetWidth}else B.classList.add('e99-norise');var r=r0.apply(this,arguments);settle();return r};
 document.addEventListener('visibilitychange',function(){if(!document.hidden)B.classList.add('e99-norise')});
 settle();window.e99NoRise=function(){return B.classList.contains('e99-norise')};
+})();
+</script>
+<script id="v118-som-js">
+(function(){
+'use strict';
+/* v118 (pedido do dono): o som de login toca toda vez que o app abre.
+   - Ao abrir (ou voltar ao app depois de 1 min em segundo plano) tenta tocar na hora; o PC/Android costumam deixar.
+   - O iPhone (Safari) não deixa áudio sem um toque na tela: aí o som fica guardado e toca no primeiro toque da pessoa.
+   - Uma vez por abertura (o login logo depois não repete). Sem som se o som do app estiver desligado. */
+var played=false,pending=false,hiddenAt=0,W=window;
+W.__e99LoginSounds=0;
+var base=playSiteSound;
+function really(){try{base('login');W.__e99LoginSounds++;played=true;pending=false}catch(x){}}
+function attempt(fromGesture){if(played||typeof siteSoundEnabled!=='undefined'&&!siteSoundEnabled||document.hidden)return;
+  var ctx=null;try{ctx=unlockSiteAudio()}catch(x){}if(!ctx){pending=true;return}
+  if(ctx.state==='running'){really();return}
+  pending=true;var t=Date.now();try{ctx.resume().catch(function(){})}catch(x){}
+  (function wait(){if(played)return;if(ctx.state==='running'){really();return}if(Date.now()-t<(fromGesture?2500:1500))setTimeout(wait,80)})()}
+/* o login (authEnter) chama playSiteSound('login'): vale a mesma regra de uma vez por abertura */
+playSiteSound=function(kind){if(kind==='login'){attempt(!!(navigator.userActivation&&navigator.userActivation.isActive));return}return base.apply(this,arguments)};
+function onGesture(){if(pending&&!played)attempt(true)}
+['pointerdown','touchend','click','keydown'].forEach(function(ev){document.addEventListener(ev,onGesture,{passive:true,capture:true})});
+document.addEventListener('visibilitychange',function(){if(document.hidden){hiddenAt=Date.now();return}if(hiddenAt&&Date.now()-hiddenAt>60000){played=false;pending=false;attempt(false)}});
+W.e99LoginSound={played:function(){return played},pending:function(){return pending},count:function(){return W.__e99LoginSounds}};
+setTimeout(function(){attempt(false)},200);
 })();
 </script>
 </body></html>

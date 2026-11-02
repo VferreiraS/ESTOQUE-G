@@ -19,12 +19,12 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão:** 117 (`meta estoque99-version` + `CACHE` `estoque99-v117` no `sw.js`), publicada em 01/11/2026 no GitHub Pages e no Firebase Hosting.
+- **Versão:** 118 (`meta estoque99-version` + `CACHE` `estoque99-v118` no `sw.js`), publicada em 01/11/2026 no GitHub Pages e no Firebase Hosting.
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
 
-### Mudanças recentes (v73 → v117) — não desfazer sem pedido
+### Mudanças recentes (v73 → v118) — não desfazer sem pedido
 
 | Versão | O quê |
 |--------|--------|
@@ -70,6 +70,7 @@
 | v115 | **"O que mudou?" no iPhone** (print do dono: lista não aparecia, título sob "Pausar animação", sino com 16). No emulador a lista renderizava; causa provável no iPhone: a aba abria rolada até o rodapé e/ou o `novidades.json` não vinha (ficava "Carregando…" para sempre). Agora: a aba abre no topo (`go` → `scrollTo(0,0)`); `getJson()` cai para a cópia do service worker (`caches` `estoque99-*`) quando a rede falha; sem nada, mostra "Tentar de novo" (`e99NvRetry`). No celular, o `.fx-pause` das telas que não são o Início fica **abaixo do título** (estático). O **sino é o contador de Alertas** (prazos/NFs), não de novidades: as não vistas ficam no item "O que mudou?" do menu (confere com `e99NovidadesUnseen`). Teste `tests/v115_test.js` (iPhone 13 e PC, sem rede, sem cache). |
 | v116 | **S sem vermelho** (pedido do dono). O **S de partículas** (entrada e Início, `space-js`) usa paletas `GOLD`/`BLUE` recalculadas de `--neon-rgb`/`--neon-hot-rgb` (`themePal`; troca de tema recolore na hora via `__e99SFx`); o **logo sazonal** da tela de entrar/menu (`logoSvg`, `sColor()` = `--neon`; `e99ApplySeason` ao trocar de tema) e o **S da abertura** (bloco `v116-s-css`: `.si-mark`, `.si-scan`, `.si-sub`, fundo e `@keyframes si-stock` por tokens) seguem o tema. Mesma letra, forma, brilho e partículas. Ícones PNG do manifest/favicon/apple-touch continuam vermelhos (fixos, para não quebrar o app instalado). Teste `tests/v116_test.js` (cor real dos pixels, 3 temas × PC/iPhone, troca de tema ao vivo). |
 | v117 | **Início pela metade no iPhone** (print do dono, tema Cinza + Lima: título e "Novo plano" apagados, resto vazio). No emulador a entrada `ds-rise` terminava normal; causa provável no iPhone: a animação de entrada (com `animation-fill-mode:backwards` e atrasos) ficava presa/pausada ou reiniciava a cada redesenho. Bloco `v117-css`/`v117-js`: a entrada só toca na **troca de tela**; redesenho da mesma tela e 1 s depois de abrir põem `body.e99-norise` (`#view>*` e `.stats>.stat` sem animação, opacidade 1). Teste `tests/v117_test.js` (iPhone 13/PC, 3 temas, Efeitos ligados/desligados, animação pausada pelo navegador, redesenhos seguidos); `v113_test` usa data futura para o registro do gestor. |
+| v118 | **Som de login toda vez que o app abre** (pedido do dono; bloco `v118-som-js`). `playSiteSound('login')` passa por um envoltório: tenta tocar ao abrir (e ao voltar ao app depois de 1 min em segundo plano) — PC/Android costumam deixar; **o iPhone (Safari) exige um toque na tela** antes de qualquer áudio, então o som fica guardado (`e99LoginSound.pending()`) e toca no **primeiro toque** (pointerdown/touchend/click/keydown), uma vez por abertura (o login logo depois não repete; contador `__e99LoginSounds`). Som do app desligado = nada; Efeitos/menos movimento não mudam o som (como antes). `som_test`/`som_ios_test` deixaram de exigir "nenhum áudio antes do toque". Teste `tests/v118_test.js` (PC com autoplay, iPhone 13 com áudio travado até o toque). |
 
 Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o site); o que vale no ar é o `index.html` + `sw.js` publicados.
 
