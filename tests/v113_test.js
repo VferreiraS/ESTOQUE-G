@@ -34,7 +34,7 @@ const J=JSON.parse(fs.readFileSync(path.join(__dirname,'..','novidades.json'),'u
  await G.click('.nv-filter button:has-text("Todas")');
  /* gestor cadastra */
  ok(await G.evaluate(()=>!!document.getElementById('nv-form')),'gestor vê o formulário de cadastro');
- await G.fill('#nv-form input[name=v]','113');await G.fill('#nv-form input[name=data]','2026-11-02');await G.selectOption('#nv-form select[name=cat]','ajuste');await G.fill('#nv-form input[name=titulo]','Registro do gestor '+T);await G.fill('#nv-form textarea[name=descricao]','Detalhe do gestor');await G.click('#nv-form button.primary');await G.waitForTimeout(1200);
+ await G.fill('#nv-form input[name=v]','113');await G.fill('#nv-form input[name=data]','2099-01-01');await G.selectOption('#nv-form select[name=cat]','ajuste');await G.fill('#nv-form input[name=titulo]','Registro do gestor '+T);await G.fill('#nv-form textarea[name=descricao]','Detalhe do gestor');await G.click('#nv-form button.primary');await G.waitForTimeout(1200);
  ok(await G.evaluate(t=>{const f=document.querySelector('.nv-item');return f.querySelector('h3').textContent===t&&!!f.querySelector('.nv-extra')},'Registro do gestor '+T),'registro do gestor entra no topo (data mais nova)');
  /* conta comum na equipe recebe pelo sync e só lê */
  const code=await G.evaluate(()=>e99Team.get().code);

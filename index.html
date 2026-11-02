@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="116"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="117"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -7792,5 +7792,21 @@ html[data-e99-theme] #stok-intro .si-sub{color:var(--neon-hot)}
 <script id="v116-s-js">
 /* v116: ao trocar o tema, o logo sazonal (tela de entrar e menu) é redesenhado na cor nova */
 (function(){try{new MutationObserver(function(){if(window.e99ApplySeason)window.e99ApplySeason()}).observe(document.documentElement,{attributes:true,attributeFilter:['data-e99-theme']})}catch(e){}if(window.e99ApplySeason)setTimeout(window.e99ApplySeason,0)})();
+</script>
+<style id="v117-css">
+/* v117: a entrada suave (ds-rise) só toca ao abrir a tela; depois (ou se o navegador travar a animação) tudo fica 100% visível */
+body.e99-norise #view>*,body.e99-norise .stats>.stat{animation:none!important;opacity:1!important;transform:none!important}
+</style>
+<script id="v117-js">
+(function(){
+/* print do dono no iPhone: título e "Novo plano" pela metade, resto vazio — a animação de entrada ficava presa no meio
+   (redesenho da tela reiniciando a animação, ou o Safari pausando/atrasando a animação). Agora: anima só na troca de tela e,
+   1 s depois, desliga a animação de vez nessa tela (opacidade 1 garantida). */
+var last='',t=0,B=document.body;
+function settle(){clearTimeout(t);t=setTimeout(function(){B.classList.add('e99-norise')},1000)}
+var r0=render;render=function(){var p=typeof page!=='undefined'?page:'';if(p!==last){last=p;B.classList.remove('e99-norise');void B.offsetWidth}else B.classList.add('e99-norise');var r=r0.apply(this,arguments);settle();return r};
+document.addEventListener('visibilitychange',function(){if(!document.hidden)B.classList.add('e99-norise')});
+settle();window.e99NoRise=function(){return B.classList.contains('e99-norise')};
+})();
 </script>
 </body></html>

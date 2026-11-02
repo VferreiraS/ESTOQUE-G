@@ -2,6 +2,13 @@
  "fonte": "CLAUDE.md (tabela de versões) + git log",
  "versoes": [
   {
+   "v": 117,
+   "data": "2026-11-02",
+   "titulo": "Início não fica mais pela metade no iPhone",
+   "descricao": "A animação de entrada das telas podia ficar presa no meio no iPhone (título e \"Novo plano\" apagados, resto vazio). Agora ela só toca ao abrir a tela e, um segundo depois, tudo fica 100% visível mesmo se o navegador travar a animação. Vale para os 3 temas e com Efeitos ligados ou desligados.",
+   "cat": "correcao"
+  },
+  {
    "v": 116,
    "data": "2026-11-01",
    "titulo": "S do app na cor do tema (sem vermelho)",
