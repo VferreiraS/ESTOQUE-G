@@ -2,6 +2,13 @@
  "fonte": "CLAUDE.md (tabela de versões) + git log",
  "versoes": [
   {
+   "v": 116,
+   "data": "2026-11-01",
+   "titulo": "S do app na cor do tema (sem vermelho)",
+   "descricao": "O S de partículas (tela de entrar e Início), o S da abertura e o logo da tela de entrar passam a seguir a cor de destaque do tema escolhido (Lilás, Violeta + Lima, Cinza + Lima). A letra, a forma, o brilho e as partículas continuam iguais. Os ícones do app instalado na tela inicial continuam como estavam.",
+   "cat": "melhoria"
+  },
+  {
    "v": 115,
    "data": "2026-11-01",
    "titulo": "\"O que mudou?\" no iPhone: lista aparece e título não fica sob o botão",

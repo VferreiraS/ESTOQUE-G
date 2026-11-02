@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="115"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="116"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -1737,7 +1737,9 @@ function getPref(){try{return localStorage.getItem(PREF_KEY)==='off'?'off':'auto
 function setPref(v){try{localStorage.setItem(PREF_KEY,v)}catch(e){}}
 function currentMonth(){return new Date().getMonth()+1}
 function svgUri(svg){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)}
-function logoSvg(s){return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><defs><filter id="m"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="1.25" intercept=".1"/><feFuncG type="linear" slope="1.25" intercept=".1"/><feFuncB type="linear" slope="1.25" intercept=".1"/></feComponentTransfer></filter></defs><rect width="96" height="96" rx="24" fill="#0a0a0a"/><rect x="5" y="5" width="86" height="86" rx="20" fill="none" stroke="#ffffff" stroke-opacity=".35"/><path transform="translate(8 9) scale(.78)" fill="#ff3a24" d="M42 14h30.5a7.5 7.5 0 0 1 0 15H42a3.5 3.5 0 0 0 0 7H58a21 21 0 0 1 0 42H27.5a7.5 7.5 0 0 1 0-15H58a6 6 0 0 0 0-12H42a18.5 18.5 0 0 1 0-37z"/><g transform="translate(74 22)" filter="url(#m)">'+s.orn+'</g></svg>'}
+/* v116: o S do logo sazonal segue a cor de destaque do tema */
+function sColor(){try{var v=getComputedStyle(document.documentElement).getPropertyValue('--neon').trim();if(/^#[0-9a-f]{3,8}$/i.test(v))return v}catch(e){}return '#ff3a24'}
+function logoSvg(s){return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><defs><filter id="m"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="1.25" intercept=".1"/><feFuncG type="linear" slope="1.25" intercept=".1"/><feFuncB type="linear" slope="1.25" intercept=".1"/></feComponentTransfer></filter></defs><rect width="96" height="96" rx="24" fill="#0a0a0a"/><rect x="5" y="5" width="86" height="86" rx="20" fill="none" stroke="#ffffff" stroke-opacity=".35"/><path transform="translate(8 9) scale(.78)" fill="'+sColor()+'" d="M42 14h30.5a7.5 7.5 0 0 1 0 15H42a3.5 3.5 0 0 0 0 7H58a21 21 0 0 1 0 42H27.5a7.5 7.5 0 0 1 0-15H58a6 6 0 0 0 0-12H42a18.5 18.5 0 0 1 0-37z"/><g transform="translate(74 22)" filter="url(#m)">'+s.orn+'</g></svg>'}
 function motifSvg(s){return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -16 32 32"><g transform="scale(1.9)">'+s.orn+'</g></svg>'}
 function activeKey(){return getPref()==='off'?0:currentMonth()}
 function applySeason(){
@@ -1758,6 +1760,7 @@ function applySeason(){
     if(img.getAttribute('src')!==want)img.setAttribute('src',want);
   });
 }
+window.e99ApplySeason=function(){try{applySeason()}catch(e){}};
 function refreshBrand(s){
   var t=s?'LOJAS G · '+s.name.toUpperCase():'LOJAS G · ESTOQUE 99';document.querySelectorAll('aside .brand small').forEach(function(el){if(el.textContent!==t)el.textContent=t});
 }
@@ -3407,6 +3410,13 @@ function paused(){try{return localStorage.getItem('lojasg.estoque99.fx-pause')==
 window.e99FxPause=function(on){try{localStorage.setItem('lojasg.estoque99.fx-pause',on?'1':'0')}catch(e){}document.querySelectorAll('.fx-pause').forEach(function(b){b.textContent=on?'▶ Retomar animação':'⏸ Pausar animação';b.setAttribute('aria-pressed',on?'true':'false')});[login,home].forEach(function(f){if(f)f.kick(true)})};
 function pauseBtn(host){if(host&&host.classList.contains('hero-home'))host=host.querySelector('.toolbar')||host;if(!host||host.querySelector(':scope>.fx-pause'))return;var b=document.createElement('button');b.type='button';b.className='fx-pause';var on=paused();b.textContent=on?'▶ Retomar animação':'⏸ Pausar animação';b.setAttribute('aria-pressed',on?'true':'false');b.onclick=function(){window.e99FxPause(!paused())};host.appendChild(b)}var CALM=window.__osReduce?.55:1;
 var GOLD=[[255,58,40],[255,92,64],[230,30,24],[255,140,110]],BLUE=[[255,40,60],[200,20,30],[255,170,150],[255,70,50]];
+/* v116: o S de partículas (entrada e Início) segue a cor de destaque do tema (--neon-rgb / --neon-hot-rgb), sem mudar forma nem brilho */
+function themeRgb(n,d){try{var v=getComputedStyle(document.documentElement).getPropertyValue(n).trim().split(',').map(Number);if(v.length===3&&v.every(function(x){return x>=0&&x<=255}))return v}catch(e){}return d}
+function mixc(a,b,t){return [0,1,2].map(function(i){return Math.round(a[i]+(b[i]-a[i])*t)})}
+function themePal(){var n=themeRgb('--neon-rgb',[255,42,31]),h=themeRgb('--neon-hot-rgb',[255,138,122]),d=mixc(n,[0,0,0],.18);
+  var g=[n,mixc(n,h,.35),d,h],b=[mixc(n,h,.6),mixc(n,[0,0,0],.3),h,mixc(n,h,.15)];for(var i=0;i<4;i++){GOLD[i].splice(0,3,g[i][0],g[i][1],g[i][2]);BLUE[i].splice(0,3,b[i][0],b[i][1],b[i][2])}}
+themePal();window.__e99SFx=window.__e99SFx||[];
+try{new MutationObserver(function(){themePal();window.__e99SFx.forEach(function(f){try{f()}catch(e){}})}).observe(document.documentElement,{attributes:true,attributeFilter:['data-e99-theme']})}catch(e){}
 function sampleG(n){var c=document.createElement('canvas'),S=240,m=S/2;c.width=S;c.height=S;var x=c.getContext('2d');x.fillStyle='#fff';x.save();x.translate(m-158,m-147);x.scale(3.2,3.2);x.fill(new Path2D('M42 14h30.5a7.5 7.5 0 0 1 0 15H42a3.5 3.5 0 0 0 0 7H58a21 21 0 0 1 0 42H27.5a7.5 7.5 0 0 1 0-15H58a6 6 0 0 0 0-12H42a18.5 18.5 0 0 1 0-37z'));x.restore();
   var d=x.getImageData(0,0,S,S).data,pts=[];for(var y=0;y<S;y+=2)for(var X=0;X<S;X+=2)if(d[(y*S+X)*4+3]>140)pts.push([(X-S/2)/(S/2),(y-S/2)/(S/2)]);
   var out=[];for(var i=0;i<n;i++){var p=pts[(Math.random()*pts.length)|0]||[0,0];out.push([p[0]+(Math.random()-.5)*.012,p[1]+(Math.random()-.5)*.012])}return out}
@@ -3417,6 +3427,7 @@ function Field(layout,few){var cv=document.createElement('canvas');cv.className=
     /* agrupa por cor: troca a cor do pincel 8 vezes por quadro em vez de 1800 (a soma "lighter" não depende da ordem, o desenho fica igual) */
     parts.sort(function(a,b){return a.cs<b.cs?-1:a.cs>b.cs?1:0});
     stars=[];for(var i=0;i<(mobile?60:140);i++)stars.push({x:Math.random(),y:Math.random(),s:Math.random()*1.2+.3,tw:Math.random()*6.28});built=true}
+  window.__e99SFx.push(function(){if(!parts)return;parts.forEach(function(q){q.cs='rgb('+q.c[0]+','+q.c[1]+','+q.c[2]+')'});parts.sort(function(a,b){return a.cs<b.cs?-1:a.cs>b.cs?1:0});last=0;if(!raf)raf=requestAnimationFrame(frame)});
   function size(){var r=cv.getBoundingClientRect();dpr=Math.min(2,window.devicePixelRatio||1);var W=Math.max(1,Math.round(r.width*dpr)),H=Math.max(1,Math.round(r.height*dpr));if(W!==cv.width||H!==cv.height){cv.width=W;cv.height=H}w=W;h=H}
   /* v90: no máximo 30 quadros/s e para ~4 s depois de assentar (volta ao tocar/mover perto) */
   function frame(now){raf=0;if(!visible&&cv.isConnected&&!document.hidden){var vr=cv.getBoundingClientRect();visible=vr.width>0&&vr.bottom>0&&vr.top<innerHeight&&vr.right>0&&vr.left<innerWidth}if(!visible||document.hidden||!cv.isConnected||!document.body.classList.contains('dark'))return;if(now-last<32&&!still()){raf=requestAnimationFrame(frame);return}last=now;if(dirty||!hasRO){dirty=false;size()}if(!built)build();var t=(now-t0)/1000*CALM;reduce=still();ang=reduce?.2:Math.sin(t*.3)*.32;
@@ -7768,5 +7779,18 @@ function mark(){var l=document.querySelectorAll('img');for(var i=0;i<l.length;i+
 window.e99LogoPaint=function(){paint(true)};
 function boot(){paint(true);try{new MutationObserver(function(){paint()}).observe(document.documentElement,{attributes:true,attributeFilter:['data-e99-theme']});}catch(e){}['render','renderAuth'].forEach(function(n){var f=window[n];if(typeof f!=='function'||f.__lg)return;var w=function(){var r=f.apply(this,arguments);try{mark()}catch(e){}return r};w.__lg=true;window[n]=w})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();setTimeout(boot,500)})();
+</script>
+<style id="v116-s-css">
+/* v116 (pedido do dono): nenhum S vermelho — o S da abertura segue a cor de destaque do tema (mesma letra, forma e brilho).
+   O S de partículas e o logo sazonal são recoloridos no JS (space-js / logoSvg); o logo da marca já seguia o tema (v114). */
+html[data-e99-theme] #stok-intro{background:radial-gradient(ellipse at 50% 14%,rgba(var(--neon-rgb),.16) 0,#0b0809 36%,#020203 76%,#000 100%)!important}
+html[data-e99-theme] #stok-intro .si-scan{stroke:var(--neon-hot);filter:drop-shadow(0 0 4px var(--neon))}
+html[data-e99-theme] #stok-intro .si-mark{fill:var(--neon)}
+html[data-e99-theme] #stok-intro .si-sub{color:var(--neon-hot)}
+@keyframes si-stock{0%{fill:#292d32}35%{fill:var(--neon,#ff6047);stroke:var(--neon-hot,#ffb5a3);filter:drop-shadow(0 0 3px var(--neon,#ff3828))}100%{fill:#292d32;stroke:#777d85;filter:none}}
+</style>
+<script id="v116-s-js">
+/* v116: ao trocar o tema, o logo sazonal (tela de entrar e menu) é redesenhado na cor nova */
+(function(){try{new MutationObserver(function(){if(window.e99ApplySeason)window.e99ApplySeason()}).observe(document.documentElement,{attributes:true,attributeFilter:['data-e99-theme']})}catch(e){}if(window.e99ApplySeason)setTimeout(window.e99ApplySeason,0)})();
 </script>
 </body></html>
