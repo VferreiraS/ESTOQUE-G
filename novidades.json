@@ -2,6 +2,13 @@
  "fonte": "CLAUDE.md (tabela de versões) + git log",
  "versoes": [
   {
+   "v": 119,
+   "data": "2026-11-02",
+   "titulo": "Avisos no topo estilo \"Dynamic Island\"",
+   "descricao": "Com o site aberto, mensagens do chat, prazos e notas fiscais novas aparecem numa cápsula escura que desce no topo, com avatar, título, mensagem e a cor do tema. Toque para abrir a tela do aviso. Sem animação com Efeitos desligados ou \"menos movimento\". Não usa notificação do sistema.",
+   "cat": "novo"
+  },
+  {
    "v": 118,
    "data": "2026-11-02",
    "titulo": "Som de login toda vez que o app abre",

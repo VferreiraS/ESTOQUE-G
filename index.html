@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="118"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="119"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -7832,6 +7832,44 @@ function onGesture(){if(pending&&!played)attempt(true)}
 document.addEventListener('visibilitychange',function(){if(document.hidden){hiddenAt=Date.now();return}if(hiddenAt&&Date.now()-hiddenAt>60000){played=false;pending=false;attempt(false)}});
 W.e99LoginSound={played:function(){return played},pending:function(){return pending},count:function(){return W.__e99LoginSounds}};
 setTimeout(function(){attempt(false)},200);
+})();
+</script>
+<style id="v119-island-css">
+/* v119: aviso estilo "Dynamic Island" no topo (cápsula escura, avatar, título, mensagem, cor do tema) */
+#e99-island{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:100002;transform:translate(-50%,-140%);width:min(420px,calc(100% - 24px));display:flex;align-items:center;gap:12px;padding:10px 14px 10px 10px;border-radius:999px;background:#050506;color:#F4F4F6;border:1px solid rgba(var(--neon-rgb,255,42,31),.45);box-shadow:0 10px 30px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04) inset;cursor:pointer;opacity:0;pointer-events:none;transition:transform .42s cubic-bezier(.2,1.2,.3,1),opacity .2s}
+#e99-island.on{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+#e99-island .ii-av{width:36px;height:36px;border-radius:50%;flex:none;display:grid;place-items:center;font:700 15px/1 var(--font-head,system-ui);background:var(--neon,#FF2A1F);color:var(--neon-ink,#fff);overflow:hidden}
+#e99-island .ii-av img{width:100%;height:100%;object-fit:cover}
+#e99-island .ii-tx{min-width:0;flex:1}
+#e99-island .ii-t{display:block;font:650 .875rem/1.25 var(--font-text,system-ui);color:var(--neon,#FF2A1F);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#e99-island .ii-m{display:block;font:400 .8125rem/1.3 var(--font-text,system-ui);color:#E6E6EA;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#e99-island .ii-dot{width:8px;height:8px;border-radius:50%;background:var(--neon,#FF2A1F);box-shadow:0 0 8px var(--neon,#FF2A1F);flex:none}
+body.fx-user-off #e99-island,html.e99-calm #e99-island{transition:none!important}
+@media (prefers-reduced-motion:reduce){#e99-island{transition:none!important}}
+</style>
+<script id="v119-island-js">
+(function(){
+'use strict';
+/* v119: aviso dentro do site (sem notificação do sistema) para chat, prazos e notas. e99Island({title,msg,avatar,initial,page}). */
+var D=document,el=null,timer=0,q=[];
+function calm(){try{return document.body.classList.contains('fx-user-off')||matchMedia('(prefers-reduced-motion: reduce)').matches||localStorage.getItem('lojasg.estoque99.fx-pause')==='1'}catch(x){return false}}
+function e(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function box(){if(el&&el.isConnected)return el;el=D.createElement('div');el.id='e99-island';el.setAttribute('role','status');el.setAttribute('aria-live','polite');
+  el.addEventListener('click',function(){var p=el.dataset.page;hide();if(p&&typeof go==='function')try{go(p)}catch(x){}});D.body.appendChild(el);return el}
+function hide(){clearTimeout(timer);if(el)el.classList.remove('on');setTimeout(next,calm()?0:450)}
+function next(){if(!q.length||(el&&el.classList.contains('on')))return;var o=q.shift(),b=box();
+  D.documentElement.classList.toggle('e99-calm',calm());
+  var av=o.avatar&&/^(blob:|data:image\/)/.test(o.avatar)?'<img alt="" src="'+e(o.avatar)+'">':e(String(o.initial||o.title||'S').trim().charAt(0).toUpperCase());
+  b.innerHTML='<span class="ii-av" aria-hidden="true">'+av+'</span><span class="ii-tx"><b class="ii-t">'+e(o.title)+'</b><span class="ii-m">'+e(o.msg)+'</span></span><span class="ii-dot" aria-hidden="true"></span>';
+  b.dataset.page=o.page||'';void b.offsetWidth;b.classList.add('on');clearTimeout(timer);timer=setTimeout(hide,o.ms||5000)}
+window.e99Island=function(o){if(!o||!o.title||document.hidden||typeof authSession==='undefined'||!authSession)return false;if(q.length>4)q.shift();q.push(o);next();return true};
+window.e99IslandHide=hide;
+/* chat e prazos já passam por showSiteNotification (só com permissão do sistema); com o site aberto, mostra a cápsula */
+var sn=window.showSiteNotification;window.showSiteNotification=function(title,body,tag,pg){if(!document.hidden)window.e99Island({title:title,msg:body,page:pg||'',initial:/^Chat · (.)/.test(title)?title.replace(/^Chat · /,''):'!'});return sn?sn.apply(this,arguments):Promise.resolve(false)};
+if(typeof emitDesktop==='function'){var ed=emitDesktop;emitDesktop=function(title,body){if(!document.hidden)window.e99Island({title:title,msg:body,page:'alerts',initial:'!'});return ed.apply(this,arguments)}}
+/* notas fiscais novas que chegam da equipe */
+try{var lastNf=null;setInterval(function(){if(typeof authSession==='undefined'||!authSession||typeof state!=='object'||!state)return;var ids=(state.nfs||[]).map(function(n){return n.id});if(lastNf===null||lastNf.store!==authSession.storeKey){lastNf={store:authSession.storeKey,ids:ids};return}
+  var novo=(state.nfs||[]).filter(function(n){return lastNf.ids.indexOf(n.id)<0});lastNf.ids=ids;if(novo.length)window.e99Island({title:novo.length>1?novo.length+' notas fiscais novas':'Nota fiscal nova',msg:novo.length>1?'Chegaram pela equipe':'NF '+(novo[0].number||'')+(novo[0].supplier?' · '+novo[0].supplier:''),page:'nfs',initial:'N'})},2000)}catch(x){}
 })();
 </script>
 </body></html>
