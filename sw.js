@@ -1,17 +1,17 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
 const CACHE_PREFIX = 'estoque99-';
-const CACHE = 'estoque99-v122';
+const CACHE = 'estoque99-v123';
 const VERSION = (CACHE.match(/-v(\d+)$/) || [])[1] || '';
 const CORE = [
   './index.html',
   './manifest.webmanifest',
   './privacidade.html',
   './termos.html',
-  './icons/apple-touch-v36.png',
-  './icons/icon-192-v36.png',
-  './icons/icon-512-v36.png',
-  './icons/icon-maskable-v36.png',
-  './icons/favicon-v36.png',
+  './icons/apple-touch-v123.png',
+  './icons/icon-192-v123.png',
+  './icons/icon-512-v123.png',
+  './icons/icon-maskable-v123.png',
+  './icons/favicon-v123.png',
   /* v86: bibliotecas carregadas sob demanda ficam guardadas para funcionar sem internet */
   './vendor/zxing.min.js',
   './vendor/fuse.min.js',

@@ -28,8 +28,8 @@ const CONTRAST=()=>{const lum=c=>{const m=c.match(/[\d.]+/g).map(Number);const f
    await P.evaluate(()=>go('home'));await P.waitForTimeout(900);await P.evaluate(()=>document.fonts.ready);
    const r=await P.evaluate(([t,e])=>{const cs=getComputedStyle(document.documentElement);const btn=document.querySelector('#view button.primary');const h=document.querySelector('#view h1, #view h2');const clk=document.querySelector('.e99-clock .clk-time');
      return {neon:cs.getPropertyValue('--neon').trim().toUpperCase()===e.neon,btn:btn&&getComputedStyle(btn).backgroundColor===e.btn,pill:btn&&parseFloat(getComputedStyle(btn).borderTopLeftRadius)>=20,
-      head:h&&/Space Grotesk/.test(getComputedStyle(h).fontFamily),body:/Inter/.test(getComputedStyle(document.body).fontFamily),clock:!clk||/Space Grotesk/.test(getComputedStyle(clk).fontFamily),
-      loaded:document.fonts.check('600 20px "Space Grotesk"')&&document.fonts.check('400 16px Inter'),noOswald:!(h&&/Oswald/.test(getComputedStyle(h).fontFamily.split(',')[0])),
+      head:h&&(document.documentElement.classList.contains('e99-apple')?/-apple-system/:/Space Grotesk/).test(getComputedStyle(h).fontFamily),body:(document.documentElement.classList.contains('e99-apple')?/-apple-system/:/Inter/).test(getComputedStyle(document.body).fontFamily),clock:!clk||/Space Grotesk/.test(getComputedStyle(clk).fontFamily),
+      loaded:document.documentElement.classList.contains('e99-apple')||document.fonts.check('600 20px "Space Grotesk"')&&document.fonts.check('400 16px Inter'),noOswald:!(h&&/Oswald/.test(getComputedStyle(h).fontFamily.split(',')[0])),
       radius:parseFloat(getComputedStyle(document.querySelector('#view .panel')).borderTopLeftRadius)>=20,dark:true}},[t,EXP[t]]);
    ok(r.neon&&r.btn,nome+' '+t+': cores do tema (destaque e botão)');ok(r.pill&&r.radius,nome+' '+t+': botões em pílula e cartões arredondados');
    ok(r.head&&r.body&&r.clock&&r.noOswald,nome+' '+t+': títulos e relógio em Space Grotesk, texto em Inter (sem Oswald)');ok(r.loaded,nome+' '+t+': fontes carregadas do próprio site');

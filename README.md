@@ -3,6 +3,12 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 123
+
+- **Visual no estilo do iOS 27:** cartões de vidro escuro com brilho na borda, cantos grandes, botões em cápsula, barra de abas flutuante no celular e a fonte do sistema nos aparelhos Apple. Temas de cor continuam.
+- **Ícone novo (original):** squircle de vidro escuro com o S da marca em gradiente — no app, na tela inicial do celular e na aba do navegador.
+- **Abertura consertada:** fundo opaco (a tela de entrar não aparece mais por trás), o S dentro do ícone; termina em ~2 s e libera o formulário (≤6 s mesmo com aparelho lento).
+
 ## Versão 122
 
 - **Só o essencial (pedido do dono: "Remova tudo, menos o chat"):** saíram o S de partículas, a grade Tron, os rastros de luz, o holograma da conferência, "Pausar animação" e a preferência Efeitos; a música ambiente e o botão ♫; o aviso "ilha"; o relógio do Início; os selos e os perfis (página, capa, foto); o gráfico do Início; a aba "O que mudou?"; e o Authenticator.
