@@ -37,7 +37,7 @@ const vals=(p,sk)=>p.evaluate(sk=>({inv:localStorage.getItem('lojasg.estoque99.a
   raw=await rawLS(P);
   ok(!raw.includes('Convidado Secreto A')&&!raw.includes('Membro Escondido A')&&!raw.includes('BRIEF-SECRETO A'),nome+': dados da conta A não ficam mais em claro no localStorage');
   ok(raw.includes('Convidado Secreto B')&&!raw.includes('BRIEF-SECRETO'),nome+': dados da conta B continuam guardados até ela entrar (resumo da IA apagado)');
-  ok(await until(P,()=>new Promise(res=>{const r=indexedDB.open('estoque99-profiles',1);r.onsuccess=()=>{const db=r.result,tx=db.transaction('p','readonly'),q=tx.objectStore('p').get('me|'+authSession.storeKey);tx.oncomplete=()=>{db.close();res(!!q.result&&q.result.__e99s===1)}}}),null,10000),nome+': perfil/foto da conta A fica cifrado no IndexedDB');
+  ok(await until(P,async()=>!(await indexedDB.databases()).some(d=>d.name==='estoque99-profiles'),null,8000),nome+': v122: perfis saíram — banco de perfis (com fotos) apagado do aparelho');
   
   ok(await P.evaluate(()=>{const r=JSON.parse(localStorage.getItem(authSession.storeKey));return !JSON.stringify(r).includes('Convidado')}),nome+': registro da conta está cifrado (sem os dados em claro)');
   /* novo dado gravado também fica cifrado */
@@ -55,14 +55,13 @@ const vals=(p,sk)=>p.evaluate(sk=>({inv:localStorage.getItem('lojasg.estoque99.a
   await P.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>{try{d.close()}catch(e){}});authShownCode=null;window.confirm=()=>true;return authLogout()});await P.waitForTimeout(800);
   await L.login(P,la,'4321');await P.waitForTimeout(2500);const va3=await vals(P,ska);
   ok(!!(await P.evaluate(()=>authSession))&&/Convidado Secreto A/.test(va3.inv)&&va3.nw==='NOVO-BRIEF-XYZ',nome+': depois de trocar a senha os dados continuam');
-  ok(await until(P,()=>new Promise(res=>{const r=indexedDB.open('estoque99-profiles',1);r.onsuccess=()=>{const db=r.result,tx=db.transaction('p','readonly'),q=tx.objectStore('p').get('me|'+authSession.storeKey);tx.oncomplete=()=>{db.close();window.e99Seal.open(q.result,'prof|me|'+authSession.storeKey).then(v=>res(!!v&&v.name==='Nome A'))}}}),null,8000),nome+': foto/perfil continua abrindo depois de trocar a senha');
   /* conta B: não vê os dados da A e migra os dela */
   await P.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>{try{d.close()}catch(e){}});window.confirm=()=>true;return authLogout()});await P.waitForTimeout(800);
   await L.login(P,lb,'1234');await P.waitForTimeout(2500);
   ok((await vals(P,ska)).inv===null,nome+': conta B não lê os dados da conta A');
   const vb=await vals(P,skb);ok(/Convidado Secreto B/.test(vb.inv)&&vb.brief===null,nome+': conta B continua com os dados dela');
   raw=await rawLS(P);ok(!SECRETS.some(s=>raw.includes(s)),nome+': nada dos dados de exemplo fica em claro no localStorage');
-  ok(await until(P,f=>new Promise(res=>{const r=indexedDB.open('estoque99-profiles',1);r.onsuccess=()=>{const db=r.result,tx=db.transaction('p','readonly'),q=tx.objectStore('p').getAll();tx.oncomplete=()=>{db.close();res(!JSON.stringify(q.result).includes(f))}}}),Buffer.from('FOTO-SECRETA'.repeat(20)).toString('base64').slice(0,40),10000),nome+': nenhuma foto/perfil fica em claro no IndexedDB (A e B)');
+  ok(await P.evaluate(async()=>!(await indexedDB.databases()).some(d=>d.name==='estoque99-profiles')),nome+': nenhuma foto/perfil fica no IndexedDB (A e B; v122: banco apagado)');
   await P.close();
  }
  /* convite de auxiliar continua funcionando com a lista cifrada */

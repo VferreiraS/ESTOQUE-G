@@ -5,5 +5,4 @@ const L=require('./lib.js');const {ok,until}=L;
  ok(await until(A,()=>state.team.some(t=>t.login&&/bruno/i.test(t.name+t.login)),null,90000),'auxiliar sem e-mail confirmado entra na Equipe');
  await A.evaluate(()=>go('team'));await A.waitForTimeout(600);ok(/Bruno/.test(await A.textContent('#view')),'aparece na aba Equipe');
  ok(await until(A,()=>{const p=state.team.find(t=>/bruno/i.test(t.name+t.login));return p&&state.corridors.some(c=>c.owner===p.id)},null,15000),'recebe corredor sem responsável');
- await A.evaluate(()=>go('profile'));await A.waitForTimeout(600);const n=await A.evaluate(()=>[...document.querySelectorAll('.prof-people button b')].map(x=>x.textContent).filter(x=>/Bruno/.test(x)).length);ok(n===1,'aparece uma vez em Pessoas');
  console.log('errors',errs);await b.close()})();

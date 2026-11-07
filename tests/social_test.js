@@ -23,11 +23,6 @@ async function verifyAll(){const r=await j(`${AU}/emulator/v1/projects/${P}/oobC
  // contas confirmadas -> Equipe e corredores
  ok(await until(A,()=>{const a=state.team.find(t=>t.id==='ana');return !!(a&&a.login)},null,40000),'Ana (Equipe) ligada à conta confirmada');
  ok(await until(A,()=>state.corridors.filter(c=>c.owner==='ana').length===3,null,10000),'corredores sem responsável foram para a Ana');
- await A.evaluate(()=>{openProfile('me')});await A.waitForTimeout(800);
- ok(await A.evaluate(()=>!!document.querySelector('#view .prof-head h1 .vbadge')),'selo verificado no meu perfil');
- const names=await A.evaluate(()=>[...document.querySelectorAll('.prof-people button b')].map(b=>b.textContent));ok(names.filter(n=>/^Ana/.test(n)).length===1,'Ana aparece uma vez só em Pessoas ('+names.join(', ')+')');
- // B vê o selo do gestor e não tem selo
- await B.evaluate(()=>go('profile'));ok(await until(B,()=>{const l=[...document.querySelectorAll('.prof-people button')];return l.some(x=>/Vitor/.test(x.innerText)&&x.querySelector('.vbadge[data-vbadge=rei]'))&&!!document.querySelector('.prof-head h1 .vbadge[data-vbadge=peao]')},null,30000),'aux vê o Rei só no Vitor (ela tem peão)');
  // digitando
  await A.evaluate(()=>go('chat'));await B.evaluate(()=>go('chat'));await B.waitForTimeout(1500);await B.type('#chat-text','oi',{delay:80});
  ok(await until(A,()=>/digitando/.test((document.getElementById('chat-typing')||{}).textContent||''),null,15000),'gestor vê "Ana está digitando…"');await B.fill('#chat-text','');
@@ -50,5 +45,4 @@ async function verifyAll(){const r=await j(`${AU}/emulator/v1/projects/${P}/oobC
  await A.evaluate(()=>go('corridors'));await A.waitForTimeout(500);ok(await A.evaluate(()=>!!document.querySelector('.cor-dist button:not([disabled])')),'botão distribuir corredores');
  ok(await B.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'sem rolagem lateral no iPhone');
  await B.evaluate(()=>go('chat'));await B.waitForTimeout(800);await B.locator('.chat-wrap').screenshot({path:require('os').tmpdir()+'/stok-social-iphone.png'});
- await A.evaluate(()=>openProfile('me'));await A.waitForTimeout(900);await A.screenshot({path:require('os').tmpdir()+'/stok-social-prof.png'});
  console.log('errors',errs);await b.close()})();

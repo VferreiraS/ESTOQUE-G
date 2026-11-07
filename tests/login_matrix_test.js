@@ -4,7 +4,6 @@ async function tryLogin(p,login,pw){await p.fill('#auth-form input[name=login]',
 async function pull(p,email,login){await p.waitForSelector('#cloud-pull[open]');if(login&&await p.$('#cloud-pull input[name=login]'))await p.fill('#cloud-pull input[name=login]',login);await p.fill('#cloud-pull input[name=email]',email);await p.click('#cloud-pull button.primary');return until(p,()=>!!authSession,null,20000)}
 (async()=>{const b=await L.chromium.launch();const errs=[];const mk=async(dev)=>{const c=await b.newContext(dev==='pc'?{viewport:{width:1300,height:900}}:L.devices['iPhone 13']);const p=await c.newPage();p.on('pageerror',e=>errs.push(e.stack.split('\n').slice(0,3).join(' | ')));p.on('dialog',d=>d.accept());return p};
  const G=await mk('pc'),X=await mk('ip');const gl='Gestor'+Date.now();ok(await L.gestorWithTeam(G,gl),'gestor com equipe');const gLogin=gl.toLowerCase();
- await G.evaluate(()=>go('profile'));await G.waitForTimeout(500);await G.click('text=Editar perfil');await G.fill('#prof-edit input[name=user]','@chefe.loja');await G.fill('#prof-edit input[name=name]','Vitor Chefe');await G.click('#prof-edit button[type=submit]');await G.waitForTimeout(1500);
  const gEmail=await G.evaluate(async()=>{for(let i=0;i<40&&!(window.e99Cloud&&e99Cloud.user());i++)await new Promise(r=>setTimeout(r,500));return e99Cloud.user().email});await G.waitForTimeout(3000);
  const link=await L.makeInvite(G,'Ana Clara');await L.auxAccept(X,link,null,'4321');const xLogin=await X.evaluate(()=>authSession.record.login);const xEmail=await X.evaluate(async()=>{for(let i=0;i<40&&!(window.e99Cloud&&e99Cloud.user());i++)await new Promise(r=>setTimeout(r,500));return e99Cloud.user().email});await X.waitForTimeout(3000);
  for(const [p,login,pw,email,nm] of [[G,gLogin,'1234',gEmail,'gestor (PC)'],[X,xLogin,'4321',xEmail,'auxiliar (iPhone)']]){
@@ -14,7 +13,7 @@ async function pull(p,email,login){await p.waitForSelector('#cloud-pull[open]');
   await logout(p);await p.evaluate(()=>{Object.keys(localStorage).filter(k=>k.startsWith('lojasg.estoque99.account')).forEach(k=>localStorage.removeItem(k))});await p.reload();await p.waitForTimeout(1500);
   await tryLogin(p,login,pw);ok(await pull(p,email),nm+': conta apagada do aparelho volta pela nuvem');ok(await p.evaluate(l=>authLoginName(authSession.record.login)===l,login),nm+': mesmo login');
   await logout(p);ok(await tryLogin(p,login,pw),nm+': depois entra normal')}
- await logout(G);ok(await tryLogin(G,'@chefe.loja','1234'),'gestor: entra pelo @usuário do perfil');await logout(G);ok(await tryLogin(G,'Vitor Chefe','1234'),'gestor: entra pelo nome do perfil');
+ 
  // aparelho novo
  const N=await mk('ip');await N.goto('http://localhost:8000/index.html?ntfy='+L.N);await N.waitForTimeout(1500);await tryLogin(N,xLogin,'4321');ok(await pull(N,xEmail),'aparelho novo: auxiliar entra pelo login + e-mail');ok(await until(N,()=>!!(window.e99Team&&e99Team.get()),null,20000),'aparelho novo: já volta para a equipe');
  await logout(N);const N2=await mk('pc');await N2.goto('http://localhost:8000/index.html?ntfy='+L.N);await N2.waitForTimeout(1500);await tryLogin(N2,gEmail,'1234');ok(await pull(N2,gEmail,gLogin),'aparelho novo: gestor entra pelo e-mail');ok(await N2.evaluate(()=>authSession.payload.role==='estoque'),'mantém o papel salvo (não vira gestor)');

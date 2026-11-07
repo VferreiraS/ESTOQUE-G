@@ -47,7 +47,7 @@ const st=p=>p.evaluate(()=>e99Conf.state());
   await p.waitForTimeout(4500);ok(await count(p)===1,'etiqueta aparecendo de novo no vídeo não conta sem "Próxima caixa" (modo toque)');
   ok(await p.isVisible('#cf-next')&&await p.isEnabled('#cf-next'),'botão "Próxima caixa" fica ativo depois de contar');
   await p.click('#cf-next');ok(await until(p,()=>+document.getElementById('cf-count').textContent===2,null,12000),'depois de "Próxima caixa" a mesma etiqueta conta de novo (02)');
-  ok(await p.evaluate(()=>!document.getElementById('conf-dlg').classList.contains('holo-off')&&document.getAnimations().some(a=>a.animationName==='cf-shine'&&a.playState==='running')),'v97: holograma ligado (brilho correndo no contador) enquanto a câmera lê');
+  ok(await p.evaluate(()=>!document.getAnimations().some(a=>/cf-shine|cf-scanline/.test(a.animationName||''))),'v122: sem holograma (contador parado) enquanto a câmera lê');
   ok(await p.isHidden('#cf-torch')&&await p.isHidden('#cf-switch')&&await p.evaluate(()=>e99Conf.cam().devs===1),'v97: câmera do teste sem lanterna e só 1 câmera: "Lanterna" e "Trocar câmera" não aparecem');
   ok(await p.isVisible('#cf-focus'),'v97: "Ajustar foco" visível com a câmera ligada');
   await p.click('#cf-histbtn');const hl=await p.evaluate(()=>({li:[...document.querySelectorAll('#cf-hist li')].map(l=>l.textContent),n:e99Conf.current().reads.length,hn:document.getElementById('cf-hn').textContent}));
@@ -187,10 +187,6 @@ const st=p=>p.evaluate(()=>e99Conf.state());
   ok(k.adv.focusMode==='continuous'&&k.adv.exposureMode==='continuous'&&k.zoom===1.5&&k.adv.zoom===1.5,'v97: aplica foco contínuo, exposição contínua e zoom leve 1,5× ('+JSON.stringify(k.adv)+')');
   await p.click('#cf-yes');ok(await until(p,()=>+document.getElementById('cf-count').textContent===1,null,5000),'v97: de perto conta 01');
   await p.waitForTimeout(400);await p.evaluate(()=>{document.getElementById('conf-dlg').dispatchEvent(new PointerEvent('pointermove',{clientX:340,clientY:120,pointerType:'touch',buttons:1,bubbles:true}))});await p.waitForTimeout(120);
-  await p.screenshot({path:'scratchpad/v97/holograma.png'});
-  ok(await p.evaluate(()=>Math.abs(+getComputedStyle(document.getElementById('conf-dlg')).getPropertyValue('--px'))>.3),'v97: holograma: reflexo/parallax segue o dedo');
-  await p.evaluate(()=>window.dispatchEvent(new Event('blur')));ok(/paused/.test(await shine(p))&&!/running/.test(await shine(p))&&await p.evaluate(()=>document.getElementById('conf-dlg').classList.contains('holo-pause')),'v97: tela sem foco: holograma congela');
-  await p.evaluate(()=>window.dispatchEvent(new Event('focus')));ok(/running/.test(await shine(p)),'v97: volta o foco: holograma anda de novo');
   await p.evaluate(()=>{window.__ac=[]});await p.click('#cf-focus');ok(await until(p,()=>window.__ac.some(x=>/single-shot/.test(x)),null,3000)&&await until(p,()=>/continuous/.test(window.__ac[window.__ac.length-1]||''),null,4000),'v97: "Ajustar foco" pede foco único e volta ao contínuo');
   ok(await p.textContent('#cf-zoom')==='1,5×','v97: botão de zoom mostra 1,5×');await p.click('#cf-zoom');ok(await until(p,()=>e99Conf.cam().zoom===2&&document.getElementById('cf-zoom').textContent==='2×',null,3000)&&await p.evaluate(()=>/"zoom":2/.test(window.__ac[window.__ac.length-1])),'v97: zoom troca para 2× de verdade (applyConstraints)');
   ok(await p.isVisible('#cf-torch'),'v97: lanterna aparece quando a câmera tem torch');await p.click('#cf-torch');
@@ -206,8 +202,7 @@ const st=p=>p.evaluate(()=>e99Conf.state());
   await openConf(p,'conff'+Date.now().toString(36));const read=await until(p,()=>{const a=document.getElementById('cf-ask');return a&&!a.hidden},null,20000);
   await p.evaluate(()=>document.getElementById('conf-dlg').dispatchEvent(new PointerEvent('pointermove',{clientX:20,clientY:20,pointerType:'mouse',bubbles:true})));await p.waitForTimeout(150);
   const r=await p.evaluate(()=>{const d=document.getElementById('conf-dlg'),s=d.querySelector('.cf-scan').getBoundingClientRect();return {off:d.classList.contains('holo-off'),px:+getComputedStyle(d).getPropertyValue('--px')||0,scan:getComputedStyle(d.querySelector('.cf-countbox'),'::after').display,run:document.getAnimations().filter(a=>a.playState==='running'&&/cf-shine|cf-scanline/.test(a.animationName)).length,w:s.width,full:Math.abs(d.getBoundingClientRect().height-innerHeight)<2,sx:d.scrollWidth-d.clientWidth,small:[...d.querySelectorAll('button')].filter(b=>b.offsetParent&&b.getBoundingClientRect().height<44).length}});
-  const still=fx!=='on';ok(read&&r.full&&r.sx<=0&&!r.small&&(still?(r.off&&!r.run&&r.px===0&&r.scan==='none'):(!r.off&&r.run>=2&&r.px!==0)),'v97: '+nm+': lê o código, tela cheia, '+(still?'holograma parado (sem brilho, varredura nem parallax)':'holograma animado com parallax')+' ('+JSON.stringify(r)+')');
-  if(nm==='PC Efeitos ligados')await p.screenshot({path:'scratchpad/v97/holograma-pc.png'});
+  ok(read&&r.full&&r.sx<=0&&!r.small&&!r.run,'v122: '+nm+': lê o código, tela cheia, sem holograma');
   await c.close()}
  await b2.close();try{fs.unlinkSync(fileC)}catch(e){}
  /* ================= E) duas câmeras + ajuda depois de 5 s sem leitura ================= */

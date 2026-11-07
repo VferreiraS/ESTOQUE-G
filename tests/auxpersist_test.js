@@ -14,5 +14,4 @@ const L=require('./lib.js');const {ok,until}=L;
  ok(!!await B.$('#chat-text'),'chat composer available');
  await B.evaluate(()=>chatSend('mensagem depois de reabrir'));
  await A.evaluate(()=>go('chat'));let got=false;for(let i=0;i<15&&!got;i++){await A.waitForTimeout(1000);got=await A.evaluate(()=>/mensagem depois de reabrir/.test(document.getElementById('view').innerText))}ok(got,'gestor receives');
- await B.evaluate(()=>go('profile'));await B.waitForTimeout(1500);ok(/Repositora/.test(await B.textContent('#view')),'profile with cargo');
  console.log('errors',errs);await b.close()})();

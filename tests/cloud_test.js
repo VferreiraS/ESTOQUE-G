@@ -34,8 +34,6 @@ const doc=(path,tok)=>j(`${FS}/v1/projects/${P}/databases/(default)/documents/${
  ok(await verifyAll()>=2,'e-mails de confirmação enviados');
  await B.evaluate(()=>e99Cloud.after(true));await A.waitForTimeout(1500);await A.evaluate(()=>e99Cloud.after(true));
  ok(await until(A,()=>/e-mail confirmado/.test(e99AuxCardHTML()),null,15000),'gestor vê e-mail confirmado');
- // perfil do auxiliar chega ao gestor pela nuvem
- ok(await until(A,async(id)=>{const d=await new Promise(r=>{const q=indexedDB.open('estoque99-profiles');q.onsuccess=()=>r(q.result)});const ks=await new Promise(r=>{const t=d.transaction('p').objectStore('p').getAllKeys();t.onsuccess=()=>r(t.result)});return ks.some(k=>/\|fb[0-9a-f]+$/.test(k))},null,30000),'perfil do auxiliar chega pela nuvem');
  // resumo do dia na fila do robô (v121: sem piloto/IA — o próprio cloud-js prepara o resumo do dia)
  await A.evaluate(async()=>{Object.keys(localStorage).filter(k=>k.startsWith('lojasg.estoque99.cloud-daily:')).forEach(k=>localStorage.removeItem(k));await e99Cloud.after(true)});await A.waitForTimeout(3000);
  const q=await j(`${FS}/v1/projects/${P}/databases/(default)/documents/correio`,{headers:{Authorization:'Bearer owner'}});const mails=(q.b.documents||[]);ok(mails.length===1&&mails[0].fields.para.stringValue===bUid,'resumo do auxiliar na fila');

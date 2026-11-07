@@ -10,11 +10,10 @@ async function seed(p,login,role){return p.evaluate(async([l,r])=>{const s=await
  await A.goto('http://localhost:8000/index.html?ntfy='+L.N);await A.waitForTimeout(1500);await L.signup(A,'thomaz'+T);await A.evaluate(()=>go('chat'));
  await A.fill('#view form[onsubmit="chatJoin(event)"] input[name=code]',code);await A.fill('#view form[onsubmit="chatJoin(event)"] input[name=name]','Thomaz');await A.click('#view form[onsubmit="chatJoin(event)"] button');
  ok(await until(A,()=>!!(window.e99Team&&e99Team.get()),null,20000),'Thomaz entrou na equipe pelo código');
- await A.evaluate(()=>go('profile'));await A.waitForTimeout(500);await A.click('text=Editar perfil');await A.fill('#prof-edit input[name=name]','peludinho');await A.click('#prof-edit button[type=submit]');
- ok(await until(G,()=>{if(page!=='team')go('team');else render();return [...document.querySelectorAll('#view .cards .card.e99-acc h3')].some(h=>/peludinho/.test(h.textContent))},null,90000),'Equipe do dono mostra a conta do Thomaz (perfil "peludinho")');
+ ok(await until(G,()=>{if(page!=='team')go('team');else render();return [...document.querySelectorAll('#view .cards .card.e99-acc h3')].some(h=>/Thomaz/.test(h.textContent))},null,90000),'Equipe do dono mostra a conta do Thomaz');
  ok(await G.evaluate(()=>[...document.querySelectorAll('#view .cards .card.e99-acc h3')].some(h=>/\(você\)/.test(h.textContent))),'Equipe mostra o próprio dono');
  ok(await G.evaluate(()=>{const n=[...document.querySelectorAll('#view .cards .card h3')].map(h=>h.textContent);return n.filter(x=>/^Ana/.test(x)).length===1&&n[n.length-1]==='TODOS'}),'sem repetir colaborador e TODOS no fim');
- await G.click('#view .card.e99-acc .e99-acc-open');await G.waitForTimeout(500);ok(await G.evaluate(()=>page==='profile'),'Ver perfil abre o perfil');
+ ok(await G.evaluate(()=>!document.querySelector('#view .e99-acc-open')&&!!document.querySelector('#view .card.e99-acc .avatar')),'cartão só com nome e inicial (sem Ver perfil)');
  /* ---------- B: conta do PC com 'gestor' que não é do dono ---------- */
  const P=await (await b.newContext({viewport:{width:1440,height:900}})).newPage();P.on('pageerror',e=>errs.push(e.message));P.on('dialog',d=>d.accept());
  await P.goto('http://localhost:8000/index.html?ntfy='+L.N);await P.waitForTimeout(1500);

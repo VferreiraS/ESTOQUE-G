@@ -19,7 +19,7 @@ const CONTRAST=()=>{const lum=c=>{const m=c.match(/[\d.]+/g).map(Number);const f
   await L.signup(P,'tema'+nome+T);
   await P.evaluate(()=>{const t=new Date();const d=k=>{const x=new Date(t.getTime()-k*86400000);return x.toISOString().slice(0,10)};state.nfs=[0,0,1,2,2,2,4,6,6,9,11,13].map((k,i)=>({id:'n'+i,number:String(48000+i),supplier:'Fornecedor '+i,date:d(k),status:'Pendente',owner:'',notes:'',volumes:2}));return save()});
   await P.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>{try{d.close()}catch(e){}});go('home')});await P.waitForTimeout(800);
-  ok(await P.evaluate(()=>{const s=document.querySelector('.e99-trend svg');return !!s&&!!s.querySelector('.tr-line')&&/Notas fiscais por dia/.test(s.getAttribute('aria-label'))}),nome+': gráfico de linha no Início (com rótulo para leitor de tela)');
+  ok(await P.evaluate(()=>!document.querySelector('.e99-trend')),nome+': v122: sem gráfico no Início');
   for(const t of ['lilas','violeta','cinza']){
    await P.evaluate(()=>go('account'));await P.waitForTimeout(600);
    ok(await until(P,()=>!!document.querySelector('#pref-theme button[data-theme]'),null,6000),nome+' '+t+': escolha do tema em Preferências');
@@ -49,6 +49,6 @@ const CONTRAST=()=>{const lum=c=>{const m=c.match(/[\d.]+/g).map(Number);const f
  const c=await b.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});const Q=await c.newPage();Q.on('pageerror',e=>errs.push('rm '+e.message));
  await Q.goto('http://localhost:8000/index.html?ntfy='+L.N);await Q.waitForTimeout(1200);await L.signup(Q,'temarm'+T);
  await Q.evaluate(()=>{state.nfs=[{id:'a',number:'1',supplier:'X',date:new Date().toISOString().slice(0,10),status:'Pendente',owner:'',notes:'',volumes:1}];return save()});await Q.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>{try{d.close()}catch(e){}});go('home')});await Q.waitForTimeout(800);
- ok(await Q.evaluate(()=>!!document.querySelector('.e99-trend')&&document.querySelector('.e99-trend').getAnimations({subtree:true}).length===0),'menos movimento: gráfico sem animação');
+ ok(await Q.evaluate(()=>!document.querySelector('.e99-trend')),'menos movimento: sem gráfico (v122)');
  ok(await Q.evaluate(()=>!['lilas','violeta','cinza'].some(t=>document.documentElement.outerHTML.includes('data-e99-theme="claro"'))),'só temas escuros (sem modo claro)');
  console.log('shots',OUT);console.log('errors',errs);await b.close()})();

@@ -3,6 +3,12 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 122
+
+- **Só o essencial (pedido do dono: "Remova tudo, menos o chat"):** saíram o S de partículas, a grade Tron, os rastros de luz, o holograma da conferência, "Pausar animação" e a preferência Efeitos; a música ambiente e o botão ♫; o aviso "ilha"; o relógio do Início; os selos e os perfis (página, capa, foto); o gráfico do Início; a aba "O que mudou?"; e o Authenticator.
+- **Fica:** chat completo, NFs, conferência por câmera, plano, corredores, equipe, alertas, planilha, e-mails, Administração, barra de carregamento, som de abertura/login, logo S e o S da abertura. Senha perdida: código de recuperação ou e-mail.
+- Os dados dessas funções são apagados do aparelho ao abrir/entrar. Seções antigas abaixo (selos, Tron, música) são histórico.
+
 ## Versão 121
 
 - **IA removida do app (pedido do dono):** saíram o Assistente, os agentes (Ollama, OmniRoute, Gemini, Workers AI, NVIDIA), o Piloto automático, a Central de Agentes, "Resumir" e "melhorar texto" no chat, as análises por IA nas telas e os campos de chave/endereço de IA. Arquivos apagados: `cloudflare/` (Worker), `apps-script/ia.gs`, `central-agentes/` e os testes de IA. Os dados antigos de IA são apagados do aparelho ao abrir o app (o resto fica). As menções a IA nas versões antigas abaixo são só histórico.
@@ -59,7 +65,7 @@ Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio apare
 
 ## Versão 83
 - Tela de entrar limpa: Login ("Login, @usuário ou e-mail"), Senha com Mostrar, Manter conectado, Entrar e dois links discretos, "Esqueci a senha" e "Criar conta".
-- "Esqueci a senha" abre uma folha com as 3 formas de recuperar (pelo e-mail, pelo Authenticator, com o código de recuperação); "Importar conta protegida" fica em "Mais opções".
+- "Esqueci a senha" abre uma folha com as formas de recuperar (pelo e-mail ou com o código de recuperação); "Importar conta protegida" fica em "Mais opções".
 - Rodapé do login numa linha pequena ("Versão 83 · Privacidade · Termos") e © menor; o botão ♪ não aparece na tela de entrar.
 - Licença do leitor de código de barras (ZXing 0.21.3, Apache 2.0) saiu da tela de entrar e foi para Dados e ajuda: resumo em português e texto completo recolhido, com rolagem.
 - Fluidez: troca de tela mais curta (transform/opacity, respeita "menos movimento"), toque sem atraso, listeners passivos, timers e animações pausam com o app em segundo plano, sem re-render quando nada mudou.

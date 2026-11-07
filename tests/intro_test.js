@@ -40,11 +40,8 @@ function watchPage(p){
   ok(await until(p,()=>!!authSession,null,15000),'rota normal de login aceita a ação enquanto a intro está ativa');
   ok(await p.evaluate(()=>typeof window.playStokIntro==='function'&&typeof window.replayEntrySplash==='function'),'callbacks continuam disponíveis após autenticação');
 
-  await p.evaluate(()=>{authLogout();localStorage.setItem('lojasg.estoque99.visual-effects','off')});await p.waitForTimeout(900);
-  await p.evaluate(()=>window.playStokIntro());
-  ok(!(await p.$('#stok-intro')),'efeitos desligados suprimem a intro');
-  const soundSuppressed=await p.evaluate(()=>{const oldContext=window.AudioContext,oldAudio=siteAudio,oldEnabled=siteSoundEnabled;let calls=0;function FakeAudio(){calls++;this.state='suspended';this.resume=()=>Promise.resolve()}try{siteAudio=null;siteSoundEnabled=true;window.AudioContext=FakeAudio;window.playStokIntro(true);return {calls,activated:!!(navigator.userActivation&&navigator.userActivation.hasBeenActive),hidden:!document.querySelector('#stok-intro')}}finally{siteAudio=oldAudio;siteSoundEnabled=oldEnabled;window.AudioContext=oldContext}});
-  ok(soundSuppressed.activated&&soundSuppressed.calls===0&&soundSuppressed.hidden,'efeitos desligados suprimem som explícito da intro sem criar AudioContext');
+  await p.evaluate(()=>{authLogout()});await p.waitForTimeout(900);
+  await p.evaluate(()=>window.playStokIntro());ok(!!(await p.$('#stok-intro .si-mark')),'v122: abertura com o S sempre (sem preferência Efeitos)');
 
   const rc=await b.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});const rp=await rc.newPage();watchPage(rp);
   await rp.goto('http://localhost:8000/index.html?ntfy='+L.N);await rp.waitForSelector('#auth-form');

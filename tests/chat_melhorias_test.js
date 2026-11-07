@@ -104,7 +104,5 @@ const L=require('./lib.js');const {ok,until}=L;
  /* menos movimento / Efeitos desligados: sem animação no chat */
  await A.emulateMedia({reducedMotion:'reduce'});await A.evaluate(()=>render());await A.waitForTimeout(400);
  ok(await A.evaluate(()=>document.querySelector('.chat-wrap').classList.contains('still')),'PC: "menos movimento" deixa o chat parado');
- await A.emulateMedia({reducedMotion:'no-preference'});await A.evaluate(()=>{try{localStorage.setItem('lojasg.estoque99.fx-pause','1')}catch(e){}render()});await A.waitForTimeout(400);
- ok(await A.evaluate(()=>document.querySelector('.chat-wrap').classList.contains('still')),'PC: "Pausar animação" deixa o chat parado');
- await A.evaluate(()=>{try{localStorage.removeItem('lojasg.estoque99.fx-pause')}catch(e){}});
+ await A.emulateMedia({reducedMotion:'no-preference'});
  console.log('errors',errs);await b.close()})();

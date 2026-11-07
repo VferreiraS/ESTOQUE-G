@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-/* Grava o selo verificado de uma conta na lista "verificados" do Firestore (só o administrador; o app só lê).
+/* v122: os selos saíram do app; o tipo "s" continua valendo como papel de gestor (v101/v102). "raio" não tem mais efeito.
+   Grava o selo verificado de uma conta na lista "verificados" do Firestore (só o administrador; o app só lê).
    Uso:  node scripts/verificar.js <uid> <s|raio> [STK-…] [--login <login>[,<outro>]]
          node scripts/verificar.js <uid> remover
    --login grava o(s) login(s) da conta no documento: aparelhos sem nuvem mostram o selo para perfis que chegam
