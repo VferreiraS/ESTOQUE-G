@@ -2,6 +2,13 @@
  "fonte": "CLAUDE.md (tabela de versões) + git log",
  "versoes": [
   {
+   "v": 120,
+   "data": "2026-11-03",
+   "titulo": "Limite de requisições",
+   "descricao": "Entrar: no máximo 5 tentativas por minuto para o mesmo login (aviso \"Muitas tentativas, aguarde X s\"). Envios para a equipe e o chat: no máximo 60 por minuto; o que passar tenta de novo depois. O intermediário da IA (Worker) aceita até 20 pedidos por minuto por endereço e depois responde \"aguarde\".",
+   "cat": "melhoria"
+  },
+  {
    "v": 119,
    "data": "2026-11-02",
    "titulo": "Avisos no topo estilo \"Dynamic Island\"",

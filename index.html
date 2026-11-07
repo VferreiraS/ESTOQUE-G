@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="119"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="120"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -7870,6 +7870,31 @@ if(typeof emitDesktop==='function'){var ed=emitDesktop;emitDesktop=function(titl
 /* notas fiscais novas que chegam da equipe */
 try{var lastNf=null;setInterval(function(){if(typeof authSession==='undefined'||!authSession||typeof state!=='object'||!state)return;var ids=(state.nfs||[]).map(function(n){return n.id});if(lastNf===null||lastNf.store!==authSession.storeKey){lastNf={store:authSession.storeKey,ids:ids};return}
   var novo=(state.nfs||[]).filter(function(n){return lastNf.ids.indexOf(n.id)<0});lastNf.ids=ids;if(novo.length)window.e99Island({title:novo.length>1?novo.length+' notas fiscais novas':'Nota fiscal nova',msg:novo.length>1?'Chegaram pela equipe':'NF '+(novo[0].number||'')+(novo[0].supplier?' · '+novo[0].supplier:''),page:'nfs',initial:'N'})},2000)}catch(x){}
+})();
+</script>
+<script id="v120-limite-js">
+(function(){
+'use strict';
+/* v120 (pedido do dono): limite de requisição no aparelho.
+   - Entrar: no máximo 5 tentativas por minuto por login (vale ao recarregar); depois "Muitas tentativas, aguarde X s".
+   - Envios para o ntfy (equipe, chat, avisos): no máximo 60 por minuto por conta; o excedente volta como 429 e o app tenta de novo depois
+     (a sincronização guarda o pendente; o chat mostra "Não enviada" com Tentar de novo). Mesma ideia do e99CloudTry da nuvem. */
+var K='lojasg.estoque99.login-tries',LOGIN_MAX=5,NET_MAX=60,WIN=60000,net=[];
+function ls(v){try{if(v===undefined)return JSON.parse(localStorage.getItem(K)||'{}')||{};localStorage.setItem(K,JSON.stringify(v))}catch(x){return {}}}
+function h(l){return window.e99MailIdx?window.e99MailIdx.hash('login|'+authLoginName(l)):authLoginName(l)}
+function recent(a,now){return (Array.isArray(a)?a:[]).filter(function(t){return now-t<WIN&&t<=now})}
+window.e99LoginWait=function(login){var now=Date.now(),a=recent(ls()[h(login)],now);return a.length>=LOGIN_MAX?Math.ceil((WIN-(now-a[0]))/1000):0};
+var sb=authSubmit;authSubmit=async function(event){try{if(authMode==='login'&&!authPending&&event&&event.target&&event.target.id==='auth-form'){var lg=String(readForm(event.target).login||'').trim();
+  if(lg){var w=window.e99LoginWait(lg);if(w){event.preventDefault();authError='Muitas tentativas, aguarde '+w+' s.';renderAuth();return}
+   var o=ls(),now=Date.now(),k=h(lg);o[k]=recent(o[k],now).concat(now);Object.keys(o).forEach(function(x){o[x]=recent(o[x],now);if(!o[x].length)delete o[x]});ls(o)}}}catch(x){}
+  return sb.apply(this,arguments)};
+/* depois de entrar com sucesso, as tentativas daquele login zeram */
+var en=authEnter;authEnter=function(s){var r=en.apply(this,arguments);try{var o=ls();delete o[h(s.record.login)];ls(o)}catch(x){}return r};
+function ntfyUrl(u){try{var n=window.e99Team&&window.e99Team.ntfy?window.e99Team.ntfy():'https://ntfy.sh';return String(u).indexOf(n)===0||/^https:\/\/ntfy\.sh\//.test(String(u))}catch(x){return false}}
+var f0=window.fetch;window.fetch=function(u,o){try{var m=o&&o.method?String(o.method).toUpperCase():'GET';if((m==='POST'||m==='PUT')&&ntfyUrl(typeof u==='string'?u:u&&u.url)){var now=Date.now();net=net.filter(function(t){return now-t<WIN});
+   if(net.length>=NET_MAX){var w=Math.ceil((WIN-(now-net[0]))/1000);return Promise.resolve(new Response('Muitas requisições, aguarde '+w+' s',{status:429,headers:{'Retry-After':String(w)}}))}net.push(now)}}catch(x){}
+  return f0.apply(this,arguments)};
+window.e99NetLimit=function(){var now=Date.now();net=net.filter(function(t){return now-t<WIN});return {used:net.length,max:NET_MAX}};
 })();
 </script>
 </body></html>

@@ -24,11 +24,17 @@ function cors(req) {
 }
 function json(req, obj, status) { return new Response(JSON.stringify(obj), { status: status || 200, headers: Object.assign({ 'Content-Type': 'application/json' }, cors(req)) }); }
 function resposta(req, text) { return json(req, { choices: [{ message: { role: 'assistant', content: String(text || '') } }] }); }
+const LIMITE = 20, HITS = new Map();
 export default {
   async fetch(req, env) {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(req) });
     if (req.method === 'GET') return json(req, { ok: true, servico: 'Stok · intermediário da IA (Workers AI / NVIDIA)', workersAI: !!(env.AI && env.AI.run), nvidia: !!env.NVIDIA_API_KEY });
     if (req.method !== 'POST') return json(req, { error: { message: 'método inválido' } }, 405);
+    // v120: limite de requisição por IP (por instância do Worker): LIMITE por minuto, depois 429
+    const ip = req.headers.get('CF-Connecting-IP') || req.headers.get('X-Forwarded-For') || 'sem-ip';
+    const agora = Date.now(), lista = (HITS.get(ip) || []).filter(t => agora - t < 60000);
+    if (lista.length >= LIMITE) { const espera = Math.ceil((60000 - (agora - lista[0])) / 1000); return new Response(JSON.stringify({ error: { message: 'Muitas requisições, aguarde ' + espera + ' s' } }), { status: 429, headers: Object.assign({ 'Content-Type': 'application/json', 'Retry-After': String(espera) }, cors(req)) }); }
+    lista.push(agora); HITS.set(ip, lista); if (HITS.size > 5000) HITS.clear();
     if (!env.SENHA) return json(req, { error: { message: 'falta o segredo SENHA no Worker' } }, 500);
     if ((req.headers.get('Authorization') || '') !== 'Bearer ' + env.SENHA) return json(req, { error: { message: 'senha incorreta' } }, 401);
     let body = {};

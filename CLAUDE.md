@@ -19,12 +19,12 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão:** 119 (`meta estoque99-version` + `CACHE` `estoque99-v119` no `sw.js`), publicada em 01/11/2026 no GitHub Pages e no Firebase Hosting.
+- **Versão:** 120 (`meta estoque99-version` + `CACHE` `estoque99-v120` no `sw.js`), publicada em 01/11/2026 no GitHub Pages e no Firebase Hosting.
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
 
-### Mudanças recentes (v73 → v119) — não desfazer sem pedido
+### Mudanças recentes (v73 → v120) — não desfazer sem pedido
 
 | Versão | O quê |
 |--------|--------|
@@ -72,6 +72,7 @@
 | v117 | **Início pela metade no iPhone** (print do dono, tema Cinza + Lima: título e "Novo plano" apagados, resto vazio). No emulador a entrada `ds-rise` terminava normal; causa provável no iPhone: a animação de entrada (com `animation-fill-mode:backwards` e atrasos) ficava presa/pausada ou reiniciava a cada redesenho. Bloco `v117-css`/`v117-js`: a entrada só toca na **troca de tela**; redesenho da mesma tela e 1 s depois de abrir põem `body.e99-norise` (`#view>*` e `.stats>.stat` sem animação, opacidade 1). Teste `tests/v117_test.js` (iPhone 13/PC, 3 temas, Efeitos ligados/desligados, animação pausada pelo navegador, redesenhos seguidos); `v113_test` usa data futura para o registro do gestor. |
 | v118 | **Som de login toda vez que o app abre** (pedido do dono; bloco `v118-som-js`). `playSiteSound('login')` passa por um envoltório: tenta tocar ao abrir (e ao voltar ao app depois de 1 min em segundo plano) — PC/Android costumam deixar; **o iPhone (Safari) exige um toque na tela** antes de qualquer áudio, então o som fica guardado (`e99LoginSound.pending()`) e toca no **primeiro toque** (pointerdown/touchend/click/keydown), uma vez por abertura (o login logo depois não repete; contador `__e99LoginSounds`). Som do app desligado = nada; Efeitos/menos movimento não mudam o som (como antes). `som_test`/`som_ios_test` deixaram de exigir "nenhum áudio antes do toque". Teste `tests/v118_test.js` (PC com autoplay, iPhone 13 com áudio travado até o toque). |
 | v119 | **Aviso estilo "Dynamic Island"** (blocos `v119-island-css`/`v119-island-js`). Cápsula escura `#e99-island` que desce no topo (avatar com inicial/foto, título na cor `--neon`, mensagem, ponto de luz), `role=status`, some em 5 s, toque abre a tela do aviso (`go(page)`). `window.e99Island({title,msg,avatar,initial,page})`, fila de até 5. Ligada a: `showSiteNotification` (chat) e `emitDesktop` (prazos) com o site aberto, e NF nova que chega em `state.nfs` (checagem a cada 2 s). Sem notificação do sistema (Web Push fica para depois). Sem animação com Efeitos desligados, "menos movimento" ou "Pausar animação". Teste `tests/v119_test.js` (PC/iPhone 13, 3 temas, sem animação, chat/prazo/NF). |
+| v120 | **Limite de requisição** (pedido do dono; bloco `v120-limite-js` + `cloudflare/ia-worker.js`). **Entrar:** no máximo 5 tentativas por minuto por login (chave `lojasg.estoque99.login-tries`, login com hash; vale ao recarregar; zera ao entrar com sucesso) → "Muitas tentativas, aguarde X s" (`e99LoginWait`). Soma-se ao freio antigo do `authSubmit` (5 erros → 30 s) e ao `e99CloudTry` da nuvem. **ntfy:** POST/PUT para o ntfy no máximo 60 por minuto por aba (`fetch` envolvido; `e99NetLimit()`); o excedente volta 429 sem sair do aparelho — a sincronização guarda o pendente e tenta depois, o chat mostra "Não enviada". GET não é limitado. **Worker da IA:** 20 POST por minuto por IP (`CF-Connecting-IP`, mapa em memória da instância) → 429 com `Retry-After` (precisa publicar o Worker de novo no Cloudflare para valer). Teste `tests/v120_test.js` (PC/iPhone 13 + Worker). |
 
 Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o site); o que vale no ar é o `index.html` + `sw.js` publicados.
 
