@@ -3,6 +3,11 @@
 Sistema de estoque, planos de ação e notas fiscais que funciona no **computador**, no **iPhone/iPad** e no **Android**.
 Tudo roda no navegador; os dados ficam salvos (criptografados) no próprio aparelho.
 
+## Versão 121
+
+- **IA removida do app (pedido do dono):** saíram o Assistente, os agentes (Ollama, OmniRoute, Gemini, Workers AI, NVIDIA), o Piloto automático, a Central de Agentes, "Resumir" e "melhorar texto" no chat, as análises por IA nas telas e os campos de chave/endereço de IA. Arquivos apagados: `cloudflare/` (Worker), `apps-script/ia.gs`, `central-agentes/` e os testes de IA. Os dados antigos de IA são apagados do aparelho ao abrir o app (o resto fica). As menções a IA nas versões antigas abaixo são só histórico.
+- **Barra de carregamento na tela de entrar:** fina, nas cores do tema; avança por etapas (scripts, página, fontes, app sem internet, som de abertura) e só então libera o formulário; limite de 6 s. O som de abertura toca depois da barra (no iPhone, no primeiro toque). Sem animação com Efeitos desligados ou "menos movimento". Teste: `tests/v121_test.js`.
+
 ## Versão 92
 
 - **Som:** a abertura toca um som curto junto com a animação (só depois do primeiro toque, com o som do app ligado). **Música ambiente** sintetizada no aparelho (Web Audio, sem arquivos), em loop e baixinha; botão ♫ no topo e em Preferências para ligar/desligar; **começa desligada**. Para em segundo plano, ao rolar, fora da tela, com Efeitos desligados e "menos movimento". Teste: `tests/som_test.js`.

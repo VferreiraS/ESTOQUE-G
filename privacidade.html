@@ -136,7 +136,6 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 <ul>
 <li><strong>Relatório por e-mail</strong>: envia pelo FormSubmit, nos horários escolhidos, um resumo de NFs pendentes e atividades do dia (com nomes dos responsáveis) para os e-mails que o gestor indicar.</li>
 <li><strong>Planilha no Google</strong>: gestor ou conta do estoque pode ligar o envio de uma cópia dos dados (equipe com nome e cargo, corredores, NFs, planos; sem fotos) para uma planilha Google Sheets própria, por meio de um Google Apps Script. Na planilha, os dados ficam sem cifra.</li>
-<li><strong>Agentes de IA</strong>: desligados por padrão. Se você ligar, o app envia ao serviço escolhido só os dados do estoque necessários para a tarefa (por exemplo, NFs, atividades e nomes de responsáveis): Ollama no próprio computador (Agente Local) ou um serviço na internet (Agente Nuvem: OmniRoute, ou Ollama Cloud / NVIDIA por um intermediário no Google Apps Script ou no Cloudflare Worker). A configuração e a chave ficam cifradas no aparelho.</li>
 <li><strong>Consulta de CEP e CNPJ</strong>: ao pedir, o app consulta ViaCEP e BrasilAPI (dados de endereço/empresa, sem dados seus).</li>
 <li><strong>Compartilhar</strong>: ao tocar em “Compartilhar” ou “WhatsApp”, o texto vai para o app que você escolher.</li>
 </ul>
@@ -154,11 +153,11 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 <tr role="row"><td data-th="Finalidade">Recuperar a conta</td><td data-th="Dados">E-mail, cofre de recuperação, autenticador</td><td data-th="Base legal (LGPD)">Execução do contrato e legítimo interesse</td></tr>
 <tr role="row"><td data-th="Finalidade">Aviso de conta nova e contagem</td><td data-th="Dados">Estoque, login, tipo de conta, data, aparelho/navegador</td><td data-th="Base legal (LGPD)">Legítimo interesse (controle de acesso a uma ferramenta interna)</td></tr>
 <tr role="row"><td data-th="Finalidade">Corrigir erros do app</td><td data-th="Dados">Erros técnicos e nome de quem usava</td><td data-th="Base legal (LGPD)">Legítimo interesse</td></tr>
-<tr role="row"><td data-th="Finalidade">Relatório por e-mail, planilha, IA, notificações, câmera e microfone</td><td data-th="Dados">Os dados descritos em cada item</td><td data-th="Base legal (LGPD)">Consentimento (art. 7º, I): só funciona se você ligar; pode desligar quando quiser</td></tr>
+<tr role="row"><td data-th="Finalidade">Relatório por e-mail, planilha, notificações, câmera e microfone</td><td data-th="Dados">Os dados descritos em cada item</td><td data-th="Base legal (LGPD)">Consentimento (art. 7º, I): só funciona se você ligar; pode desligar quando quiser</td></tr>
 </tbody>
 </table>
 </div>
-<p>Não usamos os dados para publicidade, não vendemos dados e não fazemos perfis de comportamento. Os agentes de IA não tomam decisões sobre pessoas: só sugerem textos e listas para alguém revisar.</p>
+<p>Não usamos os dados para publicidade, não vendemos dados e não fazemos perfis de comportamento. O app não usa inteligência artificial e não toma decisões automáticas sobre pessoas.</p>
 </section>
 
 <section id="compartilhamento">
@@ -171,7 +170,6 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 <li><strong>FormSubmit</strong> — envio dos e-mails de conta nova e do relatório por e-mail.</li>
 <li><strong>Abacus</strong> — contador anônimo de contas criadas.</li>
 <li><strong>Google Sheets / Apps Script</strong> — planilha, se ligada.</li>
-<li><strong>Provedores de IA escolhidos</strong> — OmniRoute, Ollama Cloud, NVIDIA, Google Apps Script ou Cloudflare (intermediários), se ligados.</li>
 <li><strong>ViaCEP e BrasilAPI</strong> — consultas de CEP e CNPJ, quando você pede.</li>
 <li><strong>Autoridades</strong> — quando a lei exigir.</li>
 </ul>
@@ -180,7 +178,7 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 
 <section id="internacional">
 <h2>5. Transferência para fora do Brasil</h2>
-<p>O banco Firestore fica em São Paulo. Porém alguns serviços podem tratar dados em servidores fora do Brasil (por exemplo, o login do Firebase, GitHub Pages, ntfy.sh, FormSubmit, Abacus e os provedores de IA). Essas transferências acontecem só para executar o serviço que você usa (art. 33 da LGPD) e com o mínimo de dados possível; no chat e na sincronização o conteúdo vai cifrado.</p>
+<p>O banco Firestore fica em São Paulo. Porém alguns serviços podem tratar dados em servidores fora do Brasil (por exemplo, o login do Firebase, GitHub Pages, ntfy.sh, FormSubmit e Abacus). Essas transferências acontecem só para executar o serviço que você usa (art. 33 da LGPD) e com o mínimo de dados possível; no chat e na sincronização o conteúdo vai cifrado.</p>
 </section>
 
 <section id="retencao">
@@ -218,7 +216,7 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 <li>Chat e sincronização cifrados com o código da equipe antes de sair do aparelho.</li>
 <li>Regras de acesso no Firestore: dados particulares (como o e-mail) só o dono lê, além do robô do correio, que lê o e-mail para enviar os resumos; dados da equipe só quem conhece o identificador secreto da equipe.</li>
 <li>Conexões sempre por HTTPS.</li>
-<li>Chaves de serviços de IA nunca ficam no código do site.</li>
+<li>O app não usa serviços de inteligência artificial: nenhum dado é enviado para IA.</li>
 </ul>
 <p>Nenhum sistema é 100% seguro. Proteja sua senha, não a compartilhe e use o bloqueio de tela do aparelho. Se suspeitar de acesso indevido, avise o encarregado.</p>
 </section>

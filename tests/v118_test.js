@@ -18,12 +18,12 @@ const IOS=()=>{const O=window.AudioContext,G=Object.getOwnPropertyDescriptor(Bas
  await A.evaluate(()=>{toggleSiteSound()});
  /* iPhone simulado: bloqueado até o toque */
  const ip=await b.newContext({...L.devices['iPhone 13']});await ip.addInitScript(IOS);const B=await ip.newPage();B.on('pageerror',e=>errs.push('iphone '+e.message));B.on('dialog',d=>d.accept());
- await B.goto('http://localhost:8000/index.html?ntfy='+L.N);await B.waitForTimeout(1500);
+ await B.goto('http://localhost:8000/index.html?ntfy='+L.N);await B.waitForTimeout(3000);/* v121: o som espera a barra de carregamento */
  ok(await B.evaluate(()=>window.__e99LoginSounds===0&&e99LoginSound.pending()),'iPhone: sem toque o Safari não deixa — som fica guardado');
  await B.tap('#auth-form input[name=login]');ok(await until(B,()=>window.__e99LoginSounds===1,null,4000),'iPhone: toca no primeiro toque na tela');
  await B.tap('#auth-form input[name=password]');await B.waitForTimeout(800);ok(await B.evaluate(()=>window.__e99LoginSounds===1),'iPhone: não repete nos toques seguintes');
  await L.signup(B,'s8i'+T);await B.waitForTimeout(800);ok(await B.evaluate(()=>window.__e99LoginSounds===1),'iPhone: entrar na conta no mesmo uso não repete');
- await B.reload();await B.waitForTimeout(1200);ok(await B.evaluate(()=>window.__e99LoginSounds===0&&e99LoginSound.pending()),'iPhone: abrir de novo guarda o som outra vez');
+ await B.reload();await B.waitForTimeout(3000);ok(await B.evaluate(()=>window.__e99LoginSounds===0&&e99LoginSound.pending()),'iPhone: abrir de novo guarda o som outra vez');
  await B.tap('body',{position:{x:30,y:30}});ok(await until(B,()=>window.__e99LoginSounds===1,null,4000),'iPhone: e toca no primeiro toque de novo');
  /* Efeitos desligados e menos movimento: o som de login segue só o botão de som (como antes) */
  const rm=await b.newContext({...L.devices['iPhone 13'],reducedMotion:'reduce'});await rm.addInitScript(()=>{try{localStorage.setItem('lojasg.estoque99.visual-effects','off')}catch(e){}});await rm.addInitScript(IOS);

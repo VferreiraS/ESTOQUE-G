@@ -2,10 +2,17 @@
  "fonte": "CLAUDE.md (tabela de versões) + git log",
  "versoes": [
   {
+   "v": 121,
+   "data": "2026-11-07",
+   "titulo": "IA removida e barra de carregamento no login",
+   "descricao": "Toda função de inteligência artificial saiu do app: assistente, agentes, piloto automático, resumo do chat, análises por IA e as configurações de chave. Os dados antigos de IA são apagados do aparelho; o resto continua. Na tela de entrar, uma barra fina nas cores do tema mostra o carregamento e libera o formulário quando o app está pronto (no máximo 6 s); o som de abertura toca depois (no iPhone, no primeiro toque).",
+   "cat": "melhoria"
+  },
+  {
    "v": 120,
    "data": "2026-11-03",
    "titulo": "Limite de requisições",
-   "descricao": "Entrar: no máximo 5 tentativas por minuto para o mesmo login (aviso \"Muitas tentativas, aguarde X s\"). Envios para a equipe e o chat: no máximo 60 por minuto; o que passar tenta de novo depois. O intermediário da IA (Worker) aceita até 20 pedidos por minuto por endereço e depois responde \"aguarde\".",
+   "descricao": "Entrar: no máximo 5 tentativas por minuto para o mesmo login (aviso \"Muitas tentativas, aguarde X s\"). Envios para a equipe e o chat: no máximo 60 por minuto; o que passar tenta de novo depois.",
    "cat": "melhoria"
   },
   {

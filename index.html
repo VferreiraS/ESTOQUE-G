@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="120"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="121"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -79,7 +79,19 @@ body.fx-off .entry-splash{display:none}body.fx-off .auth-card,body.fx-off .auth-
 @media(max-width:900px){body:not(.locked) #sound-control{bottom:calc(82px + env(safe-area-inset-bottom,0px));left:8px;padding:7px 11px}}
 @media(prefers-reduced-motion:reduce){.entry-splash,.entry-splash::before,.entry-emblem::after{display:none}}
 @media print{#sound-control{display:none}}
-</style><link rel="icon" type="image/png" href="icons/favicon-v36.png"><link rel="apple-touch-icon" href="icons/apple-touch-v36.png"></head><body class="locked"><div class="entry-splash" aria-hidden="true"><div class="entry-emblem"><img class="entry-logo" alt="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InIiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZjZhNDgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNkOTE0MGIiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cGF0aCBmaWxsPSJ1cmwoI3IpIiBkPSJNNDIgMTRoMzAuNWE3LjUgNy41IDAgMCAxIDAgMTVINDJhMy41IDMuNSAwIDAgMCAwIDdINThhMjEgMjEgMCAwIDEgMCA0MkgyNy41YTcuNSA3LjUgMCAwIDEgMC0xNUg1OGE2IDYgMCAwIDAgMC0xMkg0MmExOC41IDE4LjUgMCAwIDEgMC0zN3oiLz48L3N2Zz4K"></div><strong>Stok</strong><small>LOJAS G · ESTOQUE 99</small><span class="entry-line"></span></div><button type="button" id="sound-control" onclick="toggleSiteSound()" aria-pressed="true">♪ Som ligado</button><section id="auth-screen" aria-label="Acesso ao estoque"><div class="auth-card"><h1>Estoque 99</h1><p>Carregando acesso… Se esta mensagem permanecer, abra o endereço do site no Safari, Chrome ou Edge. A prévia de arquivos (app Arquivos, e-mail, WhatsApp) não executa o sistema.</p></div></section><input type="file" id="auth-import" accept=".json,application/json" hidden onchange="authImport(event)"><a class="skip-link" href="#main-content">Ir para o conteúdo</a>
+</style><link rel="icon" type="image/png" href="icons/favicon-v36.png"><link rel="apple-touch-icon" href="icons/apple-touch-v36.png"></head><body class="locked"><style id="v121-boot-css">
+/* v121: barra de carregamento fina na tela de entrar, nas cores do tema; o formulário fica bloqueado até o app carregar (limite 6 s) */
+#e99-boot{position:fixed;left:0;right:0;top:0;height:3px;z-index:100003;background:rgba(var(--neon-rgb,255,42,31),.16);pointer-events:none;overflow:hidden}
+#e99-boot>i{position:relative;display:block;height:100%;width:8%;background:linear-gradient(90deg,var(--neon-hot,#FF8A7A),var(--neon,#FF2A1F));box-shadow:0 0 8px rgba(var(--neon-rgb,255,42,31),.7);transition:width .35s ease;overflow:hidden}
+#e99-boot>i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:translateX(-100%);animation:e99-boot-run 1.1s linear infinite}
+@keyframes e99-boot-run{to{transform:translateX(100%)}}
+#e99-boot.done{opacity:0;transition:opacity .35s ease .1s}
+body:not(.locked) #e99-boot{display:none}
+body.e99-booting #auth-screen form{pointer-events:none;opacity:.55}
+body.fx-off #e99-boot,body.fx-off #e99-boot>i,body.fx-off #e99-boot.done,html.e99-calm #e99-boot>i{transition:none!important}
+body.fx-off #e99-boot>i::after,html.e99-calm #e99-boot>i::after{display:none!important;animation:none!important}
+@media (prefers-reduced-motion:reduce){#e99-boot,#e99-boot>i,#e99-boot.done{transition:none!important}#e99-boot>i::after{display:none!important;animation:none!important}}
+</style><div id="e99-boot" role="progressbar" aria-label="Carregando o app" aria-valuemin="0" aria-valuemax="100" aria-valuenow="8"><i></i></div><script>(function(){var b=document.body;b.classList.add('e99-booting');window.__e99BootT0=Date.now();setTimeout(function(){if(window.__e99BootFinish){window.__e99BootFinish('limite');return}b.classList.remove('e99-booting');var x=document.getElementById('e99-boot');if(x)x.remove()},6000)})();</script><div class="entry-splash" aria-hidden="true"><div class="entry-emblem"><img class="entry-logo" alt="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InIiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZjZhNDgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNkOTE0MGIiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cGF0aCBmaWxsPSJ1cmwoI3IpIiBkPSJNNDIgMTRoMzAuNWE3LjUgNy41IDAgMCAxIDAgMTVINDJhMy41IDMuNSAwIDAgMCAwIDdINThhMjEgMjEgMCAwIDEgMCA0MkgyNy41YTcuNSA3LjUgMCAwIDEgMC0xNUg1OGE2IDYgMCAwIDAgMC0xMkg0MmExOC41IDE4LjUgMCAwIDEgMC0zN3oiLz48L3N2Zz4K"></div><strong>Stok</strong><small>LOJAS G · ESTOQUE 99</small><span class="entry-line"></span></div><button type="button" id="sound-control" onclick="toggleSiteSound()" aria-pressed="true">♪ Som ligado</button><section id="auth-screen" aria-label="Acesso ao estoque"><div class="auth-card"><h1>Estoque 99</h1><p>Carregando acesso… Se esta mensagem permanecer, abra o endereço do site no Safari, Chrome ou Edge. A prévia de arquivos (app Arquivos, e-mail, WhatsApp) não executa o sistema.</p></div></section><input type="file" id="auth-import" accept=".json,application/json" hidden onchange="authImport(event)"><a class="skip-link" href="#main-content">Ir para o conteúdo</a>
 
 
 <nav id="mobile-bottom" class="mobile-bottom" aria-label="Navegação principal"></nav><div class="layout"><aside><div class="brand"><div class="logo logo-img" aria-hidden="true"><img alt="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InIiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZjZhNDgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNkOTE0MGIiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cGF0aCBmaWxsPSJ1cmwoI3IpIiBkPSJNNDIgMTRoMzAuNWE3LjUgNy41IDAgMCAxIDAgMTVINDJhMy41IDMuNSAwIDAgMCAwIDdINThhMjEgMjEgMCAwIDEgMCA0MkgyNy41YTcuNSA3LjUgMCAwIDEgMC0xNUg1OGE2IDYgMCAwIDAgMC0xMkg0MmExOC41IDE4LjUgMCAwIDEgMC0zN3oiLz48L3N2Zz4K"></div><div><strong>STOK</strong><small>LOJAS G · ESTOQUE 99</small></div></div><nav class="nav" id="nav"><button onclick="go('home')">Visão geral</button><button onclick="go('team')">Equipe</button><button onclick="go('corridors')">Corredores</button><button onclick="go('nfs')">NFs pendentes</button><button onclick="go('data')">Dados e ajuda</button><button onclick="go('alerts')">Alertas</button></nav><div class="local"><b>Seu espaço local</b><p>Funciona offline. Consultas externas são opcionais. Seus dados ficam neste navegador. Faça backups para guardar uma cópia em arquivo.</p><span class="pill">● Modo offline</span></div></aside><main id="main-content" tabindex="-1"><header><div style="display:flex;align-items:center;gap:12px"><button class="mobilemenu" onclick="document.body.classList.toggle('menu')" aria-label="Abrir menu">☰</button><b id="breadcrumb">Estoque 99 / Visão geral</b></div><div class="toolbar"><button onclick="go('alerts')" aria-label="Abrir central de alertas">⏱ Alertas <span id="alert-total" class="alert-count">0</span></button><div id="storage" role="status"></div><div class="account-tools"><span id="account-label"></span><button onclick="go('account')">Minha conta</button><button onclick="authLogout()">Sair</button></div></div></header><div class="content"><div id="boot-status" class="notice" role="alert"><b>As funções precisam executar neste navegador.</b> Se este aviso permanecer, este visualizador não executou o sistema. Abra o HTML em um ambiente que execute JavaScript e ofereça armazenamento local e criptografia. A prévia de anexos pode bloquear os botões. Se o navegador da empresa bloquear arquivos HTML ou JavaScript, solicite liberação ao TI.</div><nav class="quicknav" aria-label="Menu de funções"><button onclick="go('home')">Visão geral</button><button onclick="go('team')">Equipe</button><button onclick="go('corridors')">Corredores</button><button onclick="go('nfs')">NFs pendentes</button><button onclick="go('data')">Dados e ajuda</button><button onclick="go('alerts')">Alertas</button></nav><div id="warning" class="notice hidden"></div><section id="view"><div class="hero"><div><div class="eyebrow">LOJAS G · SISTEMA LOCAL</div><h1>Estoque 99</h1><p class="subtitle">Tarefas, equipe, corredores e notas fiscais em um só lugar.</p></div></div><div class="cards"><div class="card"><h2>Tarefas</h2><p>Cadastros, prazos, prioridade e conclusão.</p></div><div class="card"><h2>Equipe e corredores</h2><p>Responsáveis e setores do estoque.</p></div><div class="card"><h2>Notas fiscais</h2><p>Recebimento e acompanhamento das conferências.</p></div></div></section><footer><span>© 2026 Grupo Ferreira S/A. Todos os direitos reservados.</span><span>Dados cifrados no aparelho · equipe sincronizada</span><span class="legal-links"><a href="./privacidade.html" target="_blank" rel="noopener">Política de privacidade</a> · <a href="./termos.html" target="_blank" rel="noopener">Termos de uso</a></span></footer></div></main></div>
@@ -546,8 +558,8 @@ function validateSync(x){const C=['team','corridors','nfs','plans','confs','news
 function validPhotoKey(k){return typeof k==='string'&&/^[A-Za-z0-9+/]{43}=$/.test(k)?k:''}
 /* v113: registros extras do histórico "O que mudou?" (cadastrados pelo gestor; vão para a equipe pela sincronização) */
 function validateNews(l){const C={novo:1,melhoria:1,ajuste:1,correcao:1};if(!Array.isArray(l))return [];return l.filter(x=>x&&typeof x==='object'&&typeof x.id==='string'&&/^[a-zA-Z0-9_-]{1,60}$/.test(x.id)&&Number.isInteger(x.v)&&x.v>0&&x.v<10000&&typeof x.data==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.data)&&C[x.cat]&&typeof x.titulo==='string'&&x.titulo.trim()).slice(0,500).map(x=>({id:x.id,v:x.v,data:x.data,cat:x.cat,titulo:x.titulo.trim().slice(0,140),descricao:typeof x.descricao==='string'?x.descricao.slice(0,3000):'',at:Number.isFinite(x.at)?x.at:0}))}
-/* v111: dados pessoais do aparelho guardados dentro da conta cifrada (members:, aux-invites:, agent-brief:) */
-function validSealed(o){const out={};if(!o||typeof o!=='object'||Array.isArray(o))return out;let total=0;for(const k of Object.keys(o).slice(0,400)){const v=o[k];if(typeof k!=='string'||k.length>200||!/^(members|aux-invites|agent-brief):/.test(k)||typeof v!=='string'||v.length>300000)continue;total+=v.length;if(total>2000000)break;out[k]=v}return out}
+/* v111: dados pessoais do aparelho guardados dentro da conta cifrada (members:, aux-invites:) */
+function validSealed(o){const out={};if(!o||typeof o!=='object'||Array.isArray(o))return out;let total=0;for(const k of Object.keys(o).slice(0,400)){const v=o[k];if(typeof k!=='string'||k.length>200||!/^(members|aux-invites):/.test(k)||typeof v!=='string'||v.length>300000)continue;total+=v.length;if(total>2000000)break;out[k]=v}return out}
 function validatePlans(plans){if(plans===undefined)return [];if(!Array.isArray(plans)||plans.length>500)throw Error('Planos inválidos');const ids=new Set();let photoSize=0;for(const p of plans){if(!p||!safePlanId(p.id)||ids.has(p.id)||!validDate(p.date)||typeof p.title!=='string'||!p.title.trim()||p.title.length>200||!Array.isArray(p.activities)||p.activities.length>100)throw Error('Plano inválido');ids.add(p.id);const items=new Set();for(const a of p.activities){if(!a||!safePlanId(a.id)||items.has(a.id)||typeof a.title!=='string'||!a.title.trim()||a.title.length>500||typeof a.owner!=='string'||a.owner.length>200||typeof a.notes!=='string'||a.notes.length>3000||!Array.isArray(a.photos)||a.photos.length>5||(a.done!==undefined&&typeof a.done!=='boolean')||(a.doneBy!==undefined&&(typeof a.doneBy!=='string'||a.doneBy.length>80))||(a.doneAt!==undefined&&(typeof a.doneAt!=='string'||a.doneAt.length>40))||(a.time!==undefined&&a.time!==''&&(typeof a.time!=='string'||!/^([01]\d|2[0-3]):[0-5]\d$/.test(a.time))))throw Error('Atividade do plano inválida');items.add(a.id);for(const ph of a.photos){if(!ph||!safePlanId(ph.id)||typeof ph.data!=='string'||ph.data.length>200000||!/^data:image\/jpeg;base64,\/9j\/[A-Za-z0-9+/=\r\n]+$/.test(ph.data))throw Error('Foto inválida');photoSize+=ph.data.length;}}}if(photoSize>2400000)throw Error('Fotos excedem o limite local. Exporte planos antigos e remova fotos antes de importar.');return plans}
 function safePlanId(id){return typeof id==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(id)}
 function planById(id){return (state.plans||[]).find(p=>p.id===id)}
@@ -771,9 +783,8 @@ function lookupFieldLabel(k){return {supplier:'Razão social',supplierCEP:'CEP',
 function applyLookup(){const result=lookupResult;if(!result||!result.inNF||result.editor!==editing||result.session!==authSession||!modal.open)return;const form=$('editor');try{if(cleanLookupInput(result.type,form.elements.namedItem(result.type==='cep'?'supplierCEP':'cnpj').value)!==result.key)throw Error('O documento mudou. Consulte novamente.');if(!confirm('Aplicar os dados exibidos? Os campos preenchidos serão substituídos. A chave, os produtos e as quantidades da NF não serão alterados.'))return;for(const [key,value] of Object.entries(result.data)){const el=form.elements.namedItem(key);if(el&&value)el.value=value}lookupResult=null;$('nf-lookup-result').textContent='Dados aplicados. Confira número e endereço e clique em Salvar na NF.';}catch(e){notify(e.message)}}
 function localProductLookup(value){const code=String(value||'').trim();if(!code)return [];return state.nfs.flatMap(n=>(n.items||[]).filter(i=>i.code===code||(i.ean&&i.ean!=='SEM GTIN'&&i.ean===code)).map(i=>({number:n.number,supplier:n.supplier,date:n.date,...i}))).sort((a,b)=>(b.date||'').localeCompare(a.date||''))}
 function showLocalProduct(){const rows=localProductLookup($('lookup-product').value);$('product-results').innerHTML=rows.length?rows.slice(0,100).map(i=>`<div class="receipt-item"><div><b>${esc(i.description)}</b><p class="small">Código ${esc(i.code)} · EAN ${esc(i.ean)}<br>NF ${esc(i.number)} · ${esc(i.supplier)} · ${date(i.date)}</p></div><div>${esc(i.quantity)} ${esc(i.unit)} na nota<br><small>${i.received===undefined||i.received===''?'Ainda não contado':esc(i.received)+' conferidos'}</small></div></div>`).join('')+(rows.length>100?'<p>Mostrando os 100 registros mais recentes.</p>':''):'<p>Nenhum item encontrado nos XMLs desta conta. A busca é local, não consulta um catálogo externo.</p>'}
-function renderConsultas(){return hero('Menos digitação, mais conferência.','Consultas online opcionais e produtos dos seus XMLs.')+`<div class="panel help"><h2>Produto pelo código · offline</h2><p class="small">Bipe o EAN ou código interno e pressione Enter. Mostra itens das NFs desta conta; não representa saldo atual de estoque.</p><div class="toolbar"><input id="lookup-product" aria-label="Código do produto" placeholder="EAN ou código interno" onkeydown="if(event.key==='Enter'){event.preventDefault();showLocalProduct()}"><button onclick="showLocalProduct()">Buscar nos XMLs</button></div><div id="product-results" role="status"></div></div><div class="panel help"><h2>Endereços e fornecedores · online</h2><p>Ao clicar em Consultar, somente o código informado é enviado ao ViaCEP ou à BrasilAPI. Sem internet, os cadastros e dados já salvos continuam disponíveis.</p><div class="pair"><label>CEP<input id="lookup-cep" inputmode="numeric" maxlength="10" placeholder="00000-000"></label><label>CNPJ numérico<input id="lookup-cnpj" inputmode="numeric" maxlength="18" placeholder="00.000.000/0000-00"></label></div><div class="toolbar"><button onclick="performLookup('cep')">Consultar CEP · ViaCEP</button><button onclick="performLookup('cnpj')">Consultar CNPJ · BrasilAPI</button></div><div id="lookup-result" role="status"></div></div><div class="panel help"><h2>Catálogo externo SI5 · não conectado</h2><p>A API exige conta e token pessoal. Não há token configurado nesta versão. A busca local acima já funciona com seus XMLs, sem cadastro externo.</p><a href="https://global.si5.com.br" target="_blank" rel="noopener noreferrer">Abrir o catálogo SI5 na internet ↗</a></div>`}
 const renderBeforeIntegrations=render;
-render=function(){renderBeforeIntegrations();if(authSession&&page==='consultas'){$('view').innerHTML=renderConsultas();if(typeof mobileEnhance==='function')mobileEnhance()}};
+render=function(){renderBeforeIntegrations()};
 const validateExtrasBeforeIntegrations=nfValidateExtras;
 nfValidateExtras=function(n){validateExtrasBeforeIntegrations(n);for(const k of addressKeys)if(n[k]!==undefined&&(typeof n[k]!=='string'||n[k].length>200))throw Error('Endereço do fornecedor inválido.');return true};
 
@@ -801,8 +812,8 @@ const authEnterBeforeGold=authEnter;
 authEnter=function(session){authEnterBeforeGold(session);playSiteSound('login')};
 updateSoundControl();
 
-/* IA removida. Ficam só funções mínimas para abrir contas antigas que guardavam configuração de IA. */
-function aiNormalize(v){return {enabled:false}}
+/* IA removida (v121). Contas antigas que guardavam configuração de IA perdem esse campo na próxima gravação. */
+function aiNormalize(v){return undefined}
 function aiReset(){}
 function aiCancel(){}
 
@@ -891,7 +902,7 @@ function learnReport(){
  const lines=['Relatório de melhorias · Estoque 99','Estoque: '+store+' · Gerado em '+new Date().toLocaleString('pt-BR'),'','Conteúdo: sugestões, perguntas e avaliações. Não inclui cadastros de tarefas, NFs nem equipe.','','PENDENTES ('+open.length+')'];
  for(const x of open)lines.push('- ['+(x.kind==='manual'?'anotada':'detectada pelo uso')+'] '+x.text);
  lines.push('','CONCLUÍDAS ('+done.length+')');for(const x of done.slice(0,30))lines.push('- '+x.text);
- lines.push('','PERGUNTAS MAIS USADAS NO ASSISTENTE');for(const q of topQ)lines.push('- '+q.t+' ('+q.n+'x'+(q.down?', avaliadas como não ajudou: '+q.down:'')+')');
+ lines.push('','PERGUNTAS MAIS USADAS');for(const q of topQ)lines.push('- '+q.t+' ('+q.n+'x'+(q.down?', avaliadas como não ajudou: '+q.down:'')+')');
  return lines.join('\n');
 }
 function learnDownloadReport(){const url=URL.createObjectURL(new Blob([learnReport()],{type:'text/plain;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='melhorias-estoque-'+iso()+'.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);notify('Relatório solicitado. Confira a pasta de downloads.')}
@@ -3481,14 +3492,14 @@ if(document.getElementById('auth-screen')&&!document.getElementById('auth-screen
 <script id="rekey-js">
 (function(){
 'use strict';
-/* Trocar ou recuperar a senha muda a chave da conta. A configuração do chat/equipe e a do robô são cifradas com ela,
+/* Trocar ou recuperar a senha muda a chave da conta. A configuração do chat/equipe e a da planilha são cifradas com ela,
    então são lidas com a chave antiga e gravadas de novo com a nova — senão a conta saía da equipe. */
 var lastOpen=null;
 var openBefore=authOpenWithBits;authOpenWithBits=async function(record,bits){var r=await openBefore.apply(this,arguments);try{lastOpen={login:record.login,key:await authKeyFromBits(bits)}}catch(e){}return r};
 async function readBlob(k,aad,key){var raw=localStorage.getItem(k);if(!raw||!key)return null;try{var o=JSON.parse(raw);var p=await crypto.subtle.decrypt({name:'AES-GCM',iv:authUn64(o.iv),additionalData:authBytes(aad)},key,authUn64(o.cipher));return JSON.parse(new TextDecoder().decode(p))}catch(e){return null}}
 async function writeBlob(k,aad,key,val,extra){var iv=crypto.getRandomValues(new Uint8Array(12));var ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:authBytes(aad)},key,authBytes(JSON.stringify(val))));localStorage.setItem(k,JSON.stringify(Object.assign({},extra||{},{iv:authB64(iv),cipher:authB64(ct)})))}
-async function grab(storeKey,login,key){var n=authLoginName(login);return {chat:await readBlob('lojasg.estoque99.chat:'+storeKey,'chat|'+n,key),robot:await readBlob('lojasg.estoque99.robot-groq:'+storeKey,'robot|'+n,key),sheets:await readBlob('lojasg.estoque99.sheets:'+storeKey,'sheets|'+n,key)}}
-async function put(saved,storeKey,login,key){var n=authLoginName(login);try{if(saved.sheets)await writeBlob('lojasg.estoque99.sheets:'+storeKey,'sheets|'+n,key,saved.sheets)}catch(e){}try{if(saved.robot)await writeBlob('lojasg.estoque99.robot-groq:'+storeKey,'robot|'+n,key,saved.robot,{v:1})}catch(e){}
+async function grab(storeKey,login,key){var n=authLoginName(login);return {chat:await readBlob('lojasg.estoque99.chat:'+storeKey,'chat|'+n,key),sheets:await readBlob('lojasg.estoque99.sheets:'+storeKey,'sheets|'+n,key)}}
+async function put(saved,storeKey,login,key){var n=authLoginName(login);try{if(saved.sheets)await writeBlob('lojasg.estoque99.sheets:'+storeKey,'sheets|'+n,key,saved.sheets)}catch(e){}
   try{if(saved.chat){if(window.e99ChatReload&&authSession&&authSession.key===key)await window.e99ChatReload(saved.chat);else await writeBlob('lojasg.estoque99.chat:'+storeKey,'chat|'+n,key,saved.chat)}}catch(e){}}
 var resetBefore=authResetWithBits;authResetWithBits=async function(record,raw,storeKey){var old=lastOpen&&lastOpen.login===record.login?lastOpen.key:null,saved=old?await grab(storeKey,record.login,old):{};
   var r=await resetBefore.apply(this,arguments);if(authSession&&authSession.storeKey===storeKey)await put(saved,storeKey,record.login,authSession.key);return r};
@@ -4682,7 +4693,7 @@ window.e99CloudMember=function(login){return cloudMem[authLoginName(String(login
 
 /* gestor: uma vez por dia prepara o resumo de cada auxiliar com e-mail confirmado; o robô envia */
 function day(){var d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')}
-async function daily(loja){if(window.e99Autopilot)return;/* o piloto dos agentes cuida dos e-mails */var u=user();if(!u||!u.emailVerified||!loja||!authSession)return;var k='lojasg.estoque99.cloud-daily:'+loja;if(ls(k)===day())return;var c=await load(),list=Object.keys(cloudMem).map(function(l){return cloudMem[l]}).filter(function(m){return m.role==='auxiliar'&&m.verificado&&m.uid!==u.uid});
+async function daily(loja){var u=user();if(!u||!u.emailVerified||!loja||!authSession)return;var k='lojasg.estoque99.cloud-daily:'+loja;if(ls(k)===day())return;var c=await load(),list=Object.keys(cloudMem).map(function(l){return cloudMem[l]}).filter(function(m){return m.role==='auxiliar'&&m.verificado&&m.uid!==u.uid});
   if(!list.length)return;var ok=0;for(var i=0;i<list.length;i++){var m=list[i];var t=summary(m.nome||'');try{await c.db.collection('correio').doc(loja+'_'+m.uid+'_'+day()).set({de:u.uid,para:m.uid,assunto:('Stok · seu resumo de '+new Date().toLocaleDateString('pt-BR')).slice(0,150),texto:t.slice(0,4000),tipo:'resumo',loja:loja,criado:Date.now()});ok++}catch(x){}}
   if(ok)ls(k,day())}
 function summary(name){var n=normalText(name),p=(state.team||[]).find(function(x){return normalText(x.name)===n||normalText(x.id)===n})||null,id=p?normalText(p.id):'';
@@ -4967,170 +4978,12 @@ var rBefore=render;render=function(){var r=rBefore.apply(this,arguments);try{if(
   d.innerHTML='<span><b>⚖️ Corredores por conta</b><br><span class="small">'+(ps.length?ps.length+' auxiliar(es) com conta: '+e(ps.map(function(p){return p.name}).join(', ')):'Quando os auxiliares criarem a conta, eles entram aqui.')+'</span></span><button type="button" class="primary" onclick="e99Distribute()" '+(ps.length?'':'disabled')+'>Distribuir corredores</button>';h.after(d)}}}catch(x){}return r};
 })();
 </script>
-<style id="agents-css">
-/* Dois agentes de IA espalhados pelo site (sem chatbot): Agente Local (Ollama, no PC) e Agente Nuvem (OmniRoute). */
-.ag-btn{min-height:0;padding:6px 12px;border-radius:999px;font-size:13px;border:1px solid rgba(255,42,31,.55);background:rgba(255,42,31,.1);color:inherit;cursor:pointer}
-.ag-btn[disabled]{opacity:.5}
-.ag-card{position:relative}
-.ag-card .ag-out{white-space:pre-wrap;line-height:1.5;margin:8px 0 0}
-.ag-by{font-size:11.5px;opacity:.7;margin-top:6px}
-.ag-cfg{display:grid;gap:10px}
-.ag-wiz{display:grid;gap:12px}.ag-wiz h3{margin:4px 0 0}
-.ag-step{display:grid;gap:8px;padding:12px;border:1px solid var(--ds-line);border-radius:14px;background:rgba(255,42,31,.05)}
-.ag-step ol{margin:0;padding-left:18px;display:grid;gap:4px}
-.ag-step label{display:grid;gap:6px;font-weight:650}
-.ag-step a.button{display:flex;align-items:center;justify-content:center;min-height:46px;padding:10px 16px;border-radius:999px;border:1px solid rgba(255,42,31,.7);background:rgba(255,42,31,.14);color:#fff;font-weight:750;text-decoration:none;text-align:center}
-.ag-step .toolbar{display:grid;gap:8px;grid-template-columns:1fr}
-.ag-adv{margin-top:12px}.ag-adv summary{cursor:pointer;font-weight:700;padding:8px 0}
-.ag-cfg fieldset{border:1px solid var(--ds-line);border-radius:14px;padding:12px;display:grid;gap:8px;margin:0}
-.ag-cfg legend{font-weight:750;padding:0 6px}
-.ag-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#666;margin-right:6px;vertical-align:1px}
-.ag-dot.ok{background:#3ddc84}.ag-dot.bad{background:#ff2a1f}
-#ag-dialog{border:0;padding:0;background:var(--ds-surface,#111);color:var(--ds-ink,#fff);border-radius:20px;width:min(560px,calc(100% - 24px));max-height:90dvh;overflow:auto}
-#ag-dialog::backdrop{background:rgba(0,0,0,.7)}
-#ag-dialog .agd{padding:18px;display:grid;gap:10px}
-#ag-dialog .agd h2{margin:0;font-size:19px}
-.ag-thinking{display:inline-flex;gap:4px;align-items:center}
-.ag-thinking i{width:6px;height:6px;border-radius:50%;background:#ff2a1f;animation:typing-dot 1.1s infinite}
-.ag-thinking i:nth-child(2){animation-delay:.15s}.ag-thinking i:nth-child(3){animation-delay:.3s}
-.chat-btns .ag-chat{font-size:18px}
-</style>
-<script id="agents-js">
+<script id="erros-js">
 (function(){
 'use strict';
-function e(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-var cfg=null,cfgSk='',status={local:'',cloud:''};
-var DEF={local:{on:false,url:'http://localhost:11434',model:'llama3.2'},cloud:{on:false,url:'',key:'',model:''}};
-function K(){return 'lojasg.estoque99.agents:'+authSession.storeKey}
-/* configuração guardada cifrada com a chave da conta (a chave do OmniRoute nunca vai para o repositório nem para a nuvem) */
-async function load(){if(!authSession)return null;if(cfgSk===authSession.storeKey&&cfg)return cfg;cfgSk=authSession.storeKey;cfg=JSON.parse(JSON.stringify(DEF));
-  try{var raw=JSON.parse(localStorage.getItem(K())||'null');if(raw&&raw.iv){var p=await crypto.subtle.decrypt({name:'AES-GCM',iv:authUn64(raw.iv),additionalData:authBytes('agents|'+authLoginName(authSession.record.login))},authSession.key,authUn64(raw.cipher));var o=JSON.parse(new TextDecoder().decode(p));['local','cloud'].forEach(function(k){if(o[k])cfg[k]=Object.assign({},DEF[k],o[k])})}}catch(x){}return cfg}
-async function store(){var iv=crypto.getRandomValues(new Uint8Array(12));var c=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:authBytes('agents|'+authLoginName(authSession.record.login))},authSession.key,authBytes(JSON.stringify(cfg)));localStorage.setItem(K(),JSON.stringify({iv:authB64(iv),cipher:authB64(new Uint8Array(c))}))}
-function base(u){return String(u||'').trim().replace(/\/+$/,'').replace(/\/v1$/,'')}
-function name(k){return k==='local'?'Agente Local':'Agente Nuvem'}
-/* chama o agente (API compatível com OpenAI: Ollama e OmniRoute) */
-async function call(k,messages,max){var a=cfg[k];if(!a||!a.on||!a.url)throw Error('desligado');var ctl=new AbortController(),t=setTimeout(function(){ctl.abort()},k==='local'?90000:45000);
-  try{/* intermediário no Google Apps Script (Ollama Cloud pelo celular): chave fica no Google */
-    if(/script\.google(usercontent)?\.com/.test(a.url)){var rr=await fetch(String(a.url).trim(),{method:'POST',signal:ctl.signal,body:JSON.stringify({senha:a.key||'',model:a.model||'gemma4:31b',messages:messages})});if(!rr.ok)throw Error('HTTP '+rr.status);var dj=await rr.json();if(dj.erro)throw Error(dj.erro);if(!dj.text)throw Error('resposta vazia');status[k]='ok';return {text:String(dj.text).trim(),by:name(k)+' · '+(a.model||'gemma4:31b')}}
-    var h={'Content-Type':'application/json'};if(a.key)h.Authorization='Bearer '+a.key;var r=await fetch(base(a.url)+'/v1/chat/completions',{method:'POST',headers:h,signal:ctl.signal,body:JSON.stringify({model:a.model||'llama3.2',messages:messages,temperature:.3,max_tokens:max||700,stream:false})});
-    if(!r.ok){var em='';try{var ej=await r.json();em=ej&&ej.error&&(ej.error.message||ej.error)}catch(y){}throw Error(em?String(em):'HTTP '+r.status)}var d=await r.json();var txt=d&&d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content;if(!txt)throw Error('resposta vazia');status[k]='ok';return {text:String(txt).trim(),by:name(k)+' · '+(a.model||'')}}
-  catch(x){status[k]='bad';throw x}finally{clearTimeout(t)}}
-var SYS='Você é um agente do app Stok (gestão de estoque das Lojas G). Responda em português do Brasil, curto, prático e em tópicos simples. Use só os dados enviados; não invente números.';
-/* tenta o Local (privado, grátis) e depois a Nuvem */
-async function ask(task,data,max){await load();var order=['local','cloud'].filter(function(k){return cfg[k].on&&cfg[k].url});if(!order.length)throw Error('Nenhum agente ligado. Configure em Minha conta → Agentes de IA.');
-  var msgs=[{role:'system',content:SYS},{role:'user',content:task+'\n\nDados:\n'+String(data).slice(0,12000)}],last=null;
-  for(var i=0;i<order.length;i++){try{return await call(order[i],msgs,max)}catch(x){last=x}}throw Error('Os agentes não responderam ('+(last&&last.message||'erro')+'). Confira em Minha conta → Agentes de IA.')}
-window.e99Agent=ask;
-function on(){return !!(cfg&&(cfg.local.on&&cfg.local.url||cfg.cloud.on&&cfg.cloud.url))}
-
-/* ---------- dados do estoque em texto curto (só o necessário) ---------- */
-function teamName(id){var t=(state.team||[]).find(function(x){return x.id===id});return id==='todos'?'TODOS':t?t.name:'A definir'}
-function snapshot(){var L=[],today=iso();
-  var al=[];try{al=collectAlerts()}catch(x){}L.push('Alertas ('+al.length+'):');al.slice(0,25).forEach(function(a){L.push('- '+[a.title,a.message,a.detail].filter(Boolean).join(' · '))});
-  var pl=(state.plans||[]).filter(function(p){return p.date>=today}).slice(0,5);L.push('Planos de hoje em diante:');pl.forEach(function(p){L.push('* '+p.title+' ('+p.date+')');(p.activities||[]).forEach(function(a){L.push('  - '+(a.done?'[feita] ':'[aberta] ')+a.title+' · resp: '+(a.owner||'A definir')+(a.time?' · até '+a.time:''))})});
-  var nf=(state.nfs||[]).filter(function(n){return n.status!=='Conferida'}).slice(0,25);L.push('NFs não conferidas ('+nf.length+'):');nf.forEach(function(n){L.push('- NF '+n.number+' · '+(n.supplier||'')+' · '+(n.status||'')+' · '+n.date+' · resp: '+teamName(n.owner))});
-  L.push('Corredores:');(state.corridors||[]).slice(0,40).forEach(function(c){L.push('- '+c.number+' '+(c.sector||'')+' · resp: '+teamName(c.owner))});
-  L.push('Equipe: '+(state.team||[]).map(function(t){return t.name+' ('+(t.role||'')+')'}).join(', '));return L.join('\n')}
-
-/* ---------- janela de resultado ---------- */
-function dlg(){var d=document.getElementById('ag-dialog');if(!d){d=document.createElement('dialog');d.id='ag-dialog';document.body.appendChild(d)}return d}
-function show(title,html){var d=dlg();d.innerHTML='<div class="agd"><h2>✨ '+e(title)+'</h2><div id="ag-body">'+html+'</div><button type="button" onclick="this.closest(\'dialog\').close()">Fechar</button></div>';if(!d.open)try{d.showModal()}catch(x){d.setAttribute('open','')}}
-var THINK='<span class="ag-thinking"><i></i><i></i><i></i></span> <span class="small">O agente está pensando…</span>';
-async function run(title,task,data,max,after){show(title,THINK);try{var r=await ask(task,data,max);var b=document.getElementById('ag-body');if(b)b.innerHTML='<div class="ag-out">'+e(r.text)+'</div><div class="ag-by">'+e(r.by)+'</div>'+(after?after(r):'');return r}catch(x){var b2=document.getElementById('ag-body');if(b2)b2.innerHTML='<p class="cl-err">'+e(x.message)+'</p>'}}
-
-/* ---------- funções no site ---------- */
-window.agBrief=function(force){var k='lojasg.estoque99.agent-brief:'+authSession.storeKey;var c=null;try{c=JSON.parse(localStorage.getItem(k)||'null')}catch(x){}
-  var box=document.getElementById('ag-brief-out');if(!box)return;if(c&&c.day===iso()&&!force){box.innerHTML='<div class="ag-out">'+e(c.text)+'</div><div class="ag-by">'+e(c.by)+' · gerado hoje</div>';return}
-  box.innerHTML=THINK;ask('Faça o resumo do dia do estoque em até 6 tópicos: o que é urgente, o que atrasou, quem precisa agir e um próximo passo claro.',snapshot(),500).then(function(r){try{localStorage.setItem(k,JSON.stringify({day:iso(),text:r.text,by:r.by}))}catch(x){}var b=document.getElementById('ag-brief-out');if(b)b.innerHTML='<div class="ag-out">'+e(r.text)+'</div><div class="ag-by">'+e(r.by)+'</div>'}).catch(function(x){var b=document.getElementById('ag-brief-out');if(b)b.innerHTML='<p class="small">'+e(x.message)+'</p>'})};
-window.agAlerts=function(){run('O que fazer primeiro','Ordene os alertas por prioridade e diga em tópicos o que fazer primeiro, quem deve fazer e por quê.',snapshot(),600)};
-window.agNfs=function(){run('Análise das notas fiscais','Analise as NFs não conferidas: quais estão mais atrasadas, riscos e o que cada responsável deve fazer hoje.',snapshot(),600)};
-window.agPlan=async function(){if(!planDraft)return;var b=document.getElementById('ag-plan-btn');if(b){b.disabled=true;b.textContent='✨ Pensando…'}
-  try{var r=await ask('Sugira de 3 a 6 atividades para o plano de ação de hoje, com base nos alertas, NFs e corredores. Responda SÓ com linhas no formato: Atividade | Responsável (use um nome da equipe ou TODOS). Sem numeração e sem texto extra.','Título do plano: '+planDraft.title+'\nJá no plano: '+planDraft.activities.map(function(a){return a.title}).filter(Boolean).join('; ')+'\n'+snapshot(),500);
-    var team=(state.team||[]).map(function(t){return t.name});var n=0;r.text.split('\n').map(function(l){return l.replace(/^[\s\-*•\d.)]+/,'').trim()}).filter(function(l){return l.length>3}).slice(0,8).forEach(function(l){var p=l.split('|'),t=p[0].trim().slice(0,500),o=(p[1]||'TODOS').trim();var m=team.find(function(x){return normalText(x)===normalText(o)});if(!t||planDraft.activities.length>=100)return;
-      var empty=planDraft.activities.find(function(a){return !a.title});var it=empty||newPlanItem();it.title=t;it.owner=m||'TODOS';if(!empty)planDraft.activities.push(it);n++});
-    planDraftDirty=true;render();notify(n?n+' atividade(s) sugerida(s) pelo '+r.by.split(' · ')[0]+'. Revise antes de salvar.':'O agente não sugeriu atividades.')}
-  catch(x){notify(x.message)}finally{var b2=document.getElementById('ag-plan-btn');if(b2){b2.disabled=false;b2.textContent='✨ Sugerir atividades'}}};
-window.agWrite=async function(){var t=document.getElementById('chat-text');if(!t||!t.value.trim()){notify('Escreva a mensagem e toque em ✨ para o agente melhorar o texto.');return}var old=t.value,btn=document.querySelector('.ag-chat');if(btn)btn.disabled=true;
-  try{var r=await ask('Reescreva esta mensagem de chat de trabalho: corrija o português, deixe clara, educada e curta. Mantenha @menções e emojis. Responda só com a mensagem reescrita.',old,300);if(t.value===old){t.value=r.text.replace(/^["“]|["”]$/g,'');t.focus()}notify('Texto melhorado pelo '+r.by.split(' · ')[0]+'. Toque em Enviar se estiver bom.')}catch(x){notify(x.message)}finally{if(btn)btn.disabled=false}};
-window.agChatSum=function(){var l=[].slice.call(document.querySelectorAll('#chat-list .chat-msg')).slice(-60).map(function(m){var w=m.getAttribute('data-from')||'';var c=m.cloneNode(true);c.querySelectorAll('.when,.chat-re-btn,.swipe-ico,.reacts,.seen-by,.who,.chat-quote,.chat-sr,.chat-acts,.chat-more,.chat-meta').forEach(function(x){x.remove()});return w+': '+c.textContent.trim()}).filter(function(x){return x.length>2});
-  if(!l.length){notify('Ainda não há mensagens para resumir.');return}run('Resumo da conversa','Resuma a conversa da equipe em tópicos: decisões, pendências, quem ficou responsável pelo quê.',l.join('\n'),500)};
-
-/* ---------- botões nas telas ---------- */
-var rB=render;render=function(){var r=rB.apply(this,arguments);try{decorate()}catch(x){}return r};
-async function decorate(){if(!authSession)return;await load();if(!on())return;var v=document.getElementById('view');if(!v)return;var h=v.querySelector('.hero');
-  if(page==='home'&&h&&!v.querySelector('#ag-brief')){var d=document.createElement('div');d.className='panel help ag-card';d.id='ag-brief';d.innerHTML='<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">✨ Resumo do dia</h2><button type="button" class="ag-btn" onclick="agBrief(true)">Gerar de novo</button></div><div id="ag-brief-out"></div>';h.after(d);agBrief(false)}
-  if(page==='alerts'&&h&&!v.querySelector('.ag-alerts')){var b=document.createElement('button');b.type='button';b.className='ag-btn ag-alerts';b.textContent='✨ O que fazer primeiro?';b.onclick=window.agAlerts;h.appendChild(b)}
-  if(page==='nfs'&&h&&!v.querySelector('.ag-nfs')){var b2=document.createElement('button');b2.type='button';b2.className='ag-btn ag-nfs';b2.textContent='✨ Analisar NFs pendentes';b2.onclick=window.agNfs;h.appendChild(b2)}
-  if(planDraft&&!v.querySelector('#ag-plan-btn')){var add=v.querySelector('button[onclick="planAddItem()"]');if(add){var b3=document.createElement('button');b3.type='button';b3.id='ag-plan-btn';b3.className='ag-btn';b3.textContent='✨ Sugerir atividades';b3.onclick=window.agPlan;add.after(b3)}}
-  if(page==='chat'){var btns=document.querySelector('#chat-form .chat-btns');if(btns&&!btns.querySelector('.ag-chat')){var b4=document.createElement('button');b4.type='button';b4.className='ag-chat';b4.title='Melhorar o texto com o agente';b4.setAttribute('aria-label','Melhorar o texto com o agente');b4.textContent='✨';b4.onclick=window.agWrite;btns.insertBefore(b4,btns.firstChild)}
-    var tb=document.querySelector('.chat-wrap .chat-head .toolbar,.chat-wrap .chat-head-acts');if(tb&&!tb.querySelector('.ag-sum')){var b5=document.createElement('button');b5.type='button';b5.className='ag-btn ag-sum';b5.textContent='✨ Resumir';b5.onclick=window.agChatSum;tb.insertBefore(b5,tb.firstChild)}}}
-
-/* ---------- configuração em Minha conta ---------- */
-var raB=renderAccount;renderAccount=function(){var h=raB.apply(this,arguments);setTimeout(paintCfg,0);return h+'<div class="grid2"><div class="panel help" id="ag-cfg-panel"><h2>🤖 Agentes de IA</h2><p class="small">A IA faz o resumo do dia, sugere atividades, prioriza alertas, analisa NFs, melhora textos e resume o chat. Siga os 3 passos abaixo uma vez e pronto.</p><div id="ag-cfg" class="ag-cfg"></div></div></div>'};
-async function paintCfg(){var box=document.getElementById('ag-cfg');if(!box||!authSession)return;var advOpen=!!(box.querySelector('.ag-adv')&&box.querySelector('.ag-adv').open);await load();var o=location.origin;
-  function f(k,leg,hint,key){var a=cfg[k];return '<fieldset><legend><span class="ag-dot '+(status[k]||'')+'"></span>'+leg+'</legend><label class="chat-check"><input type="checkbox" name="'+k+'_on" '+(a.on?'checked':'')+'> Ligado neste aparelho</label>'
-    +'<label>Endereço<input name="'+k+'_url" value="'+e(a.url)+'" placeholder="'+(k==='local'?'http://localhost:11434':'https://seu-omniroute…')+'" autocomplete="off" spellcheck="false"></label>'
-    +'<label>Modelo<input name="'+k+'_model" value="'+e(a.model)+'" placeholder="'+(k==='local'?'llama3.2':'ex.: gpt-4o-mini')+'" autocomplete="off" spellcheck="false"></label>'
-    +(key?'<label>Chave (fica cifrada só neste aparelho)<input name="'+k+'_key" type="password" value="'+e(a.key)+'" autocomplete="off"></label>':'')
-    +'<p class="small" style="margin:0">'+hint+'</p><button type="button" class="ag-btn" onclick="agTest(\''+k+'\')">Testar '+(k==='local'?'Local':'Nuvem')+'</button></fieldset>'}
-  var ok=cfg.cloud.on&&/script\.google/.test(cfg.cloud.url);
-  var wiz='<div class="ag-wiz">'+(ok?'<p class="ap-ok">✓ IA ligada pel'+(/^nvidia\//.test(cfg.cloud.model)?'a NVIDIA':/^gemini/.test(cfg.cloud.model)?'o Google Gemini':'o Ollama Cloud')+' neste aparelho.</p><button type="button" class="ag-btn" onclick="agTest(\'cloud\')">Testar agora</button>':'')
-   +'<h3>✨ Ligar a IA em 3 passos (só pelo celular, grátis)</h3>'
-   +'<div class="ag-step"><b>1. Pegue sua chave (grátis)</b><p class="small"><b>Mais fácil: Google Gemini</b> (grátis, sem cartão): entre com sua conta Google, toque em <b>Create API key</b> e copie.</p><a class="button" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Abrir Google AI Studio · chaves ↗</a><p class="small" style="margin:8px 0 4px"><b>Ou o Ollama:</b> Entre (ou crie a conta) e toque em <b>Add API Key</b>. Copie a chave. Não mande para ninguém.</p><a class="button" href="https://ollama.com/settings/keys" target="_blank" rel="noopener">Abrir Ollama · chaves ↗</a><p class="small" style="margin:8px 0 4px"><b>Ou use a NVIDIA</b> (modelo Nemotron): entre, toque em <b>Get API Key</b> e copie.</p><a class="button" href="https://build.nvidia.com/settings/api-keys" target="_blank" rel="noopener">Abrir NVIDIA · chaves ↗</a></div>'
-   +'<div class="ag-step"><b>2. Crie o intermediário no seu Google</b><p class="small">Ele guarda a chave com segurança e conversa com o Stok.</p><ol class="small"><li>Toque em <b>Copiar o código</b>.</li><li>Toque em <b>Abrir Google Apps Script</b>, apague o que estiver lá, cole e toque em 💾.</li><li>Na ⚙️ (Configurações do projeto) → <b>Propriedades do script</b>, crie: <code>GEMINI_API_KEY</code> = chave do Gemini <b>ou</b> <code>OLLAMA_API_KEY</code> = chave do Ollama <b>ou</b> <code>NVIDIA_API_KEY</code> = chave da NVIDIA · <code>SENHA</code> = uma senha que você inventar.</li><li><b>Implantar → Nova implantação → App da Web</b> · Executar como: <b>Eu</b> · Acesso: <b>Qualquer pessoa</b> → Implantar → Autorizar (Avançado → Acessar) → copie o link que termina em <b>/exec</b>.</li></ol><div class="toolbar"><button type="button" class="primary" onclick="agCopyCode()">Copiar o código</button><a class="button" href="https://script.new" target="_blank" rel="noopener">Abrir Google Apps Script ↗</a></div><p class="small">Dica: no Chrome do celular, use ⋮ → <b>Site para computador</b> no Apps Script.</p></div>'
-   +'<form class="ag-step" onsubmit="agWizSave(event)"><b>3. Cole aqui e pronto</b><label>Link que termina em /exec<input name="url" required inputmode="url" placeholder="https://script.google.com/macros/s/…/exec" value="'+e(/script\.google/.test(cfg.cloud.url)?cfg.cloud.url:'')+'"></label><label>Qual IA<select name="ia"><option value="ollama">Ollama Cloud (gemma4:31b)</option><option value="gemini"'+(/^gemini/.test(cfg.cloud.model)?' selected':'')+'>Google Gemini (grátis)</option><option value="nvidia"'+(/^nvidia\//.test(cfg.cloud.model)?' selected':'')+'>NVIDIA (Nemotron)</option></select></label><label>A SENHA que você inventou no passo 2<input name="senha" type="password" required autocomplete="off" value="'+e(/script\.google/.test(cfg.cloud.url)?cfg.cloud.key:'')+'"></label><button class="primary">Ligar a IA e testar</button></form></div>';
-  var cf=cfg.cloud.on&&/\.workers\.dev/.test(cfg.cloud.url);
-  var cfNv=/^nvidia\//.test(cfg.cloud.model);
-  wiz+='<details class="ag-wiz ag-cf"'+(cf?' open':'')+'><summary><b>☁️ Cloudflare + NVIDIA · Workers AI (grátis, sem chave)</b></summary>'+(cf?'<p class="ap-ok">✓ IA ligada pela Cloudflare '+(cfNv?'+ NVIDIA':'Workers AI')+' neste aparelho.</p>':'')
-   +'<div class="ag-step"><b>1. Escolha a IA</b><p class="small"><b>Workers AI</b> (padrão): grátis e <b>sem chave nenhuma</b>, só a conta Cloudflare. Pule para o passo 2.</p><p class="small" style="margin:8px 0 4px"><b>Ou NVIDIA (com chave):</b> entre e toque em <b>Generate API Key</b>. Copie. Não mande para ninguém.</p><a class="button" href="https://build.nvidia.com/settings/api-keys" target="_blank" rel="noopener">Abrir NVIDIA · chaves ↗</a></div>'
-   +'<div class="ag-step"><b>2. Crie o Worker na Cloudflare</b><p class="small"><b>Jeito rápido:</b> toque no botão, entre na Cloudflare (crie a conta grátis se precisar), invente a <code>SENHA</code> e toque em <b>Create and deploy</b>. Depois copie o endereço <b>.workers.dev</b>. Para a NVIDIA, crie depois o segredo <code>NVIDIA_API_KEY</code> no Worker.</p><a class="button primary" href="https://deploy.workers.cloudflare.com/?url=https://github.com/VferreiraS/ESTOQUE-G/tree/claude/mobile-desktop-compatibility-tkbd2w/cloudflare" target="_blank" rel="noopener">Criar o Worker com 1 toque ↗</a><p class="small"><b>Ou à mão:</b></p><ol class="small"><li>Crie a conta grátis e entre.</li><li><b>Workers e Pages → Criar → Worker</b> → Implantar → <b>Editar código</b>.</li><li>Toque em <b>Copiar o código</b>, apague o que estiver lá, cole e toque em <b>Implantar</b>.</li><li>No Worker: <b>Configurações → Associações → Adicionar → Workers AI</b>, nome <code>AI</code>.</li><li><b>Configurações → Variáveis e segredos → Adicionar</b> (tipo Segredo): <code>SENHA</code> = uma senha que você inventar · (opcional) <code>NVIDIA_API_KEY</code> = sua chave.</li><li>Copie o endereço que termina em <b>.workers.dev</b>.</li></ol><div class="toolbar"><button type="button" class="primary" onclick="agCopyCf()">Copiar o código</button><a class="button" href="https://dash.cloudflare.com/sign-up/workers-and-pages" target="_blank" rel="noopener">Abrir Cloudflare ↗</a></div></div>'
-   +'<form class="ag-step" onsubmit="agCfSave(event)"><b>3. Cole aqui e pronto</b><label>Endereço do Worker<input name="url" required inputmode="url" placeholder="https://stok-ia.seu-nome.workers.dev" value="'+e(cf?cfg.cloud.url:'')+'"></label><label>Qual IA<select name="ia"><option value="workers">Workers AI (grátis, sem chave)</option><option value="nvidia"'+(cf&&cfNv?' selected':'')+'>NVIDIA (com chave)</option></select></label><label>A SENHA que você inventou<input name="senha" type="password" required autocomplete="off" value="'+e(cf?cfg.cloud.key:'')+'"></label><button class="primary">Ligar a IA e testar</button></form></details>';
-  box.innerHTML=wiz+'<details class="ag-adv"'+(advOpen?' open':'')+'><summary>Avançado (Ollama no computador ou OmniRoute)</summary><form onsubmit="agSave(event)" class="ag-cfg">'+f('local','Agente Local · Ollama','No PC, abra o Ollama liberando este site: <code>OLLAMA_ORIGINS='+e(o)+' ollama serve</code> e baixe um modelo (<code>ollama pull llama3.2</code>). Funciona no computador onde o Ollama roda.',false)
-   +f('cloud','Agente Nuvem · OmniRoute','Use o endereço do OmniRoute e a chave dele, <b>ou</b> o intermediário do Google (Ollama Cloud, só pelo celular): endereço terminando em <code>/exec</code>, modelo <code>gemma4:31b</code> e, em Chave, a SENHA do script (passo a passo em <code>apps-script/ia.gs</code>). Funciona no celular, no PC e nos auxiliares.',true)
-   +'<button class="primary">Salvar agentes</button></form></details>'}
-window.agCopyCode=async function(){try{var t=await (await fetch('apps-script/ia.gs?'+Date.now(),{cache:'no-store'})).text();if(!/doPost/.test(t))throw 0;await navigator.clipboard.writeText(t);notify('Código copiado! Agora toque em Abrir Google Apps Script e cole.')}catch(x){window.open('https://raw.githubusercontent.com/VferreiraS/ESTOQUE-G/claude/mobile-desktop-compatibility-tkbd2w/apps-script/ia.gs','_blank','noopener');notify('Abri o código em outra aba: segure o dedo → Selecionar tudo → Copiar.')}};
-window.agCopyCf=async function(){try{var t=await (await fetch('cloudflare/ia-worker.js?'+Date.now(),{cache:'no-store'})).text();if(!/export default/.test(t))throw 0;await navigator.clipboard.writeText(t);notify('Código copiado! Agora cole no editor do Worker.')}catch(x){window.open('https://raw.githubusercontent.com/VferreiraS/ESTOQUE-G/claude/mobile-desktop-compatibility-tkbd2w/cloudflare/ia-worker.js','_blank','noopener');notify('Abri o código em outra aba: segure o dedo → Selecionar tudo → Copiar.')}};
-window.agCfSave=async function(ev){ev.preventDefault();var v=readForm(ev.target),u=String(v.url||'').trim().replace(/\/+$/,'');if(!/^https:\/\/[^\s/]+\.workers\.dev$/.test(u)){notify('O endereço precisa começar com https:// e terminar em .workers.dev');return}
-  await load();cfg.cloud={on:true,url:u,key:String(v.senha||'').trim().slice(0,400),model:v.ia==='nvidia'?'nvidia/nemotron-3-ultra-550b-a55b':'@cf/meta/llama-3.3-70b-instruct-fp8-fast'};await store();notify('Salvo! Testando a IA…');
-  try{var r=await call('cloud',[{role:'user',content:'Responda apenas: OK'}],20);notify('Tudo certo! A IA respondeu: '+r.text.slice(0,30)+' 🎉')}catch(x){notify('Ainda não funcionou: '+(x.message==='senha incorreta'?'a SENHA não bate com a do Worker.':/NVIDIA_API_KEY/.test(x.message)?'falta o segredo NVIDIA_API_KEY no Worker (ou escolha Workers AI).':/binding AI/.test(x.message)?'falta o binding AI (Workers AI) no Worker: recrie pelo botão de 1 toque.':/SENHA no Worker/.test(x.message)?'falta o segredo SENHA no Worker.':x.message+'. Confira se tocou em Implantar no Worker.'))}paintCfg()};
-window.agWizSave=async function(ev){ev.preventDefault();var v=readForm(ev.target),u=String(v.url||'').trim();if(!/^https:\/\/script\.google(usercontent)?\.com\/.+\/exec/.test(u)){notify('O link precisa começar com https://script.google.com e terminar em /exec.');return}
-  await load();cfg.cloud={on:true,url:u,key:String(v.senha||'').trim().slice(0,400),model:v.ia==='nvidia'?'nvidia/nemotron-3-ultra-550b-a55b':v.ia==='gemini'?'gemini-3.8-flash':cfg.cloud.model&&!/gpt|claude|^nvidia\/|^gemini|^@cf\//i.test(cfg.cloud.model)?cfg.cloud.model:'gemma4:31b'};await store();notify('Salvo! Testando a IA…');
-  try{var r=await call('cloud',[{role:'user',content:'Responda apenas: OK'}],20);notify('Tudo certo! A IA respondeu: '+r.text.slice(0,30)+' 🎉')}catch(x){notify('Ainda não funcionou: '+(x.message==='senha incorreta'?'a SENHA não bate com a do passo 2.':/falta (OLLAMA|NVIDIA|GEMINI)_API_KEY/.test(x.message)?'falta a '+x.message.match(/(OLLAMA|NVIDIA|GEMINI)_API_KEY/)[0]+' no passo 2.':x.message+'. Confira o passo 2 (Implantar como App da Web, acesso Qualquer pessoa).'))}paintCfg()};
-window.agSave=async function(ev){ev.preventDefault();var v=readForm(ev.target);['local','cloud'].forEach(function(k){var cb=ev.target.querySelector('input[name='+k+'_on]');cfg[k].on=!!(cb&&cb.checked);cfg[k].url=String(v[k+'_url']||'').trim().slice(0,300);cfg[k].model=String(v[k+'_model']||'').trim().slice(0,120);if(k==='cloud')cfg[k].key=String(v[k+'_key']||'').trim().slice(0,400)});
-  if(cfg.cloud.url&&!/^https:\/\//.test(cfg.cloud.url)&&!/^http:\/\/(localhost|127\.0\.0\.1)/.test(cfg.cloud.url)){notify('O endereço da Nuvem precisa começar com https://');return}
-  await store();notify('Agentes salvos neste aparelho.');paintCfg()};
-window.agTest=async function(k){await load();var f=document.querySelector('#ag-cfg .ag-adv form');if(f&&!f.closest('details').open)f=null;if(f){var v=readForm(f);cfg[k].url=String(v[k+'_url']||'').trim();cfg[k].model=String(v[k+'_model']||'').trim();if(k==='cloud')cfg[k].key=String(v.cloud_key||'').trim()}var was=cfg[k].on;cfg[k].on=true;
-  notify('Testando '+name(k)+'…');try{var r=await call(k,[{role:'user',content:'Responda apenas: OK'}],20);notify(name(k)+' respondeu: '+r.text.slice(0,40))}catch(x){notify(name(k)+' não respondeu ('+x.message+'). '+(k==='local'?'Confira se o Ollama está aberto com OLLAMA_ORIGINS.':'Confira endereço, modelo e chave.'))}cfg[k].on=was;paintCfg()};
-var lo=authLogout;authLogout=async function(){var r=await lo.apply(this,arguments);if(!authSession){cfg=null;cfgSk=''}return r};
-})();
-</script>
-<style id="autopilot-css">
-.ap-grid{display:grid;gap:12px}
-.ap-sw{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--ds-line)}
-.ap-sw:last-child{border-bottom:0}
-.ap-sw input{width:22px;height:22px;flex:none}
-.ap-log{display:grid;gap:6px;max-height:420px;overflow:auto}
-.ap-log div{display:flex;gap:10px;justify-content:space-between;border:1px solid var(--ds-line);border-radius:12px;padding:8px 10px;font-size:13px}
-.ap-log time{opacity:.65;white-space:nowrap;font-size:12px}
-.ap-issue{border-left:3px solid #ff2a1f!important}
-.ap-ok{color:#3ddc84;font-weight:750}
-</style>
-<script id="autopilot-js">
-(function(){
-'use strict';
-/* Piloto automático dos agentes: acha erros, escreve mensagens e e-mails personalizados e avisa cada pessoa.
-   Roda no aparelho do gestor (dono da equipe) enquanto o app está aberto. Sem IA configurada, usa textos prontos. */
-function e(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+/* v121: a IA saiu do app (agentes, piloto automático). Fica só o registro de erros dos aparelhos na nuvem
+   (lojas/{id}/erros), usado pelo robô diário para achar e corrigir problemas. Sem IA. */
 function T(){try{return window.e99Team&&window.e99Team.get()}catch(x){return null}}
-function day(){var d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')}
-function SK(){return 'lojasg.estoque99.autopilot:'+authSession.storeKey}
-function st(){var o=null;try{o=JSON.parse(localStorage.getItem(SK())||'null')}catch(x){}o=o||{};o.opt=Object.assign({chat:true,push:true,mail:true,errors:true,late:true},o.opt||{});o.log=o.log||[];o.late=o.late||{};o.err=o.err||{};return o}
-function save(o){o.log=o.log.slice(-80);try{localStorage.setItem(SK(),JSON.stringify(o))}catch(x){}}
-function log(o,txt,kind){o.log.push({t:Date.now(),txt:String(txt).slice(0,300),k:kind||''});save(o)}
-function boss(){var t=T();return !!(authSession&&t&&(t.owner||authSession.payload.role==='gestor'))}
-async function ai(task,data,fallback){try{if(window.e99Agent){var r=await window.e99Agent(task,data,400);if(r&&r.text)return {text:r.text,by:r.by.split(' · ')[0]}}}catch(x){}return {text:fallback,by:'texto pronto'}}
-
-/* ---------- 1. erros: todos os aparelhos guardam; o gestor vê e os agentes explicam ---------- */
 var errQ=[];function capture(msg,where){msg=String(msg||'').slice(0,300);if(!msg||/ResizeObserver|Script error\.?$/.test(msg))return;errQ.push({msg:msg,onde:String(where||'').slice(0,200),pagina:String(typeof page!=='undefined'?page:'').slice(0,40)});setTimeout(flushErr,3000)}
 window.addEventListener('error',function(ev){capture(ev.message,(ev.filename||'').split('/').pop()+':'+(ev.lineno||0))});
 window.addEventListener('unhandledrejection',function(ev){var r=ev.reason;capture(r&&r.message?r.message:String(r),'promessa')});
@@ -5138,75 +4991,10 @@ async function flushErr(){if(!errQ.length||!window.e99Cloud||!window.e99Cloud.us
   for(var i=0;i<q.length;i++){var x=q[i];var h=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(ver+'|'+x.msg)));var id=Array.from(h).map(function(b){return b.toString(16).padStart(2,'0')}).join('').slice(0,24);
     var k='lojasg.estoque99.err-n:'+id,n=(+localStorage.getItem(k)||0)+1;try{localStorage.setItem(k,String(n))}catch(y){}
     try{await c.db.collection('lojas').doc(sid).collection('erros').doc(id).set({msg:x.msg,onde:x.onde,pagina:x.pagina,ver:ver,por:(T()&&T().name||'').slice(0,40),n:Math.min(n,1000000),at:Date.now()})}catch(y){}}}
-/* verificação dos dados do estoque (o que está faltando ou atrasado) */
-function health(){var out=[],ids={};(state.team||[]).forEach(function(t){ids[t.id]=1});
-  var noOwner=(state.corridors||[]).filter(function(c){return !c.owner||(!ids[c.owner]&&normalText(c.owner)!=='todos')});if(noOwner.length)out.push(noOwner.length+' corredor(es) sem responsável: '+noOwner.slice(0,6).map(function(c){return c.number}).join(', '));
-  var nfNo=(state.nfs||[]).filter(function(n){return n.status!=='Conferida'&&(!n.owner||!ids[n.owner])});if(nfNo.length)out.push(nfNo.length+' NF(s) sem responsável');
-  var today=iso(),actNo=0,late=0;(state.plans||[]).forEach(function(p){(p.activities||[]).forEach(function(a){if(a.done)return;if(!a.owner)actNo++;try{if(actLate(p,a))late++}catch(x){}})});if(actNo)out.push(actNo+' atividade(s) sem responsável');if(late)out.push(late+' atividade(s) atrasada(s)');
-  var names={};(state.team||[]).forEach(function(t){var n=normalText(t.name);names[n]=(names[n]||0)+1});var dup=Object.keys(names).filter(function(n){return names[n]>1});if(dup.length)out.push('Nomes repetidos na Equipe: '+dup.join(', '));
-  try{var inv=JSON.parse(localStorage.getItem('lojasg.estoque99.aux-invites:'+authSession.storeKey)||'[]');var mem=window.e99CloudMembers?window.e99CloudMembers():[];var pend=inv.filter(function(i){return !mem.some(function(m){return (i.inviteId&&m.inviteId===i.inviteId)||(i.login&&authLoginName(m.login||'')===authLoginName(i.login))})});if(pend.length)out.push(pend.length+' convite(s) ainda sem conta: '+pend.slice(0,5).map(function(i){return i.name}).join(', '))}catch(x){}
-  var nv=(window.e99CloudMembers?window.e99CloudMembers():[]).filter(function(m){return !m.verificado});if(nv.length)out.push(nv.length+' conta(s) com e-mail não confirmado: '+nv.slice(0,5).map(function(m){return m.nome||m.login}).join(', '));
-  return out}
-async function cloudErrors(){try{var c=await window.e99Cloud.load(),sid=await window.e99Cloud.sid();if(!sid)return [];var q=await c.db.collection('lojas').doc(sid).collection('erros').orderBy('at','desc').limit(20).get();var l=[];q.forEach(function(d){l.push(Object.assign({id:d.id},d.data()))});return l}catch(x){return []}}
-
-/* ---------- 2. dados de cada pessoa ---------- */
-function linked(){var mem=window.e99CloudMembers?window.e99CloudMembers():[];return (state.team||[]).filter(function(t){return t.login}).map(function(t){var m=mem.find(function(x){return x.login&&authLoginName(x.login)===authLoginName(t.login)});return {id:t.id,name:t.name,login:t.login,uid:m?m.uid:'',ok:!!(m&&m.verificado)}}).filter(function(p){return authLoginName(p.login)!==authLoginName(authSession.record.login)})}
-function personData(p){var n=normalText(p.name),today=iso(),acts=[],lateA=[];(state.plans||[]).forEach(function(pl){(pl.activities||[]).forEach(function(a){if(a.done)return;var o=normalText(a.owner||'');if(o!==n&&o!=='todos')return;var l=false;try{l=actLate(pl,a)}catch(x){}if(pl.date===today||l)(l?lateA:acts).push(a.title+(a.time?' (até '+a.time+')':''))})});
-  var cor=(state.corridors||[]).filter(function(c){return c.owner===p.id}).map(function(c){return c.number+(c.sector?' '+c.sector:'')});
-  var nfs=(state.nfs||[]).filter(function(x){return x.owner===p.id&&x.status!=='Conferida'}).map(function(x){return 'NF '+x.number+' ('+(x.supplier||'')+')'});
-  return {acts:acts,late:lateA,cor:cor,nfs:nfs}}
-function plain(p,d){return 'Bom dia, '+p.name.split(' ')[0]+'! '+(d.late.length?'Atrasadas: '+d.late.slice(0,3).join('; ')+'. ':'')+(d.acts.length?'Para hoje: '+d.acts.slice(0,4).join('; ')+'. ':'Nenhuma atividade sua para hoje. ')+(d.nfs.length?'NFs para conferir: '+d.nfs.slice(0,3).join(', ')+'. ':'')+(d.cor.length?'Seus corredores: '+d.cor.slice(0,8).join(', ')+'.':'')}
-function txt(d){return 'Atrasadas: '+(d.late.join('; ')||'nenhuma')+'\nPara hoje: '+(d.acts.join('; ')||'nenhuma')+'\nNFs para conferir: '+(d.nfs.join(', ')||'nenhuma')+'\nCorredores: '+(d.cor.join(', ')||'nenhum')}
-
-/* ---------- 3. o piloto ---------- */
-var busy=false;
-async function run(force){if(busy||!authSession||!boss()||!state)return;busy=true;var o=st();try{
-  var h=new Date().getHours(),today=day(),ppl=linked(),me=(T()&&T().name)||'Gestor';
-  /* bom dia: uma vez por dia, a partir das 6h */
-  if((force||h>=6)&&o.day!==today){o.day=today;save(o);var sent=0,mails=0,c=null,loja='',myUid='';try{if(window.e99Cloud&&window.e99Cloud.user()){c=await window.e99Cloud.load();loja=await window.e99Cloud.sid();myUid=window.e99Cloud.user().uid}}catch(x){}
-    for(var i=0;i<ppl.length;i++){var p=ppl[i],d=personData(p);var m=await ai('Escreva uma mensagem curta e calorosa de bom dia para '+p.name+', do estoque, com as tarefas dele hoje e o que está atrasado. Máximo 3 frases, sem inventar nada.',txt(d),plain(p,d));
-      if(o.opt.push&&window.e99PushTo){if(await window.e99PushTo(p.login,'Bom dia, '+p.name.split(' ')[0]+' · Stok',m.text,'home'))sent++}
-      if(o.opt.mail&&c&&loja&&p.uid&&p.ok&&window.e99Cloud.user().emailVerified){var mm=await ai('Escreva um e-mail curto e personalizado para '+p.name+' com o resumo do dia dele no estoque: o que está atrasado, o que fazer hoje, NFs e corredores. Termine com "Equipe Stok". Só o texto do e-mail.',txt(d),m.text+'\n\nAbra o app: https://vferreiras.github.io/ESTOQUE-G/\n\nEquipe Stok');
-        try{await c.db.collection('correio').doc(loja+'_'+p.uid+'_'+today).set({de:myUid,para:p.uid,assunto:('Stok · seu dia '+new Date().toLocaleDateString('pt-BR')).slice(0,150),texto:mm.text.slice(0,4000),tipo:'resumo',loja:loja,criado:Date.now()});mails++}catch(x){log(o,'E-mail para '+p.name+' não entrou na fila ('+(x&&x.code||x)+').','err')}}}
-    if(loja)try{localStorage.setItem('lojasg.estoque99.cloud-daily:'+loja,new Date().getFullYear()+String(new Date().getMonth()+1).padStart(2,'0')+String(new Date().getDate()).padStart(2,'0'))}catch(x){}
-    if(o.opt.chat&&window.chatSend&&ppl.length){var all=ppl.map(function(p){var d=personData(p);return p.name+': '+(d.late.length?d.late.length+' atrasada(s), ':'')+d.acts.length+' para hoje'}).join('\n');
-      var g=await ai('Escreva uma mensagem de bom dia para o chat da equipe do estoque, curta, motivadora, marcando cada pessoa com @Nome e dizendo quantas tarefas cada uma tem. Máximo 5 linhas.',all,'☀️ Bom dia, equipe! '+ppl.map(function(p){var d=personData(p);return '@'+p.name+' '+d.acts.length+' tarefa(s)'+(d.late.length?' (+'+d.late.length+' atrasada)':'')}).join(' · '));
-      if(await window.chatSend('🤖 '+g.text.slice(0,950)))log(o,'Bom dia enviado no chat da equipe ('+g.by+').','chat')}
-    log(o,'Bom dia: '+sent+' aviso(s) no celular, '+mails+' e-mail(s) na fila.','push')}
-  /* atrasos: avisa o responsável no máximo a cada 3 horas */
-  if(o.opt.late&&o.opt.push&&window.e99PushTo){var al=[];try{al=collectAlerts().filter(function(a){return a.late})}catch(x){}
-    for(var j=0;j<al.length&&j<15;j++){var a=al[j],key=a.key||a.title;if(Date.now()-(o.late[key]||0)<3*3600000)continue;var who=ppl.find(function(p){var s=normalText([a.title,a.message,a.detail].join(' '));return s.indexOf(normalText(p.name))>=0});if(!who)continue;
-      var mt=await ai('Escreva um lembrete curto, educado e direto (1 frase) para '+who.name+' sobre este atraso no estoque.',[a.title,a.message,a.detail].filter(Boolean).join(' · '),'Lembrete: '+[a.title,a.message].filter(Boolean).join(' — '));
-      if(await window.e99PushTo(who.login,'Atraso no estoque',mt.text,'alerts')){o.late[key]=Date.now();log(o,'Lembrete de atraso para '+who.name+': '+(a.title||''),'late')}}save(o)}
-  /* erros e verificação: avisa o gestor quando aparece algo novo */
-  if(o.opt.errors){var issues=health(),errs=await cloudErrors(),fresh=errs.filter(function(x){return !o.err[x.id]||o.err[x.id]<x.n});var sig=issues.join('|');
-    if(fresh.length||(sig&&sig!==o.lastHealth)){o.lastHealth=sig;fresh.forEach(function(x){o.err[x.id]=x.n});
-      var dg=await ai('Você é o agente que acha erros no app Stok. Explique em tópicos curtos o que está errado e o que o gestor deve fazer, por ordem de importância.','Erros nos aparelhos:\n'+(fresh.map(function(x){return '- '+x.msg+' ('+x.onde+', tela '+x.pagina+', v'+x.ver+', '+x.n+'x, por '+x.por+')'}).join('\n')||'nenhum')+'\nProblemas nos dados:\n'+(issues.map(function(s){return '- '+s}).join('\n')||'nenhum'),(fresh.length?fresh.length+' erro(s) novo(s) no app. ':'')+issues.slice(0,4).join(' · '));
-      o.diag={t:Date.now(),text:dg.text,by:dg.by};log(o,'Verificação: '+(fresh.length?fresh.length+' erro(s) novo(s); ':'')+issues.length+' ponto(s) de atenção.','err');
-      if(o.opt.push&&window.e99PushTo&&(fresh.length||issues.length))window.e99PushTo(authSession.record.login,'Stok · os agentes acharam algo',dg.text.slice(0,220),'agentes',true);}
-    save(o)}
-}catch(x){try{log(o,'Falha no piloto: '+(x&&x.message||x),'err')}catch(y){}}finally{busy=false;if(page==='agentes')render()}}
-window.e99Autopilot=run;window.e99APPeople=function(){return linked()};
-setInterval(function(){if(!document.hidden)run(false)},10*60000);setTimeout(function(){run(false)},25000);
-document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(function(){run(false)},4000)});
-
-/* ---------- 4. tela "Agentes": o que fizeram, chaves e diagnóstico ---------- */
-function pageA(){if(!authSession)return '';var o=st(),issues=boss()?health():[];
-  var sw=function(k,t,d){return '<label class="ap-sw"><span><b>'+t+'</b><br><span class="small">'+d+'</span></span><input type="checkbox" '+(o.opt[k]?'checked':'')+' onchange="apOpt(\''+k+'\',this.checked)"></label>'};
-  return hero('Agentes','Os agentes cuidam do estoque sozinhos: acham erros, escrevem mensagens e e-mails personalizados e avisam cada pessoa.')
-   +'<div class="grid2"><div class="panel help"><h2>✨ Piloto automático</h2>'+(boss()?'':'<p class="small">O piloto roda no aparelho do gestor (quem criou a equipe).</p>')
-   +sw('chat','Bom dia no chat','Uma mensagem por dia marcando cada pessoa com as tarefas dela.')+sw('push','Avisos no celular','Mensagem personalizada para cada pessoa (app ntfy, mesmo com o Stok fechado).')+sw('mail','E-mails personalizados','Um e-mail por dia para quem confirmou o e-mail (enviado pelo robô diário).')+sw('late','Lembretes de atraso','Avisa o responsável quando algo atrasa (no máximo a cada 3 horas).')+sw('errors','Achar erros','Junta os erros de todos os aparelhos e verifica os dados do estoque.')
-   +'<div class="toolbar" style="margin-top:10px"><button class="primary" onclick="apRun()" '+(boss()?'':'disabled')+'>Rodar agora</button><button onclick="go(\'account\')">Configurar agentes de IA</button></div></div>'
-   +'<div class="panel help"><h2>🔎 Diagnóstico</h2>'+(o.diag?'<div class="ag-out">'+e(o.diag.text)+'</div><div class="ag-by">'+e(o.diag.by)+' · '+new Date(o.diag.t).toLocaleString('pt-BR')+'</div>':'<p class="small">Ainda sem diagnóstico. Toque em Rodar agora.</p>')
-   +'<h3 style="margin:14px 0 6px">Pontos de atenção agora</h3>'+(issues.length?'<div class="ap-log">'+issues.map(function(s){return '<div class="ap-issue">'+e(s)+'</div>'}).join('')+'</div>':'<p class="ap-ok">✓ Nada pendente nos dados.</p>')+'</div></div>'
-   +'<div class="panel help"><h2>📋 O que os agentes fizeram</h2>'+(o.log.length?'<div class="ap-log">'+o.log.slice().reverse().slice(0,40).map(function(l){return '<div><span>'+e(l.txt)+'</span><time>'+new Date(l.t).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+'</time></div>'}).join('')+'</div>':'<p class="small">Nada ainda.</p>')+'</div>'}
-window.extraPages=window.extraPages||{};window.extraPages.agentes=pageA;labels.agentes='Agentes';icons.agentes='✨';
-window.apOpt=function(k,v){var o=st();o.opt[k]=!!v;save(o);notify('Piloto: '+(v?'ligado':'desligado')+'.')};
-window.apRun=async function(){var o=st();o.day='';o.lastHealth='';save(o);notify('Agentes trabalhando…');await run(true);notify('Pronto. Veja o que os agentes fizeram.');render()};
 })();
 </script>
 <style id="theme-anim-css">
-/* Tema de animação único por conta (escolhido pelos agentes) */
+/* Tema de animação único por conta (combinação da conta, sem IA) */
 html body.dark #view .panel::after,html body.dark #view .card::after,html body.dark #view .stat::after,html body.dark #view .plan-card::after,html body.dark #view .pn-card::after,html body.dark button.primary::after,html body.dark #view .prof-stats>div::after,html body.dark #view .prof-people button::after{animation-duration:var(--fx-shine,7s)!important}
 html body.dark button.primary,html body.dark .nav button.active,html body.dark #mobile-bottom button.active{animation-duration:var(--fx-pulse,3s)!important}
 .fx-g{filter:hue-rotate(var(--fx-hue,0deg)) saturate(var(--fx-sat,1))}
@@ -5225,16 +5013,11 @@ function apply(t){var b=document.body.style;b.setProperty('--fx-shine',t.brilho+
 function get(){if(!authSession)return null;var t=null;try{t=JSON.parse(localStorage.getItem(K())||'null')}catch(x){}return t?clean(t):null}
 function put(t){try{localStorage.setItem(K(),JSON.stringify(t))}catch(x){}}
 async function ensure(force){if(!authSession)return;var t=get();if(!t||force){var base=seedTheme(authLoginName(authSession.record.login)+(force?Date.now():''));t=base;
-    try{if(window.e99Agent){var nm=(window.e99Team&&window.e99Team.get()&&window.e99Team.get().name)||authSession.record.login;var r=await window.e99Agent('Crie um tema de animação ÚNICO para a conta de '+nm+' no app Stok (tema escuro, vermelho). Responda SÓ um JSON com: entrada (uma de: subir, zoom, girar, lado, desfoque), brilho (segundos 4-12), pulso (segundos 1.5-5), matiz (graus -40 a 40), saturacao (0.7-1.6), anel (segundos 1.8-5), ms (240-700).','Sugestão inicial: '+JSON.stringify(base),200);
-      var m=r.text.match(/\{[\s\S]*\}/);if(m){var j=JSON.parse(m[0]);j.por=r.by.split(' · ')[0];t=clean(Object.assign({},base,j))}}}catch(x){}
     put(t)}apply(t);return t}
 window.e99AnimTheme=function(){return get()};window.e99AnimNew=async function(){var t=await ensure(true);notify('Animação nova para esta conta: entrada '+NAMES[t.entrada]+' ('+t.por+').');render()};
 var en=authEnter;authEnter=function(){var r=en.apply(this,arguments);setTimeout(function(){ensure(false)},0);return r};
 if(typeof authSession!=='undefined'&&authSession)ensure(false);
 var lo=authLogout;authLogout=async function(){var r=await lo.apply(this,arguments);if(!authSession){['--fx-shine','--fx-pulse','--fx-hue','--fx-sat','--fx-ring'].forEach(function(p){document.body.style.removeProperty(p)});window.e99EntryKF=null}return r};
-/* aparece na tela Agentes */
-if(window.extraPages&&window.extraPages.agentes){var pa=window.extraPages.agentes;window.extraPages.agentes=function(){var h=pa.apply(this,arguments),t=get();if(!t)return h;
-  return h+'<div class="panel help"><h2>🎨 Animação desta conta</h2><p>Entrada <b>'+NAMES[t.entrada]+'</b> · brilho a cada '+t.brilho+'s · pulso '+t.pulso+'s · tom das partículas '+(t.matiz>0?'+':'')+t.matiz+'° · criada por: '+t.por+'.</p><p class="small">Cada conta tem a sua. Os agentes criam o tema; sem IA configurada, ele é uma combinação única da conta.</p><button onclick="e99AnimNew()">Pedir outra animação aos agentes</button></div>'}}
 })();
 </script>
 <style id="mail-recover-css">
@@ -5858,7 +5641,7 @@ var P={
 };
 function svg(n,cls){var p=P[n];if(!p)return '';return '<svg class="ic'+(cls?' '+cls:'')+'" viewBox="0 0 24 24" aria-hidden="true" focusable="false">'+p+'</svg>'}
 window.e99Icon=svg;
-var PAGE_ICON={home:'home',plans:'plans',reports:'reports',team:'team',corridors:'corridors',nfs:'nfs',data:'data',agenda:'agenda',alerts:'bell',chat:'chat',profile:'profile',agentes:'spark',account:'account',admin:'admin','mobile-menu':'more'};
+var PAGE_ICON={home:'home',plans:'plans',reports:'reports',team:'team',corridors:'corridors',nfs:'nfs',data:'data',agenda:'agenda',alerts:'bell',chat:'chat',profile:'profile',account:'account',admin:'admin','mobile-menu':'more'};
 var GLYPH={'＋':'plus','+':'plus','▥':'scan','⇪':'upload','↻':'refresh','🔄':'refresh','⇅':'data','✨':'spark','☁️':'cloud','☁':'cloud','📲':'phone','🔔':'bell','⏱':'bell','🖥️':'desktop','🖥':'desktop','💻':'desktop','🔐':'lock','🔒':'lock','🔑':'key','🎨':'palette','💬':'chat','⚙':'gear','⚙️':'gear','▤':'nfs','▣':'plans','✉':'mail','✉️':'mail','📧':'mail','☰':'more','⌂':'home','◫':'home','♙':'profile','▦':'corridors','📷':'camera','📸':'camera','🖨':'print','🖨️':'print','📥':'download','⬇':'download','⬇️':'download','📤':'share','↗':'out','✎':'edit','✏️':'edit','🗑':'trash','🗑️':'trash','📊':'reports','📅':'agenda','🗓':'agenda','🗓️':'agenda','🧾':'nfs','📄':'nfs','👥':'team','👤':'profile','🛡':'admin','🛡️':'admin','🤖':'spark'};
 var GLYPH_RE=/^\s*(＋|\+|▥|⇪|↻|🔄|⇅|✨|☁️|☁|📲|🔔|⏱|🖥️|🖥|💻|🔐|🔒|🔑|🎨|💬|⚙️|⚙|▤|▣|✉️|✉|📧|☰|⌂|◫|♙|▦|📷|📸|🖨️|🖨|📥|⬇️|⬇|📤|↗|✎|✏️|🗑️|🗑|📊|📅|🗓️|🗓|🧾|📄|👥|👤|🛡️|🛡|🤖)️?\s*/;
 function firstText(el){for(var n=el.firstChild;n;n=n.nextSibling){if(n.nodeType===3){if(n.nodeValue.trim())return n;continue}if(n.nodeType===1&&!/^(SVG|svg|IMG|INPUT)$/.test(n.nodeName)&&n.childNodes.length===1&&n.firstChild.nodeType===3&&n.getAttribute('aria-hidden')==='true')return n.firstChild;return null}return null}
@@ -5880,7 +5663,7 @@ var KEEP={NF:1,NFS:1,'NF-E':1,XML:1,PC:1,ADM:1,CEP:1,CNPJ:1,CPF:1,IA:1,G:1,TI:1,
 function sentence(s){var seg=s.split(/(\s·\s)/);return seg.map(function(x){if(/^\s·\s$/.test(x))return x;var w=x.toLowerCase().split(/(\s+)/).map(function(y){return KEEP[y.toUpperCase()]&&y.trim()?y.toUpperCase():y}).join('');return w.charAt(0).toUpperCase()+w.slice(1)}).join('')}
 function calm(root){if(!root)return;root.querySelectorAll('.eyebrow,.auth-card .brand small').forEach(function(el){if(el.__cs)return;el.__cs=1;for(var n=el.firstChild;n;n=n.nextSibling){if(n.nodeType===3&&/[A-ZÀ-Ý]{2}/.test(n.nodeValue)&&n.nodeValue===n.nodeValue.toUpperCase())n.nodeValue=sentence(n.nodeValue)}})}
 /* títulos curtos com o nome da tela; o slogan vira subtítulo */
-var TITLE={plans:'Plano de ação',nfs:'Notas fiscais',corridors:'Corredores',team:'Equipe',reports:'Painel',alerts:'Alertas',data:'Dados e ajuda',agenda:'Agenda',agentes:'Agentes',account:'Minha conta',admin:'Administração','mobile-menu':'Mais opções'};
+var TITLE={plans:'Plano de ação',nfs:'Notas fiscais',corridors:'Corredores',team:'Equipe',reports:'Painel',alerts:'Alertas',data:'Dados e ajuda',agenda:'Agenda',account:'Minha conta',admin:'Administração','mobile-menu':'Mais opções'};
 var MORE_PAGES={nfs:1,corridors:1,plans:1,team:1};
 function shortHero(v){var pg=typeof page!=='undefined'?page:'';var h=v.querySelector('.hero:not(.hero-home)');if(!h||h.__v86)return;h.__v86=1;var h1=h.querySelector('h1');var t=TITLE[pg];
   if(h1&&t){var old=h1.textContent.replace(/\s+/g,' ').trim();if(old&&old.toLowerCase()!==t.toLowerCase()){var box=h1.parentNode;if(!box.querySelector('.subtitle')){var p=document.createElement('p');p.className='subtitle';p.textContent=old.charAt(0)+old.slice(1).toLowerCase();h1.after(p)}}
@@ -5969,7 +5752,6 @@ html body #view .hero-home>.fx-pause,html body #view .hero>.fx-pause{position:ab
 #auth-screen .pw-toggle{min-height:44px!important;height:44px!important;bottom:5px!important}
 #auth-screen #auth-forgot,#auth-screen #auth-create,#auth-screen .mr-link,#auth-screen a{min-height:44px;display:inline-flex;align-items:center}
 .fwd-btn{min-height:44px!important;padding:0 14px!important}
-.ag-btn{min-height:44px!important}
 /* P13: foto do chat com espaço reservado */
 img[data-chat-img]{width:min(260px,100%);height:auto;aspect-ratio:4/3;object-fit:contain;background:#111113;border-radius:12px}
 /* P21: nomes longos quebram em vez de sumir; cargo inteiro; Ver planos visível */
@@ -6124,7 +5906,7 @@ html:root body #scroll-progress{background:var(--neon)!important}
 html:root body.dark::before{background:radial-gradient(38vmax 30vmax at 82% 8%,rgba(var(--neon-rgb),.11),transparent 70%),radial-gradient(30vmax 26vmax at 8% 62%,rgba(var(--neon-rgb),.08),transparent 70%),radial-gradient(34vmax 24vmax at 70% 96%,rgba(var(--neon-rgb),.07),transparent 70%)!important}
 html:root body #toast,html:root body .toast{border-color:rgba(var(--neon-rgb),.55)!important}
 #ptr i{border-top-color:var(--neon)!important}
-/* chat, perfil, agentes e piloto automático */
+/* chat e perfil */
 .chat-quote,.chat-reply{border-left-color:var(--neon)!important}
 @keyframes chat-flash{0%,60%{box-shadow:0 0 0 3px var(--neon)}100%{box-shadow:0 0 0 3px transparent}}
 .chat-msg .reacts button.me{border-color:var(--neon)!important;background:rgba(var(--neon-rgb),.16)!important}
@@ -6134,10 +5916,7 @@ html:root body #toast,html:root body .toast{border-color:rgba(var(--neon-rgb),.5
 html:root body.dark #view .prof-people button:hover{border-color:var(--neon)!important}
 .prof-cover,#prof-edit .pe-cover{background:linear-gradient(135deg,#FF2A1F,#5a0f0b 60%,#120302)}
 .prof-user b{color:var(--neon)}
-.ag-btn,.ag-step a.button{border-color:rgba(var(--neon-rgb),.6)!important;background:rgba(var(--neon-rgb),.12)!important}
-.ag-step,.push-card{background:rgba(var(--neon-rgb),.05)!important}
-.ag-thinking i{background:var(--neon)!important}
-.ap-issue{border-left-color:var(--neon)!important}
+.push-card{background:rgba(var(--neon-rgb),.05)!important}
 /* abertura: prateleiras e scanner em vermelho; o S continua vermelho */
 #stok-intro{background:radial-gradient(ellipse at 50% 14%,#2a0806 0,#0b0404 36%,#020203 76%,#000 100%)!important}
 #stok-intro .si-scan{stroke:var(--neon-hot)!important;filter:drop-shadow(0 0 4px var(--neon))!important}
@@ -7118,7 +6897,7 @@ window.e99Conf={check:check,feed:function(r,t){feed(r,t)},arm:function(){if(S&&S
 'use strict';
 /* v101 (B): papel "gestor" só vale para a conta do dono. Contas antigas ganharam role 'gestor' sem ser o dono
    (semente "Estoque 99" do PC, "conta perdida vira gestor" da v59 até a v88, ou 'gestor' antigo vindo de usuarios/{uid}).
-   Com isso a conta do PC abria Administração (bloquear/apagar contas, redefinir senha), Piloto automático e o envio diário.
+   Com isso a conta do PC abria Administração (bloquear/apagar contas, redefinir senha) e o envio diário.
    Gestor de verdade = login do dono (vferreiras/vferrreiras) ou uid desta conta marcado com 'S' em verificados.
    Qualquer outro 'gestor' vira 'estoque' ao entrar (o papel antigo fica anotado em role-was:<conta>). */
 var OWNER=['vferreiras','vferrreiras'],VUID='TConyCsDQfPWBZ2MuGhVQTy7Mmz1';
@@ -7156,9 +6935,9 @@ var r0=render;render=function(){var r=r0.apply(this,arguments);try{if(authSessio
 <script id="v102-js">
 (function(){
 'use strict';
-/* v102 (pedido do dono): Agentes e Agenda saem do menu e das rotas. O código continua (piloto, agenda de planos)
-   para não quebrar o que depende deles; "Agenda" leva ao Plano de ação e "Agentes" ao Início. */
-var GONE={agentes:'home',agenda:'plans'};
+/* v102 (pedido do dono): Agenda sai do menu e das rotas ("Agenda" leva ao Plano de ação).
+   v121: a IA saiu do app; endereços antigos (agentes, assistant, consultas, robot) levam ao Início. */
+var GONE={agentes:'home',assistant:'home',consultas:'home',robot:'home',agenda:'plans'};
 /* Administração do dono: a conta do dono criada em "Criar conta" ficava como 'estoque' e não via Administração.
    Se esta conta entrou na nuvem com o uid marcado com S em "verificados" (só o administrador grava), ela é gestor. */
 var VUID='TConyCsDQfPWBZ2MuGhVQTy7Mmz1';
@@ -7403,10 +7182,10 @@ html body.dark #view #mention-box button{min-height:44px}
 .chat-count[hidden]{display:none}
 @media (hover:none){.chat-kbd{display:none}}
 .chat-btns{align-items:center;gap:6px}
-html body.dark #view .chat-btns .chat-ico,html body.dark #view .chat-btns .ag-chat{width:48px;min-width:48px;height:48px;min-height:48px;padding:0;display:inline-grid;place-items:center;border-radius:14px}
+html body.dark #view .chat-btns .chat-ico{width:48px;min-width:48px;height:48px;min-height:48px;padding:0;display:inline-grid;place-items:center;border-radius:14px}
 html body.dark #view #chat-send{min-height:48px;padding:0 18px;gap:8px;display:inline-flex;align-items:center;justify-content:center;border-radius:14px}
 html body.dark #view #chat-send:disabled{opacity:.6}
-@media (max-width:560px){#chat-form{grid-template-columns:minmax(0,1fr)}.chat-btns{display:flex;justify-content:stretch}html body.dark #view #chat-send{flex:1}html body.dark #view .chat-btns .chat-ico,html body.dark #view .chat-btns .ag-chat{width:46px;min-width:46px}}
+@media (max-width:560px){#chat-form{grid-template-columns:minmax(0,1fr)}.chat-btns{display:flex;justify-content:stretch}html body.dark #view #chat-send{flex:1}html body.dark #view .chat-btns .chat-ico{width:46px;min-width:46px}}
 .chat-extras{display:grid;gap:8px;min-width:0}
 body.role-aux .chat-leave-row{display:none!important}
 .chat-extras:empty{display:none}
@@ -7508,7 +7287,7 @@ window.e99MailIdx={get:function(m){return rd()[h(m)]||''},set:function(m,login){
 (function(){
 'use strict';
 /* v111 (pedido do dono): dados pessoais do aparelho cifrados com a conta.
-   - members:, aux-invites: e agent-brief: (por conta) deixam o localStorage em claro e passam a morar dentro do estado cifrado da
+   - members: e aux-invites: (por conta; agent-brief: da IA saiu na v121) deixam o localStorage em claro e passam a morar dentro do estado cifrado da
      conta (state.sealed, AES-GCM com a senha, como o resto). O app continua lendo/gravando pelo localStorage de sempre: este bloco
      intercepta só essas chaves da conta aberta. Dado antigo em claro é levado para dentro da conta na primeira leitura e só é
      apagado do localStorage depois que a conta foi gravada com ele (nada se perde).
@@ -7517,7 +7296,7 @@ window.e99MailIdx={get:function(m){return rd()[h(m)]||''},set:function(m,login){
    - Fotos e perfis (IndexedDB estoque99-profiles) são cifrados com uma chave aleatória guardada no estado cifrado (state.sealKey);
      os registros antigos em claro são cifrados quando são lidos. */
 var LS=window.localStorage,SP=Storage.prototype,G=SP.getItem,S=SP.setItem,R=SP.removeItem;
-var PRE=['lojasg.estoque99.members:','lojasg.estoque99.aux-invites:','lojasg.estoque99.agent-brief:'];
+var PRE=['lojasg.estoque99.members:','lojasg.estoque99.aux-invites:'];
 var cur='',vault=null,moved={},timer=0;
 function sess(){try{return authSession}catch(x){return null}}
 function vk(k){var s=sess();if(!s||!s.storeKey)return '';for(var i=0;i<PRE.length;i++){var p=PRE[i];if(k.indexOf(p)===0){var rest=k.slice(p.length);if(rest===s.storeKey||rest.indexOf(s.storeKey+':')===0)return p.slice('lojasg.estoque99.'.length)+rest.slice(s.storeKey.length)}}return ''}
@@ -7819,7 +7598,7 @@ settle();window.e99NoRise=function(){return B.classList.contains('e99-norise')};
 var played=false,pending=false,hiddenAt=0,W=window;
 W.__e99LoginSounds=0;
 var base=playSiteSound;
-function really(){try{base('login');W.__e99LoginSounds++;played=true;pending=false}catch(x){}}
+function really(){try{base('login');W.__e99LoginSounds++;W.__e99LoginSoundAt=Date.now();played=true;pending=false}catch(x){}}
 function attempt(fromGesture){if(played||typeof siteSoundEnabled!=='undefined'&&!siteSoundEnabled||document.hidden)return;
   var ctx=null;try{ctx=unlockSiteAudio()}catch(x){}if(!ctx){pending=true;return}
   if(ctx.state==='running'){really();return}
@@ -7831,7 +7610,9 @@ function onGesture(){if(pending&&!played)attempt(true)}
 ['pointerdown','touchend','click','keydown'].forEach(function(ev){document.addEventListener(ev,onGesture,{passive:true,capture:true})});
 document.addEventListener('visibilitychange',function(){if(document.hidden){hiddenAt=Date.now();return}if(hiddenAt&&Date.now()-hiddenAt>60000){played=false;pending=false;attempt(false)}});
 W.e99LoginSound={played:function(){return played},pending:function(){return pending},count:function(){return W.__e99LoginSounds}};
-setTimeout(function(){attempt(false)},200);
+/* v121: espera a barra de carregamento (app carregado e áudio preparado) antes de tentar; sem a barra, tenta em 7 s */
+var kicked=false;function kick(){if(kicked)return;kicked=true;attempt(false)}
+if(W.__e99Boot)setTimeout(kick,0);else{W.addEventListener('e99:boot',kick);setTimeout(kick,7000)}
 })();
 </script>
 <style id="v119-island-css">
@@ -7895,6 +7676,62 @@ var f0=window.fetch;window.fetch=function(u,o){try{var m=o&&o.method?String(o.me
    if(net.length>=NET_MAX){var w=Math.ceil((WIN-(now-net[0]))/1000);return Promise.resolve(new Response('Muitas requisições, aguarde '+w+' s',{status:429,headers:{'Retry-After':String(w)}}))}net.push(now)}}catch(x){}
   return f0.apply(this,arguments)};
 window.e99NetLimit=function(){var now=Date.now();net=net.filter(function(t){return now-t<WIN});return {used:net.length,max:NET_MAX}};
+})();
+</script>
+<script id="v121-js">
+(function(){
+'use strict';
+/* v121 (pedido do dono): (A) toda a IA saiu do app — apaga do aparelho o que sobrou dela (configuração dos agentes,
+   piloto automático, resumo do dia, robô antigo); o resto (chat, equipe, planilha, e-mails, conferência) fica intacto.
+   (B) barra de carregamento na tela de entrar: avança por etapas (scripts, página, fontes, app sem internet + bibliotecas,
+   som de abertura) e só então libera o formulário. Limite de 6 s (falha segura). Um envio feito durante o carregamento
+   não se perde: é refeito quando a barra termina. */
+var W=window,D=document;
+/* ---------- (A) limpeza dos dados antigos de IA ---------- */
+var IA_PRE=['lojasg.estoque99.agents','lojasg.estoque99.autopilot','lojasg.estoque99.agent-brief','lojasg.estoque99.robot'];
+function iaClean(){var n=0;try{var ks=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&IA_PRE.some(function(p){return k.indexOf(p)===0}))ks.push(k)}ks.forEach(function(k){localStorage.removeItem(k);n++})}catch(x){}return n}
+W.e99IaClean=iaClean;iaClean();
+/* dentro da conta cifrada: o validate já descarta o resumo da IA (state.sealed) e a configuração antiga (payload.ai);
+   grava a conta uma vez para não sobrar cópia antiga */
+var en=authEnter;authEnter=function(){var r=en.apply(this,arguments);iaClean();var s=authSession;
+  setTimeout(function(){try{if(!s||authSession!==s)return;var f='lojasg.estoque99.ia-clean:'+s.storeKey;if(localStorage.getItem(f))return;
+    Promise.resolve(authPersist(JSON.stringify(state))).then(function(){try{localStorage.setItem(f,'1')}catch(x){}}).catch(function(){})}catch(x){}},2500);return r};
+/* ---------- (B) barra de carregamento ---------- */
+var bar=D.getElementById('e99-boot'),fill=bar&&bar.firstElementChild,STEPS=['scripts','pagina','fontes','offline','som'],done={},finished=false,queued=null,T0=W.__e99BootT0||Date.now();
+function calm(){try{return D.body.classList.contains('fx-off')||D.documentElement.classList.contains('e99-calm')||(W.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)}catch(x){return false}}
+function pct(){return Math.round(8+92*Object.keys(done).length/STEPS.length)}
+function paint(){if(!bar)return;var p=pct();if(fill)fill.style.width=p+'%';bar.setAttribute('aria-valuenow',String(p))}
+function mark(k){if(finished||done[k])return;done[k]=Date.now()-T0;paint();if(Object.keys(done).length>=STEPS.length)finish('ok')}
+function finish(why){if(finished)return;finished=true;W.__e99Boot={why:why,ms:Date.now()-T0,at:Date.now(),steps:done};
+  if(bar){if(fill)fill.style.width='100%';bar.setAttribute('aria-valuenow','100');bar.classList.add('done');var b=bar;bar=null;setTimeout(function(){if(b.parentNode)b.parentNode.removeChild(b)},calm()?0:450)}
+  D.body.classList.remove('e99-booting');var sc=D.getElementById('auth-screen');if(sc)sc.removeAttribute('aria-busy');
+  try{W.dispatchEvent(new Event('e99:boot'))}catch(x){}
+  if(queued&&queued.isConnected){var f=queued;queued=null;/* evento sintético: nunca faz o envio nativo do formulário (que poria login e senha no endereço); só chama o authSubmit */
+    setTimeout(function(){try{f.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}))}catch(x){}},0)}}
+W.__e99BootFinish=finish;W.e99Boot={done:function(){return finished},steps:function(){return done}};
+if(!bar||!D.body.classList.contains('e99-booting')){finish('sem-barra')}
+else{
+  var sc0=D.getElementById('auth-screen');if(sc0)sc0.setAttribute('aria-busy','true');
+  /* envio durante o carregamento: guarda e refaz ao terminar */
+  D.addEventListener('submit',function(ev){if(finished)return;var f=ev.target;if(!f||!f.closest||!f.closest('#auth-screen'))return;ev.preventDefault();ev.stopImmediatePropagation();queued=f},true);
+  /* toque durante o carregamento já destrava o áudio (o iPhone só deixa dentro do toque) */
+  ['pointerdown','touchend','click'].forEach(function(t){D.addEventListener(t,function(){if(finished)return;try{unlockSiteAudio()}catch(x){}},{passive:true,capture:true})});
+  mark('scripts');
+  function afterLoad(){mark('pagina');
+    try{if(D.fonts&&D.fonts.ready)D.fonts.ready.then(function(){mark('fontes')},function(){mark('fontes')});else mark('fontes')}catch(x){mark('fontes')}
+    offline();sound()}
+  function offline(){if(!('serviceWorker' in navigator)||!W.caches){mark('offline');return}var t=Date.now();
+    (function poll(){navigator.serviceWorker.getRegistration().then(function(r){
+      if(r&&r.active&&!r.installing){vendor();return}
+      if((r&&(r.installing||r.waiting))||Date.now()-t<1500){setTimeout(poll,150);return}mark('offline')}).catch(function(){mark('offline')})})()}
+  function vendor(){var L=['vendor/zxing.min.js','vendor/fuse.min.js','vendor/flatpickr.min.js','vendor/fonts/inter-latin.woff2','vendor/fonts/space-grotesk-latin.woff2'];
+    Promise.all(L.map(function(u){return caches.match(u).then(function(m){return !!m},function(){return false})})).then(function(a){W.__e99BootVendor=a.every(Boolean);mark('offline')},function(){mark('offline')})}
+  function sound(){if(typeof siteSoundEnabled!=='undefined'&&!siteSoundEnabled){mark('som');return}var ctx=null;try{ctx=unlockSiteAudio()}catch(x){}
+    if(!ctx||ctx.state==='running'){mark('som');return}var t=Date.now();try{ctx.resume().catch(function(){})}catch(x){}
+    /* sem toque o iPhone deixa o áudio suspenso: o som fica guardado para o primeiro toque (v118) */
+    (function w(){if(ctx.state==='running'||Date.now()-t>1200){mark('som');return}setTimeout(w,80)})()}
+  if(D.readyState==='complete')afterLoad();else W.addEventListener('load',afterLoad,{once:true});
+}
 })();
 </script>
 </body></html>

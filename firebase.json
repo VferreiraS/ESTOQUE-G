@@ -13,8 +13,7 @@
       "README.md",
       "tests/**",
       "scratchpad/**",
-      "**/*.log",
-      "central-agentes/**"
+      "**/*.log"
     ],
     "headers": [
       {

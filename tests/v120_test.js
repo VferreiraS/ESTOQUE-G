@@ -1,5 +1,5 @@
-/* v120: limite de requisição — login (5/min por login), envios ao ntfy (60/min) no PC e iPhone 13, e Worker da IA (20/min por IP). */
-const L=require('./lib.js');const {ok,until}=L;const path=require('path'),url=require('url');
+/* v120: limite de requisição — login (5/min por login) e envios ao ntfy (60/min) no PC e iPhone 13. (O Worker da IA saiu na v121.) */
+const L=require('./lib.js');const {ok,until}=L;
 (async()=>{const b=await L.chromium.launch();const errs=[];const T=Date.now();
  for(const [nome,opts] of [['pc',{viewport:{width:1440,height:900}}],['iphone',L.devices['iPhone 13']]]){
   const P=await (await b.newContext(opts)).newPage();P.on('pageerror',e=>errs.push(nome+' '+e.message));P.on('dialog',d=>d.accept());
@@ -18,11 +18,4 @@ const L=require('./lib.js');const {ok,until}=L;const path=require('path'),url=re
   ok(await P.evaluate(n=>fetch(n+'/v1/health').then(x=>x.status!==429),L.N),nome+': leituras (GET) não são limitadas');
   await P.close();
  }
- /* Worker da IA */
- const W=(await import(url.pathToFileURL(path.resolve('cloudflare/ia-worker.js')).href)).default;global.fetch=async()=>new Response(JSON.stringify({choices:[{message:{content:'ok'}}]}),{status:200});
- const env={SENHA:'s',AI:{run:async()=>({response:'ok'})}};const req=ip=>new Request('https://w.test/',{method:'POST',headers:{Authorization:'Bearer s','Content-Type':'application/json','CF-Connecting-IP':ip,Origin:'https://vferreiras.github.io'},body:JSON.stringify({messages:[{role:'user',content:'oi'}]})});
- const st=[];for(let i=0;i<21;i++)st.push((await W.fetch(req('1.2.3.4'),env)).status);
- const last=await W.fetch(req('1.2.3.4'),env);
- ok(st.slice(0,20).every(s=>s===200)&&st[20]===429&&last.headers.get('Retry-After')&&/aguarde/.test(JSON.parse(await last.text()).error.message),'Worker: 21ª requisição do mesmo IP no minuto = 429 com Retry-After');
- ok((await W.fetch(req('5.6.7.8'),env)).status===200,'Worker: outro IP continua normal');
  console.log('errors',errs);await b.close()})();

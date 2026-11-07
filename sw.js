@@ -1,6 +1,6 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
 const CACHE_PREFIX = 'estoque99-';
-const CACHE = 'estoque99-v120';
+const CACHE = 'estoque99-v121';
 const VERSION = (CACHE.match(/-v(\d+)$/) || [])[1] || '';
 const CORE = [
   './index.html',
@@ -82,7 +82,7 @@ self.addEventListener('fetch', (event) => {
 
   const robot = url.pathname.endsWith('/robo.html');
   const legal = url.pathname.match(/\/(privacidade|termos)\.html$/);
-  /* v89: só a raiz do app e o index.html são guardados como './index.html'; outras páginas (ex.: central-agentes/) ficam com o próprio endereço */
+  /* v89: só a raiz do app e o index.html são guardados como './index.html'; outras páginas (ex.: privacidade.html) ficam com o próprio endereço */
   const scope = new URL(self.registration ? self.registration.scope : './', self.location).pathname;
   const app = url.pathname === scope || url.pathname === scope + 'index.html';
   if (app || robot || legal) {

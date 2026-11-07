@@ -283,7 +283,7 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && isLojaId(loja) && doc == 'atual';
     }
 
-    // Erros vistos nos aparelhos da equipe (para os agentes e o robô diário acharem e corrigirem).
+    // Erros vistos nos aparelhos da equipe (para o robô diário achar e corrigir).
     match /lojas/{loja}/erros/{id} {
       allow read: if isAuthenticated() && isLojaId(loja);
       allow create, update: if isAuthenticated() && isLojaId(loja) && id.matches('^[a-z0-9]{8,40}$') && isValidErro(request.resource.data);

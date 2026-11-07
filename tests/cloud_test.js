@@ -36,10 +36,10 @@ const doc=(path,tok)=>j(`${FS}/v1/projects/${P}/databases/(default)/documents/${
  ok(await until(A,()=>/e-mail confirmado/.test(e99AuxCardHTML()),null,15000),'gestor vê e-mail confirmado');
  // perfil do auxiliar chega ao gestor pela nuvem
  ok(await until(A,async(id)=>{const d=await new Promise(r=>{const q=indexedDB.open('estoque99-profiles');q.onsuccess=()=>r(q.result)});const ks=await new Promise(r=>{const t=d.transaction('p').objectStore('p').getAllKeys();t.onsuccess=()=>r(t.result)});return ks.some(k=>/\|fb[0-9a-f]+$/.test(k))},null,30000),'perfil do auxiliar chega pela nuvem');
- // resumo do dia na fila do robô
- await A.evaluate(()=>apRun());await A.waitForTimeout(3000);
+ // resumo do dia na fila do robô (v121: sem piloto/IA — o próprio cloud-js prepara o resumo do dia)
+ await A.evaluate(async()=>{Object.keys(localStorage).filter(k=>k.startsWith('lojasg.estoque99.cloud-daily:')).forEach(k=>localStorage.removeItem(k));await e99Cloud.after(true)});await A.waitForTimeout(3000);
  const q=await j(`${FS}/v1/projects/${P}/databases/(default)/documents/correio`,{headers:{Authorization:'Bearer owner'}});const mails=(q.b.documents||[]);ok(mails.length===1&&mails[0].fields.para.stringValue===bUid,'resumo do auxiliar na fila');
- if(mails[0])ok(/Repor arroz no 07/.test(mails[0].fields.texto.stringValue)&&/07 Mercearia/.test(mails[0].fields.texto.stringValue),'resumo tem atividade e corredor');
+ if(mails[0])ok(/Repor arroz no 07/.test(mails[0].fields.texto.stringValue)&&/07( —)? Mercearia/.test(mails[0].fields.texto.stringValue),'resumo tem atividade e corredor');
  // regras: robô lê; outros não
  await j(`${AU}/identitytoolkit.googleapis.com/v1/projects/${P}/accounts:batchCreate`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer owner'},body:JSON.stringify({users:[{localId:ROBOT,email:'robo@stok-e99.app',rawPassword:'robo-teste-123'}]})});
  const rt=await token('robo@stok-e99.app','robo-teste-123');const at=await token(aEmail,derive(gl,'1234'));
