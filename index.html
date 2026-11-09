@@ -1,5 +1,36 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="125"><title>Stok · Estoque 99 Lojas G</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><script id="v126-reset-js">/* v126 · limpeza geral única por aparelho (pedido do dono: "manter o app sem nenhuma conta antiga").
+   Época no marcador 'stok-reset'. Se não for a atual: apaga contas e dados do Stok deste navegador (localStorage, sessionStorage,
+   IndexedDB estoque99-* e a sessão do Firebase deste app), mantém só o tema, grava o marcador. Nova limpeza geral = subir a época (r127).
+   Roda antes de qualquer script que leia o armazenamento. Qualquer erro: o app abre normal. */
+(function(){var EP='r126',MK='stok-reset',KEEP={'lojasg.estoque99.ui-theme':1},FB='AIzaSyBy72TC',LS,SS,n=0;
+  try{LS=window.localStorage;if(LS.getItem(MK)===EP)return}catch(e){return}
+  try{SS=window.sessionStorage;if(SS.getItem(MK)===EP)return}catch(e){SS=null}
+  function hit(k){return k&&k!==MK&&!KEEP[k]&&(k.indexOf('lojasg.')===0||k.indexOf('e99')===0||k.indexOf('estoque99')===0||k.indexOf('stok')===0||(k.indexOf('firebase:')===0&&k.indexOf(FB)>0))}
+  function clean(st){if(!st)return;try{var rm=[],i,k;for(i=0;i<st.length;i++){k=st.key(i);if(hit(k))rm.push(k)}for(i=0;i<rm.length;i++){try{st.removeItem(rm[i]);n++}catch(e){}}}catch(e){}}
+  clean(LS);clean(SS);
+  var IDB=null;try{IDB=window.indexedDB}catch(e){}
+  if(IDB){var DBS=['estoque99-local','estoque99-chat','estoque99-chat-out','estoque99-conf','estoque99-profiles','estoque99-photos'];
+    /* pedido em ordem: quem abrir o banco depois (o app) espera a exclusão terminar */
+    DBS.forEach(function(d){try{IDB.deleteDatabase(d)}catch(e){}});
+    try{if(typeof IDB.databases==='function')IDB.databases().then(function(l){(l||[]).forEach(function(x){var d=x&&x.name;if(!d)return;if(d.indexOf('estoque99-')===0){if(DBS.indexOf(d)<0){try{IDB.deleteDatabase(d)}catch(e){}}mark()}else if(d==='firebaseLocalStorageDb')mark()})}).catch(function(){})}catch(e){}
+    /* sessão do Firebase: só as entradas deste app (o banco pode ser de outros sites do mesmo domínio); se não existir, não cria */
+    try{var q=IDB.open('firebaseLocalStorageDb');q.onupgradeneeded=function(){try{q.transaction.abort()}catch(e){}};
+      q.onsuccess=function(){var db=q.result;try{if(db.objectStoreNames.contains('firebaseLocalStorage')){var t=db.transaction('firebaseLocalStorage','readwrite'),c=t.objectStore('firebaseLocalStorage').openCursor();
+        c.onsuccess=function(){var r=c.result;if(!r)return;if(String(r.key).indexOf(FB)>0){try{r.delete()}catch(e){}}r.continue()};t.oncomplete=t.onabort=t.onerror=function(){db.close()}}else db.close()}catch(e){try{db.close()}catch(x){}}};
+      q.onerror=function(e){try{e.preventDefault()}catch(x){}};q.onblocked=function(){}}catch(e){}}
+  var ok=false;try{LS.setItem(MK,EP);ok=LS.getItem(MK)===EP}catch(e){}
+  /* sem como gravar no localStorage: guarda na sessão para não repetir a cada página aberta */
+  if(!ok){try{SS&&SS.setItem(MK,EP)}catch(e){}}
+  var shown=false;function mark(){if(shown)return;shown=true;window.__e99Wiped=true;
+    var go=function(){try{if(document.getElementById('e99-wiped'))return;var d=document.createElement('div');d.id='e99-wiped';d.setAttribute('role','status');
+      d.style.cssText='position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:2147483000;max-width:min(92vw,440px);box-sizing:border-box;padding:10px 40px 10px 14px;border-radius:14px;background:rgba(20,20,24,.94);color:#f2f2f2;border:1px solid rgba(255,255,255,.14);font:500 14px/1.35 -apple-system,system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.4)';
+      d.textContent='Este aparelho foi limpo. Crie uma conta ou traga a sua da nuvem.';
+      var b=document.createElement('button');b.type='button';b.setAttribute('aria-label','Fechar aviso');b.textContent='×';b.style.cssText='position:absolute;right:4px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;background:none;color:#ccc;font-size:20px;cursor:pointer';b.onclick=function(){d.remove()};d.appendChild(b);
+      document.body.appendChild(d);setTimeout(function(){try{d.remove()}catch(e){}},15000)}catch(e){}};
+    var t0=Date.now(),wait=function(){var late=Date.now()-t0>8000;if(document.body&&document.readyState!=='loading'&&(late||(window.__e99Boot&&!document.getElementById('stok-intro'))))go();else setTimeout(wait,250)};setTimeout(wait,600)}
+  window.__e99Reset={epoch:EP,removed:n,saved:ok};
+  if(n>0)mark()})();</script><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="126"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
