@@ -21,8 +21,8 @@ const SEED=()=>{try{if(sessionStorage.getItem('seeded'))return;sessionStorage.se
   ok(await P.evaluate(()=>!!authSession&&page==='home'),nome+': entrou e está no Início');
   ok(await P.evaluate(()=>{const v=document.getElementById('view');return !!v.querySelector('.hero-home')&&!v.querySelector('canvas,.tron-grid,.e99-clock,.e99-trend,.fx-pause,.e99-streak')}),nome+': Início sem S de partículas, grade, relógio, gráfico e pausa');
   ok(await P.evaluate(()=>!document.getElementById('music-btn')&&!document.getElementById('e99-island')&&!window.e99Music&&!window.e99Island&&!window.e99Clock),nome+': sem música ♫, ilha e relógio');
-  ok(await P.evaluate(()=>!labels.profile&&!labels.novidades&&!window.openProfile&&!window.e99VerTipo&&!document.querySelector('.vbadge')),nome+': sem perfil, "O que mudou?" e selos');
-  ok(await P.evaluate(()=>{go('profile');const a=page;go('novidades');return a==='home'&&page==='home'}),nome+': endereços antigos levam ao Início');
+  ok(await P.evaluate(()=>!labels.novidades&&!window.e99VerTipo&&!document.querySelector('.vbadge,.vbadge-canvas')),nome+': sem "O que mudou?" e selos (v127: o perfil voltou, sem selos)');
+  ok(await P.evaluate(()=>{go('profile');const a=page;go('novidades');return a==='profile'&&page==='home'}),nome+': "O que mudou?" leva ao Início; perfil abre (v127)');
   ok(await P.evaluate(()=>typeof window.e99Sting==='function'&&typeof window.playStokIntro==='function'),nome+': som e abertura (S) continuam');
   await P.evaluate(()=>{window.playStokIntro(false)});ok(await P.evaluate(()=>!!document.querySelector('#stok-intro .si-mark')),nome+': S da abertura aparece');
   await P.waitForTimeout(2000);ok(await P.evaluate(()=>!document.getElementById('stok-intro')),nome+': abertura termina');

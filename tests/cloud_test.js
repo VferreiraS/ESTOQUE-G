@@ -20,7 +20,7 @@ const doc=(path,tok)=>j(`${FS}/v1/projects/${P}/databases/(default)/documents/${
  await A.evaluate(()=>go('chat'));await A.waitForTimeout(500);await A.click('#aux-box summary');await A.fill('#aux-box input[name=name]','Ana');await A.fill('#aux-box input[name=email]','ana.'+Date.now()%1e6+'@teste.com');await A.click('#aux-box button.primary');await A.waitForTimeout(2500);
  const mailto=await A.evaluate(()=>window.__mail);ok(/^mailto:ana\./.test(mailto)&&/auxiliar%3D|auxiliar=/.test(decodeURIComponent(mailto)),'convite por e-mail (mailto com o link)');
  const link=decodeURIComponent(mailto).match(/(http\S+#auxiliar=[A-Za-z0-9_-]+)/)[1];const KEY=await A.evaluate(()=>{const k='lojasg.estoque99.aux-invites:'+authSession.storeKey;return JSON.parse(localStorage.getItem(k))[0].key});
- await B.goto(L.inviteUrl(link));await B.waitForTimeout(2500);await B.fill('#aux-form input[name=pin]',KEY);await B.click('#aux-form button[type=submit]');await B.waitForTimeout(3000);
+ await B.goto(L.inviteUrl(link));await B.waitForTimeout(2500);await B.fill('#aux-form input[name=pin]',KEY);await B.click('#aux-form button[type=submit]');await B.waitForTimeout(3000);await B.waitForSelector('#aux-form input[name=password]',{timeout:15000}).catch(()=>{});
  ok(/^ana\./.test(await B.inputValue('#aux-form input[name=email]')),'e-mail do convite já vem preenchido');
  await B.fill('#aux-form input[name=password]','4321');await B.fill('#aux-form input[name=confirmation]','4321');await L.terms(B,'#aux-form');await B.click('#aux-form button[type=submit]');await B.waitForTimeout(3000);
  await B.fill('#recovery-last4',(await B.textContent('.recovery-code')).replace(/[^A-Z0-9]/gi,'').slice(-4));await B.click('#recovery-enter');await B.waitForTimeout(2500);

@@ -30,7 +30,7 @@
       document.body.appendChild(d);setTimeout(function(){try{d.remove()}catch(e){}},15000)}catch(e){}};
     var t0=Date.now(),wait=function(){var late=Date.now()-t0>8000;if(document.body&&document.readyState!=='loading'&&(late||(window.__e99Boot&&!document.getElementById('stok-intro'))))go();else setTimeout(wait,250)};setTimeout(wait,600)}
   window.__e99Reset={epoch:EP,removed:n,saved:ok};
-  if(n>0)mark()})();</script><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="126"><title>Stok · Estoque 99 Lojas G</title>
+  if(n>0)mark()})();</script><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="127"><title>Stok · Estoque 99 Lojas G</title>
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -257,10 +257,15 @@ function validate(s){
  if(s.tasks.some(t=>!validDate(t.date)||(t.due&&!validDate(t.due))||!['Pendente','Em andamento','Concluído'].includes(t.status))||s.nfs.some(n=>!validDate(n.date)||!Number.isSafeInteger(n.volumes)||n.volumes<0||!['Pendente','Em conferência','Em divergência','Conferido'].includes(n.status)))throw Error('Backup inválido');
  if(s.nfs.some(n=>n.status==='Em divergência'&&!n.notes.trim()))throw Error('Backup inválido');
  s.nfs.forEach(nfValidateExtras);
+ [...s.nfs,...(Array.isArray(s.plans)?s.plans:[])].forEach(ownClean);
  const owners=new Set(['','todos',...s.team.map(x=>x.id)]),corridors=new Set(['',...s.corridors.map(x=>x.id)]);
  if(s.corridors.some(x=>!owners.has(x.owner))||s.tasks.some(x=>!owners.has(x.owner)||!corridors.has(x.corridor))||s.nfs.some(x=>!owners.has(x.owner)))throw Error('Backup inválido');
- return {version:1,plans:validatePlans(s.plans),team:s.team,corridors:s.corridors,tasks:s.tasks,nfs:s.nfs,ruptures:[],expiries:[],sync:validateSync(s.sync),photoKey:validPhotoKey(s.photoKey),confs:validateConfs(s.confs),confKey:validPhotoKey(s.confKey),sealKey:validPhotoKey(s.sealKey),sealed:validSealed(s.sealed),updated:s.updated||null,alertSettings:normalizeAlertSettings(s.alertSettings),alertSnoozes:normalizeSnoozes(s.alertSnoozes)};
+ return {version:1,plans:validatePlans(s.plans),team:s.team,corridors:s.corridors,tasks:s.tasks,nfs:s.nfs,ruptures:[],expiries:[],sync:validateSync(s.sync),photoKey:validPhotoKey(s.photoKey),confs:validateConfs(s.confs),confKey:validPhotoKey(s.confKey),sealKey:validPhotoKey(s.sealKey),sealed:validSealed(s.sealed),perfil:validatePerfil(s.perfil),updated:s.updated||null,alertSettings:normalizeAlertSettings(s.alertSettings),alertSnoozes:normalizeSnoozes(s.alertSnoozes)};
 }
+/* v127: quem criou o registro (NF/plano): cby = nome na equipe, cdev = aparelho, clogin = login. Só texto curto. */
+function ownClean(x){if(!x||typeof x!=='object')return;[['cby',60],['cdev',40],['clogin',80]].forEach(([k,n])=>{if(k in x){if(typeof x[k]!=='string'||!x[k])delete x[k];else x[k]=x[k].slice(0,n)}})}
+/* v127: perfil desta conta (fica dentro da conta cifrada): nome de exibição, cargo, sobre, foto JPEG pequena */
+function validatePerfil(p){if(!p||typeof p!=='object')return null;const st=(v,n)=>typeof v==='string'?v.trim().slice(0,n):'';const o={name:st(p.name,40),cargo:st(p.cargo,40),bio:st(p.bio,200),photo:'',at:Number.isSafeInteger(p.at)&&p.at>0?p.at:0};if(typeof p.photo==='string'&&p.photo.length<=120000&&/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(p.photo))o.photo=p.photo;return o}
 /* v96: conferências às cegas por câmera (state.confs). Filtra o que estiver errado em vez de recusar a conta inteira. */
 function validateConfs(a){if(!Array.isArray(a))return [];const okId=x=>typeof x==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(x),isoOk=x=>typeof x==='string'&&x.length<=40&&/^\d{4}-\d{2}-\d{2}T/.test(x)&&!isNaN(Date.parse(x)),str=(x,n)=>typeof x==='string'?x.slice(0,n):'',CODE=/^[0-9A-Za-z\-./ ()+]{0,64}$/,seen=new Set(),out=[];
  for(const c of a.slice(0,1000)){if(!c||typeof c!=='object'||!okId(c.id)||seen.has(c.id)||!isoOk(c.start))continue;
@@ -320,7 +325,7 @@ function sectorSymbol(sector){
  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" focusable="false">${shape}</svg>`;
 }
 function render(){idMapV++;if(!authSession){renderAuth();return}if(page==='assistant'||page==='consultas')page='home';renderStorage();$('breadcrumb').textContent=authSession.payload.store+' / '+(page==='mobile-menu'?'Mais opções':labels[page]);$('nav').innerHTML=Object.keys(labels).map(p=>`<button class="${page===p?'active':''}" aria-current="${page===p?'page':'false'}" onclick="go('${p}')"><span aria-hidden="true">${icons[p]}</span>${labels[p]}</button>`).join('');let html='';
- if(page==='home'){const aux=window.isAux&&isAux();const acts=todayActs();html=hero('Tudo no seu lugar.',new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),aux?'':'<button class="primary" onclick="openPlan()">＋ Novo plano</button>')+stats()+`<div class="panel"><div class="panelhead"><h2>Plano de ação de hoje</h2><button onclick="go('plans')">Ver planos →</button></div>${acts.length?'<ol class="plan-activities home-acts">'+acts.map(x=>planActivityRow(x.p,x.a)).join('')+'</ol>':`<div class="empty"><h3>Nenhum plano para hoje.</h3><p>${aux?'Quando o gestor montar o plano do dia, ele aparece aqui.':'Monte o plano de ação do dia para a equipe.'}</p>${aux?'':'<button class="primary" onclick="openPlan()">＋ Novo plano</button>'}</div>`}</div>`+(aux?'':`<div class="grid2"><div class="card"><div class="eyebrow">EQUIPE</div><h3>${state.team.length} colaboradores, um objetivo.</h3><p class="small">${esc(state.team.map(x=>x.name).join(' · '))} · TODOS para atividades em conjunto.</p><button onclick="go('team')">Gerenciar equipe →</button></div><div class="card"><div class="eyebrow">MAPA DO ESTOQUE</div><h3>${state.corridors.length} corredores organizados.</h3><p class="small">${state.corridors.filter(c=>!c.owner).length} corredores ainda precisam de responsável.</p><button onclick="go('corridors')">Ver corredores →</button></div></div>`)}
+ if(page==='home'){const aux=window.isAux&&isAux();const acts=todayActs();html=hero('Tudo no seu lugar.',new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),'<button class="primary" onclick="openPlan()">＋ Novo plano</button>')+stats()+`<div class="panel"><div class="panelhead"><h2>Plano de ação de hoje</h2><button onclick="go('plans')">Ver planos →</button></div>${acts.length?'<ol class="plan-activities home-acts">'+acts.map(x=>planActivityRow(x.p,x.a)).join('')+'</ol>':`<div class="empty"><h3>Nenhum plano para hoje.</h3><p>${aux?'Quando o gestor montar o plano do dia, ele aparece aqui.':'Monte o plano de ação do dia para a equipe.'}</p>${'<button class="primary" onclick="openPlan()">＋ Novo plano</button>'}</div>`}</div>`+(aux?'':`<div class="grid2"><div class="card"><div class="eyebrow">EQUIPE</div><h3>${state.team.length} colaboradores, um objetivo.</h3><p class="small">${esc(state.team.map(x=>x.name).join(' · '))} · TODOS para atividades em conjunto.</p><button onclick="go('team')">Gerenciar equipe →</button></div><div class="card"><div class="eyebrow">MAPA DO ESTOQUE</div><h3>${state.corridors.length} corredores organizados.</h3><p class="small">${state.corridors.filter(c=>!c.owner).length} corredores ainda precisam de responsável.</p><button onclick="go('corridors')">Ver corredores →</button></div></div>`)}
  if(page==='team'){html=hero('Gente que faz acontecer.','Atividades do plano para TODOS contam para cada integrante da equipe.',newButton('person','Colaborador')+shareReportButton('team'))+`<h2 class="vh">Pessoas da equipe</h2><div class="cards">${[...state.team,{id:'todos',name:'TODOS',role:'Atividade em conjunto'}].map(p=>{const tasks=planActsFor(p.name),done=tasks.filter(t=>t.done).length;return `<div class="card"><div class="cardtop"><div class="avatar">${esc(p.name.slice(0,1))}</div>${p.id==='todos'?'<span class="pill">Coletivo</span>':`<button onclick="openEditor('person','${esc(p.id)}')">Editar</button>`}</div><h3>${esc(p.name)}</h3><div class="small">${esc(p.role)}</div><p>${tasks.length-done} ${tasks.length-done===1?'atividade':'atividades'} a fazer · ${done} ${done===1?'feita':'feitas'} (últimos 30 dias)</p><div class="progress"><i style="width:${tasks.length?done/tasks.length*100:0}%"></i></div></div>`}).join('')}</div>`}
  if(page==='corridors'){html=hero('Cada corredor, um endereço.','Cores e símbolos para identificar cada setor de relance.',newButton('corridor','Adicionar corredor').replace('＋ Adicionar corredor','Adicionar corredor')+'<button type="button" onclick="corridorImportPick()">⇪ Importar mapa (Excel)</button>'+shareReportButton('corridors'))+`<h2 class="vh">Lista de corredores</h2><div class="cards">${state.corridors.map(c=>{const theme=corridorTheme(c);return `<div class="card corridor-card" style="--sector-color:${theme.color};--sector-soft:${theme.soft};--sector-border:${theme.border}"><div class="cardtop"><div class="eyebrow">CORREDOR ${esc(c.number)}</div><button onclick="openEditor('corridor','${esc(c.id)}')">Editar</button></div><div class="sector-heading"><span class="sector-symbol" aria-hidden="true">${sectorSymbol(c.sector)}</span><h3>${esc(c.sector)}</h3></div>${c.products?`<div class="small corridor-products">${esc(c.products)}</div>`:''}<div class="small">Responsável: <b>${esc(owner(c.owner))}</b> <button type="button" class="fwd-btn" onclick="event.stopPropagation();e99Forward('cor','${esc(c.id)}')" title="Encaminhar no chat">💬</button></div></div>`}).join('')}</div>`}
  if(page==='nfs'){html='';}/* v90: a tela de NFs é montada só uma vez (upgradedNFs) */if(page==='nfs-antigo'){html=hero('Recebeu? Conferiu? Registrou.','Acompanhe as notas fiscais da chegada à conclusão.',`<div class="toolbar"><button class="primary" onclick="openNFScanner()">▥ Bipar NF</button><button onclick="openNFImport()">Importar XML</button>${newButton('nf','Nova NF')}</div>`)+`<div class="panel"><div class="panelhead"><h2>Notas fiscais</h2><button onclick="window.print()">Imprimir</button></div>${state.nfs.length?`<div class="tablewrap"><table><thead><tr><th>NF / Fornecedor</th><th>Recebimento</th><th>Volumes</th><th>Responsável</th><th>Status</th><th>Ações</th></tr></thead><tbody>${state.nfs.map(n=>`<tr><td><b>${esc(n.number)}</b>${n.series?`<div class="small">Série ${esc(n.series)}</div>`:''}<div class="small">${esc(n.supplier)}</div>${n.items?`<div class="small">${n.items.length} itens importados</div>`:''}${n.notes?`<div class="small">${n.status==='Em divergência'?'Divergência: ':''}${esc(n.notes)}</div>`:''}</td><td>${date(n.date)}${n.arrivalTime?`<div class="small">${esc(n.arrivalTime)}</div>`:''}</td><td>${esc((n.volumes==null?0:n.volumes))}</td><td>${esc(owner(n.owner))}</td><td>${badge(n.status)}</td><td><button onclick="openEditor('nf','${esc(n.id)}')">Editar</button> <button class="fwd-btn" onclick="e99Forward('nf','${esc(n.id)}')" title="Encaminhar no chat">💬</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhuma NF cadastrada.</div>'}</div>`}
@@ -2483,7 +2488,7 @@ function whoName(n){return cfg&&n===cfg.name?'Você':n}
 var opened={};
 function bubble(r,m,cont){var id=esc2(r.id),from=esc2(m.from),long=!!(m.text&&m.text.length>420);
   return '<div class="chat-msg'+(r.mine?' mine':'')+(cont?' cont':'')+(long?' long':'')+(long&&opened[r.id]?' open':'')+(m.text&&window.e99IsMention&&window.e99IsMention(m.text)&&!r.mine?' mentioned':'')+'" data-id="'+id+'" data-at="'+esc2(m.at)+'" data-from="'+from+'" tabindex="-1">'
-   +(r.mine?'<span class="chat-sr">Você: </span>':cont?'<span class="chat-sr">'+from+': </span>':'<span class="who"><span class="av av-s" aria-hidden="true">'+esc2((String(m.from||'?').trim()[0]||'?').toUpperCase())+'</span><span>'+from+'</span></span>')
+   +(r.mine?'<span class="chat-sr">Você: </span>':cont?'<span class="chat-sr">'+from+': </span>':(window.profChip?window.profChip(m.from):'<span class="who"><span class="av av-s" aria-hidden="true">'+esc2((String(m.from||'?').trim()[0]||'?').toUpperCase())+'</span><span>'+from+'</span></span>'))
    +(m.re?'<button type="button" class="chat-quote" aria-label="Ver a mensagem respondida, de '+esc2(whoName(m.re.from))+'" onclick="chatJump(\''+esc2(m.re.id)+'\')"><b>'+esc2(whoName(m.re.from))+'</b><span>'+esc2(m.re.t||'Mensagem')+'</span></button>':'')
    +(m.img?(r.hasImg?'<img data-chat-img="'+id+'" alt="Foto enviada por '+from+'" decoding="async" width="260" height="195">':'<span class="img-wait">📷 Foto (baixando… fotos ficam no servidor só por 3 horas)</span>'):'')
    +(m.audio?(r.hasImg?'<span class="chat-audio"><audio data-chat-audio="'+id+'" data-mime="'+esc2(m.audio.mime)+'" controls preload="metadata" aria-label="Áudio de '+from+', '+mmss(m.audio.dur)+'"></audio><span class="dur" aria-hidden="true">'+mmss(m.audio.dur)+'</span></span>':'<span class="img-wait">🎤 Áudio de '+mmss(m.audio.dur)+' (baixando… áudios ficam no servidor só por 3 horas)</span>'):'')
@@ -2885,11 +2890,12 @@ async function handle(d,ch){if(ch!==chan||!authSession)return;var o=await decStr
   if(o.k==='member'){memTouch(o.dev,{name:who,role:o.r,login:o.login,inviteId:o.inviteId,created:o.event==='created'?(Number(o.at)||Date.now()):0,seen:Number(o.at)||Date.now()});
     if(o.event==='created'){feedAdd(who,'criou a conta de auxiliar');notify(who+' criou a conta de auxiliar.');if(page==='chat')scheduleRender()}return}
   if(o.k==='profreq'||o.k==='profile')return;/* v122: perfis saíram; mensagens de perfil de aparelhos antigos são ignoradas */
+  if(o.k==='perfil'){/* v127: perfil novo (foto, nome, cargo, sobre); a foto vem no anexo cifrado */if(window.e99OnPerfil)try{window.e99OnPerfil(o,who,async function(){if(!d.attachment||!d.attachment.url)return null;var r=await fetch(d.attachment.url);if(!r.ok)return null;return JSON.parse(new TextDecoder().decode(await dec(ch,await r.arrayBuffer())))},ch.topic)}catch(e){}return}
   if(o.k==='hello'){if(window.e99OnHello)try{window.e99OnHello()}catch(e){}if(sy().ready&&!snapTimer)snapTimer=setTimeout(function(){snapTimer=0;sendSnap()},1000+Math.random()*3000);return}
   if(o.k==='snap'&&snapTimer){clearTimeout(snapTimer);snapTimer=0}
   if(o.k!=='ops'&&o.k!=='snap')return;var ops=o.ops;
   if(o.att){if(!d.attachment||!d.attachment.url){lost();return}try{var r=await fetch(d.attachment.url);if(!r.ok){lost();return}ops=JSON.parse(new TextDecoder().decode(await dec(ch,await r.arrayBuffer()))).ops;lostCount=0;if(/baixar os dados/.test(lastErr))lastErr=''}catch(e){lost();return}}
-  if(!Array.isArray(ops)||ch!==chan)return;if(o.r==='auxiliar')ops=ops.filter(function(op){return op&&auxColl(op.c)&&!op.d}).map(auxPlanOp).filter(Boolean);ops=ops.map(function(op){return confOp(op,o)}).filter(Boolean);ops=delGuard(ops,who,o.k==='snap');await applyOps(ops,o.k==='snap',who);if(!amAux()){var sm=sy();var fx=ops.filter(function(op){return op.fix&&sm.meta.plans[op.i]});if(fx.length){fx.forEach(function(op){sm.meta.plans[op.i][3]=''});if(stamp()){await persist();schedulePublish(800)}}}paintStatus()}
+  if(!Array.isArray(ops)||ch!==chan)return;if(o.r==='auxiliar')ops=ops.filter(function(op){return op&&auxColl(op.c)&&!op.d}).map(function(op){return auxOp(op,o,who)}).filter(Boolean);ops=ops.map(function(op){return confOp(op,o)}).filter(Boolean);ops=delGuard(ops,who,o.k==='snap');await applyOps(ops,o.k==='snap',who);if(!amAux()){var sm=sy();var fx=ops.filter(function(op){return op.fix&&sm.meta.plans[op.i]});if(fx.length){fx.forEach(function(op){sm.meta.plans[op.i][3]=''});if(stamp()){await persist();schedulePublish(800)}}}paintStatus()}
 /* v89: freio contra apagar dados dos outros pelo ntfy (o papel vem do próprio remetente, então não dá para confiar nele).
    Apagar item cuja última mudança foi do próprio remetente: vale. Apagar itens de outras pessoas: no máximo 3 por mensagem;
    acima disso as exclusões são ignoradas e o aparelho avisa. Auxiliar nunca apaga pela sincronização. */
@@ -2897,6 +2903,16 @@ function delGuard(ops,who,isSnap){var s=sy();if(isSnap&&s.replace&&!s.ready)retu
   ops.forEach(function(op){if(!op||!op.d||C.indexOf(op.c)<0)return;var m=s.meta[op.c]&&s.meta[op.c][op.i];if(!m||m[2])return;if(!arr(op.c).some(function(x){return x&&x.id===op.i}))return;if(String(m[1])===String(op.b))return;foreign.push(op)});
   if(foreign.length<=3)return ops;var bad=new Set(foreign);try{feedAdd(who,'tentou apagar '+foreign.length+' itens de outras pessoas de uma vez (ignorado por segurança)');notify(who+' tentou apagar '+foreign.length+' itens de uma vez. Por segurança, nada foi apagado neste aparelho.')}catch(e){}
   return ops.filter(function(op){return !bad.has(op)})}
+/* v127: auxiliar cria NFs e planos e edita só os que ele criou (cby = nome na equipe, cdev = aparelho; o receptor grava quem enviou).
+   Registro de outra pessoa: plano → só marca/desmarca atividade feita (auxPlanOp); NF → recusado. Apagar continua proibido (filtrado antes). */
+function nmOwn(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim()}
+function ownedBy(cur,o,who){return !!cur&&((typeof cur.cdev==='string'&&cur.cdev&&cur.cdev===o.dev)||(typeof cur.cby==='string'&&cur.cby&&nmOwn(cur.cby)===nmOwn(who)))}
+function auxOp(op,o,who){if(!op||op.d||!auxColl(op.c))return null;if(op.c==='confs')return op;var x=op.x;if(!x||typeof x!=='object')return null;
+  var cur=arr(op.c).find(function(y){return y&&y.id===op.i});
+  if(!cur){var m=sy().meta[op.c]&&sy().meta[op.c][op.i];if(m&&String(m[1])!==String(who))return null;
+    return Object.assign({},op,{x:Object.assign({},x,{cby:String(who).slice(0,60),cdev:typeof o.dev==='string'?o.dev.slice(0,40):'',clogin:typeof x.clogin==='string'?x.clogin.slice(0,80):''})})}
+  if(ownedBy(cur,o,who)){var nx=Object.assign({},x,{cby:cur.cby||'',cdev:cur.cdev||'',clogin:cur.clogin||''});if(!nx.cby)delete nx.cby;if(!nx.cdev)delete nx.cdev;if(!nx.clogin)delete nx.clogin;return Object.assign({},op,{x:nx})}
+  return op.c==='plans'?auxPlanOp(op):null}
 /* auxiliar só marca atividades como feitas: copia apenas done/doneBy/doneAt para o plano que este aparelho já tem */
 function auxPlanOp(op){if(!op||op.c!=='plans')return op;if(op.d||!op.x||!Array.isArray(op.x.activities))return null;var cur=arr('plans').find(function(p){return p&&p.id===op.i});if(!cur)return null;
   var by={};op.x.activities.forEach(function(a){if(a&&a.id)by[a.id]=a});var acts=(cur.activities||[]).map(function(a){var r=by[a.id];if(!r)return a;var n=Object.assign({},a);if(r.done){n.done=true;n.doneBy=r.doneBy;n.doneAt=r.doneAt}else{delete n.done;delete n.doneBy;delete n.doneAt}return n});
@@ -2952,6 +2968,12 @@ window.syncMembers=function(){return members()};window.e99MemTouch=function(d,f)
 /* perfis: envio pelo canal cifrado da equipe (foto e capa vão como anexo cifrado) */
 window.e99SyncSend=async function(k,obj,body){if(!active()||!chan)return false;var o=head(k);Object.keys(obj||{}).forEach(function(x){o[x]=obj[x]});try{return await post(chan,o,body)}catch(e){return false}};
 window.e99SyncInfo=function(){return active()&&chan?{topic:chan.topic,dev:me(),connected:connected}:null};
+window.e99SyncDev=function(){return authSession?me():''};
+/* v127: link de acesso — antes de ativar, o aparelho novo lê as últimas 12 h do canal da equipe (só o cabeçalho cifrado)
+   para saber se o link já foi ativado em outro aparelho ('member' created com o mesmo inviteId) ou cancelado pelo gestor ('invused'). */
+window.e99SyncPeek=function(code,ms){return new Promise(function(res){var out=[],es2=null,done=false;function end(){if(done)return;done=true;try{es2&&es2.close()}catch(x){}res(out)}
+  channel(code).then(function(ch){if(typeof EventSource!=='function'){end();return}var since=Math.floor(Date.now()/1000)-12*3600;try{es2=new EventSource(NTFY()+'/'+ch.topic+'/sse?since='+since)}catch(x){end();return}
+    es2.onmessage=function(ev){try{var d=JSON.parse(ev.data);if(!d||d.event!=='message')return;decStr(ch,d.message).then(function(o){if(o&&o.v===1)out.push(o)})}catch(x){}};es2.onerror=function(){setTimeout(end,300)};setTimeout(end,ms||3500)}).catch(end)})};
 var CREATED='lojasg.estoque99.announce-created';
 async function presence(){if(!active())return;var k='lojasg.estoque99.presence:'+chan.topic+':'+me(),last=+localStorage.getItem(k)||0,cr=null;try{cr=JSON.parse(localStorage.getItem(CREATED)||'null')}catch(e){}
   if(!cr&&Date.now()-last<6*3600000)return;var o=head('member');o.event=cr?'created':'seen';o.login=authSession.record.login;if(cr&&cr.inviteId)o.inviteId=String(cr.inviteId);
@@ -3037,7 +3059,7 @@ body.dark .sector-symbol{color:var(--ds-bg)!important}
 .act-time{font-size:12.5px;font-weight:650;color:var(--ds-muted);white-space:nowrap}
 .act-late{display:inline-block;font-size:11.5px;font-weight:750;border-radius:999px;padding:1px 8px;background:var(--ds-ink);color:var(--ds-bg);white-space:nowrap}
 .plan-activities li .act-check{float:right;margin:0 0 6px 10px}
-body.role-aux .plan-card button[onclick^="openPlan"],body.role-aux .plan-card button[onclick^="deletePlan"],body.role-aux button[onclick="openPlan()"],body.role-aux #editor button.danger,body.role-aux .chat-head button[onclick="chatInvite()"],body.role-aux .chat-head button[onclick="chatLeave()"],body.role-aux #sync-on,body.role-aux label:has(> #sync-on){display:none!important}
+body.role-aux .plan-card button[onclick^="openPlan"]:not(.e99-own),body.role-aux .plan-card button[onclick^="deletePlan"],body.role-aux #editor button.danger,body.role-aux .chat-head button[onclick="chatInvite()"],body.role-aux .chat-head button[onclick="chatLeave()"],body.role-aux #sync-on,body.role-aux label:has(> #sync-on){display:none!important}
 .aux-card{display:grid;gap:12px}
 .aux-card form{display:grid;gap:10px}
 .aux-list{display:grid;gap:6px}
@@ -3066,7 +3088,7 @@ window.planActsFor=function(name){var n=normalText(name),lim=new Date();lim.setD
 ['tasks','ruptures','expiry'].forEach(function(k){delete labels[k];delete icons[k]});
 if(labels.plans){var ks=Object.keys(labels),pos=ks.indexOf('home');ks.slice(pos+1).filter(function(k){return k!=='plans'}).forEach(function(k){var v=labels[k];delete labels[k];labels[k]=v})}
 var FULL=null;function snapshot(){FULL={labels:Object.assign({},labels),icons:Object.assign({},icons)}}
-var ALLOWED={home:1,nfs:1,plans:1,chat:1,account:1,'mobile-menu':1};
+var ALLOWED={home:1,nfs:1,plans:1,chat:1,account:1,profile:1,'mobile-menu':1};
 function applyRole(){if(!FULL)snapshot();if(isAux()){Object.keys(labels).forEach(function(k){if(!ALLOWED[k]){delete labels[k];delete icons[k]}})}else{var extra={};Object.keys(labels).forEach(function(k){if(!(k in FULL.labels))extra[k]=[labels[k],icons[k]]});Object.keys(labels).forEach(function(k){delete labels[k];delete icons[k]});
     Object.keys(FULL.labels).forEach(function(k){labels[k]=FULL.labels[k];icons[k]=FULL.icons[k]});Object.keys(extra).forEach(function(k){labels[k]=extra[k][0];icons[k]=extra[k][1]})}document.body.classList.toggle('role-aux',isAux())}
 var logoutRole=authLogout;authLogout=async function(){var r=await logoutRole.apply(this,arguments);if(!authSession)document.body.classList.remove('role-aux');return r};
@@ -3085,10 +3107,11 @@ var enterBefore=authEnter;authEnter=function(session){var r=enterBefore.apply(th
   if(hasOld()){wipe();save().then(function(){notify('Rupturas, Tarefas e Validade foram removidas do site. Use o Plano de ação.')})}
   teamFix();
   var join=null;try{join=JSON.parse(sessionStorage.getItem('e99-aux-join')||'null')}catch(x){}
-  if(join&&isAux()&&window.e99Team&&window.e99Team.join){sessionStorage.removeItem('e99-aux-join');window.e99Team.join(join.code,join.name,{team:join.team}).then(function(){go('home');notify('Bem-vindo(a), '+join.name+'! Você já está na equipe.')})}
+  if(join&&window.e99Team&&window.e99Team.join){sessionStorage.removeItem('e99-aux-join');window.e99Team.join(join.code,join.name,{team:join.team}).then(function(){go('home');notify('Bem-vindo(a), '+join.name+'! Você já está na equipe.')})}
   render();inviteWhileLogged();return r};
-/* auxiliar: só lê/marca planos; não apaga NF */
-var openPlanBefore=openPlan;openPlan=function(){if(isAux()){notify('Só o gestor monta e edita os planos.');return}return openPlanBefore.apply(this,arguments)};
+/* auxiliar: não apaga planos nem cadastros (v127: cria NFs e planos e edita os que criou) */
+/* v127: auxiliar cria planos e edita só os que ele criou (window.e99Mine, bloco v127-js) */
+var openPlanBefore=openPlan;openPlan=function(id){if(isAux()&&id){var p=(state.plans||[]).find(function(x){return x.id===id});if(p&&!(window.e99Mine&&window.e99Mine(p))){notify('Você pode editar só os planos que criou. Marque as atividades feitas na lista.');return false}}return openPlanBefore.apply(this,arguments)};
 var deletePlanBefore=deletePlan;deletePlan=function(){if(isAux()){notify('Só o gestor apaga planos.');return}return deletePlanBefore.apply(this,arguments)};
 var removeBefore=removeRecord;removeRecord=function(){if(isAux()){notify('Conta de auxiliar não apaga cadastros.');return}return removeBefore.apply(this,arguments)};
 /* ---------- convites de auxiliar ---------- */
@@ -3101,47 +3124,51 @@ function listKey(){return 'lojasg.estoque99.aux-invites:'+authSession.storeKey}
 function invites(){try{var l=JSON.parse(localStorage.getItem(listKey())||'[]');return Array.isArray(l)?l:[]}catch(x){return []}}
 function ago2(t){if(!t)return '';var m=Math.round((Date.now()-t)/60000);return m<2?'agora':m<60?'há '+m+' min':m<1440?'há '+Math.round(m/60)+' h':'há '+Math.round(m/1440)+' dia(s)'}
 window.e99AuxCardHTML=function(){return auxCardHTML()};
-function auxCardHTML(){var t=window.e99Team&&window.e99Team.get();if(!t||!t.owner||isAux())return '';var l=invites(),mem=window.syncMembers?window.syncMembers():{},devs=Object.keys(mem),used={};
+function auxCardHTML(){var t=window.e99Team&&window.e99Team.get();if(!t||!t.owner||isAux()||!(window.e99CanCreateAccounts&&window.e99CanCreateAccounts()))return '';var l=invites(),mem=window.syncMembers?window.syncMembers():{},devs=Object.keys(mem),used={};
   var rows=l.map(function(x,i){var dev=devs.find(function(d){return !used[d]&&x.inviteId&&mem[d].inviteId===x.inviteId})||devs.find(function(d){return !used[d]&&mem[d].role==='auxiliar'&&(normalText(mem[d].name)===normalText(x.name)||(mem[d].login&&normalText(mem[d].login)===normalText(x.login)))});var m=dev?mem[dev]:null;if(dev)used[dev]=1;
     var cm=window.e99CloudMember?(window.e99CloudMember(m&&m.login||x.login)||null):null;
     if(!m&&cm){m={created:cm.criado,login:'',seen:cm.visto}}
-    var st=m?'<b>✓ Conta criada</b>'+(cm?(cm.verificado?' · e-mail confirmado ✓':' · e-mail a confirmar'):'')+(m.created?' em '+new Date(m.created).toLocaleDateString('pt-BR'):'')+(m.login?' · login '+e(m.login):'')+(m.seen?' · ativo '+ago2(m.seen):''):'○ Ainda não criou a conta · convite de '+new Date(x.at).toLocaleDateString('pt-BR')+(x.key?' · código do convite <b>'+e(x.key)+'</b>':'');
-    return '<div><span><b>'+e(x.name)+'</b><br><span class="small">'+st+'</span></span><button type="button" onclick="auxForget('+i+')">Remover da lista</button></div>'});
+    var st=m?'<b>✓ Conta criada</b>'+(cm?(cm.verificado?' · e-mail confirmado ✓':' · e-mail a confirmar'):'')+(m.created?' em '+new Date(m.created).toLocaleDateString('pt-BR'):'')+(m.login?' · login '+e(m.login):'')+(m.seen?' · ativo '+ago2(m.seen):''):'○ Ainda não ativou · link de '+new Date(x.at).toLocaleDateString('pt-BR')+(x.login?' · login <b>'+e(x.login)+'</b>':'')+(x.papel==='estoque'?' · estoque':' · auxiliar');
+    return '<div><span><b>'+e(x.name)+'</b><br><span class="small">'+st+'</span></span><span>'+(!m&&x.link?'<button type="button" onclick="auxCopyLink('+i+')">Copiar link</button> ':'')+'<button type="button" onclick="auxForget('+i+')">'+(m?'Remover da lista':'Cancelar link')+'</button></span></div>'});
   var created=rows.length?l.filter(function(x,i){return rows[i].indexOf('✓ Conta criada')>=0}).length:0;
   var seenLg={};var others=devs.filter(function(d){if(used[d])return false;var lg=mem[d].login?normalText(mem[d].login):'';if(lg&&lg===normalText(authSession.record.login))return false;if(lg){if(seenLg[lg]){seenLg[lg].n++;return false}seenLg[lg]={n:1}}mem[d].__lg=lg;return true}).sort(function(a,b){return (mem[b].seen||0)-(mem[a].seen||0)}).map(function(d){var m=mem[d];return '<div><span><b>'+e(m.name)+'</b> · '+(m.role==='auxiliar'?'auxiliar':'gestor/estoque')+(m.__lg&&seenLg[m.__lg]&&seenLg[m.__lg].n>1?' · '+seenLg[m.__lg].n+' aparelhos':'')+'<br><span class="small">'+(m.created?'conta criada em '+new Date(m.created).toLocaleDateString('pt-BR')+' · ':'')+'ativo '+ago2(m.seen)+'</span></span></div>'});
-  return '<details class="sync-box" id="aux-box"><summary><span>♙ Contas dos auxiliares ('+created+' de '+l.length+' criadas)</span></summary><div class="sync-body aux-card"><p class="small" style="margin:0">Crie a conta do auxiliar: ele recebe um link, digita o código do convite que o site cria (passe por fora do link, por voz ou outra mensagem), informa o e-mail dele (obrigatório) e escolhe a própria senha. A conta de auxiliar só vê <b>Início, Plano de ação (marca atividades feitas), Notas fiscais e Chat</b>.</p>'
-   +'<form onsubmit="auxInvite(event)"><div class="pair"><label>Nome do auxiliar (escolha da Equipe)<input name="name" required maxlength="40" autocomplete="off" list="aux-people"></label><label>E-mail do auxiliar (se souber; ele confirma ao criar a conta)<input name="email" type="email" maxlength="120" autocomplete="off" inputmode="email" placeholder="para mandar o link por e-mail"></label><label class="chat-check"><input type="checkbox" name="pc"> Conta do PC do estoque (a nuvem usa um login interno)</label><datalist id="aux-people">'+(state.team||[]).map(function(p){return '<option value="'+e(p.name)+'">'+e(p.role||'')+'</option>'}).join('')+'</datalist></div><button class="primary">Criar conta e enviar link</button></form>'
+  return '<details class="sync-box" id="aux-box"><summary><span>♙ Contas da equipe ('+created+' de '+l.length+' ativadas)</span></summary><div class="sync-body aux-card"><p class="small" style="margin:0">Só o gestor cria contas (v127). Crie a conta do futuro usuário aqui: o site gera <b>um link de acesso pessoal</b>. Quem abre o link só <b>ativa</b> essa conta (confere o e-mail e escolhe a própria senha). O link vale uma vez: reabrir não cria outra conta. A conta de auxiliar vê <b>Início, Plano de ação (cria planos, edita os que criou e marca atividades feitas), Notas fiscais (cria NFs e edita as que criou), Chat e Perfil</b>; não exclui nada.</p>'
+   +'<form onsubmit="auxInvite(event)"><div class="pair"><label>Nome (escolha da Equipe)<input name="name" required maxlength="40" autocomplete="off" list="aux-people"></label><label>Login (vazio = feito do nome)<input name="login" maxlength="40" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="ex.: ana.souza"></label><label>Papel<select name="papel"><option value="auxiliar">Auxiliar</option><option value="estoque">Estoque</option></select></label><label>E-mail (se souber; a pessoa confirma ao ativar)<input name="email" type="email" maxlength="120" autocomplete="off" inputmode="email" placeholder="para mandar o link por e-mail"></label><label class="chat-check"><input type="checkbox" name="pc"> Conta do PC do estoque (a nuvem usa um login interno)</label><datalist id="aux-people">'+(state.team||[]).map(function(p){return '<option value="'+e(p.name)+'">'+e(p.role||'')+'</option>'}).join('')+'</datalist></div><button class="primary">Criar conta e gerar link de acesso</button></form>'
    +(rows.length?'<div class="aux-list">'+rows.join('')+'</div>':'')
    +(others.length?'<h3 style="margin:6px 0 0;font-size:14px">Outros aparelhos na equipe</h3><div class="aux-list">'+others.join('')+'</div>':'')
    +'<p class="small" style="margin:0">O status chega pela equipe sincronizada quando o aparelho do auxiliar está com internet. Para tirar o acesso de alguém de verdade, crie uma equipe nova (Sair da equipe → Criar equipe) e convide só quem fica.</p></div></details>'}
 var rcBefore=window.renderChat;if(typeof rcBefore==='function')window.renderChat=function(){var h=rcBefore.apply(this,arguments);if(h.indexOf('<div id="chat-list"')<0)return h;return h.replace('<div id="chat-list"',auxCardHTML()+'<div id="chat-list"')};
 function loginFor(name){return normalText(name).replace(/[^a-z0-9 ]/g,'').trim().replace(/\s+/g,'.').slice(0,40)||'auxiliar'}
-window.auxInvite=async function(ev){ev.preventDefault();var t=window.e99Team&&window.e99Team.get();if(!t||!t.owner)return;var v=readForm(ev.target),name=String(v.name||'').trim().slice(0,40);if(!name)return;var pcBox=ev.target.querySelector('input[name=pc]'),isPc=!!(pcBox&&pcBox.checked);if(isPc&&invites().some(function(x){return x.pc})&&!confirm('Já existe um convite de conta do PC. Criar outro mesmo assim?'))return;var invEmail=String(v.email||'').trim().toLowerCase().slice(0,120);if(invEmail&&!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(invEmail)){notify('E-mail do auxiliar inválido.');return}
+window.auxInvite=async function(ev){ev.preventDefault();if(!(window.e99CanCreateAccounts&&window.e99CanCreateAccounts())){notify('Só o gestor cria contas.');return}var t=window.e99Team&&window.e99Team.get();if(!t||!t.owner)return;var v=readForm(ev.target),name=String(v.name||'').trim().slice(0,40);if(!name)return;var papel=v.papel==='estoque'?'estoque':'auxiliar';var pcBox=ev.target.querySelector('input[name=pc]'),isPc=!!(pcBox&&pcBox.checked);if(isPc&&invites().some(function(x){return x.pc})&&!confirm('Já existe um convite de conta do PC. Criar outro mesmo assim?'))return;var invEmail=String(v.email||'').trim().toLowerCase().slice(0,120);if(invEmail&&!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(invEmail)){notify('E-mail do auxiliar inválido.');return}
   /* código aleatório de 10 caracteres (50 bits): não dá para adivinhar testando senhas, ao contrário de um PIN de 4 números */
   var rb=crypto.getRandomValues(new Uint8Array(10)),key='';for(var ki=0;ki<10;ki++){key+=AUTH_CODE_CHARS[rb[ki]%32];if(ki===4)key+='-'}var pin=pinNorm(key);
-  var login=loginFor(name),inviteId=b64u(crypto.getRandomValues(new Uint8Array(9)));var person=(state.team||[]).find(function(p){return normalText(p.name)===normalText(name)});var token=await sealInvite({v:1,code:t.code,team:t.team||authSession.payload.store,name:person?person.name:name,role:person&&person.role?person.role:'Auxiliar de estoque',login:login,store:authSession.payload.store,inviteId:inviteId,email:invEmail,pc:isPc},pin);
-  var link=location.origin+location.pathname.replace(/robo\.html$/,'').replace(/index\.html$/,'')+'#auxiliar='+token;var text='Sua conta de auxiliar do Estoque 99 ('+authSession.payload.store+'): '+link+' — peça o código do convite ao gestor.';
-  var l=invites();l.unshift({name:name,login:login,at:Date.now(),inviteId:inviteId,key:key,email:invEmail,pc:isPc});try{localStorage.setItem(listKey(),JSON.stringify(l.slice(0,50)))}catch(x){}
+  var login=String(v.login||'').trim()?normalText(v.login).replace(/[^a-z0-9._-]/g,'').slice(0,40):loginFor(name);if(login.length<3){notify('O login precisa ter pelo menos 3 letras.');return}if(login==='estoque 99'){notify('Login reservado. Escolha outro.');return}if(invites().some(function(x){return x.login===login&&!x.revoked})&&!confirm('Já existe um link para o login '+login+'. Criar outro mesmo assim?'))return;var inviteId=b64u(crypto.getRandomValues(new Uint8Array(9)));var person=(state.team||[]).find(function(p){return normalText(p.name)===normalText(name)});var token=await sealInvite({v:1,code:t.code,team:t.team||authSession.payload.store,name:person?person.name:name,role:person&&person.role?person.role:'Auxiliar de estoque',login:login,papel:papel,store:authSession.payload.store,inviteId:inviteId,email:invEmail,pc:isPc},pin);
+  var link=location.origin+location.pathname.replace(/robo\.html$/,'').replace(/index\.html$/,'')+'#auxiliar='+token+'.'+pin;var text='Seu link de acesso ao Stok · Estoque 99 ('+authSession.payload.store+'), login '+login+': '+link+' — abra, confira o e-mail e escolha sua senha. O link vale uma vez.';
+  var l=invites();l.unshift({name:name,login:login,papel:papel,at:Date.now(),inviteId:inviteId,key:key,email:invEmail,pc:isPc,link:link});try{localStorage.setItem(listKey(),JSON.stringify(l.slice(0,50)))}catch(x){}
   if(invEmail){var a=document.createElement('a');a.href='mailto:'+encodeURIComponent(invEmail)+'?subject='+encodeURIComponent('Sua conta no Stok · Estoque 99')+'&body='+encodeURIComponent('Olá, '+name+'!\n\n'+text+'\n\nNa hora de criar a conta, use este e-mail ('+invEmail+'). Você vai receber um e-mail de confirmação.');a.click()}
-  else if(navigator.share){navigator.share({title:'Conta de auxiliar',text:text}).catch(function(){})}else{try{await navigator.clipboard.writeText(text);notify('Link copiado. Mande para '+name+' e passe o código '+key+' por fora.')}catch(x){prompt('Copie o link:',text)}window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener')}
-  ev.target.reset();render();var b=document.getElementById('aux-box');if(b)b.open=true;notify('Código do convite de '+name+': '+key+'. Ele fica na lista abaixo até a conta ser criada.')};
+  else if(navigator.share){navigator.share({title:'Conta de auxiliar',text:text}).catch(function(){})}else{try{await navigator.clipboard.writeText(text);notify('Link de acesso copiado. Mande para '+name+'.')}catch(x){prompt('Copie o link:',text)}window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener')}
+  ev.target.reset();render();var b=document.getElementById('aux-box');if(b)b.open=true;notify('Conta de '+name+' criada (login '+login+'). O link de acesso fica na lista abaixo até ser ativado.')};
+window.auxCopyLink=async function(i){var it=invites()[i];if(!it||!it.link)return;try{await navigator.clipboard.writeText(it.link);notify('Link de acesso de '+String(it.name).slice(0,40)+' copiado.')}catch(x){prompt('Copie o link de acesso:',it.link)}};
 function pinNorm(p){p=String(p||'').trim();return /^[0-9]{4,8}$/.test(p)?p:p.toUpperCase().replace(/[^0-9A-Z]/g,'')}
-window.auxForget=function(i){var l=invites();var it=l[i];if(!it||!confirm('Remover o convite de '+String(it.name||'esta pessoa').slice(0,40)+' da lista? O link enviado deixa de aparecer aqui.'))return;l.splice(i,1);try{localStorage.setItem(listKey(),JSON.stringify(l))}catch(x){}render();var b=document.getElementById('aux-box');if(b)b.open=true};
+window.auxForget=function(i){var l=invites();var it=l[i];if(!it||!confirm('Cancelar/remover o link de '+String(it.name||'esta pessoa').slice(0,40)+'? Se ainda não foi ativado, o link deixa de valer nos aparelhos que conferem a equipe.'))return;if(it.inviteId&&window.e99InvRevoke)window.e99InvRevoke(it.inviteId);l.splice(i,1);try{localStorage.setItem(listKey(),JSON.stringify(l))}catch(x){}render();var b=document.getElementById('aux-box');if(b)b.open=true};
 /* abrir o convite no aparelho do auxiliar */
-try{var m=String(location.hash||'').match(/auxiliar=([A-Za-z0-9_-]{40,4000})/);if(m){sessionStorage.setItem('e99-aux-invite',m[1]);history.replaceState(null,'',location.pathname+location.search)}}catch(x){}
+try{var m=String(location.hash||'').match(/auxiliar=([A-Za-z0-9_-]{40,4000})(?:\.([0-9A-Z]{10}))?/);if(m){sessionStorage.setItem('e99-aux-invite',m[1]);if(m[2])sessionStorage.setItem('e99-aux-key',m[2]);else sessionStorage.removeItem('e99-aux-key');history.replaceState(null,'',location.pathname+location.search)}}catch(x){}
 var invite=null,invErr='',invBusy=false;
 /* convite aberto num aparelho que já entrou sozinho em outra conta ("Manter conectado"): pergunta se quer sair para abrir o convite */
 function inviteWhileLogged(){if(!token()||!authSession)return;var tk=token();try{sessionStorage.removeItem('e99-aux-invite')}catch(x){}setTimeout(function(){if(authSession&&confirm('Você abriu um convite de auxiliar, mas este aparelho já está conectado em outra conta. Sair desta conta para abrir o convite?')){try{sessionStorage.setItem('e99-aux-invite',tk)}catch(x){}authLogout()}},600)}
 function token(){try{return sessionStorage.getItem('e99-aux-invite')||''}catch(x){return ''}}
 var renderAuthBefore=renderAuth;renderAuth=function(){inviteWhileLogged();if(!token()||authRecoveryShow||authSession)return renderAuthBefore.apply(this,arguments);renderAuthBefore.apply(this,arguments);var box=$('auth-screen');
-  box.innerHTML='<div class="auth-card"><h1 style="margin:0 0 6px">Conta de auxiliar</h1>'+(invite?'<p>Olá, <b>'+e(invite.name)+'</b>! Loja <b>'+e(invite.store)+'</b>. Escolha sua senha para entrar.</p><form id="aux-form" onsubmit="auxCreate(event)" class="fields"><label>Login<input name="login" required maxlength="80" value="'+e(invite.login)+'" autocomplete="username"></label>'+'<label>Seu e-mail (obrigatório)<input name="email" type="email" required maxlength="120" autocomplete="email" inputmode="email" value="'+e(invite.email||'')+'" placeholder="voce@gmail.com"></label>'+(invite.pc?'<p class="small">🖥️ Conta do PC do estoque: o e-mail fica como contato e a nuvem usa um login interno. Guarde o código de recuperação que vai aparecer.</p>':'')+'<label>Sua senha (8+ caracteres, com letras e números)<input name="password" type="password" required autocapitalize="none" spellcheck="false" autocomplete="new-password"></label><label>Repita a senha<input name="confirmation" type="password" required autocapitalize="none" spellcheck="false" autocomplete="new-password"></label>'
-    :'<p>Você recebeu um convite para ser auxiliar. Digite o <b>código do convite</b> que o gestor passou.</p><form id="aux-form" onsubmit="auxOpen(event)" class="fields"><label>Código do convite<input name="pin" required autocapitalize="characters" spellcheck="false" autocomplete="one-time-code" placeholder="XXXXX-XXXXX"></label>')
-   +(invErr?'<p class="auth-error" role="alert">'+e(invErr)+'</p>':'')+'<button class="primary" type="submit" '+(invBusy?'disabled':'')+'>'+(invite?'Criar minha conta':'Abrir convite')+'</button></form><p><button type="button" onclick="auxCancel()">Já tenho conta / cancelar convite</button></p></div>'};
-window.auxCancel=function(){try{sessionStorage.removeItem('e99-aux-invite')}catch(x){}invite=null;invErr='';renderAuth()};
-window.auxOpen=async function(ev){ev.preventDefault();if(invBusy)return;invBusy=true;invErr='';var pin=pinNorm(readForm(ev.target).pin);renderAuth();try{invite=await openInvite(token(),pin)}catch(x){invErr='Código do convite incorreto ou link incompleto. Confira com o gestor.'}invBusy=false;renderAuth()};
-window.auxCreate=async function(ev){ev.preventDefault();if(invBusy||!invite)return;var v=readForm(ev.target);invBusy=true;invErr='';renderAuth();
+  var used=invite&&window.e99InvUsed?window.e99InvUsed(invite):'';if(!invite&&!invErr&&!invBusy&&keyTk()){setTimeout(autoOpen,0)}
+  box.innerHTML='<div class="auth-card"><h1 style="margin:0 0 6px">Ativar sua conta</h1>'+(used?'<p class="auth-error" role="alert" id="inv-used">'+e(used)+'</p><form id="aux-form" class="fields" onsubmit="event.preventDefault();auxCancel()">':invite?'<p>Olá, <b>'+e(invite.name)+'</b>! Loja <b>'+e(invite.store)+'</b>. O gestor criou sua conta'+(invite.papel==='estoque'?' (estoque)':' (auxiliar)')+'. Confira o e-mail e escolha sua senha para ativar.</p><form id="aux-form" onsubmit="auxCreate(event)" class="fields"><label>Login<input name="login" required maxlength="80" value="'+e(invite.login)+'" autocomplete="username" readonly></label>'+'<label>Seu e-mail (obrigatório)<input name="email" type="email" required maxlength="120" autocomplete="email" inputmode="email" value="'+e(invite.email||'')+'" placeholder="voce@gmail.com"></label>'+(invite.pc?'<p class="small">🖥️ Conta do PC do estoque: o e-mail fica como contato e a nuvem usa um login interno. Guarde o código de recuperação que vai aparecer.</p>':'')+'<label>Sua senha (8+ caracteres, com letras e números)<input name="password" type="password" required autocapitalize="none" spellcheck="false" autocomplete="new-password"></label><label>Repita a senha<input name="confirmation" type="password" required autocapitalize="none" spellcheck="false" autocomplete="new-password"></label>'
+    :invBusy&&keyTk()?'<p>Abrindo seu link de acesso…</p><form id="aux-form" class="fields" onsubmit="event.preventDefault()">':'<p>Você recebeu um link de acesso. Digite o <b>código do convite</b> que o gestor passou.</p><form id="aux-form" onsubmit="auxOpen(event)" class="fields"><label>Código do convite<input name="pin" required autocapitalize="characters" spellcheck="false" autocomplete="one-time-code" placeholder="XXXXX-XXXXX"></label>')
+   +(invErr?'<p class="auth-error" role="alert">'+e(invErr)+'</p>':'')+'<button class="primary" type="submit" '+(invBusy?'disabled':'')+'>'+(used?'Ir para Entrar':invite?'Ativar minha conta':'Abrir link')+'</button></form><p><button type="button" onclick="auxCancel()">Já tenho conta / sair deste link</button></p></div>'};
+function keyTk(){try{return sessionStorage.getItem('e99-aux-key')||''}catch(x){return ''}}
+var autoTried='';async function autoOpen(){var tk=token(),k=keyTk();if(!tk||!k||invite||invBusy||autoTried===tk)return;autoTried=tk;invBusy=true;renderAuth();try{/* o resto do app (v127-js: uso único do link) carrega depois deste bloco */await new Promise(function(r){if(document.readyState!=='loading')r();else document.addEventListener('DOMContentLoaded',r,{once:true})});invite=await openInvite(tk,pinNorm(k));if(window.e99InvCheck)await window.e99InvCheck(invite)}catch(x){invite=null;invErr='Link de acesso inválido ou incompleto. Peça um novo link ao gestor.'}invBusy=false;renderAuth()}
+window.auxCancel=function(){try{sessionStorage.removeItem('e99-aux-invite');sessionStorage.removeItem('e99-aux-key')}catch(x){}invite=null;invErr='';autoTried='';renderAuth()};
+window.auxOpen=async function(ev){ev.preventDefault();if(invBusy)return;invBusy=true;invErr='';var pin=pinNorm(readForm(ev.target).pin);renderAuth();try{invite=await openInvite(token(),pin);if(window.e99InvCheck)await window.e99InvCheck(invite)}catch(x){invite=null;invErr='Código do convite incorreto ou link incompleto. Confira com o gestor.'}invBusy=false;renderAuth()};
+window.auxCreate=async function(ev){ev.preventDefault();if(invBusy||!invite)return;if(window.e99InvUsed&&window.e99InvUsed(invite)){renderAuth();return}var v=readForm(ev.target);v.login=invite.login;invBusy=true;invErr='';renderAuth();
   try{var email=String(v.email||'').trim().toLowerCase();/* v105: e-mail obrigatório também no convite (e na conta do PC) */if(!email)throw Error('Informe seu e-mail. Toda conta do Stok precisa de um e-mail.');if(!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)||email.length>120)throw Error('Digite um e-mail válido (ex.: voce@gmail.com).');authPasswordCheck(v.password,v.confirmation);var login=authLoginName(v.login);if(login.length<3)throw Error('O login precisa ter pelo menos 3 letras.');if(login==='estoque 99')throw Error('Login reservado. Escolha outro.');
-    var session=await authCreate(login,String(invite.store||'Estoque').slice(0,80),v.password,authEmpty(),'auxiliar',email);
+    var session=await authCreate(login,String(invite.store||'Estoque').slice(0,80),v.password,authEmpty(),invite.papel==='estoque'?'estoque':'auxiliar',email);if(window.e99InvMark)window.e99InvMark(invite,session.record.login);
     /* a ligação com a equipe e o chat fica gravada na conta já agora (cifrada), e não só nesta aba:
        mesmo que ele feche antes de confirmar o código, ao entrar de novo o chat já está pronto */
     try{var ccfg={code:invite.code,name:String(invite.name||'').slice(0,40),team:invite.team||'Equipe',owner:false,sync:true,replace:true};var civ=crypto.getRandomValues(new Uint8Array(12));
@@ -3149,7 +3176,7 @@ window.auxCreate=async function(ev){ev.preventDefault();if(invBusy||!invite)retu
       localStorage.setItem('lojasg.estoque99.chat:'+session.storeKey,JSON.stringify({iv:authB64(civ),cipher:authB64(new Uint8Array(cct))}));
       if(invite.pc)localStorage.setItem('lojasg.estoque99.pc-account:'+session.storeKey,'1');else localStorage.setItem('lojasg.estoque99.cloud-email:'+session.storeKey,email);if(invite.inviteId)localStorage.setItem('lojasg.estoque99.invite-id:'+session.storeKey,String(invite.inviteId).slice(0,40));
       localStorage.setItem('lojasg.estoque99.aux-profile:'+session.storeKey,JSON.stringify({name:ccfg.name,cargo:String(invite.role||'Auxiliar de estoque').slice(0,40)}))}catch(x){}
-    sessionStorage.setItem('e99-aux-join',JSON.stringify({code:invite.code,name:invite.name,team:invite.team,inviteId:invite.inviteId||'',role:String(invite.role||'Auxiliar de estoque').slice(0,40)}));try{localStorage.setItem('lojasg.estoque99.announce-created',JSON.stringify({inviteId:invite.inviteId||''}))}catch(x){}sessionStorage.removeItem('e99-aux-invite');invite=null;
+    sessionStorage.setItem('e99-aux-join',JSON.stringify({code:invite.code,name:invite.name,team:invite.team,inviteId:invite.inviteId||'',role:String(invite.role||'Auxiliar de estoque').slice(0,40)}));try{localStorage.setItem('lojasg.estoque99.announce-created',JSON.stringify({inviteId:invite.inviteId||''}))}catch(x){}sessionStorage.removeItem('e99-aux-invite');sessionStorage.removeItem('e99-aux-key');invite=null;
     authRecoveryShow={code:session.recoveryCode,session:session,legacy:false};invBusy=false;renderAuth()}
   catch(x){invErr=x.message||'Não foi possível criar a conta.';invBusy=false;renderAuth()}};
 if(typeof authSession!=='undefined'&&authSession)applyRole();else if(token()&&document.body.classList.contains('locked'))setTimeout(function(){if(!authSession)renderAuth()},0);
@@ -3792,7 +3819,7 @@ var rr=render;render=function(){var r=rr.apply(this,arguments);try{if(page==='co
 /* Apagar tudo neste aparelho: contas, equipe, dados, perfis e chats. Mantém só preferências visuais e de som.
    Pede para digitar APAGAR. Não sai da equipe nos outros aparelhos: cada aparelho precisa apagar o seu. */
 var KEEP={'lojasg.estoque99.season':1,'lojasg.estoque99.sound':1,'lojasg.estoque99.install-hint':1,'lojasg.estoque99.device':1};
-var DBS=['estoque99-local','estoque99-profiles','estoque99-chat','estoque99-chat-out','estoque99-photos','estoque99-conf'];
+var DBS=['estoque99-local','estoque99-profiles','estoque99-perfis','estoque99-chat','estoque99-chat-out','estoque99-photos','estoque99-conf'];
 function dropDb(n){return new Promise(function(res){try{var r=indexedDB.deleteDatabase(n);r.onsuccess=r.onerror=r.onblocked=function(){res()}}catch(x){res()}})}
 function sweep(){var rm=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('lojasg.estoque99.')===0&&!KEEP[k])rm.push(k);if(k&&k.indexOf('estoque99')===0)rm.push(k)}
   rm.forEach(function(k){try{localStorage.removeItem(k)}catch(x){}})}
@@ -5925,7 +5952,7 @@ var r0=render;render=function(){var r=r0.apply(this,arguments);try{if(authSessio
 'use strict';
 /* v102 (pedido do dono): Agenda sai do menu e das rotas ("Agenda" leva ao Plano de ação).
    v121: a IA saiu do app; endereços antigos (agentes, assistant, consultas, robot) levam ao Início. */
-var GONE={agentes:'home',assistant:'home',consultas:'home',robot:'home',agenda:'plans',profile:'home',novidades:'home'};
+var GONE={agentes:'home',assistant:'home',consultas:'home',robot:'home',agenda:'plans',novidades:'home'};/* v127: perfil voltou (rota profile) */
 /* Administração do dono: a conta do dono criada em "Criar conta" ficava como 'estoque' e não via Administração.
    Se esta conta entrou na nuvem com o uid marcado com S em "verificados" (só o administrador grava), ela é gestor. */
 var VUID='TConyCsDQfPWBZ2MuGhVQTy7Mmz1';
@@ -6661,6 +6688,181 @@ function deco(){var box=D.getElementById('auth-screen');if(!box||box.hidden)retu
 }
 var ra=renderAuth;renderAuth=function(){var r=ra.apply(this,arguments);try{deco()}catch(x){}return r};
 try{deco()}catch(x){}
+})();
+</script>
+<style id="v127-css">
+/* v127: perfil (sem selos), contas só pelo gestor */
+.prof-chip{appearance:none;background:none;border:0;color:inherit;font:inherit;display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:2px 6px 2px 0;border-radius:999px;min-height:28px;font-weight:650}
+.prof-chip:focus-visible{outline:2px solid var(--neon,#c9a);outline-offset:2px}
+img.av{object-fit:cover;padding:0}
+.pf-page{display:grid;gap:16px;max-width:760px}
+.pf-head{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.pf-av{width:96px;height:96px;border-radius:50%;object-fit:cover;flex:none;display:grid;place-items:center;font-size:36px;font-weight:700;background:var(--ds-accent-soft,#222);border:1px solid var(--ds-line,#333);color:var(--ds-ink,#fff)}
+.pf-head h2{margin:0;overflow-wrap:anywhere}
+.pf-form{display:grid;gap:12px}
+.pf-photo{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pf-bio{white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.pf-list{display:grid;gap:8px}
+.pf-list button{display:flex;align-items:center;gap:10px;text-align:left;min-height:44px}
+.pf-list .av{width:32px;height:32px}
+.card .avatar img{width:100%;height:100%;border-radius:inherit;object-fit:cover;display:block}
+.auth-ask{margin:8px 0 0;text-align:center}
+</style>
+<script id="v127-js">
+(function(){
+'use strict';
+/* v127 (pedido do dono): (A) Perfil de volta, simples: foto, nome de exibição, cargo e "sobre" (sem selos, partículas, capa ou Authenticator).
+   O meu perfil fica dentro da conta cifrada (state.perfil); os da equipe chegam pelo canal cifrado da sincronização (mensagem 'perfil',
+   foto no anexo cifrado) e ficam no IndexedDB estoque99-perfis, cifrados com state.sealKey (e99Seal). Perfil nunca dá papel nem permissão.
+   (B) Auxiliar cria NFs e planos e edita só os que criou (cby/cdev/clogin), sem excluir nada.
+   (C) Contas só pelo gestor: sem "Criar conta" livre; o gestor gera um link de acesso pessoal (convite do Chat) que só ativa aquela conta.
+   Limite: as contas são locais e cifradas no aparelho, sem servidor — é regra do app, não barreira contra quem alterar o código. */
+function e(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function nm(v){return String(v||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim()}
+function aux(){return !!(window.isAux&&window.isAux())}
+function myName(){try{var t=window.e99Team&&window.e99Team.get();if(t&&t.name)return t.name}catch(x){}return authSession?authSession.record.login:''}
+function testOpen(){try{return /^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&localStorage.getItem('e99-test-signup')==='1'}catch(x){return false}}
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(x){return null}}
+
+/* ================= (C) contas só pelo gestor ================= */
+window.e99CanCreateAccounts=function(){if(!authSession||!authSession.payload)return false;var r=authSession.payload.role;if(r==='gestor')return true;return r!=='auxiliar'&&testOpen()};
+function emptyDevice(){try{return !authAccounts().length}catch(x){return false}}
+var ASK='Peça seu link de acesso ao gestor.';
+function fixAuth(){if(authSession)return;var box=document.getElementById('auth-screen');if(!box||box.hidden)return;if(testOpen())return;
+  var c=document.getElementById('auth-create');if(c){if(emptyDevice()){c.id='auth-owner';c.textContent='Primeiro acesso do dono'}else c.remove()}
+  var links=document.getElementById('auth-links');if(links&&!box.querySelector('.auth-ask')){var p=document.createElement('p');p.className='small auth-ask';p.textContent=ASK;links.after(p)}
+  if(authMode==='signup'&&!authPending&&!authRecoveryShow){var pc=box.querySelector('#auth-form input[name=pc]');if(pc){var l=pc.closest('label')||pc;l.remove()}
+    var f=document.getElementById('auth-form');if(f&&!f.querySelector('.auth-owner-note')){var n=document.createElement('p');n.className='small auth-owner-note';n.textContent='Só o dono cria a primeira conta num aparelho vazio. Os outros usuários ativam a conta pelo link de acesso que o gestor envia. '+ASK;f.prepend(n)}}}
+var mo=new MutationObserver(function(){try{fixAuth()}catch(x){}});
+function watchAuth(){var b=document.getElementById('auth-screen');if(b)mo.observe(b,{childList:true,subtree:true});try{fixAuth()}catch(x){}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watchAuth);else watchAuth();
+var ownerNext=false;
+/* a 1ª conta do dono num aparelho vazio nasce gestor (só o login vferreiras; o v101 confere o dono ao entrar) */
+var ac0=authCreate;authCreate=function(login,store,password,data,role,email){if(ownerNext&&authLoginName(login)==='vferreiras'&&emptyDevice())role='gestor';ownerNext=false;return ac0.apply(this,[login,store,password,data,role,email])};
+var sub0=authSubmit;authSubmit=async function(ev){ownerNext=false;if(!testOpen()&&!authPending&&!authRecoveryShow){var f=ev&&ev.target,lg='';try{lg=f&&f.elements&&f.elements.login?authLoginName(f.elements.login.value):''}catch(x){}
+    if(authMode==='signup'){if(!(emptyDevice()&&lg==='vferreiras')){if(ev&&ev.preventDefault)ev.preventDefault();authError=emptyDevice()?'Só o dono cria a primeira conta neste aparelho. '+ASK:'Contas novas só pelo link de acesso do gestor. '+ASK;renderAuth();return}ownerNext=true}
+    else if(authMode==='login'&&lg==='estoque 99'){if(ev&&ev.preventDefault)ev.preventDefault();var raw=null;try{raw=localStorage.getItem(await authStorageKey(lg))}catch(x){}if(!raw){authError='Conta não encontrada neste aparelho. '+ASK;renderAuth();return}}}
+  return sub0.apply(this,arguments)};
+/* uso único do link de acesso */
+var USED='lojasg.estoque99.invite-used',remote={};
+function usedMap(){try{return JSON.parse(ls(USED)||'{}')||{}}catch(x){return {}}}
+window.e99InvMark=function(inv,login){if(!inv||!inv.inviteId)return;var m=usedMap();m[String(inv.inviteId).slice(0,40)]={login:String(login||inv.login||'').slice(0,80),at:Date.now()};var ks=Object.keys(m);if(ks.length>200)ks.slice(0,ks.length-200).forEach(function(k){delete m[k]});ls(USED,JSON.stringify(m))};
+window.e99InvUsed=function(inv){if(!inv)return '';var id=String(inv.inviteId||''),lg=authLoginName(inv.login||''),u=id?usedMap()[id]:null;
+  var here=u||(lg&&authAccounts().some(function(a){return authLoginName(a.login)===lg}));
+  if(here)return 'Este link de acesso já foi usado neste aparelho (conta @'+(u&&u.login||lg)+'). Entre com o seu login e a senha que você escolheu. Esqueceu? Use "Esqueci a senha".';
+  if(id&&remote[id]==='rev')return 'Este link de acesso foi cancelado pelo gestor. Peça um novo link ao gestor.';
+  if(id&&remote[id]==='used')return 'Este link de acesso já foi ativado em outro aparelho. Entre com o seu login e senha (ou traga a sua conta da nuvem). Se não foi você, avise o gestor.';
+  return ''};
+window.e99InvCheck=async function(inv){if(!inv||!inv.code||!window.e99SyncPeek)return;var id=String(inv.inviteId||''),lg=authLoginName(inv.login||'');var l=[];try{l=await window.e99SyncPeek(inv.code,3500)}catch(x){}
+  l.forEach(function(o){if(!o||typeof o!=='object')return;
+    if(o.k==='member'&&((id&&o.inviteId===id&&o.event==='created')||(lg&&typeof o.login==='string'&&authLoginName(o.login)===lg)))remote[id]=remote[id]||'used';
+    if(o.k==='invused'&&o.r!=='auxiliar'&&id){if(Array.isArray(o.rev)&&o.rev.indexOf(id)>=0)remote[id]='rev';else if(Array.isArray(o.ids)&&o.ids.indexOf(id)>=0&&remote[id]!=='rev')remote[id]='used'}})};
+/* gestor: avisa a equipe quais links já foram ativados ou cancelados (o ntfy guarda 12 h; repete de tempos em tempos) */
+function invList(){if(!authSession)return [];try{return JSON.parse(localStorage.getItem('lojasg.estoque99.aux-invites:'+authSession.storeKey)||'[]')||[]}catch(x){return []}}
+function revKey(){return 'lojasg.estoque99.invite-revoked:'+(authSession?authSession.storeKey:'')}
+function revList(){try{var a=JSON.parse(ls(revKey())||'[]');return Array.isArray(a)?a.filter(function(x){return typeof x==='string'}).slice(-100):[]}catch(x){return []}}
+var invAt=0;
+function sendInvused(force){try{if(!window.e99CanCreateAccounts()||!window.e99SyncInfo||!window.e99SyncInfo()||!window.e99SyncSend)return;if(!force&&Date.now()-invAt<3*3600000)return;
+  var mem=window.syncMembers?window.syncMembers():{},ms=Object.keys(mem).map(function(k){return mem[k]});
+  var used=invList().filter(function(x){return x&&x.inviteId&&ms.some(function(m){return m&&(m.inviteId===x.inviteId||(m.login&&x.login&&authLoginName(m.login)===authLoginName(x.login)))})}).map(function(x){return String(x.inviteId)}).slice(0,100),rev=revList();
+  if(!used.length&&!rev.length)return;invAt=Date.now();window.e99SyncSend('invused',{ids:used,rev:rev})}catch(x){}}
+window.e99InvRevoke=function(id){var a=revList();if(a.indexOf(id)<0)a.push(String(id).slice(0,40));ls(revKey(),JSON.stringify(a.slice(-100)));setTimeout(function(){sendInvused(true)},300)};
+/* Administração: atalho para criar a conta e o link */
+function adminPanel(){if(page!=='admin'||!authSession||authSession.payload.role!=='gestor')return;var v=document.getElementById('view');if(!v||v.querySelector('#acc-create'))return;var t=window.e99Team&&window.e99Team.get();
+  var d=document.createElement('div');d.className='panel help';d.id='acc-create';d.innerHTML='<h2>Criar conta e link de acesso</h2><p class="small" style="margin:0">Só você cria contas. Informe nome, login, papel (auxiliar ou estoque) e e-mail: o site gera um link de acesso pessoal. Quem abre o link só ativa essa conta e escolhe a própria senha; o link vale uma vez.</p>'+(t&&t.owner?'<button class="primary" type="button" onclick="e99OpenAccCreate()">Criar conta e link</button>':'<p class="small">Primeiro crie a equipe no Chat (Criar equipe e gerar código).</p><button type="button" onclick="go(\'chat\')">Abrir o Chat</button>');
+  var h=v.querySelector('.hero');if(h)h.after(d);else v.prepend(d)}
+window.e99OpenAccCreate=function(){go('chat');setTimeout(function(){var b=document.getElementById('aux-box');if(b){b.open=true;b.scrollIntoView({block:'start'});var i=b.querySelector('input[name=name]');if(i)i.focus()}},80)};
+
+/* ================= (B) auxiliar: cria NFs e planos e edita os que criou ================= */
+function stampOf(){return {cby:String(myName()).slice(0,60),cdev:String(window.e99SyncDev?window.e99SyncDev():'').slice(0,40),clogin:authSession?String(authSession.record.login).slice(0,80):''}}
+function clean0(o){Object.keys(o).forEach(function(k){if(!o[k])delete o[k]});return o}
+window.e99Mine=function(x){if(!x||!authSession)return false;var dv=window.e99SyncDev?window.e99SyncDev():'';return !!((x.cdev&&dv&&x.cdev===dv)||(x.clogin&&authLoginName(x.clogin)===authLoginName(authSession.record.login))||(x.cby&&nm(x.cby)===nm(myName())))};
+var oe=openEditor;openEditor=function(kind,id){if(kind==='nf'&&id&&aux()){var n=(state.nfs||[]).find(function(x){return x.id===id});if(n&&!window.e99Mine(n)){notify('Você pode editar só as NFs que criou.');return}}return oe.apply(this,arguments)};
+var pend=null;
+var ed=document.getElementById('editor');if(ed&&typeof ed.onsubmit==='function'){var es0=ed.onsubmit;ed.onsubmit=async function(ev){var k=editing&&editing.kind,id=editing&&editing.id;
+  if(k==='nf'){var prev=id?(state.nfs||[]).find(function(x){return x.id===id}):null;if(aux()&&prev&&!window.e99Mine(prev)){ev.preventDefault();notify('Você pode editar só as NFs que criou.');return}
+    pend={before:new Set((state.nfs||[]).map(function(x){return x.id})),keep:prev?{cby:prev.cby,cdev:prev.cdev,clogin:prev.clogin}:null,id:id}}
+  try{return await es0.call(this,ev)}finally{pend=null}}}
+var sv=save;save=async function(){if(pend){var p=pend;pend=null;try{(state.nfs||[]).forEach(function(n){if(p.keep){if(n.id===p.id)['cby','cdev','clogin'].forEach(function(k){if(p.keep[k])n[k]=p.keep[k]})}else if(!p.before.has(n.id)&&!n.cby)Object.assign(n,clean0(stampOf()))})}catch(x){}}return sv.apply(this,arguments)};
+var sp=savePlan;savePlan=async function(ev){try{if(planDraft&&authSession){var old=planById(planDraft.id);
+    if(!old){if(!planDraft.cby)Object.assign(planDraft,clean0(stampOf()))}
+    else if(aux()&&!window.e99Mine(old)){if(ev&&ev.preventDefault)ev.preventDefault();notify('Você pode editar só os planos que criou.');return}
+    else ['cby','cdev','clogin'].forEach(function(k){if(old[k])planDraft[k]=old[k];else delete planDraft[k]})}}catch(x){}return sp.apply(this,arguments)};
+function auxDeco(){if(!aux()||page!=='plans')return;document.querySelectorAll('#view .plan-card button[onclick^="openPlan(\'"]').forEach(function(b){var m=/openPlan\('([^']+)'\)/.exec(b.getAttribute('onclick')||'');var p=m&&(state.plans||[]).find(function(x){return x.id===m[1]});if(p&&window.e99Mine(p))b.classList.add('e99-own')})}
+
+/* ================= (A) perfil ================= */
+var DB='estoque99-perfis',db=null,team={},loadedT='',loadedSk='',view='me',draft=null,urls={};
+function idbOpen(){if(db)return Promise.resolve(db);return new Promise(function(res,rej){var r=indexedDB.open(DB,1);r.onupgradeneeded=function(){r.result.createObjectStore('p')};r.onsuccess=function(){db=r.result;db.onversionchange=function(){try{db.close()}catch(x){}db=null};res(db)};r.onerror=function(){rej(r.error)}})}
+function idb(mode,fn){return idbOpen().then(function(d){return new Promise(function(res,rej){var t=d.transaction('p',mode),st=t.objectStore('p'),out=fn(st);t.oncomplete=function(){res(out&&'result' in out?out.result:out)};t.onerror=function(){rej(t.error)}})})}
+async function dbGet(k){try{var v=await idb('readonly',function(st){return st.get(k)});var S=window.e99Seal;if(!v||!S||!S.isSealed(v))return null;return await S.open(v,'perfil|'+k)}catch(x){return null}}
+async function dbPut(k,v){try{var S=window.e99Seal;if(!S||!authSession)return;var x=await S.seal(v,'perfil|'+k);await idb('readwrite',function(st){st.put(x,k)})}catch(x){}}
+function topic(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(i)return i.topic;try{var t=window.e99Team&&window.e99Team.get();return t?t.topic||'':''}catch(x){return ''}}
+var PH=/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/;
+function cleanRec(r){if(!r||typeof r!=='object')return null;var s=function(v,n){return typeof v==='string'?v.trim().slice(0,n):''};var o={name:s(r.name,40),chat:s(r.chat,40),cargo:s(r.cargo,40),bio:s(r.bio,200),login:s(r.login,80),papel:['auxiliar','estoque','gestor'].indexOf(r.papel)>=0?r.papel:'',photo:typeof r.photo==='string'&&r.photo.length<=120000&&PH.test(r.photo)?r.photo:'',at:Number(r.at)>0?Math.min(Number(r.at),Date.now()+86400000):0};if(!o.name&&!o.chat)return null;if(!o.name)o.name=o.chat;return o}
+async function load(){if(!authSession)return;var sk=authSession.storeKey,t=topic();if(loadedSk===sk&&loadedT===t)return;loadedSk=sk;loadedT=t;team={};if(!t)return;var all=await dbGet('tm|'+t);if(authSession&&authSession.storeKey===sk&&topic()===t&&all&&typeof all==='object'){Object.keys(all).forEach(function(k){if(/^[a-z0-9]{6,40}$/.test(k)){var r=cleanRec(all[k]);if(r)team[k]=r}});refresh()}}
+var saveT=0;function persistTeam(){clearTimeout(saveT);saveT=setTimeout(function(){var t=topic();if(t&&authSession)dbPut('tm|'+t,team)},500)}
+function mine(){var p=state&&state.perfil;return {name:(p&&p.name)||myName()||'',cargo:p&&p.cargo||'',bio:p&&p.bio||'',photo:p&&p.photo||'',at:p&&p.at||0}}
+function papelOf(){var r=authSession&&authSession.payload.role;return r==='auxiliar'?'auxiliar':r==='gestor'?'gestor':'estoque'}
+function papelTxt(p){return p==='auxiliar'?'Auxiliar':p==='gestor'?'Gestor':p==='estoque'?'Estoque':'Equipe'}
+function url(d){if(!d)return '';if(urls[d])return urls[d];try{var b=atob(d.split(',')[1]),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);urls[d]=URL.createObjectURL(new Blob([a],{type:'image/jpeg'}))}catch(x){urls[d]=''}return urls[d]}
+function find(name){var n=nm(name);if(!n||!authSession)return null;var me=mine();if(n===nm(myName())||n===nm(me.name))return {key:'me',p:me,me:true};
+  var ks=Object.keys(team);for(var i=0;i<ks.length;i++){var r=team[ks[i]];if(nm(r.chat)===n||nm(r.name)===n)return {key:ks[i],p:r}}return null}
+function initial(n){return e((String(n||'?').trim()[0]||'?').toUpperCase())}
+function avatar(rec,name,cls){var p=rec&&rec.p;var u=p&&p.photo?url(p.photo):'';if(u)return '<img class="av '+(cls||'')+'" src="'+e(u)+'" alt="" decoding="async">';return '<span class="av '+(cls||'')+'" aria-hidden="true">'+initial(p&&p.name||name)+'</span>'}
+window.profAvatar=function(name,cls){return avatar(find(name),name,cls)};
+window.profChip=function(name){var r=find(name);return '<button type="button" class="who prof-chip" data-prof="'+e(r?r.key:'')+'" data-name="'+e(name)+'" aria-label="Ver perfil de '+e(name)+'">'+avatar(r,name,'av-s')+'<span>'+e(name)+'</span></button>'};
+document.addEventListener('click',function(ev){var b=ev.target&&ev.target.closest&&ev.target.closest('button.prof-chip,button.e99-prof-open');if(!b)return;ev.preventDefault();ev.stopPropagation();var k=b.getAttribute('data-prof')||'';if(!k){var r=find(b.getAttribute('data-name'));k=r?r.key:''}if(!k){notify('Essa pessoa ainda não mandou o perfil para a equipe.');return}window.openProfile(k)},true);
+window.openProfile=function(k){view=typeof k==='string'&&(k==='me'||team[k])?k:'me';draft=null;go('profile')};
+window.e99ProfilesAll=function(){if(!authSession)return [];var me=mine(),out=[{key:'me',p:{name:me.name,user:'',cargo:me.cargo,names:[myName()]},role:authSession.payload.role,me:true}];
+  Object.keys(team).forEach(function(k){var r=team[k];out.push({key:k,p:{name:r.name,user:'',cargo:r.cargo,names:r.chat&&r.chat!==r.name?[r.chat]:[]},login:r.login,role:r.papel==='auxiliar'?'auxiliar':'gestor'})});return out};
+/* envio para a equipe */
+function pubKey(){return 'lojasg.estoque99.perfil-pub:'+(authSession?authSession.storeKey:'')}
+function lastPub(t){try{return (JSON.parse(ls(pubKey())||'{}')||{})[t]||0}catch(x){return 0}}
+var pubT=0,pubBusy=false;
+function publish(force){clearTimeout(pubT);pubT=setTimeout(async function(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i||!authSession||!window.e99SyncSend||pubBusy)return;if(!force&&Date.now()-lastPub(i.topic)<2.5*3600000)return;pubBusy=true;
+  try{var p=mine();var ok=await window.e99SyncSend('perfil',{pat:p.at||1,login:String(authSession.record.login).slice(0,80),papel:papelOf(),ph:p.photo?1:0,pt:{name:p.name,cargo:p.cargo,bio:p.bio}},p.photo?{photo:p.photo}:null);
+    if(ok){var o={};try{o=JSON.parse(ls(pubKey())||'{}')||{}}catch(x){}o[i.topic]=Date.now();ls(pubKey(),JSON.stringify(o))}}finally{pubBusy=false}},force?400:1500+Math.random()*3000)}
+window.e99OnPerfil=async function(o,who,getBody,t){if(!authSession||!o||typeof o.dev!=='string'||!/^[a-z0-9]{6,40}$/.test(o.dev))return;await load();if(t!==topic())return;
+  if(typeof o.login==='string'&&authLoginName(o.login)===authLoginName(authSession.record.login))return;
+  var pt=o.pt&&typeof o.pt==='object'?o.pt:{},cur=team[o.dev],at=Number(o.pat)||0;if(cur&&cur.at>at)return;if(cur&&cur.at===at&&(cur.photo||!o.ph))return;
+  var body=null;try{body=await getBody()}catch(x){}
+  var r=cleanRec({name:pt.name,chat:who,cargo:pt.cargo,bio:pt.bio,login:o.login,papel:o.papel,photo:body&&body.photo||'',at:at});if(!r)return;if(!r.photo&&cur&&cur.photo&&o.ph)r.photo=cur.photo;
+  team[o.dev]=r;persistTeam();refresh()};
+var helloPrev=window.e99OnHello;window.e99OnHello=function(){try{if(helloPrev)helloPrev.apply(this,arguments)}catch(x){}var i=window.e99SyncInfo&&window.e99SyncInfo();if(i&&Date.now()-lastPub(i.topic)>2*60000)publish(true);sendInvused(false)};
+var refT=0;function refresh(){clearTimeout(refT);refT=setTimeout(function(){if(!authSession)return;
+    if(page==='profile'||page==='team'){var a=document.activeElement;if(!(a&&a.closest&&a.closest('#pf-form')))render()}
+    document.querySelectorAll('#view .chat-msg button.prof-chip').forEach(function(b){var n=b.getAttribute('data-name');var r=find(n);b.setAttribute('data-prof',r?r.key:'');var av=b.querySelector('.av');if(av){var t=document.createElement('span');t.innerHTML=avatar(r,n,'av-s');av.replaceWith(t.firstChild)}})},400)}
+/* tela */
+function viewHTML(r){var p=r.p,me=!!r.me;return '<div class="pf-head">'+(p.photo?'<img class="pf-av" src="'+e(url(p.photo))+'" alt="Foto de '+e(p.name)+'">':'<span class="pf-av" aria-hidden="true">'+initial(p.name)+'</span>')+'<div><h2>'+e(p.name)+'</h2><div class="small">'+(r.login?'@'+e(r.login)+' · ':'')+e(papelTxt(r.papel))+(p.cargo?' · '+e(p.cargo):'')+'</div></div></div>'+(p.bio?'<p class="pf-bio">'+e(p.bio)+'</p>':'')}
+function teamList(){var ks=Object.keys(team).sort(function(a,b){return nm(team[a].name)<nm(team[b].name)?-1:1});if(!ks.length)return '<p class="small">'+(topic()?'Os perfis da equipe aparecem aqui quando os colegas abrem o app.':'Para ver os perfis da equipe, entre numa equipe no Chat com a sincronização ligada.')+'</p>';
+  return '<div class="pf-list">'+ks.map(function(k){var r=team[k];return '<button type="button" class="e99-prof-open" data-prof="'+e(k)+'">'+avatar({p:r},r.name,'')+'<span><b>'+e(r.name)+'</b><br><span class="small">'+e(r.cargo||papelTxt(r.papel))+'</span></span></button>'}).join('')+'</div>'}
+function render0(){if(!authSession)return '';load();
+  if(view!=='me'&&team[view]){var r=team[view];return hero('Perfil','')+'<div class="panel pf-page" id="pf-view">'+viewHTML({p:r,login:r.login,papel:r.papel})+'<p class="small" style="margin:0">Perfil enviado pela equipe. Só leitura; não muda o que a pessoa pode fazer no app.</p><div class="toolbar"><button type="button" onclick="openProfile(\'me\')">Meu perfil</button></div></div>'}
+  view='me';var m=mine();if(!draft)draft={name:m.name,cargo:m.cargo,bio:m.bio,photo:m.photo};
+  return hero('Perfil','')+'<div class="panel pf-page" id="pf-me">'+viewHTML({p:{name:draft.name||m.name,cargo:draft.cargo,bio:'',photo:draft.photo},me:true,login:authSession.record.login,papel:papelOf()})
+   +'<form id="pf-form" class="pf-form" onsubmit="e99PerfilSave(event)"><div class="pf-photo"><label class="as-file">Foto (opcional)<input type="file" id="pf-photo-in" accept="image/*" onchange="e99PerfilPhoto(this)"></label>'+(draft.photo?'<button type="button" id="pf-photo-rm" onclick="e99PerfilPhotoRm()">Tirar foto</button>':'')+'</div>'
+   +'<label>Nome de exibição<input name="name" id="pf-name" required maxlength="40" autocomplete="name" value="'+e(draft.name)+'" oninput="e99PerfilDraft(this)"></label>'
+   +'<label>Cargo<input name="cargo" id="pf-cargo" maxlength="40" value="'+e(draft.cargo)+'" oninput="e99PerfilDraft(this)" placeholder="ex.: Auxiliar de estoque"></label>'
+   +'<label>Sobre<textarea name="bio" id="pf-bio" maxlength="200" oninput="e99PerfilDraft(this)" placeholder="Uma frase curta sobre você">'+e(draft.bio)+'</textarea></label>'
+   +'<button class="primary" type="submit">Salvar perfil</button></form><p class="small" style="margin:0">A foto fica pequena e cifrada neste aparelho. O perfil vai para a sua equipe (chat e Equipe) pelo canal cifrado. Não muda o que você pode fazer no app.</p></div>'
+   +'<div class="panel help"><h2>Perfis da equipe</h2>'+teamList()+'</div>'}
+window.extraPages=window.extraPages||{};window.extraPages.profile=render0;
+window.e99PerfilDraft=function(inp){if(!draft)return;draft[inp.name]=String(inp.value||'')};
+function shrink(file){return new Promise(function(res,rej){var u=URL.createObjectURL(file),img=new Image();img.onload=function(){try{var S=240,c=document.createElement('canvas');c.width=S;c.height=S;var w=img.naturalWidth,h=img.naturalHeight,s=Math.min(w,h);if(!s)throw Error('vazia');c.getContext('2d').drawImage(img,(w-s)/2,(h-s)/2,s,s,0,0,S,S);var q=.84,d=c.toDataURL('image/jpeg',q);while(d.length>110000&&q>.4){q-=.12;d=c.toDataURL('image/jpeg',q)}URL.revokeObjectURL(u);if(!PH.test(d)||d.length>120000)throw Error('grande');res(d)}catch(x){URL.revokeObjectURL(u);rej(x)}};img.onerror=function(){URL.revokeObjectURL(u);rej(Error('img'))};img.src=u})}
+window.e99PerfilPhoto=async function(inp){var f=inp&&inp.files&&inp.files[0];if(!f)return;if(!/^image\//.test(f.type||'')||f.size>15e6){notify('Escolha uma imagem (até 15 MB).');return}try{var d=await shrink(f);if(!draft)draft=mine();draft.photo=d;render();notify('Foto pronta. Toque em Salvar perfil.')}catch(x){notify('Não foi possível ler essa foto.')}};
+window.e99PerfilPhotoRm=function(){if(!draft)draft=mine();draft.photo='';render()};
+window.e99PerfilSave=async function(ev){if(ev)ev.preventDefault();if(!authSession)return;var f=document.getElementById('pf-form');if(f){['name','cargo','bio'].forEach(function(k){if(f.elements[k])draft[k]=String(f.elements[k].value||'')})}
+  var p=validatePerfil({name:draft.name,cargo:draft.cargo,bio:draft.bio,photo:draft.photo,at:Date.now()});if(!p||!p.name){notify('Informe o nome de exibição.');return}state.perfil=p;draft=null;await save();publish(true);render();notify(storageOK?'Perfil salvo.':'Perfil em memória. Exporte uma cópia protegida.')};
+function teamDeco(){if(page!=='team')return;document.querySelectorAll('#view .cards .card').forEach(function(c){if(c.querySelector('.e99-prof-open'))return;var h=c.querySelector('h3');if(!h)return;var n=(h.firstChild&&h.firstChild.nodeType===3?h.firstChild.textContent:h.textContent).trim();if(n==='TODOS')return;var r=find(n);if(!r)return;
+  var av=c.querySelector('.avatar');if(av&&r.p.photo){var u=url(r.p.photo);if(u)av.innerHTML='<img src="'+e(u)+'" alt="">'}
+  var b=document.createElement('button');b.type='button';b.className='e99-prof-open';b.setAttribute('data-prof',r.key);b.textContent='Ver perfil';c.appendChild(b)})}
+/* menu */
+function label(){if(!authSession)return;if(!labels.profile){var acc=labels.account,ai=icons.account;if(acc){delete labels.account;delete icons.account}labels.profile='Perfil';icons.profile='☺';if(acc){labels.account=acc;icons.account=ai}}}
+var r0=render;render=function(){if(authSession)label();if(page!=='profile')draft=null;var r=r0.apply(this,arguments);try{if(authSession){auxDeco();teamDeco();adminPanel()}}catch(x){}return r};
+var en0=authEnter;authEnter=function(){var r=en0.apply(this,arguments);try{label();loadedSk='';loadedT='';team={};view='me';draft=null;load();try{render()}catch(x){}}catch(x){}return r};
+var lo0=authLogout;authLogout=async function(){var r=await lo0.apply(this,arguments);if(!authSession){team={};loadedSk='';loadedT='';draft=null;try{delete labels.profile;delete icons.profile}catch(x){}}return r};
+setInterval(function(){if(!authSession||document.hidden)return;load();var i=window.e99SyncInfo&&window.e99SyncInfo();if(i&&Date.now()-lastPub(i.topic)>2.5*3600000)publish(false);sendInvused(false)},15000);
+if(typeof authSession!=='undefined'&&authSession){label();load()}
 })();
 </script>
 </body></html>
