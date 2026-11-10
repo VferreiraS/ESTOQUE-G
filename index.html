@@ -359,7 +359,7 @@ function nfParseKey(raw){
  if(+key.slice(25,34)===0)throw Error('Número de NF inválido.');
  return {accessKey:key,number:String(Number(key.slice(25,34))),series:String(Number(key.slice(22,25))),cnpj:key.slice(6,20),emissionMonth:'20'+key.slice(2,4)+'-'+key.slice(4,6),issuerUF:nfUFs[key.slice(0,2)]};
 }
-function nfBarcodeFields(v){return `<section style="padding:16px;border:1px solid var(--line);border-radius:12px"><h3 style="margin-top:0">Bipar código do DANFE</h3><p class="small">Clique no campo e use o leitor USB configurado como teclado. Também pode colar a chave. A leitura preenche os dados abaixo; revise e clique em Salvar.</p><label>Chave de acesso (44 dígitos)<input id="nf-key" name="accessKey" value="${esc(v.accessKey||'')}" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="80" placeholder="Bipe ou cole a chave da NF-e" oninput="nfKeyInput(this)" onkeydown="nfScanKeydown(event)"></label><button type="button" onclick="nfApplyScan()" style="margin-top:10px">Preencher pela chave</button><button type="button" onclick="nfOpenImported()" style="margin-top:10px">Abrir NF cadastrada</button><p id="nf-scan-result" role="status" aria-live="polite" class="small">Se a NF já estiver na lista, ela abre com fornecedor, data e volumes. Volumes também vêm do XML.</p><div class="pair"><label>Série<input name="series" readonly value="${esc(v.series||'')}"></label><label>CNPJ do emitente<input name="cnpj" readonly value="${esc(v.cnpj||'')}"></label></div><div class="pair"><label>Mês de emissão<input name="emissionMonth" readonly value="${esc(v.emissionMonth||'')}"></label><label>UF do emitente<input name="issuerUF" readonly value="${esc(v.issuerUF||'')}"></label></div></section>`}
+function nfBarcodeFields(v){return `<section style="padding:16px;border:1px solid var(--line);border-radius:12px"><h3 style="margin-top:0">Bipar código do DANFE</h3><p class="small"><span class="e99-pc">Clique no campo e use o leitor USB configurado como teclado. Também pode colar a chave. A leitura preenche os dados abaixo; revise e clique em Salvar.</span><span class="e99-touch">Toque no campo e cole a chave de acesso, ou use a câmera acima. A leitura preenche os dados abaixo; revise e toque em Salvar.</span></p><label>Chave de acesso (44 dígitos)<input id="nf-key" name="accessKey" value="${esc(v.accessKey||'')}" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="80" placeholder="Bipe ou cole a chave da NF-e" oninput="nfKeyInput(this)" onkeydown="nfScanKeydown(event)"></label><button type="button" onclick="nfApplyScan()" style="margin-top:10px">Preencher pela chave</button><button type="button" onclick="nfOpenImported()" style="margin-top:10px">Abrir NF cadastrada</button><p id="nf-scan-result" role="status" aria-live="polite" class="small">Se a NF já estiver na lista, ela abre com fornecedor, data e volumes. Volumes também vêm do XML.</p><div class="pair"><label>Série<input name="series" readonly value="${esc(v.series||'')}"></label><label>CNPJ do emitente<input name="cnpj" readonly value="${esc(v.cnpj||'')}"></label></div><div class="pair"><label>Mês de emissão<input name="emissionMonth" readonly value="${esc(v.emissionMonth||'')}"></label><label>UF do emitente<input name="issuerUF" readonly value="${esc(v.issuerUF||'')}"></label></div></section>`}
 function nfScanMessage(message){const el=$('nf-scan-result');if(el)el.textContent=message}
 function nfKeyInput(input){nfLastApplied='';if(String(input.value).replace(/\s/g,'').length===44)nfApplyScan();else nfScanMessage('Aguardando a chave completa de 44 dígitos.')}
 function nfScanKeydown(event){if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();nfApplyScan()}}
@@ -586,7 +586,7 @@ const AUTH_PREFIX='lojasg.estoque99.account.v1.';
 const AUTH_BLOCK='lojasg.estoque99.block.v1.';
 function authIsBlocked(key){return localStorage.getItem(AUTH_BLOCK+key)==='yes'}
 function authAccounts(){const rows=[];for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&key.startsWith(AUTH_PREFIX)){try{const r=authCheckRecord(JSON.parse(localStorage.getItem(key)));rows.push({key,login:r.login,id:r.id||'',blocked:authIsBlocked(key)})}catch(e){}}}return rows.sort((a,b)=>a.login.localeCompare(b.login))}
-function renderAdmin(){if(!authSession||authSession.payload.role!=='gestor')return hero('Administração','')+'<div class="notice" role="alert">Só o gestor abre esta tela. Entre com a conta de gestor para ver e cuidar das contas deste aparelho.</div><div class="toolbar"><button class="primary" type="button" onclick="go(\'home\')">Voltar ao início</button></div>';const rows=authAccounts();return hero('Administração','Contas deste aparelho. Contas de outros aparelhos não aparecem aqui.')+`<div class="panel help"><h2>Contas cadastradas</h2><p>Bloqueie ou libere o acesso de cada conta neste aparelho. Os dados de cada conta ficam protegidos pela senha dela: nem o gestor consegue lê-los ou ver senhas.</p><div class="admin-list">${rows.map((r,i)=>`<div class="admin-account"><div><b>${esc(r.login)}</b><div class="small">${r.id?esc(r.id):''}</div>${r.blocked?'Bloqueada':'Ativa'}${r.key===authSession.storeKey?' · Sua conta':''}</div></div>${r.key===authSession.storeKey?'':`<button onclick="authBlockAccount(${i})">${r.blocked?'Liberar acesso':'Bloquear acesso'}</button>`}</div>`).join('')}</div><p class="small">Este controle vale para este aparelho. Para mais segurança, proteja também o computador com senha.</p></div>`}
+function renderAdmin(){if(!authSession||authSession.payload.role!=='gestor')return hero('Administração','')+'<div class="notice" role="alert">Só o gestor abre esta tela. Entre com a conta de gestor para ver e cuidar das contas deste aparelho.</div><div class="toolbar"><button class="primary" type="button" onclick="go(\'home\')">Voltar ao início</button></div>';const rows=authAccounts();return hero('Administração','Contas deste aparelho. Contas de outros aparelhos não aparecem aqui.')+`<div class="panel help"><h2>Contas cadastradas</h2><p>Bloqueie ou libere o acesso de cada conta neste aparelho. Os dados de cada conta ficam protegidos pela senha dela: nem o gestor consegue lê-los ou ver senhas.</p><div class="admin-list">${rows.map((r,i)=>`<div class="admin-account"><div><b>${esc(r.login)}</b><div class="small">${r.id?esc(r.id):''}</div>${r.blocked?'Bloqueada':'Ativa'}${r.key===authSession.storeKey?' · Sua conta':''}</div>${r.key===authSession.storeKey?'':`<button onclick="authBlockAccount(${i})">${r.blocked?'Liberar acesso':'Bloquear acesso'}</button>`}</div>`).join('')}</div><p class="small">Este controle vale para este aparelho. Para mais segurança, proteja também o computador com senha.</p></div>`}
 function authBlockAccount(index){if(!authSession||authSession.payload.role!=='gestor')return;const row=authAccounts()[index];if(!row||row.key===authSession.storeKey)return;if(!confirm((row.blocked?'Liberar':'Bloquear')+' acesso de '+row.login+' neste navegador?'))return;try{localStorage.setItem(AUTH_BLOCK+row.key,row.blocked?'no':'yes');render();notify('Acesso atualizado. Os cadastros foram preservados.')}catch(e){notify('O navegador não permitiu salvar a alteração.')}}
 let authSession=null,authPending=null,authBusy=false,authError='',authMode='login',authConflict=false,authQueue=Promise.resolve(),authAttempts=0,authWait=0;
 let authShownCode=null,authRecoveryShow=null,authLoginDraft='';
@@ -719,7 +719,7 @@ const validateExtrasBeforeUpgrade=nfValidateExtras;
 nfValidateExtras=function(n){validateExtrasBeforeUpgrade(n);for(const i of n.items||[]){if(i.received!==undefined&&i.received!==''&&(typeof i.received!=='string'||!/^\d+(\.\d{1,4})?$/.test(i.received)||Number(i.received)>1e9))throw Error('Quantidade conferida inválida.');if(i.checkedAt!==undefined&&(typeof i.checkedAt!=='string'||i.checkedAt.length>40||!Number.isFinite(Date.parse(i.checkedAt))))throw Error('Data da conferência inválida.')}return true};
 const saveExtrasBeforeUpgrade=nfSaveExtras;
 nfSaveExtras=function(v){if(!saveExtrasBeforeUpgrade(v))return false;const s=receiptSummary(v);if(v.status==='Conferido'&&s.total&&(s.counted!==s.total||s.different)){notify('A conferência possui itens não contados ou divergentes. Revise ou use o status Em divergência.');return false}return true};
-function cameraMarkup(){return `<section class="camera-box"><div class="toolbar"><button type="button" onclick="startOfflineCamera('nf')">Ler DANFE pela câmera</button><button type="button" onclick="stopOfflineCamera()">Fechar câmera</button></div><p id="camera-status" class="small" role="status">Leitor integrado ao arquivo, sem internet. A câmera depende de permissão e suporte do navegador. O leitor USB continua disponível.</p><video id="offline-camera" muted playsinline hidden></video></section>`}
+function cameraMarkup(){return `<section class="camera-box"><div class="toolbar"><button type="button" onclick="startOfflineCamera('nf')">Ler DANFE pela câmera</button><button type="button" onclick="stopOfflineCamera()">Fechar câmera</button></div><p id="camera-status" class="small" role="status"><span class="e99-pc">Leitor integrado ao arquivo, sem internet. A câmera depende de permissão e suporte do navegador. O leitor USB continua disponível.</span><span class="e99-touch">Funciona sem internet. Permita o uso da câmera quando o aparelho pedir.</span></p><video id="offline-camera" muted playsinline hidden></video></section>`}
 const openEditorBeforeUpgrade=openEditor;
 openEditor=function(kind,id){stopOfflineCamera();openEditorBeforeUpgrade(kind,id);if(kind==='nf')$('fields').insertAdjacentHTML('afterbegin',cameraMarkup())};
 function stopOfflineCamera(){cameraSequence++;const session=cameraSession;cameraSession=null;if(session){if(session.stream)session.stream.getTracks().forEach(t=>t.stop());try{session.reader.reset()}catch(e){}}const video=$('offline-camera');if(video){video.srcObject=null;video.hidden=true}const status=$('camera-status');if(status)status.textContent='Câmera fechada. Use o leitor USB ou abra a câmera novamente.'}
@@ -2761,7 +2761,7 @@ function renderReports(){var n=days(),dlist=range(n),keys=dlist.map(function(d){
   var todayActs=[];(state.plans||[]).filter(function(p){return p.date===today}).forEach(function(p){p.activities.forEach(function(a){todayActs.push(a)})});var todayDone=todayActs.filter(function(a){return a.done}).length;
   var div=nfs.filter(function(x){return x.status==='Em divergência'}).length,wait=nfs.filter(function(x){return x.status!=='Conferido'}).length;
   var kpis=[['Atividades de hoje',todayDone+'/'+todayActs.length,todayActs.length?'feitas no plano de hoje':'nenhum plano para hoje'],['Atividades no período',acts.length?Math.round(doneN/acts.length*100)+'%':'—',acts.length?doneN+' de '+acts.length+' feitas':'sem planos no período'],['NFs aguardando',wait,'ainda não conferidas'],['NFs em divergência',div,'de '+nfs.length+' notas cadastradas']];
-  var html=hero('Painel da operação','')+'<div class="pn-head"><p class="small" style="margin:0">Como andam o plano de ação e o recebimento de notas.</p><div class="pn-period" role="group" aria-label="Período dos gráficos">'+[7,14,30].map(function(v){return '<button type="button" aria-pressed="'+(v===n)+'" onclick="painelDays('+v+')">'+v+' dias</button>'}).join('')+'</div></div>';
+  var html=hero('Painel','')+'<div class="pn-head"><p class="small" style="margin:0">Como andam o plano de ação e o recebimento de notas.</p><div class="pn-period" role="group" aria-label="Período dos gráficos">'+[7,14,30].map(function(v){return '<button type="button" aria-pressed="'+(v===n)+'" onclick="painelDays('+v+')">'+v+' dias</button>'}).join('')+'</div></div>';
   html+='<div class="pn-kpis">'+kpis.map(function(k){return '<div class="pn-kpi"><span>'+e(k[0])+'</span><strong>'+e(k[1])+'</strong><small>'+e(k[2])+'</small></div>'}).join('')+'</div><div class="pn-grid">';
   /* 1. atividades por responsável */
   var SA=[{label:'Feitas',cls:'pn-s1'},{label:'A fazer',cls:'pn-s3'}],SO=[{label:'Feitas',cls:'pn-s1'},{label:'Atrasadas',cls:'pn-h1'},{label:'A fazer',cls:'pn-s3'}];var by={};acts.forEach(function(x){var k=String(x.a.owner||'A definir').trim()||'A definir';var key=normalText(k);if(!by[key])by[key]={label:k,values:[0,0,0]};by[key].values[x.a.done?0:actLate(x.p,x.a)?1:2]++});
@@ -6924,6 +6924,98 @@ html body button.danger:not(:disabled):hover,html body button.e99-del:hover{back
   function deco(){try{var v=document.getElementById('view');if(!v)return;emptyCorr(v);v.querySelectorAll('.mobile-options button[onclick="authLogout()"]').forEach(function(b){if(b.querySelector('svg.ic')||!window.e99Icon)return;b.insertAdjacentHTML('afterbegin',e99Icon('out'))})}catch(e){}}
   if(typeof render==='function'){var r0=render;render=function(){var r=r0.apply(this,arguments);deco();return r}}
   deco();
+})();
+</script>
+<style id="v129-css">
+/* v129 · interface mais clara (referências: Apple HIG — escala de texto do iOS, toques ≥44 pt, folhas; padrões de tabela densa).
+   Só tokens, espaçamento, hierarquia e estados. Não muda cores dos temas, a marca S, dados nem lógica. */
+:root{
+  /* escala de texto (iOS: footnote 13 · subhead 15 · body 17 · headline 17 · title3 20 · title2 22) */
+  --t-xs:12px;--t-sm:13px;--t-body:15px;--t-callout:16px;--t-h3:17px;--t-h2:20px;--t-lh:1.45;
+  /* espaçamento em passos de 4 */
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:32px;
+  --e99-focus:var(--neon,#E7B8EF)}
+/* papéis de texto */
+html body #view .panel>h2,html body #view .panelhead h2,html body #view .panel.help>h2{font-size:var(--t-h2);line-height:1.25;font-weight:700;letter-spacing:-.01em;margin:0 0 var(--sp-2)}
+html body #view .card h3,html body #view .panel h3{font-size:var(--t-h3);line-height:1.3;font-weight:650}
+html body #view .eyebrow{font-size:var(--t-xs);line-height:1.3;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--ds-muted)}
+html body #view p.small,html body #view .small{font-size:var(--t-sm);line-height:var(--t-lh)}
+html body #view .panel>p:not(.small){font-size:var(--t-body);line-height:var(--t-lh)}
+/* números: tabulares (alinham na coluna) */
+#view .stat strong,#view .pn-kpi strong,#view td[data-label="Volumes"],#view .nf-count,#alert-total{font-variant-numeric:tabular-nums}
+html body #view .stats .stat span{font-size:var(--t-sm);line-height:1.35;color:var(--ds-muted)}
+/* foco visível igual em tudo, na cor do tema */
+html body :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible{outline:2px solid var(--e99-focus)!important;outline-offset:2px!important}
+/* navegação: item ativo evidente */
+html:root body.dark .layout aside #nav button[aria-current="page"],html:root body.dark .layout aside #nav button.active{background:rgba(var(--neon-rgb),.14)!important;color:var(--ds-ink)!important;border-color:rgba(var(--neon-rgb),.45)!important;font-weight:700;box-shadow:inset 3px 0 0 var(--neon)!important}
+html:root body.dark .layout aside #nav button[aria-current="page"] svg.ic{stroke:var(--neon)}
+html body #mobile-bottom button{font-weight:550}
+html:root body.dark #mobile-bottom button[aria-current="page"],html:root body.dark #mobile-bottom button.active{color:var(--neon)!important;font-weight:750}
+html body #mobile-bottom button[aria-current="page"]>span,html body #mobile-bottom button.active>span{background:rgba(var(--neon-rgb),.18);border-radius:999px;padding:2px 14px;display:inline-flex}
+/* Painel: período escolhido aparece selecionado */
+html body #view .pn-period button[aria-pressed="true"]{background:var(--neon-btn)!important;color:var(--neon-ink)!important;font-weight:750}
+/* listas de notas (PC): números à direita, linha realçada ao passar o mouse */
+@media(min-width:761px){
+  #view td[data-label="Volumes"]{text-align:right;padding-right:24px}
+  #view tbody tr[data-q]:hover>td{background:rgba(var(--neon-rgb),.04)}
+}
+/* conferência: o contador sem a borda vermelha (resto do holograma) */
+html body .cf-countbox{border-color:rgba(var(--neon-rgb),.28)!important;box-shadow:none!important}
+/* texto de PC × texto de toque */
+.e99-touch{display:none}
+@media (pointer:coarse){.e99-touch{display:inline}.e99-pc{display:none}}
+/* Administração: uma lista só */
+#view .admin-account{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-2) var(--sp-3)}
+#view .admin-account .e99-acc-acts{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+#view .admin-account .e99-acc-tag{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;font-size:var(--t-xs);background:rgba(var(--neon-rgb),.12);color:var(--ds-ink)}
+@media(max-width:760px){
+  /* cabeçalho dos cartões alinhado à esquerda (antes: uns centrados, outros não) */
+  html body #view .panelhead{text-align:left;align-items:flex-start}
+  html body #view .panelhead h2{text-align:left;width:100%}
+  html body #view .panel{padding:var(--sp-4)}
+  /* nota fiscal em cartão: o principal em cima, status numa fileira só, Abrir e Excluir lado a lado */
+  html body #view tr[data-q]>td:first-child b{font-size:var(--t-h3);line-height:1.3}
+  html body #view tr[data-q]>td:first-child small{color:var(--ds-muted)}
+  html body #view .nf-actions{display:grid!important;grid-template-columns:1fr 1fr;gap:var(--sp-2);width:100%}
+  html body #view .nf-actions .nf-quick{grid-column:1/-1;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0}
+  html body #view .nf-quick button{font-size:var(--t-xs)!important;line-height:1.15;padding:4px 2px!important;min-width:0!important;white-space:normal;word-break:keep-all;overflow-wrap:normal;hyphens:none}
+  html body #view .nf-actions .nf-open,html body #view .nf-actions .e99-del{width:100%;margin:0!important}
+  /* folhas do celular: Salvar/Cancelar fixos embaixo */
+  html body dialog .formfoot{position:sticky;bottom:-1px;z-index:5;display:flex;gap:var(--sp-2);margin-top:var(--sp-4);padding:var(--sp-3) 0 calc(var(--sp-3) + env(safe-area-inset-bottom));background:linear-gradient(to bottom,rgba(16,14,18,0),rgba(16,14,18,.96) 28%)}
+  html body dialog .formfoot>button{flex:1 1 0}
+  html body dialog .formfoot>button.primary{flex:1.6 1 0}
+  /* Minha conta: botões empilhados, mesma largura e altura */
+  html body #view .panel>button[onclick^="authExport"],html body #view .panel>button[onclick^="authLogout"],html body #view .panel>button[onclick^="checkSiteUpdate"]{display:flex;width:100%;justify-content:center;align-items:center;min-height:48px;margin:var(--sp-2) 0 0}
+}
+/* erro ao lado do campo */
+html body .e99-field-err{display:block;margin-top:6px;color:#ffb4a8;font-size:var(--t-sm);font-weight:600}
+html body :is(input,select,textarea)[aria-invalid="true"]{border-color:#ff8f82!important}
+@media (prefers-reduced-motion:reduce){html body #mobile-bottom button>span{transition:none!important}}
+</style>
+<script id="v129-js">
+/* v129 · apresentação: Administração com uma lista só e erro ao lado do campo nos formulários. Não muda dados nem lógica. */
+(function(){
+  function adminOne(v){try{if(typeof page==='undefined'||page!=='admin')return;var h=[].slice.call(v.querySelectorAll('h2')).filter(function(x){return /^Contas neste aparelho$/.test(x.textContent.trim())})[0];if(!h)return;
+    var rows=[].slice.call(v.querySelectorAll('.admin-account'));var byLogin={};rows.forEach(function(r){var b=r.querySelector('b');if(b)byLogin[b.textContent.trim()]=r});
+    var note=document.getElementById('acc-local-note');var first=rows[0]&&rows[0].closest('.panel');
+    var n=h.nextElementSibling,dead=[h];
+    while(n&&!(n.matches('.panel')&&n.querySelector('h2'))){var nx=n.nextElementSibling;
+      if(n.id==='acc-local-note'){n=nx;continue}
+      if(n.matches('.panel')){var b=n.querySelector('b'),lg=b&&b.textContent.trim(),row=lg&&byLogin[lg];
+        if(row){var btn=n.querySelector('button');var acts=row.querySelector('.e99-acc-acts');
+          if(!acts){acts=document.createElement('div');acts.className='e99-acc-acts';[].slice.call(row.children).forEach(function(c){if(c.tagName==='BUTTON')acts.appendChild(c)});row.appendChild(acts)}
+          if(btn)acts.appendChild(btn);else if(/Protegida/.test(n.textContent)&&!row.querySelector('.e99-acc-tag')){var t=document.createElement('span');t.className='e99-acc-tag';t.textContent='Protegida';b=row.querySelector('b');if(b)b.after(t)}
+          dead.push(n)}}
+      n=nx}
+    dead.forEach(function(x){x.remove()});
+    if(note&&first){first.querySelector('.admin-list')?first.querySelector('.admin-list').before(note):first.appendChild(note)}
+  }catch(e){}}
+  /* erro ao lado do campo: quando o navegador recusa um campo (obrigatório, formato), mostra a mensagem logo abaixo dele */
+  document.addEventListener('invalid',function(e){var f=e.target;if(!f||!f.closest||!f.closest('dialog,#auth-screen,#view'))return;try{f.setAttribute('aria-invalid','true');var id=(f.id||f.name||'c')+'-e99err';var m=f.parentNode.querySelector('.e99-field-err[data-for="'+id+'"]');
+    if(!m){m=document.createElement('span');m.className='e99-field-err';m.setAttribute('data-for',id);m.id=id;m.setAttribute('role','alert');f.after(m)}m.textContent=f.validationMessage||'Confira este campo.';f.setAttribute('aria-describedby',id)}catch(x){}},true);
+  document.addEventListener('input',function(e){var f=e.target;if(!f||f.getAttribute('aria-invalid')!=='true')return;try{if(f.checkValidity()){f.removeAttribute('aria-invalid');var m=f.parentNode.querySelector('.e99-field-err');if(m)m.remove()}}catch(x){}},true);
+  if(typeof render==='function'){var r0=render;render=function(){var r=r0.apply(this,arguments);try{adminOne(document.getElementById('view'))}catch(x){}return r}}
+  try{var v=document.getElementById('view');if(v)adminOne(v)}catch(x){}
 })();
 </script>
 </body></html>
