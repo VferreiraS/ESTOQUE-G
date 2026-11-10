@@ -37,7 +37,7 @@ const st=p=>p.evaluate(()=>e99Conf.state());
  /* ================= A) câmera falsa + ZXing ================= */
  {const c=await b.newContext({...L.devices['iPhone 13'],permissions:['camera']});const p=await c.newPage();p.on('pageerror',e=>errs.push('A '+e.message));p.on('dialog',d=>d.accept(d.defaultValue()));
   await p.goto(URL0);await p.waitForSelector('#auth-form input[name=login]');await p.waitForTimeout(600);await L.signup(p,'confa'+Date.now().toString(36));await setupNF(p);
-  ok(await p.isVisible('#conf-go')&&/INICIAR CONFERÊNCIA POR CÂMERA/.test(await p.textContent('#conf-go')),'botão principal "INICIAR CONFERÊNCIA POR CÂMERA" na tela de Notas fiscais');
+  ok(await p.isVisible('#conf-go')&&/Iniciar conferência por câmera/i.test(await p.textContent('#conf-go')),'botão principal "INICIAR CONFERÊNCIA POR CÂMERA" na tela de Notas fiscais');
   ok(await p.evaluate(()=>{const b=document.getElementById('conf-go').getBoundingClientRect();return b.height>=44&&b.width>=200}),'botão grande (≥44 px)');
   await p.click('#conf-go');
   ok(await until(p,()=>{const v=document.getElementById('cf-video');return !!(v&&v.videoWidth>0&&document.getElementById('conf-dlg').open)},null,15000),'pede a câmera e mostra a imagem (câmera falsa do Chromium)');

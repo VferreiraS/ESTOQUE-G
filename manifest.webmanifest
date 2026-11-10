@@ -1,7 +1,7 @@
 {
   "name": "Stok · Estoque 99 Lojas G",
   "short_name": "Stok",
-  "description": "Gestão de estoque, planos de ação e notas fiscais das Lojas G.",
+  "description": "Notas fiscais, conferência por câmera, plano de ação, corredores, equipe e chat das Lojas G. Funciona sem internet.",
   "lang": "pt-BR",
   "id": "./",
   "start_url": "./",
@@ -29,5 +29,9 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "categories": [
+    "business",
+    "productivity"
   ]
 }
