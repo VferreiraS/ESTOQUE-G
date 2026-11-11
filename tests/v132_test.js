@@ -82,6 +82,8 @@ const isoText=p=>p.evaluate(()=>{const out=[];const w=document.createTreeWalker(
  const nx=isoD(7);
  ok(rp.sid&&rp.rep&&rp.list.length===1&&rp.list[0].date===nx&&rp.list[0].id===rp.sid+'-w'+nx.replace(/-/g,'')&&rp.list[0].acts===1&&!rp.list[0].done&&!rp.list[0].ph,'cria sozinho o plano da próxima semana ('+nx+') com id determinístico, sem fotos e sem marcar feito');
  ok(await p.evaluate(async()=>(await e99RepRun())===0),'rodar de novo não duplica');
+ ok(await p.evaluate(async id=>{await deletePlan(id);return (await e99RepRun())===0&&!planById(id)},rp.list[0].id),'excluir a próxima ocorrência não faz o app recriá-la');
+ await p.evaluate(async id=>{localStorage.removeItem('lojasg.estoque99.rep-skip:'+authSession.storeKey);await e99RepRun()},rp.list[0].id);
  ok(await p.evaluate(()=>{render();return /Repete toda .*-feira|Repete todo (domingo|sábado)/.test(document.getElementById('view').textContent)}),'lista de planos mostra "Repete toda …"');
  ok((await isoText(p)).length===0,'Plano: nenhuma data aaaa-mm-dd no texto ('+(await isoText(p)).join(' / ')+')');
  await p.evaluate(sid=>openPlan(sid),rp.sid);await p.waitForTimeout(300);await p.uncheck('#e99-rep-on');await p.click('#plan-editor button[type=submit]');await p.waitForTimeout(700);

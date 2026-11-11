@@ -30,7 +30,7 @@
       document.body.appendChild(d);setTimeout(function(){try{d.remove()}catch(e){}},15000)}catch(e){}};
     var t0=Date.now(),wait=function(){var late=Date.now()-t0>8000;if(document.body&&document.readyState!=='loading'&&(late||(window.__e99Boot&&!document.getElementById('stok-intro'))))go();else setTimeout(wait,250)};setTimeout(wait,600)}
   window.__e99Reset={epoch:EP,removed:n,saved:ok};
-  if(n>0)mark()})();</script><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="131"><title>Stok · Estoque 99 Lojas G</title><meta name="description" content="Stok, o app de estoque das Lojas G: notas fiscais, conferência por câmera, plano de ação, corredores, equipe e chat. Funciona sem internet."><meta property="og:type" content="website"><meta property="og:site_name" content="Stok · Estoque 99"><meta property="og:title" content="Stok · Estoque 99 Lojas G"><meta property="og:description" content="Notas fiscais, conferência por câmera, plano de ação e chat da equipe. No PC e no celular, mesmo sem internet."><meta property="og:locale" content="pt_BR"><meta property="og:image" content="https://vferreiras.github.io/ESTOQUE-G/icons/icon-512-v123.png"><meta name="twitter:card" content="summary">
+  if(n>0)mark()})();</script><script>/* v112: tema do aparelho antes da 1ª pintura */try{var t=localStorage.getItem('lojasg.estoque99.ui-theme');document.documentElement.setAttribute('data-e99-theme',/^(lilas|violeta|cinza)$/.test(t||'')?t:'lilas')}catch(e){document.documentElement.setAttribute('data-e99-theme','lilas')}</script><link rel="preconnect" href="https://www.gstatic.com"><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="estoque99-version" content="132"><title>Stok · Estoque 99 Lojas G</title><meta name="description" content="Stok, o app de estoque das Lojas G: notas fiscais, conferência por câmera, plano de ação, corredores, equipe e chat. Funciona sem internet."><meta property="og:type" content="website"><meta property="og:site_name" content="Stok · Estoque 99"><meta property="og:title" content="Stok · Estoque 99 Lojas G"><meta property="og:description" content="Notas fiscais, conferência por câmera, plano de ação e chat da equipe. No PC e no celular, mesmo sem internet."><meta property="og:locale" content="pt_BR"><meta property="og:image" content="https://vferreiras.github.io/ESTOQUE-G/icons/icon-512-v123.png"><meta name="twitter:card" content="summary">
 <script id="motion-pref">
 /* v86 · respeita "menos movimento" do aparelho: sem escolha salva, o site abre com Efeitos desligados.
    Se a pessoa ligar Efeitos de propósito (botão em Minha conta → Preferências), o site anima mesmo assim. */
@@ -7289,16 +7289,16 @@ var vx=nfValidateExtras;nfValidateExtras=function(n){var r=vx.apply(this,argumen
 function h32(str){var h=0x811c9dc5;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
 function fields(n){return {number:String(n.number||''),supplier:String(n.supplier||''),status:String(n.status||''),volumes:Number(n.volumes)||0,owner:String(n.owner||''),notes:String(n.notes||''),date:String(n.date||''),arrivalTime:String(n.arrivalTime||''),accessKey:String(n.accessKey||''),items:Array.isArray(n.items)?n.items.length:0}}
 var snap=new Map();
-function takeSnap(){snap=new Map();(state.nfs||[]).forEach(function(n){if(n&&n.id)snap.set(n.id,{f:fields(n),h:Array.isArray(n.hist)?n.hist.slice():null})})}
+var snapFor=null;function takeSnap(){snapFor=authSession;snap=new Map();(state.nfs||[]).forEach(function(n){if(n&&n.id)snap.set(n.id,{f:fields(n),h:Array.isArray(n.hist)?n.hist.slice():null})})}
 var LBL={number:'número',supplier:'fornecedor',notes:'observações',date:'data de chegada',arrivalTime:'hora de chegada',accessKey:'chave de acesso'};
 function nameOf(id){try{return owner(id)}catch(x){return id||'A definir'}}
 function diffText(a,b){var parts=[],other=[];if(a.status!==b.status)parts.push('Status: '+(a.status||'—')+' → '+b.status);if(a.volumes!==b.volumes)parts.push('Volumes: '+a.volumes+' → '+b.volumes);if(a.owner!==b.owner)parts.push('Conferido por: '+nameOf(a.owner)+' → '+nameOf(b.owner));
   if(a.items!==b.items)parts.push(b.items?'Importou '+(b.items===1?'1 item':b.items+' itens')+' do XML':'Tirou os itens do XML');
   Object.keys(LBL).forEach(function(k){if(a[k]!==b[k])other.push(LBL[k])});if(other.length)parts.push('Editou '+other.join(', '));return parts.join('; ').slice(0,160)}
 function synced(n){try{var m=state.sync&&state.sync.meta&&state.sync.meta.nfs&&state.sync.meta.nfs[n.id];return !!(m&&!m[2]&&m[3]&&m[3]===h32(JSON.stringify(n)))}catch(x){return false}}
-function record(){if(!authSession||!Array.isArray(state.nfs))return;var now=Date.now(),who=me();
+function record(){if(!authSession||!Array.isArray(state.nfs))return;if(snapFor!==authSession){takeSnap();return}var now=Date.now(),who=me(),fresh=state.nfs.filter(function(n){return n&&n.id&&!snap.has(n.id)}).length;
   state.nfs.forEach(function(n){if(!n||!n.id)return;var s=snap.get(n.id),f=fields(n);
-    if(!s){if(synced(n))return;var h=cleanHist(n.hist)||[];if(!h.length){h.push([now,String(n.cby||who).slice(0,60),'Criou a nota'+(n.xmlKey?' pelo XML':'')]);n.hist=h}return}
+    if(!s){if(synced(n)||fresh>5)return;var h=cleanHist(n.hist)||[];if(!h.length){h.push([now,String(n.cby||who).slice(0,60),'Criou a nota'+(n.xmlKey?' pelo XML':'')]);n.hist=h}return}
     if(!Array.isArray(n.hist)&&s.h&&s.h.length)n.hist=s.h.slice();
     if(synced(n))return;if(JSON.stringify(n.hist||null)!==JSON.stringify(s.h||null)&&Array.isArray(n.hist)&&n.hist.length>(s.h?s.h.length:0))return;
     var t=diffText(s.f,f);if(!t)return;var h2=cleanHist(n.hist)||[];h2.push([now,who,t]);n.hist=h2.slice(-HMAX)});
@@ -7323,13 +7323,16 @@ var spv=savePlan;savePlan=async function(ev){try{if(planDraft&&authSession){var 
     else{var sid=sidOf(old||planDraft),on=repOk(planDraft.rep);(state.plans||[]).forEach(function(p){if(p.id!==planDraft.id&&sidOf(p)===sid){if(on)p.rep={d:planDraft.rep.d};else delete p.rep}})}}}catch(x){}
   var r=await spv.apply(this,arguments);try{if(!planDraft)runRep()}catch(x){}return r};
 function addDays(d,n){var x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return iso(x)}
-function genRep(){if(!authSession||aux()||!Array.isArray(state.plans))return [];var today=iso(),lim=addDays(today,7),series={},out=[];
+function genRep(){if(!authSession||aux()||!Array.isArray(state.plans))return [];var today=iso(),lim=addDays(today,7),series={},out=[],skip=skips();
   state.plans.forEach(function(p){if(p&&p.id){var k=sidOf(p);(series[k]=series[k]||[]).push(p)}});
   Object.keys(series).forEach(function(sid){var l=series[sid].slice().sort(function(a,b){return a.date.localeCompare(b.date)}),last=l[l.length-1];if(!repOk(last.rep))return;
     var c=addDays(last.date,1);while(wdOf(c)!==last.rep.d)c=addDays(c,1);if(c<today){c=today;while(wdOf(c)!==last.rep.d)c=addDays(c,1)}
-    if(c>lim||l.some(function(p){return p.date===c}))return;var id=(sid+'-w'+c.replace(/-/g,'')).slice(0,100);if(!safePlanId(id)||state.plans.some(function(p){return p.id===id})||out.some(function(p){return p.id===id}))return;
+    if(c>lim||l.some(function(p){return p.date===c}))return;var id=(sid+'-w'+c.replace(/-/g,'')).slice(0,100);if(!safePlanId(id)||skip.indexOf(id)>=0||state.plans.some(function(p){return p.id===id})||out.some(function(p){return p.id===id}))return;
     var np={id:id,title:last.title,date:c,repOf:sid,rep:{d:last.rep.d},activities:last.activities.map(function(a){var n={id:a.id,title:a.title,owner:a.owner||'',notes:a.notes||'',photos:[]};if(a.time)n.time=a.time;return n})};
     ['cby','cdev','clogin'].forEach(function(k){if(last[k])np[k]=last[k]});out.push(np)});return out}
+function skipKey(){return 'lojasg.estoque99.rep-skip:'+(authSession?authSession.storeKey:'')}
+function skips(){try{var a=JSON.parse(localStorage.getItem(skipKey())||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
+var dp=deletePlan;deletePlan=async function(id){var p=planById(id),was=!!p;var r=await dp.apply(this,arguments);try{if(was&&p.repOf&&!planById(id)){var a=skips();if(a.indexOf(id)<0)a.push(id);localStorage.setItem(skipKey(),JSON.stringify(a.slice(-200)))}}catch(e){}return r};
 var repBusy=false;async function runRep(){if(repBusy)return 0;var add=genRep();if(!add.length)return 0;var next=(state.plans||[]).concat(add);if(next.length>500)return 0;try{validatePlans(JSON.parse(JSON.stringify(next)))}catch(e){return 0}
   repBusy=true;try{state.plans=next;await save();if(page==='plans'||page==='home')render()}finally{repBusy=false}return add.length}
 W.e99RepRun=runRep;
