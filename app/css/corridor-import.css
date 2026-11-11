@@ -1,0 +1,14 @@
+
+#cor-import{border:0;padding:0;background:var(--ds-surface);color:var(--ds-ink);border-radius:20px;width:min(640px,100%);max-height:94dvh;overflow:auto}
+#cor-import::backdrop{background:rgba(0,0,0,.55)}
+#cor-import .ci-body{padding:18px;display:grid;gap:12px}
+#cor-import h2{margin:0;font-size:19px}
+#cor-import table{width:100%;border-collapse:collapse;font-size:14px}
+#cor-import th,#cor-import td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--ds-line);vertical-align:top}
+#cor-import tr.ci-change td{font-weight:700}
+#cor-import .ci-arrow{color:var(--ds-muted);font-weight:400}
+#cor-import .ci-tag{display:inline-block;font-size:11.5px;font-weight:750;border-radius:999px;padding:2px 8px;background:var(--ds-ink);color:var(--ds-bg);margin-left:4px}
+#cor-import .ci-warn{border:1px dashed var(--ds-ink);border-radius:12px;padding:10px 12px;font-size:13.5px}
+#cor-import .ci-foot{display:flex;gap:8px;flex-wrap:wrap}
+#cor-import .ci-foot .primary{flex:1}
+@media (max-width:900px){#cor-import{border-radius:20px 20px 0 0;margin:auto 0 0}#cor-import table{font-size:13px}}

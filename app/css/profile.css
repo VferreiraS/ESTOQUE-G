@@ -1,0 +1,5 @@
+
+/* v122: sem perfis estilo rede social; no chat e na equipe fica só o nome com a inicial */
+.av{width:28px;height:28px;border-radius:50%;flex:none;display:inline-grid;place-items:center;vertical-align:middle;background:var(--ds-accent-soft,#eee);color:var(--ds-ink,#111);font:700 12px system-ui,sans-serif;border:1px solid var(--ds-line,#ddd);overflow:hidden}
+.av.av-s{width:20px;height:20px;font-size:10px}
+.chat-msg .who{display:flex;align-items:center;gap:6px}

@@ -1,0 +1,33 @@
+
+/* v128 · acabamento ("100% profissional"): só consistência visual, sem mudar cores do tema nem a marca */
+/* ícones dentro de títulos e textos em negrito */
+b>svg.ic,strong>svg.ic{width:18px;height:18px;vertical-align:-3px;margin-right:6px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.sound-icon svg.ic{width:16px;height:16px;vertical-align:-3px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+#alert-popup .cardtop button svg.ic,button.e99-x svg.ic{width:18px;height:18px}
+/* rodapé alinhado numa linha só no PC */
+footer{margin-top:28px}
+@media(min-width:761px){footer{align-items:center;justify-content:space-between;gap:8px 24px}footer .legal-links a{padding:4px 2px}}
+/* ações do topo de cada tela: mesma altura */
+.hero-actions{align-items:center}
+.hero-actions>button,.hero-actions>.more-actions>summary{min-height:44px;box-sizing:border-box}
+/* botões de excluir/sair: mesmo formato dos vizinhos, cor de alerta suave, sem sublinhado */
+html body button.danger,html body button.e99-del{text-decoration:none!important;color:#ffb4a8!important}
+html body button.danger:not(:disabled):hover,html body button.e99-del:hover{background:rgba(255,120,110,.10)!important}
+/* botões de ação dentro da tabela de notas: mesmo tamanho (Excluir era maior) */
+@media(min-width:761px){#view td button.e99-del{height:34px;min-height:34px;font-size:12.5px;padding:0 10px}
+  #view .panelhead .toolbar input[aria-label="Buscar nota"]{min-width:280px}}
+/* mensagem de erro da tela de entrar como aviso de verdade */
+#auth-screen .auth-error:not(:empty),body.dark #auth-screen .auth-error:not(:empty){display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:rgba(255,110,100,.10);border:1px solid rgba(255,130,120,.32);color:#ffd9d4!important;font-weight:600}
+#auth-screen .auth-error:not(:empty)::before{content:'!';flex:0 0 20px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#ffb4a8;color:#1a0d0b;font-size:13px;font-weight:800;line-height:20px;text-align:center;margin-top:1px}
+/* "Sair da conta" no menu do celular igual aos outros itens */
+.mobile-options button{align-items:center}
+@media(max-width:760px){
+  /* janelas do celular centralizadas (antes encostavam na borda esquerda) */
+  html:root body dialog:not(#conf-dlg)[open]{margin-left:auto!important;margin-right:auto!important}
+  /* toque confortável: 44 px no mínimo */
+  #auth-screen button,#view button,#view summary,dialog button,dialog summary,#alert-popup button,.mobile-options button,#view input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]):not([type=file]),#view select,dialog input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]):not([type=file]),dialog select{min-height:44px}
+  #auth-screen button,#view button,dialog button,#alert-popup button{min-width:44px}
+  html body #auth-screen button,html body #auth-screen .auth-link{min-height:44px!important}
+  html body .chat-wrap .chat-re-btn,html body .chat-wrap .chat-del-btn,html body .chat-wrap .chat-opt-btn{min-width:44px!important;min-height:44px!important}
+  #view summary,dialog summary{box-sizing:border-box;padding-top:10px;padding-bottom:10px}
+}

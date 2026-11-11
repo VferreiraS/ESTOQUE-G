@@ -9,7 +9,7 @@ const HAS=(n)=>!!document.getElementById('local-note')&&new RegExp(n).test(docum
  ok(await W.evaluate(HAS,'Dados só neste aparelho'),'PC sem equipe: Início explica que os dados ficam no aparelho');
  ok(await W.evaluate(()=>/Convidar/.test(document.getElementById('local-note').textContent)&&/mesmo login e e-mail/.test(document.getElementById('local-note').textContent)),'mostra o caminho (convite ou mesmo login)');
  await W.click('#local-note button:not(.primary)');await W.evaluate(()=>render());await W.waitForTimeout(300);ok(await W.evaluate(()=>!document.getElementById('local-note')),'"Entendi" esconde o aviso');
- ok(/id="acc-local-note"/.test(fs.readFileSync(__dirname+'/../index.html','utf8')),'Administração diz que lista só as contas deste aparelho');
+ ok(/id="acc-local-note"/.test([__dirname+'/../index.html'].concat(['css','js'].flatMap(d=>fs.readdirSync(__dirname+'/../app/'+d).map(f=>__dirname+'/../app/'+d+'/'+f))).map(f=>fs.readFileSync(f,'utf8')).join('\n')),'Administração diz que lista só as contas deste aparelho');
  // 2) iPhone com dados → PC com o mesmo login (trazido da nuvem)
  const I=await (await b.newContext(L.devices['iPhone 13'])).newPage();I.on('pageerror',e=>errs.push(e.message));I.on('dialog',d=>d.accept());const gl='ipc'+Date.now();
  ok(await L.gestorWithTeam(I,gl),'iPhone: gestor com NF, plano, equipe e corredor');ok(await until(I,()=>!!(window.e99Cloud&&e99Cloud.user()),null,20000),'iPhone na nuvem');

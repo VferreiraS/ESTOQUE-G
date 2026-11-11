@@ -1,0 +1,10 @@
+
+#bk-panel .bk-status{margin:.4rem 0 .8rem}
+#bk-panel .toolbar,#cust-admin .toolbar,#cust-ask .toolbar{display:flex;flex-wrap:wrap;gap:8px}
+.cust-out{width:100%;min-height:96px;font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;word-break:break-all}
+.cust-code{font:600 1.15rem/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.04em;word-break:break-all;margin:.3rem 0}
+.cust-res{margin-top:10px;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04)}
+.cust-err{color:#ffb4a8}
+#cust-ask-box{margin-top:14px}
+#cust-ask-box button{width:100%}
+#cust-ask form,#bk-dlg form{display:grid;gap:10px}

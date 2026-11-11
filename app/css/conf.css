@@ -1,0 +1,110 @@
+
+/* v96: conferência às cegas por câmera (Notas fiscais). Tema escuro, toques ≥44 px, sem animação nova. */
+.conf-cta{display:grid;gap:10px}
+.conf-cta .conf-go{min-height:64px;width:100%;font-size:17px;font-weight:800;letter-spacing:.05em}
+.conf-cta p{margin:0}
+.conf-resume{display:grid;gap:8px}
+.conf-banner{border:1px solid var(--neon,#FF2A1F);border-radius:14px;padding:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:rgba(255,42,31,.06)}
+.conf-banner b{flex:1;min-width:180px}
+.conf-banner button,.conf-hist-list button{min-height:44px}
+.conf-hist summary{cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px}
+.conf-hist-list{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
+.conf-hist-list li{border:1px solid var(--ds-line,#2a2a2e);border-radius:12px;padding:10px 12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.conf-hist-list li span{flex:1;min-width:180px;overflow-wrap:anywhere}
+body.conf-on #view{visibility:hidden}
+.conf-cta .conf-go svg{vertical-align:-4px;margin-right:8px}
+/* v97: tela cheia, minimalista (v122: sem holograma) */
+#conf-dlg{position:fixed;inset:0;width:100vw!important;max-width:none!important;height:100vh;height:100dvh;max-height:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:#060607!important;color:#f2f2f3;overflow:hidden}
+#conf-dlg::backdrop{background:#000}
+#conf-dlg [hidden]{display:none!important}
+#conf-dlg button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#conf-dlg button:focus-visible,#conf-dlg input:focus-visible,#conf-dlg select:focus-visible,#conf-dlg summary:focus-visible{outline:2px solid #FF8A7A;outline-offset:2px}
+#conf-dlg button:disabled{cursor:default}
+#conf-dlg h2,#conf-dlg h3,#conf-dlg p{margin:0}
+#conf-dlg .cf-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#conf-dlg .cf-bg::before{content:"";position:absolute;inset:0;background:radial-gradient(70% 38% at 50% 0%,rgba(255,42,31,.13),transparent 70%),radial-gradient(45% 30% at 90% 100%,rgba(127,233,255,.05),transparent 70%),repeating-linear-gradient(90deg,rgba(255,255,255,.022) 0 1px,transparent 1px 44px),repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 1px,transparent 1px 44px)}
+#conf-dlg .cf-wrap{position:relative;z-index:1}
+#conf-dlg .cf-scan{display:flex;flex-direction:column;gap:10px;height:100%;max-width:560px;margin:0 auto;padding:calc(6px + env(safe-area-inset-top)) 16px calc(12px + env(safe-area-inset-bottom))}
+#conf-dlg .cf-top{display:flex;align-items:center;gap:12px;min-height:48px;flex:none}
+#conf-dlg .cf-topt{flex:1;min-width:0}
+#conf-dlg .cf-top h2{font-size:15px;font-weight:700;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#conf-dlg .cf-sub{font-size:12px;color:#a6a6ab;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#conf-dlg .cf-st{display:inline-flex;align-items:center;gap:6px;margin-right:8px;color:#f2f2f3;font-weight:600}
+#conf-dlg .cf-st::before{content:"";width:7px;height:7px;border-radius:50%;background:#FF2A1F}
+#conf-dlg .cf-st[data-st="pausada"]::before{background:#8a8a8a}
+#conf-dlg .cf-st[data-st="finalizada"]::before{background:#3ecf8e}
+#conf-dlg .cf-ib{width:44px;height:44px;min-height:44px;flex:none;display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.14)!important;background:rgba(10,10,12,.62)!important;color:#f2f2f3!important}
+#conf-dlg .cf-ib[aria-pressed="true"]{border-color:#FF2A1F!important;color:#FF8A7A!important}
+#conf-dlg .cf-cam{position:relative;flex:1 1 auto;min-height:190px;border-radius:20px;overflow:hidden;background:#000}
+#conf-dlg .cf-cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+#conf-dlg .cf-frame{position:absolute;left:9%;right:9%;top:31%;bottom:31%;border-radius:16px;border:1px solid rgba(255,138,122,.55);box-shadow:0 0 0 999px rgba(0,0,0,.3);pointer-events:none;overflow:hidden}
+#conf-dlg .cf-frame>i{position:absolute;inset:0;background:linear-gradient(#FF2A1F,#FF2A1F) 0 0/22px 2px,linear-gradient(#FF2A1F,#FF2A1F) 0 0/2px 22px,linear-gradient(#FF2A1F,#FF2A1F) 100% 0/22px 2px,linear-gradient(#FF2A1F,#FF2A1F) 100% 0/2px 22px,linear-gradient(#FF2A1F,#FF2A1F) 0 100%/22px 2px,linear-gradient(#FF2A1F,#FF2A1F) 0 100%/2px 22px,linear-gradient(#FF2A1F,#FF2A1F) 100% 100%/22px 2px,linear-gradient(#FF2A1F,#FF2A1F) 100% 100%/2px 22px;background-repeat:no-repeat}
+#conf-dlg .cf-cam.off .cf-frame{display:none}
+#conf-dlg .cf-camoff{position:absolute;inset:0;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;text-align:center;padding:16px;color:#d0d0d4;font-size:15px}
+#conf-dlg .cf-camoff button{min-height:48px;padding:0 22px;border-radius:14px;border:1px solid rgba(255,255,255,.16)!important;background:rgba(255,255,255,.06)!important}
+#conf-dlg .cf-camoff button.primary{background:#DB2318!important;border-color:#DB2318!important;color:#fff!important;font-weight:700}
+#conf-dlg .cf-tools{position:absolute;top:10px;right:10px;display:flex;gap:8px;z-index:2}
+#conf-dlg .cf-camfoot{position:absolute;left:10px;bottom:10px;right:10px;display:flex;gap:8px;flex-wrap:wrap;z-index:2}
+#conf-dlg .cf-pill{min-height:44px;display:inline-flex;align-items:center;gap:6px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.16)!important;background:rgba(10,10,12,.62)!important;color:#f2f2f3!important;font-size:13px;font-weight:600}
+#conf-dlg .cf-pill svg{width:18px;height:18px}
+@supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){#conf-dlg .cf-ib,#conf-dlg .cf-pill{-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}}
+#conf-dlg .cf-msg{flex:none;min-height:20px;font-size:14px;line-height:1.35;color:#d6d6da;text-align:center}
+#conf-dlg .cf-panel{position:relative;flex:none;display:grid;gap:10px;padding:10px 14px 4px;border-radius:20px;background:rgba(18,18,22,.78);border:1px solid rgba(255,255,255,.08);overflow:hidden}
+#conf-dlg .cf-panel>*{position:relative}
+#conf-dlg .cf-countwrap{text-align:center}
+#conf-dlg .cf-countbox{position:relative;display:inline-block;min-width:min(240px,70%);padding:0 18px 2px;border-radius:16px;border:1px solid rgba(255,42,31,.38);box-shadow:inset 0 0 0 1px rgba(255,138,122,.08);overflow:hidden}
+#conf-dlg .cf-count{font:700 88px/1.04 Oswald,'Arial Narrow',system-ui,sans-serif;letter-spacing:.02em;font-variant-numeric:tabular-nums;color:#FF2A1F;transition:transform .18s cubic-bezier(.22,1,.36,1)}
+#conf-dlg .cf-count.hit{transform:scale(1.06)}
+#conf-dlg .cf-countlab{margin-top:4px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#a6a6ab}
+#conf-dlg .cf-last{text-align:center;font-size:13px;color:#a6a6ab;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#conf-dlg .cf-last code{color:#f2f2f3;font-size:13px}
+#conf-dlg .cf-next{min-height:56px;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:16px;border:0!important;background:#DB2318!important;color:#fff!important;font-size:17px;font-weight:700}
+#conf-dlg .cf-next:disabled{background:#241312!important;color:#c9a19c!important}
+#conf-dlg .cf-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#conf-dlg .cf-sec{min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:14px;border:1px solid rgba(255,255,255,.12)!important;background:rgba(255,255,255,.05)!important;font-size:15px;font-weight:600}
+#conf-dlg .cf-sec:disabled{color:#8e8e94!important}
+#conf-dlg .cf-finish{color:#FF8A7A!important}
+#conf-dlg .cf-discard{min-height:44px;width:100%;border:0!important;background:none!important;color:#FF8A7A!important;font-size:14px;font-weight:600}
+#conf-dlg .cf-discard:disabled{color:#8e8e94!important}
+#conf-dlg .cf-handle{min-height:44px;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;border:0!important;background:none!important;color:#a6a6ab!important;font-size:13px}
+#conf-dlg .cf-sheet{position:absolute;left:0;right:0;bottom:0;z-index:5;margin:0 auto;max-width:560px;max-height:72%;overflow:auto;display:grid;gap:12px;padding:14px 16px calc(16px + env(safe-area-inset-bottom));background:#111114;border:1px solid rgba(255,255,255,.1);border-bottom:0;border-radius:20px 20px 0 0;animation:cf-up .22s cubic-bezier(.22,1,.36,1) backwards}
+@keyframes cf-up{from{transform:translateY(24px);opacity:0}}
+#conf-dlg .cf-shead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#conf-dlg .cf-shead h3{font-size:16px}
+#conf-dlg .cf-meta{font-size:12px;color:#a6a6ab;overflow-wrap:anywhere}
+#conf-dlg .cf-ask{border-top:1px solid #FF2A1F}
+#conf-dlg .cf-ask .cf-askbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#conf-dlg .cf-ask button{min-height:52px;border-radius:14px;border:1px solid rgba(255,255,255,.14)!important;background:rgba(255,255,255,.05)!important;font-weight:600}
+#conf-dlg .cf-ask button.primary{background:#DB2318!important;border-color:#DB2318!important;color:#fff!important}
+#conf-dlg .cf-ask code,#conf-dlg .cf-last code{overflow-wrap:anywhere}
+#conf-dlg .cf-manual label{display:grid;gap:6px;font-size:14px}
+#conf-dlg .cf-manual input{min-height:48px}
+#conf-dlg .cf-manual button[type=submit]{min-height:52px;border-radius:14px}
+#conf-dlg label.cf-auto{display:flex;gap:10px;align-items:center;min-height:44px;cursor:pointer;font-size:14px}
+#conf-dlg label.cf-auto input{width:22px;height:22px;flex:none}
+#conf-dlg .cf-hist{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+#conf-dlg .cf-hist li{display:grid;grid-template-columns:42px 72px 1fr auto;gap:8px;font-size:13px;padding:8px 2px;border-bottom:1px solid #1d1d21;align-items:center}
+#conf-dlg .cf-hist li.x{opacity:.55;text-decoration:line-through}
+#conf-dlg .cf-hist li code{overflow-wrap:anywhere}
+/* relatório (mesma janela) */
+#conf-dlg .cf-rep{height:100%;overflow:auto;max-width:720px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));display:grid;gap:14px;align-content:start}
+#conf-dlg .cf-rep h2{font-size:19px}
+#conf-dlg .cf-rep h3{margin:6px 0 0;font-size:15px}
+#conf-dlg .cf-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+#conf-dlg .cf-head > div{min-width:0}
+#conf-dlg .cf-head .cf-x{width:44px;height:44px;min-height:44px;flex:none;border-radius:50%;border:1px solid rgba(255,255,255,.14)!important;background:rgba(10,10,12,.62)!important}
+#conf-dlg .cf-histbox summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
+#conf-dlg .cf-kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0}
+#conf-dlg .cf-kv dt{color:#bdbdbd}
+#conf-dlg .cf-kv dd{margin:0;overflow-wrap:anywhere}
+#conf-dlg .cf-table{width:100%;border-collapse:collapse;font-size:14px}
+#conf-dlg .cf-table th,#conf-dlg .cf-table td{border-bottom:1px solid #26262b;padding:7px 6px;text-align:left;overflow-wrap:anywhere}
+#conf-dlg .cf-repbtns{display:flex;gap:8px;flex-wrap:wrap}
+#conf-dlg .cf-repbtns button{min-height:48px;flex:1 1 160px}
+#conf-dlg .cf-assoc{display:grid;gap:8px;border:1px solid var(--ds-line,#2a2a2e);border-radius:16px;padding:12px}
+#conf-dlg .cf-assoc select,#conf-dlg .cf-assoc button{min-height:48px}
+#conf-dlg .cf-cmp{border-radius:16px;padding:12px;border:1px solid #3ecf8e}
+#conf-dlg .cf-cmp.bad{border-color:var(--neon,#FF2A1F)}
+@media (max-height:720px){#conf-dlg .cf-count{font-size:68px}#conf-dlg .cf-scan{gap:8px}#conf-dlg .cf-next{min-height:52px}}
+/* v96: às cegas também na lista — auxiliar não vê a coluna Volumes */
+body.role-aux #nf-results table th:nth-child(3),body.role-aux #nf-results table td:nth-child(3){display:none!important}

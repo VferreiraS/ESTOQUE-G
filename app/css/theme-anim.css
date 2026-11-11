@@ -1,0 +1,4 @@
+
+/* Tema de animação único por conta (combinação da conta, sem IA) */
+html body.dark #view .panel::after,html body.dark #view .card::after,html body.dark #view .stat::after,html body.dark #view .plan-card::after,html body.dark #view .pn-card::after,html body.dark button.primary::after{animation-duration:var(--fx-shine,7s)!important}
+html body.dark button.primary,html body.dark .nav button.active,html body.dark #mobile-bottom button.active{animation-duration:var(--fx-pulse,3s)!important}

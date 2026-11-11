@@ -1,0 +1,19 @@
+
+/* Privacidade, termos e acessibilidade (LGPD). Só tema escuro. */
+.lgpd-check,#auth-screen .lgpd-check,#cloud-link .lgpd-check{display:flex;align-items:flex-start;gap:10px;font-size:14px;font-weight:500;letter-spacing:0;line-height:1.45;color:var(--ds-ink,#f2f2f2);cursor:pointer}
+.lgpd-check input,#auth-screen .lgpd-check input,#cloud-link .lgpd-check input{width:20px;height:20px;min-height:0;padding:0;margin:1px 0 0;flex:none;border:0;border-radius:0;box-shadow:none;accent-color:#f2f2f2}
+.lgpd-check a,.legal-links a,#legal-panel a,#storage-note a{color:#f2f2f2;text-decoration:underline;text-underline-offset:2px}
+#auth-form label.chat-check{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500}
+#auth-form label.chat-check input{width:20px;height:20px;min-height:0;padding:0;margin:0;flex:none}
+.legal-links{margin:10px 0 0;text-align:center;font-size:13px;line-height:1.6;color:#c8c8c8}
+footer .legal-links{margin:0;text-align:left}
+#storage-note{position:fixed;z-index:10003;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(420px,calc(100% - 32px));display:grid;gap:10px;padding:14px 16px;border-radius:16px;background:#151515;color:#f2f2f2;border:1px solid #3a3a3a;box-shadow:0 12px 40px rgba(0,0,0,.6);font-size:14px;line-height:1.5}
+#storage-note p{margin:0}
+#storage-note .sn-actions{display:flex;justify-content:flex-end}
+#storage-note button{min-height:44px;padding:0 20px;border-radius:999px;border:1px solid #f2f2f2;background:#f2f2f2;color:#000;font-weight:650}
+@media(max-width:900px){#storage-note{left:12px;right:12px;width:auto;font-size:13px;padding:12px 14px}body:not(.locked) #storage-note{bottom:calc(140px + env(safe-area-inset-bottom,0px))}}
+body.keyboard-open #storage-note{display:none}
+/* na tela de entrar o aviso fica embaixo do cartão, no fluxo da página: nunca cobre campos nem botões */
+#auth-screen #storage-note{position:static;left:auto;right:auto;bottom:auto;width:100%;max-width:420px;margin:18px auto 0;box-shadow:none;z-index:auto}
+summary:focus-visible,[tabindex]:focus-visible,.lgpd-check a:focus-visible,.legal-links a:focus-visible,#storage-note :focus-visible{outline:2px solid #f2f2f2;outline-offset:2px}
+@media print{#storage-note,.legal-links{display:none!important}}

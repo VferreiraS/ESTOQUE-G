@@ -1,0 +1,154 @@
+/* <style id="fluid-css"> */
+
+/* v73 · fluidez no celular: o toque responde na hora (sem espera de duplo toque nem clarão cinza),
+   o aperto aparece já no dedo e solta macio, e listas longas só desenham o que está na tela. Só tema escuro. */
+html{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button,a,summary,label,select,[onclick],[role=button]{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:not(:disabled):active{transition-duration:.05s}
+body:not(.fx-user-off) #view button:not(:disabled):not(.chat-re-btn):active,body:not(.fx-user-off) .nav button:not(:disabled):active{transform:scale(.97)}
+body:not(.fx-user-off) .mobile-bottom button:active{transform:scale(.92)}
+#view .cards>.card,table.mobile-cards tbody tr{content-visibility:auto;contain-intrinsic-size:auto 180px}
+#chat-list{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+
+/* <style id="v86-css"> */
+
+/* v86 · telas mais limpas: tokens únicos, cartões planos, topo de 56 px, rótulos sem caixa alta, ícones SVG, sem brilho/pulso infinito.
+   Só tema escuro. Último bloco: vence os anteriores. */
+:root,body,body.dark{--ds-bg:#000000;--ds-surface:#111113;--ds-line:#2A2A2E;--ds-ink:#F2F2F2;--ds-ink-2:#DADADE;--ds-muted:#A3A3A8;--ds-accent:#F2F2F2;--ds-accent-soft:#1A1A1D;--brand:#FF2A1F;--red:#FF2A1F;--red2:#FF2A1F;--glass-line:#2A2A2E;--ink:#F2F2F2;--muted:#A3A3A8;--line:#2A2A2E;--surface:#111113;--bg:#000000}
+html body,html body.dark{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.5;color:var(--ds-ink)}
+.small,small,.stat span,label{font-size:13px}
+.stat strong,.pn-kpi strong,td,.nf-count,.alert-count{font-variant-numeric:tabular-nums}
+/* fundo de estrelas numa camada fixa própria (sem repintar a página ao rolar) */
+html body.dark{background-image:none!important;background-attachment:scroll!important;background-color:#000!important}
+body.dark::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;contain:strict;
+  background-image:radial-gradient(1px 1px at 12% 18%,#ffffff55 50%,transparent 51%),radial-gradient(1px 1px at 72% 9%,#ffffff40 50%,transparent 51%),radial-gradient(1.5px 1.5px at 35% 66%,#ffffff35 50%,transparent 51%),radial-gradient(1px 1px at 88% 52%,#ffffff45 50%,transparent 51%),radial-gradient(1px 1px at 55% 88%,#ffffff30 50%,transparent 51%),radial-gradient(1px 1px at 22% 82%,#ffffff40 50%,transparent 51%);background-size:420px 420px}
+body.dark::before{animation:none!important}
+/* sem loops: brilho correndo, pulso e palavra piscando saem; movimento só responde a toque, foco ou troca de tela */
+html body.dark #view .panel::after,html body.dark #view .card::after,html body.dark #view .stat::after,html body.dark #view .plan-card::after,html body.dark #view .pn-card::after,html body.dark button.primary::after,html body.dark .accent-word[data-t]::after{content:none!important;animation:none!important;display:none!important}
+html body.dark button.primary,html body.dark .primary,html body.dark .nav button.active,html body.dark #mobile-bottom button.active,html body.dark .alert-count,html body.dark .alert-count.has{animation:none!important}
+html body.dark .accent-word{color:var(--brand);text-shadow:none}
+/* o S de partículas fica no login e no Início */
+/* cartões planos: superfície + borda de 1 px, sem sombra nem vidro */
+html body.dark .stat,html body.dark .panel,html body.dark .card,html body.dark .pn-card,html body.dark .plan-card,html body.dark .sync-box,html body.dark .help,html body.dark dialog{background:var(--ds-surface)!important;border:1px solid var(--ds-line)!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html body.dark .stat,html body.dark .panel,html body.dark .card,html body.dark .pn-card,html body.dark .plan-card,html body.dark .help{border-radius:16px!important}
+/* um nível de cartão só (Plano: cartão dentro de cartão dentro de cartão) */
+html body.dark #view .panel>.help,html body.dark #view .panel>.help.panel{background:none!important;border:0!important;padding:0!important;border-radius:0!important}
+#view .panel,#view .card,#view .plan-card,#view .cardtop>*,#view .panelhead>*,#view .toolbar>*,#view .grid2>*,#view .cards>*{min-width:0}
+#view .cardtop{flex-wrap:wrap}
+html body.dark #view .panel:has(>.help>.plan-card){background:none!important;border:0!important;padding:0!important}
+#view .panelhead{text-align:left;align-items:center;justify-content:space-between}
+#view .panelhead h2{text-align:left}
+#view .cardtop>div:first-child:not(.avatar){flex:1 1 180px}
+#view .plan-card{margin:0 0 14px}
+#view .plan-card .toolbar>*{flex:1 1 auto;white-space:normal}
+#view .panelhead label{min-width:0;max-width:100%}
+#view .panelhead label input{max-width:100%;min-width:0}
+#view img,#view video,#view canvas,#view table{max-width:100%}
+/* stat vermelho não compete com o botão principal */
+html body.dark #view .stats .stat:first-child{background:var(--ds-surface)!important;border-color:#FF2A1F73!important;box-shadow:none!important}
+html body.dark #view .stats .stat:first-child strong{color:var(--brand)!important}
+html body.dark #view .stats .stat:first-child span{color:var(--ds-muted)!important;opacity:1}
+html body.dark #view .stats .stat strong{font-size:clamp(32px,4vw,40px)!important}
+/* botões: vermelho só no principal e em alertas; sem gradiente nem brilho */
+html body.dark button.primary,html body.dark .primary,html body.dark #view button.primary,html body.dark #auth-screen button.primary,html body.dark #view .toolbar button.primary,html body.dark .hero button.primary{/* v89: #DB2318 = 4,9:1 com texto branco (AA) */background:#DB2318!important;background-image:none!important;border:1px solid #DB2318!important;color:#fff!important;box-shadow:none!important;filter:none!important;font-weight:650}
+@media(hover:hover){html body.dark button.primary:hover{background:#C41E14!important;border-color:#C41E14!important}}
+html body.dark .toolbar button:not(.primary),html body.dark .hero button:not(.primary){background:var(--ds-surface)!important;border:1px solid var(--ds-line)!important}
+button svg.ic,a svg.ic,summary svg.ic,h2 svg.ic,h3 svg.ic,span svg.ic{width:20px;height:20px;flex:0 0 auto;vertical-align:-4px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+button:has(>svg.ic),summary:has(>svg.ic){display:inline-flex;align-items:center;justify-content:center;gap:8px}
+h2>svg.ic,h3>svg.ic{margin-right:8px;color:var(--ds-muted)}
+svg.ic.ic-end{width:16px;height:16px}
+/* menu lateral (PC) e barra de baixo (celular) com ícones SVG, ativo sem pílula vermelha brilhante */
+html body.dark #nav button,html body.dark .nav button{border-radius:10px!important;gap:10px;color:var(--ds-muted)}
+html body.dark #nav button>span[aria-hidden]{display:inline-grid;place-items:center;width:20px}
+html body.dark #nav button.active,html body.dark .nav button.active{background:var(--ds-accent-soft)!important;background-image:none!important;color:var(--ds-ink)!important;box-shadow:inset 3px 0 0 var(--brand)!important}
+html body.dark #nav button.active *,html body.dark .nav button.active *{color:inherit!important}
+html body.dark #nav button.active svg{color:var(--brand)}
+html body.dark #mobile-bottom{background:#0d0d0fe6!important;border:1px solid var(--ds-line)!important;box-shadow:none!important}
+html body.dark #mobile-bottom button{display:grid!important;justify-items:center;align-content:center;gap:2px;font-size:11px!important}
+html body.dark #mobile-bottom button>span[aria-hidden]{display:grid;place-items:center;height:24px}
+html body.dark #mobile-bottom button.active,html body.dark #mobile-bottom button[aria-current="page"]{background:var(--ds-accent-soft)!important;background-image:none!important;color:var(--ds-ink)!important;box-shadow:none!important}
+html body.dark #mobile-bottom button.active svg{color:var(--brand)}
+html body.dark #mobile-bottom button.active *{color:inherit!important}
+/* rótulos em letra normal (CAIXA ALTA só no h1 em Oswald) */
+html body .eyebrow,html body.dark .eyebrow{text-transform:none!important;letter-spacing:0!important;font-size:13px!important;font-weight:600!important;color:var(--ds-muted)!important;background:none!important;border:0!important;padding:0!important;filter:none!important}
+html body th,html body .nfocr-table th,html body .pn-kpi span{text-transform:none!important;letter-spacing:0!important;font-size:13px!important;font-weight:600!important;color:var(--ds-muted)!important}
+/* títulos: curtos, Oswald; escala 12/13/16/20/25/32/40/56 */
+html body.dark #view .hero:not(.hero-home) h1{font-size:clamp(32px,5vw,56px)!important;line-height:1.05!important;margin:0 0 4px!important;text-wrap:balance}
+html body.dark #view .hero:not(.hero-home) .subtitle{font-size:16px!important;color:var(--ds-muted)!important;margin:0!important}
+html body.dark #view .hero:not(.hero-home){gap:12px 16px;align-items:flex-end}
+html body.dark .panelhead h2,html body.dark .panel h2,html body.dark .help h2,html body.dark .card h2{font-size:20px!important}
+html body.dark .card h3{font-size:20px}
+/* "Mais ações": um botão principal e o resto numa lista */
+.hero-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.more-actions{position:relative}
+/* o menu aberto fica acima dos cartões seguintes (cada bloco de #view tem a própria camada por causa da animação de entrada) */
+#view>*:has(.more-actions[open]){position:relative;z-index:60}
+.more-actions>summary{list-style:none;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border:1px solid var(--ds-line);border-radius:999px;background:var(--ds-surface);color:var(--ds-ink);font-weight:600;font-size:15px;cursor:pointer;user-select:none}
+.more-actions>summary::-webkit-details-marker{display:none}
+.more-actions[open]>summary{border-color:#3a3a40}
+.more-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:50;display:grid;gap:2px;min-width:240px;max-width:min(320px,calc(100vw - 32px));padding:6px;background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:14px;box-shadow:0 16px 40px #000c}
+html body.dark #view .more-menu button,html body.dark #view .more-menu .primary,html body.dark .more-menu button{display:flex!important;justify-content:flex-start!important;gap:10px;width:100%;min-height:44px;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:var(--ds-ink)!important;text-align:left;font-weight:550!important;white-space:normal}
+@media(hover:hover){html body.dark #view .more-menu button:hover{background:var(--ds-accent-soft)!important}}
+html body.dark #view .mobile-options button{display:flex!important;justify-content:flex-start!important;gap:12px;text-align:left;padding:0 16px!important}
+#view .mobile-options button .ic-end{margin-left:auto;color:var(--ds-muted)}
+/* topo do celular: 56 px com título e sino */
+#breadcrumb .bc-store{color:var(--ds-muted);font-weight:500}
+.bell-btn{position:relative;display:inline-grid!important;place-items:center;width:44px;height:44px;min-height:44px!important;padding:0!important;border-radius:12px!important;background:transparent!important;border:1px solid transparent!important;color:var(--ds-ink)!important}
+.bell-btn svg.ic{width:22px;height:22px}
+.bell-btn .alert-count{position:absolute;top:3px;right:1px;min-width:18px;height:18px;padding:0 5px!important;border-radius:999px;font-size:11px!important;line-height:18px;background:#DB2318!important;color:#fff!important;filter:none!important;box-shadow:none!important}
+.bell-btn .alert-count[data-zero]{display:none}
+@media(hover:hover){.bell-btn:hover{background:var(--ds-accent-soft)!important}}
+@media (max-width:900px){
+  html body header,html body.dark header,html body.dark.is-scrolled header{min-height:0!important;height:calc(56px + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))!important;flex-wrap:nowrap!important;gap:8px!important;align-items:center}
+  header>div:first-child{flex:1 1 auto!important;min-width:0!important}
+  #breadcrumb{display:block;font-size:17px!important;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #breadcrumb .bc-store{display:none}
+  header .toolbar{width:auto!important;flex:0 0 auto!important;flex-wrap:nowrap!important;gap:4px!important;justify-content:flex-end!important}
+  #storage[data-ok="1"]{display:none!important}
+  #storage{font-size:12px;max-width:42vw}
+  html{scroll-padding-top:72px}
+  .content{padding-top:16px!important}
+  html body.dark .hero-home{min-height:240px}
+  #view .panel,#view .help,#view .card{padding:16px!important}
+  #view .hero:not(.hero-home) .hero-actions{width:100%}
+  #view .hero:not(.hero-home) .hero-actions{flex-wrap:nowrap}
+  #view .hero:not(.hero-home) .hero-actions>button.primary{flex:1 1 0;width:auto!important;min-width:0}
+  #view .hero-actions>.more-actions{flex:0 0 auto}
+  #view .hero-actions>.more-actions>summary{padding:0 14px}
+}
+/* Som, Efeitos e Sazonal: no PC no rodapé da barra lateral; no celular em Minha conta → Preferências */
+@media (max-width:900px){#sound-control{display:none!important}}
+@media (min-width:901px){
+  html body aside{display:flex;flex-direction:column}
+  html body aside .visual-tools{position:static!important;left:auto!important;bottom:auto!important;margin-top:auto;display:flex;flex-wrap:wrap;gap:2px;padding:6px!important;border-radius:12px!important;background:transparent!important;border:1px solid var(--ds-line)!important;box-shadow:none!important;z-index:auto}
+  html body aside .visual-tools button,html body aside .visual-tools #sound-control{flex:1 1 100%;text-align:left;min-height:36px!important;font-size:12px!important;justify-content:flex-start;color:var(--ds-muted)!important;background:transparent!important;border:0!important;box-shadow:none!important;padding:0 8px!important}
+  html body aside .visual-tools #back-top{position:fixed;right:20px;bottom:20px;z-index:45;width:44px;height:44px;min-height:44px!important;padding:0!important;justify-content:center;border:1px solid var(--ds-line)!important;border-radius:999px!important;background:var(--ds-surface)!important;color:var(--ds-ink)!important}
+  html body aside .visual-tools #back-top.hidden{display:none!important}
+}
+#prefs-panel .pref-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--ds-line)}
+#prefs-panel .pref-row:first-of-type{border-top:0}
+#prefs-panel .pref-row>span{min-width:0;flex:1 1 180px}
+#prefs-panel .pref-row b{display:block;font-weight:600}
+#prefs-panel button[aria-pressed]{min-width:120px}
+#prefs-panel button[aria-pressed="true"] svg{color:var(--brand)}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#3ccf6e;margin-right:8px;vertical-align:1px}
+.status-dot.warn{background:var(--brand)}
+/* cartões 3D do Início: inclinam até 8° com o dedo/mouse e voltam ao soltar */
+#view .stats.tilt-on{perspective:900px}
+#view .stats.tilt-on .stat{transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .3s cubic-bezier(.2,.8,.2,1);touch-action:pan-y;transform-style:preserve-3d}
+#view .stats.tilt-on .stat{animation-fill-mode:backwards!important}
+#view .stats.tilt-on .stat.tilting{transition:transform .06s linear;will-change:transform}
+#view .stats .tilt-glare{position:absolute;left:0;top:0;width:180px;height:180px;margin:-90px 0 0 -90px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,#ffffff2e,#ffffff00 65%);mix-blend-mode:screen;opacity:0;transition:opacity .3s ease;z-index:0}
+#view .stats .stat.tilting .tilt-glare{opacity:1}
+#view .stats .stat>strong,#view .stats .stat>span{position:relative;z-index:1}
+@media(hover:hover){html body.dark #view .stats .stat:hover{border-color:#3a3a40!important}}
+/* foco: anel vermelho de 2 px com folga, igual em todo o app */
+html body button:focus-visible,html body a:focus-visible,html body input:focus-visible,html body select:focus-visible,html body textarea:focus-visible,html body summary:focus-visible{outline:2px solid var(--brand)!important;outline-offset:2px!important}
+/* listas longas só desenham o que está na tela */
+/* o botão de responder e o ícone de arrastar ficam fora do balão: sem recorte na mensagem em uso */
+#chat-list .chat-msg:not(:hover):not(:focus-within):not(.swiping){content-visibility:auto;contain-intrinsic-size:auto 72px}
+#nf-results table.mobile-cards tbody tr{content-visibility:auto;contain-intrinsic-size:auto 160px}
+/* rodapé: área de toque de 44 px */
+footer .legal-links a{display:inline-block;padding:12px 2px}
+@media print{.more-actions,.bell-btn{display:none!important}}
+

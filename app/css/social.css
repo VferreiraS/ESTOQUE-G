@@ -1,0 +1,40 @@
+
+/* Chat estilo WhatsApp/Instagram/Facebook: digitando, visto, reações, fixada, menções; encaminhar; avisos com app fechado */
+#chat-typing{min-height:18px;font-size:12.5px;color:#ff8a7a;margin:2px 0 6px;display:flex;align-items:center;gap:6px}
+#chat-typing:empty{display:none}
+#chat-typing .dots{display:inline-flex;gap:3px}
+#chat-typing .dots i{width:5px;height:5px;border-radius:50%;background:currentColor;animation:typing-dot 1.2s infinite ease-in-out}
+#chat-typing .dots i:nth-child(2){animation-delay:.15s}#chat-typing .dots i:nth-child(3){animation-delay:.3s}
+@keyframes typing-dot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+.chat-msg .seen-by{display:block;font-size:11px;opacity:.75;margin-top:2px;text-align:right}
+.chat-msg .seen-by b{color:#34b7f1;font-weight:800}
+.chat-msg .reacts{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.chat-msg .reacts button{min-height:0;height:24px;padding:0 8px;border-radius:999px;border:1px solid var(--ds-line);background:rgba(127,127,127,.18);color:inherit;font-size:12.5px;line-height:1;cursor:pointer}
+.chat-msg .reacts button.me{border-color:#ff2a1f;background:rgba(255,42,31,.18)}
+.chat-msg.mentioned{box-shadow:inset 3px 0 0 #ff2a1f}
+.mention{color:#ff6a55;font-weight:750}
+.chat-msg.mine .mention{color:#c41a10}
+.heart-pop{position:absolute;left:50%;top:50%;font-size:46px;transform:translate(-50%,-50%) scale(0);pointer-events:none;animation:heart-pop .9s ease forwards;z-index:3}
+@keyframes heart-pop{0%{transform:translate(-50%,-50%) scale(0);opacity:0}25%{transform:translate(-50%,-50%) scale(1.25);opacity:1}55%{transform:translate(-50%,-50%) scale(1)}100%{transform:translate(-50%,-80%) scale(1);opacity:0}}
+#chat-pin{display:flex;align-items:center;gap:10px;margin:0 0 8px;padding:8px 12px;border-radius:12px;border:1px solid var(--ds-line);background:var(--ds-surface);cursor:pointer}
+#chat-pin[hidden]{display:none}
+#chat-pin div{flex:1;min-width:0;font-size:13px}
+#chat-pin b{display:block;font-size:12px;color:#ff6a55}
+#chat-pin span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#chat-pin button{min-height:0;width:30px;height:30px;padding:0;border-radius:50%;flex:none}
+#msg-menu{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center}
+#msg-menu .mm{width:min(420px,100%);margin:12px;padding:12px;border-radius:20px;background:var(--ds-surface,#111);border:1px solid var(--ds-line);display:grid;gap:8px;animation:mm-up .2s ease}
+@keyframes mm-up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+#msg-menu .emo{display:flex;justify-content:space-between;gap:4px}
+#msg-menu .emo button{font-size:26px;min-height:0;height:48px;width:48px;padding:0;border-radius:50%;border:0;background:transparent;transition:transform .12s}
+#msg-menu .emo button:hover,#msg-menu .emo button:focus-visible{transform:scale(1.25)}
+#msg-menu .act{display:grid;gap:6px}
+#msg-menu .act button{text-align:left}
+#mention-box{display:grid;gap:4px;margin:0 0 6px;padding:6px;border-radius:12px;border:1px solid var(--ds-line);background:var(--ds-surface)}
+#mention-box[hidden]{display:none}
+#mention-box button{text-align:left;min-height:38px}
+.fwd-btn{min-height:0;padding:3px 10px;font-size:12.5px;border-radius:999px;margin-left:6px}
+.push-card{display:grid;gap:8px;padding:12px;border-radius:14px;border:1px solid var(--ds-line);background:rgba(255,42,31,.06)}
+.push-card code{font-size:12.5px;word-break:break-all}
+.push-card .row{display:flex;gap:8px;flex-wrap:wrap}
+.cor-dist{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}

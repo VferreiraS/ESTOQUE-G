@@ -1,0 +1,8 @@
+
+.dup-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 16px}
+.dup-banner .row{display:flex;gap:8px;flex-wrap:wrap}
+#dup-dlg{border:0;padding:0;border-radius:22px;width:min(560px,100%);max-height:90dvh;overflow:auto;background:var(--ds-surface,#fff);color:var(--ds-ink,#111)}
+#dup-dlg::backdrop{background:rgba(0,0,0,.6)}
+#dup-dlg .dd-body{padding:18px;display:grid;gap:12px}
+#dup-dlg ul{margin:0;padding-left:18px;display:grid;gap:4px}
+#dup-dlg .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}

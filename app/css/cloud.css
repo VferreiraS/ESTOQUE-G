@@ -1,0 +1,15 @@
+
+#cloud-link,#perm-step{border:0;padding:0;background:var(--ds-surface,#111);color:var(--ds-ink,#fff);border-radius:20px;width:min(460px,calc(100% - 32px));max-height:94dvh;overflow:auto}
+#cloud-link::backdrop,#perm-step::backdrop{background:rgba(0,0,0,.72)}
+.cl-body{padding:20px;display:grid;gap:12px}
+.cl-body h2{margin:0;font-size:20px}
+.cl-body p{margin:0}
+.cl-body label{display:grid;gap:6px;font-weight:650}
+.cl-body input{min-height:46px}
+.cl-err{color:#ff8a7a;font-weight:650}
+.perm-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--ds-line,#2a2a2a)}
+.perm-row:last-child{border-bottom:0}
+.perm-row b{display:block}
+.perm-row .small{opacity:.75}
+.perm-row button{min-width:96px}
+.perm-ok{color:#5be08a;font-weight:750}

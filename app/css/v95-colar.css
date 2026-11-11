@@ -1,0 +1,31 @@
+
+/* v95: "Colar planejamento da semana" (Plano de ação) */
+#colar-dlg{width:min(640px,calc(100% - 24px));max-width:640px;padding:0}
+#colar-dlg form{padding:20px;display:grid;gap:14px}
+#colar-dlg .formhead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#colar-dlg h2{margin:0;font-size:19px}
+#colar-dlg h3{margin:4px 0 0;font-size:15px}
+#colar-dlg p{margin:0}
+#colar-dlg label{display:grid;gap:6px;min-width:0}
+#colar-dlg textarea{width:100%;resize:vertical}
+#colar-dlg #cp-text{min-height:120px}
+#colar-dlg .cp-opts{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+#colar-dlg label.cp-check{display:flex;gap:10px;align-items:center;min-height:44px;cursor:pointer}
+#colar-dlg .cp-check input,#colar-dlg .cp-on{width:24px;height:24px;min-height:0;flex:none;margin:0;accent-color:#DB2318}
+#colar-dlg .cp-warn{color:#ffb4a8}
+#colar-dlg .cp-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+#colar-dlg .cp-row{border:1px solid var(--ds-line,#2a2a2e);border-radius:14px;padding:10px 12px;display:grid;gap:8px;background:rgba(255,255,255,.02)}
+#colar-dlg .cp-row.off{opacity:.5}
+#colar-dlg .cp-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#colar-dlg .cp-head b{flex:1;min-width:120px}
+#colar-dlg .cp-head input[type=date]{width:auto;flex:none}
+#colar-dlg .cp-row textarea{min-height:64px}
+#colar-dlg .cp-empty{border:1px dashed var(--ds-line,#2a2a2e);border-radius:14px;padding:12px}
+#colar-dlg details.cp-gen summary{cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px;list-style:none}
+#colar-dlg details.cp-gen summary::-webkit-details-marker{display:none}
+#colar-dlg details.cp-gen summary::before{content:"▸";flex:none;transition:transform .2s}
+#colar-dlg details.cp-gen[open] summary::before{transform:rotate(90deg)}
+#colar-dlg details.cp-gen textarea{min-height:160px}
+#colar-dlg .formfoot{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+@media (max-width:640px){#colar-dlg{width:100%;max-width:100%}#colar-dlg form{padding:18px 16px calc(18px + env(safe-area-inset-bottom))}#colar-dlg .cp-opts{grid-template-columns:1fr}#colar-dlg .formfoot button{flex:1}}
+body.role-aux button[onclick="colarPlanoOpen()"]{display:none!important}

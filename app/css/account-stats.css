@@ -1,0 +1,5 @@
+
+#stats-panel .stats-row{display:flex;gap:28px;flex-wrap:wrap;margin:6px 0 4px}
+#stats-panel .stats-row b{display:block;font-size:30px;line-height:1.1;letter-spacing:-.02em}
+#stats-panel .stats-row span{font-size:13px;color:var(--ds-muted,var(--muted))}
+#auth-screen .signup-notice{font-size:12.5px;line-height:1.5;color:var(--ds-muted,var(--muted));margin:2px 0 0}

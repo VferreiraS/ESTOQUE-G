@@ -1,0 +1,9 @@
+
+#mail-rec{border:0;padding:0;background:var(--ds-surface,#111);color:var(--ds-ink,#fff);border-radius:20px;width:min(460px,calc(100% - 24px));max-height:94dvh;overflow:auto}
+#mail-rec::backdrop{background:rgba(0,0,0,.75)}
+#mail-rec .mr{padding:20px;display:grid;gap:12px}
+#mail-rec h2{margin:0;font-size:20px}
+#mail-rec label{display:grid;gap:6px;font-weight:650}
+#mail-rec input{min-height:46px}
+.mr-link{display:block;margin:14px auto 0;background:none;border:0;color:#ff6a55;font-weight:700;text-decoration:underline;cursor:pointer;min-height:0;padding:6px}
+.mr-steps{margin:0;padding-left:20px;display:grid;gap:4px}

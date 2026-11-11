@@ -1,0 +1,27 @@
+
+/* v130 · (A) mensagem clara de bloqueio no chat/sync; (B) painel "Rede da loja / Antivírus"; (C) "Efeitos de energia" opcional (originais, começam desligados). Só tema escuro. */
+#net-panel .net-steps{margin:8px 0 0;padding-left:20px}
+#net-panel .net-steps li{margin:6px 0}
+#net-panel .net-hosts{margin:8px 0 0;padding:10px 12px;border:1px solid var(--ds-line,#333);border-radius:12px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+#net-panel #net-test{margin-top:10px}
+#net-panel #net-result{margin-top:10px}
+#net-panel #net-result ul{list-style:none;margin:6px 0 0;padding:0}
+#net-panel #net-result li{display:flex;gap:8px;align-items:center;padding:4px 0}
+#net-panel #net-result .ok{color:#67e0a3}
+#net-panel #net-result .bad{color:#ff8a7a}
+#net-panel #net-result .msg{margin-top:8px}
+/* (C) efeitos de energia — só com body.e99-anime (ligado pelo usuário e sem "menos movimento") */
+#e99-aura{position:absolute;inset:0;z-index:0;pointer-events:none;display:none}
+body.e99-anime .hero-home>#e99-aura{display:block}
+.hero-home>div,.hero-home>.toolbar{position:relative;z-index:1}
+#e99-charge,.e99-speed,.e99-powerup{position:fixed;inset:0;z-index:99998;pointer-events:none}
+#e99-charge{display:block}
+.e99-speed{background:repeating-linear-gradient(100deg,transparent 0 22px,rgba(255,255,255,.05) 22px 23px);mix-blend-mode:screen;animation:e99speed .34s ease-out forwards}
+.e99-speed::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,var(--neon,#E7B8EF) 0,transparent 42%);opacity:.18;animation:e99flash .34s ease-out forwards}
+@keyframes e99speed{0%{opacity:.9;transform:scale(1.04)}100%{opacity:0;transform:scale(1)}}
+@keyframes e99flash{0%{opacity:.32}100%{opacity:0}}
+.e99-powerup{display:flex;align-items:center;justify-content:center}
+.e99-powerup i{width:40px;height:40px;border-radius:50%;border:3px solid var(--neon,#E7B8EF);box-shadow:0 0 30px var(--neon,#E7B8EF);animation:e99pow .7s ease-out forwards}
+@keyframes e99pow{0%{opacity:.85;transform:scale(.4)}100%{opacity:0;transform:scale(9)}}
+body.e99-anime #stok-intro .si-tile{filter:drop-shadow(0 0 22px var(--neon-hot,#FF8A7A))}
+@media (prefers-reduced-motion:reduce){#e99-aura,#e99-charge,.e99-speed,.e99-powerup{display:none!important;animation:none!important}}

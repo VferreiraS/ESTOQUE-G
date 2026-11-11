@@ -1,0 +1,15 @@
+/* <style id="v103-css"> */
+
+.cardtop .e99-del,.nf-actions .e99-del{margin-left:6px}
+.chat-msg .chat-del-btn{background:transparent;border:0;opacity:.55;font-size:13px;min-width:44px;min-height:44px;padding:0;cursor:pointer}
+.chat-msg .chat-del-btn:hover,.chat-msg .chat-del-btn:focus-visible{opacity:1}
+.conf-hist-list li .danger,.conf-banner .danger{margin-left:6px}
+
+/* <style id="v105-css"> */
+
+#email-gate{border:0;padding:0;background:var(--ds-surface,#111);color:var(--ds-ink,#fff);border-radius:20px;width:min(460px,calc(100% - 32px));max-height:94dvh;overflow:auto}
+#email-gate::backdrop{background:rgba(0,0,0,.86)}
+#email-gate .eg-err{color:#ff8a7a;font-weight:650;margin:0}
+#email-gate .eg-err:empty{display:none}
+#email-gate .eg-out,#email-gate .eg-later{background:none!important;border:0!important;box-shadow:none!important;color:#bdbdbd!important;min-height:44px;font-weight:600}
+

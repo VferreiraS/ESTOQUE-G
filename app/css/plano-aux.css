@@ -1,0 +1,25 @@
+
+body.dark .sector-symbol{color:var(--ds-bg)!important}
+@media (max-width:900px){.hero{align-items:stretch!important}}
+.brand{border-bottom-color:var(--ds-line)!important}body.dark .brand,body.dark td{border-color:var(--ds-line)!important}
+.skip-link{background:var(--ds-ink)!important;color:var(--ds-bg)!important}
+@media (max-width:900px),(pointer:coarse){button,.nf-tabs button{min-height:44px}}
+#update-bar{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:200;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--ds-ink);color:var(--ds-bg);border-radius:14px;padding:10px 12px;font-weight:650;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+#update-bar button{min-height:44px;background:var(--ds-bg)!important;color:var(--ds-ink)!important;border:0!important;border-radius:10px;font-weight:750}
+@media (min-width:901px){#update-bar{left:auto;right:24px;bottom:24px;max-width:420px}}
+/* Atividades do plano marcadas como feitas + conta de auxiliar */
+.plan-activities li{position:relative}
+.home-acts{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.home-acts li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;border:1px solid var(--ds-line);border-radius:14px;padding:10px 12px;background:var(--ds-surface)}
+.act-check{min-width:44px;min-height:44px;padding:0!important;border-radius:12px!important;font-size:20px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+.act-check[aria-pressed=true]{background:var(--ds-ink)!important;color:var(--ds-bg)!important;border-color:var(--ds-ink)!important}
+.act-done b{text-decoration:line-through;opacity:.7}
+.act-meta{font-size:12.5px;color:var(--ds-muted)}
+.act-time{font-size:12.5px;font-weight:650;color:var(--ds-muted);white-space:nowrap}
+.act-late{display:inline-block;font-size:11.5px;font-weight:750;border-radius:999px;padding:1px 8px;background:var(--ds-ink);color:var(--ds-bg);white-space:nowrap}
+.plan-activities li .act-check{float:right;margin:0 0 6px 10px}
+body.role-aux .plan-card button[onclick^="openPlan"]:not(.e99-own),body.role-aux .plan-card button[onclick^="deletePlan"],body.role-aux #editor button.danger,body.role-aux .chat-head button[onclick="chatInvite()"],body.role-aux .chat-head button[onclick="chatLeave()"],body.role-aux #sync-on,body.role-aux label:has(> #sync-on){display:none!important}
+.aux-card{display:grid;gap:12px}
+.aux-card form{display:grid;gap:10px}
+.aux-list{display:grid;gap:6px}
+.aux-list div{display:flex;justify-content:space-between;gap:8px;align-items:center;border-top:1px solid var(--ds-line);padding-top:6px;font-size:14px}

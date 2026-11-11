@@ -1,0 +1,15 @@
+
+/* Animações intermitentes: brilho nos cartões, pulso vermelho, entrada ao trocar de tela. Botão Efeitos desliga. */
+.hero:not(.hero-home){position:relative}
+html body.dark #view .panel,html body.dark #view .card,html body.dark #view .stat,html body.dark #view .plan-card,html body.dark #view .pn-card,html body.dark button.primary{position:relative;overflow:hidden}
+html body.dark #view .panel::after,html body.dark #view .card::after,html body.dark #view .stat:not(:first-child)::after,html body.dark #view .plan-card::after,html body.dark #view .pn-card::after,html body.dark button.primary::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;pointer-events:none;background:linear-gradient(100deg,transparent,#ffffff12 45%,#ffffff26 50%,#ffffff12 55%,transparent);transform:skewX(-18deg);animation:fx-shine 7s ease-in-out infinite;animation-delay:var(--fx-delay,0s)}
+/* o brilho corre com transform (só a placa de vídeo trabalha); antes mexia em left e recalculava o layout a cada quadro */
+@keyframes fx-shine{0%,82%{transform:translateX(0) skewX(-18deg)}100%{transform:translateX(475%) skewX(-18deg)}}
+html body.dark button.primary{animation:fx-pulse 3s ease-in-out infinite}
+@keyframes fx-pulse{0%,100%{box-shadow:0 8px 26px -8px #ff2a1fcc}50%{box-shadow:0 8px 34px -4px #ff2a1fff,0 0 0 4px #ff2a1f22}}
+/* brilho da palavra vermelha: uma cópia transparente com sombra forte acende e apaga por opacidade (sem repintar o título a cada quadro) */
+html body.dark .accent-word{position:relative}
+html body.dark .accent-word[data-t]::after{content:attr(data-t);content:attr(data-t) / "";position:absolute;left:0;top:0;z-index:-1;color:transparent;text-shadow:0 0 42px #ff2a1fcc;opacity:0;pointer-events:none;animation:fx-glow-o 3s ease-in-out infinite}
+@keyframes fx-glow-o{0%,100%{opacity:0}50%{opacity:1}}
+html body.dark .nav button.active,html body.dark #mobile-bottom button.active{animation:fx-pulse 3s ease-in-out infinite}
+html body.dark .alert-count.has{animation:fx-pulse 2s ease-in-out infinite}

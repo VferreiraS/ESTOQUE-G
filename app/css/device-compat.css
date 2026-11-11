@@ -1,0 +1,28 @@
+
+/* Compatibilidade: iPhone/iPad (Safari), Android (Chrome) e computador. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{-webkit-tap-highlight-color:#0000}
+#auth-screen,.layout{min-height:100vh;min-height:100dvh}
+#sound-control{display:inline-flex;align-items:center;gap:6px}
+/* No computador o botão de som fica junto de "Modo escuro" e "Efeitos", sem cobrir o menu. */
+.visual-tools #sound-control{position:static;z-index:auto;min-height:0;font-size:11px;padding:8px 10px;border:0;border-radius:10px;background:transparent;color:inherit;box-shadow:none}
+#install-hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:10002;width:min(520px,calc(100% - 24px));display:none;gap:10px;padding:14px 16px;border-radius:16px;background:#fffcf5;border:1px solid #decfaa;box-shadow:0 12px 40px #17392d2e;color:var(--ink);font-size:14px;line-height:1.5}
+body.locked #install-hint{display:grid}
+#install-hint p{margin:0}
+.install-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.install-actions button{min-height:40px;padding:8px 14px;border-radius:10px}
+body.dark #install-hint{background:#1c2822;border-color:#3a4b42;color:#e8efe9}
+@media screen and (max-width:900px){
+body{overflow-wrap:break-word}
+/* Campos de busca ocupam a linha inteira; botões e filtros vão para a linha de baixo. */
+.toolbar>input:not([type]),.toolbar>input[type=search],.toolbar>input[type=text]{flex:1 1 100%}
+.content{padding-bottom:calc(140px + env(safe-area-inset-bottom,0px))}
+body:not(.locked) #sound-control,body.locked #sound-control{left:auto;right:max(12px,env(safe-area-inset-right,0px));width:44px;height:44px;min-height:44px;padding:0;border-radius:50%;justify-content:center;font-size:18px}
+body:not(.locked) #sound-control{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
+body.locked #sound-control{top:calc(12px + env(safe-area-inset-top,0px));bottom:auto}
+#sound-control .sound-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+body.keyboard-open #sound-control{display:none}
+#auth-screen{padding-top:calc(66px + env(safe-area-inset-top,0px))}
+body.has-install-hint #auth-screen{padding-bottom:calc(170px + env(safe-area-inset-bottom,0px))}
+}
+@media print{#install-hint{display:none!important}}

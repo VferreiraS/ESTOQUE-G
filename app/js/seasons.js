@@ -1,0 +1,42 @@
+
+(function(){
+'use strict';
+var SEASONS={"1": {"name": "Janeiro", "short": "Janeiro · Verão", "acc": "#0b7a84", "deep": "#075a62", "soft": "#e2f3f4", "lime": "#f2e27a", "accD": "#7fd3dc", "softD": "#15292c", "limeD": "#f2e27a", "orn": "<path d=\"M0-11L3-3L11 0L3 3L0 11L-3 3L-11 0L-3-3Z\" fill=\"#fff6d6\"/>"}, "2": {"name": "Fevereiro", "short": "Fevereiro · Carnaval", "acc": "#b02a6b", "deep": "#7d1b4a", "soft": "#fbe6ef", "lime": "#ffd166", "accD": "#ff8fb8", "softD": "#2e1822", "limeD": "#ffd166", "orn": "<circle cx=\"-5\" cy=\"-3\" r=\"2.6\" fill=\"#ffd166\"/><circle cx=\"4\" cy=\"-5\" r=\"2.2\" fill=\"#7fd3dc\"/><circle cx=\"1\" cy=\"5\" r=\"2.6\" fill=\"#fff6d6\"/><circle cx=\"6\" cy=\"4\" r=\"1.6\" fill=\"#ff8fb8\"/>"}, "3": {"name": "Março", "short": "Março · Outono", "acc": "#9a4f1f", "deep": "#6a3413", "soft": "#f8ebdf", "lime": "#f2c28b", "accD": "#f0b07a", "softD": "#2a1d14", "limeD": "#f2c28b", "orn": "<path d=\"M-9 8C-9-6 0-10 9-9C9 2 2 9-9 8Z\" fill=\"#f6c28b\"/><path d=\"M-8 7L5-4\" stroke=\"#7a3f14\" stroke-width=\"1.2\" fill=\"none\"/>"}, "4": {"name": "Abril", "short": "Abril · Páscoa", "acc": "#6a4aa6", "deep": "#47307a", "soft": "#eee8f8", "lime": "#e0d2f7", "accD": "#b9a2ec", "softD": "#1f1930", "limeD": "#e0d2f7", "orn": "<ellipse rx=\"7\" ry=\"9\" fill=\"#fff6d6\"/><path d=\"M-7-1H7M-6 4H6\" stroke=\"#b58be0\" stroke-width=\"1.6\"/>"}, "5": {"name": "Maio", "short": "Maio · Flores", "acc": "#b44a72", "deep": "#7d2d4c", "soft": "#fbe9ef", "lime": "#f6c6d6", "accD": "#f29bb9", "softD": "#2d1820", "limeD": "#f6c6d6", "orn": "<g fill=\"#f6b8cc\"><circle cy=\"-5\" r=\"4\"/><circle cx=\"4.8\" cy=\"-1.5\" r=\"4\"/><circle cx=\"3\" cy=\"4.5\" r=\"4\"/><circle cx=\"-3\" cy=\"4.5\" r=\"4\"/><circle cx=\"-4.8\" cy=\"-1.5\" r=\"4\"/></g><circle r=\"2.4\" fill=\"#e8c575\"/>"}, "6": {"name": "Junho", "short": "Junho · Festa junina", "acc": "#c0560f", "deep": "#7f3a0a", "soft": "#fdeedf", "lime": "#f2a03d", "accD": "#ffb36b", "softD": "#2e1d10", "limeD": "#f2a03d", "orn": "<path d=\"M-11-6Q0-2 11-6\" stroke=\"#fff6d6\" fill=\"none\" stroke-width=\"1\"/><path d=\"M-9-5L-5-5L-7 3Z\" fill=\"#f2a03d\"/><path d=\"M-2-4L2-4L0 4Z\" fill=\"#7fd3dc\"/><path d=\"M5-4.5L9-4.5L7 2.5Z\" fill=\"#f2e27a\"/>"}, "7": {"name": "Julho", "short": "Julho · Inverno", "acc": "#2a5a8f", "deep": "#1b3d63", "soft": "#e6eef9", "lime": "#b9d7f5", "accD": "#8fbdeb", "softD": "#131d2b", "limeD": "#b9d7f5", "orn": "<g stroke=\"#dff1ff\" stroke-width=\"1.6\" stroke-linecap=\"round\" fill=\"none\"><path d=\"M0-10V10M-8.7-5L8.7 5M-8.7 5L8.7-5\"/></g>"}, "8": {"name": "Agosto", "short": "Agosto · Dia dos Pais", "acc": "#2f5d6b", "deep": "#1d3d48", "soft": "#e5f0f2", "lime": "#bfe3ea", "accD": "#8ccad6", "softD": "#13222a", "limeD": "#bfe3ea", "orn": "<path d=\"M-3-10H3L5-4L0 10L-5-4Z\" fill=\"#f6e7c8\"/><rect x=\"-3\" y=\"-12\" width=\"6\" height=\"3.5\" rx=\"1\" fill=\"#f6e7c8\"/>"}, "9": {"name": "Setembro", "short": "Setembro · Primavera", "acc": "#3d7a2e", "deep": "#2a5620", "soft": "#eaf4e1", "lime": "#cdeab2", "accD": "#9fdc85", "softD": "#17241a", "limeD": "#cdeab2", "orn": "<path d=\"M0 10V-2\" stroke=\"#e7f6dc\" stroke-width=\"1.6\"/><ellipse cx=\"-4\" cy=\"2\" rx=\"4\" ry=\"2\" fill=\"#bfe6a0\" transform=\"rotate(-25-4 2)\"/><ellipse cx=\"4\" cy=\"-3\" rx=\"4\" ry=\"2\" fill=\"#bfe6a0\" transform=\"rotate(25 4-3)\"/><circle cy=\"-7\" r=\"3\" fill=\"#ffd166\"/>"}, "10": {"name": "Outubro", "short": "Outubro · Dia das Bruxas", "acc": "#c4511a", "deep": "#8a3710", "soft": "#fdeadb", "lime": "#ffb86b", "accD": "#ffa24a", "softD": "#2c1a10", "limeD": "#ffb86b", "orn": "<ellipse cx=\"-4\" cy=\"1\" rx=\"6.5\" ry=\"7\" fill=\"#ffb86b\"/><ellipse cx=\"4\" cy=\"1\" rx=\"6.5\" ry=\"7\" fill=\"#ffa24a\"/><path d=\"M0-7V-10\" stroke=\"#5d7a2a\" stroke-width=\"2.2\" stroke-linecap=\"round\"/>"}, "11": {"name": "Novembro", "short": "Novembro · Consciência Negra", "acc": "#4d3a8a", "deep": "#33265e", "soft": "#ece8f8", "lime": "#d6ccf5", "accD": "#b4a4f0", "softD": "#1c1830", "limeD": "#d6ccf5", "orn": "<path d=\"M-9-5H2L9 2L2 9L-9-2Z\" fill=\"#e6dcff\"/><circle cx=\"-5\" cy=\"-0.5\" r=\"1.6\" fill=\"#4d3a8a\"/>"}, "12": {"name": "Dezembro", "short": "Dezembro · Natal", "acc": "#b3261e", "deep": "#7d1812", "soft": "#fbe4e1", "lime": "#cdeeb8", "accD": "#f08a80", "softD": "#2a1513", "limeD": "#cdeeb8", "orn": "<path d=\"M0-11L7 3H-7Z\" fill=\"#c8f0c4\"/><path d=\"M0-4L9 9H-9Z\" fill=\"#9fe39a\"/><rect x=\"-1.6\" y=\"9\" width=\"3.2\" height=\"3\" fill=\"#8a5a2b\"/><circle cy=\"-13\" r=\"2\" fill=\"#ffd166\"/>"}};
+var PREF_KEY='lojasg.estoque99.season';
+function getPref(){try{return localStorage.getItem(PREF_KEY)==='off'?'off':'auto'}catch(e){return 'auto'}}
+function setPref(v){try{localStorage.setItem(PREF_KEY,v)}catch(e){}}
+function currentMonth(){return new Date().getMonth()+1}
+function svgUri(svg){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)}
+/* v116: o S do logo sazonal segue a cor de destaque do tema */
+function sColor(){try{var v=getComputedStyle(document.documentElement).getPropertyValue('--neon').trim();if(/^#[0-9a-f]{3,8}$/i.test(v))return v}catch(e){}return '#ff3a24'}
+function logoSvg(s){return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><defs><filter id="m"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="1.25" intercept=".1"/><feFuncG type="linear" slope="1.25" intercept=".1"/><feFuncB type="linear" slope="1.25" intercept=".1"/></feComponentTransfer></filter></defs><rect width="96" height="96" rx="24" fill="#0a0a0a"/><rect x="5" y="5" width="86" height="86" rx="20" fill="none" stroke="#ffffff" stroke-opacity=".35"/><path transform="translate(8 9) scale(.78)" fill="'+sColor()+'" d="M42 14h30.5a7.5 7.5 0 0 1 0 15H42a3.5 3.5 0 0 0 0 7H58a21 21 0 0 1 0 42H27.5a7.5 7.5 0 0 1 0-15H58a6 6 0 0 0 0-12H42a18.5 18.5 0 0 1 0-37z"/><g transform="translate(74 22)" filter="url(#m)">'+s.orn+'</g></svg>'}
+function motifSvg(s){return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -16 32 32"><g transform="scale(1.9)">'+s.orn+'</g></svg>'}
+function activeKey(){return getPref()==='off'?0:currentMonth()}
+function applySeason(){
+  /* só mexe no DOM quando algo muda: escrever sempre fazia o observador abaixo disparar de novo a cada quadro */
+  var key=activeKey(),s=SEASONS[key]||null,b=document.body,root=document.documentElement;
+  for(var i=1;i<=12;i++)if(i!==key&&b.classList.contains('season-'+i))b.classList.remove('season-'+i);
+  if(s&&!b.classList.contains('season-'+key))b.classList.add('season-'+key);
+  if(b.dataset.season!==String(key))b.dataset.season=String(key);
+  var motif=s?'url("'+svgUri(motifSvg(s))+'")':'';if(root.style.getPropertyValue('--season-motif')!==motif){if(motif)root.style.setProperty('--season-motif',motif);else root.style.removeProperty('--season-motif')}
+  refreshBrand(s);
+  var btn=document.getElementById('season-toggle');
+  if(btn){var bt=s?'Tema do mês: '+s.name.toLowerCase():'Tema do mês: desligado';if(btn.textContent!==bt)btn.textContent=bt;if(btn.getAttribute('aria-pressed')!==String(!!s))btn.setAttribute('aria-pressed',String(!!s))}
+  var link=document.querySelector('link[rel=icon]');
+  if(link){if(!link.dataset.orig)link.dataset.orig=link.getAttribute('href');var lt=s?'image/svg+xml':'image/png',lh=s?svgUri(logoSvg(s)):link.dataset.orig;if(link.getAttribute('type')!==lt)link.setAttribute('type',lt);if(link.getAttribute('href')!==lh)link.setAttribute('href',lh)}
+  document.querySelectorAll('.logo img').forEach(function(img){
+    if(!img.dataset.orig)img.dataset.orig=img.getAttribute('src');
+    var want=s?svgUri(logoSvg(s)):img.dataset.orig;
+    if(img.getAttribute('src')!==want)img.setAttribute('src',want);
+  });
+}
+window.e99ApplySeason=function(){try{applySeason()}catch(e){}};
+function refreshBrand(s){
+  var t=s?'LOJAS G · '+s.name.toUpperCase():'LOJAS G · ESTOQUE 99';document.querySelectorAll('aside .brand small').forEach(function(el){if(el.textContent!==t)el.textContent=t});
+}
+window.toggleSeason=function(){setPref(getPref()==='off'?'auto':'off');applySeason();if(typeof notify==='function')notify(getPref()==='off'?'Tema sazonal desligado.':'Tema sazonal ligado: cores e logo do mês.')};
+var pending=false;
+function schedule(){if(pending)return;pending=true;requestAnimationFrame(function(){pending=false;applySeason()})}
+applySeason();
+if(window.MutationObserver){new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true})}
+})();

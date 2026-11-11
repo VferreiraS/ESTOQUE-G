@@ -1,0 +1,5 @@
+
+#auth-screen .remember-check{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;color:var(--ds-ink,var(--ink));cursor:pointer}
+#auth-screen .remember-check input{width:20px;height:20px;min-height:0;padding:0;margin:0;flex:none;accent-color:var(--ds-ink,#111)}
+#email-panel .pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#email-panel .email-status{font-weight:600}

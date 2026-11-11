@@ -1,0 +1,19 @@
+
+/* v90 · acessibilidade e desempenho (auditoria). Último bloco: vence os anteriores. Só tema escuro. */
+.vh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+/* P3 */
+.more-row{margin:12px 0 0;text-align:center}.more-row button{min-height:44px}
+/* P12: contraste e alvos de toque */
+#auth-screen .copyright,.copyright{color:#8a8a8a!important;font-size:12px!important}
+#auth-screen .pw-toggle{min-height:44px!important;height:44px!important;bottom:5px!important}
+#auth-screen #auth-forgot,#auth-screen #auth-create,#auth-screen .mr-link,#auth-screen a{min-height:44px;display:inline-flex;align-items:center}
+.fwd-btn{min-height:44px!important;padding:0 14px!important}
+/* P13: foto do chat com espaço reservado */
+img[data-chat-img]{width:min(260px,100%);height:auto;aspect-ratio:4/3;object-fit:contain;background:#111113;border-radius:12px}
+/* P21: nomes longos quebram em vez de sumir; cargo inteiro; Ver planos visível */
+.pn-hrow>span:first-child{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere;line-height:1.25}
+html body.dark #view .panelhead>button{display:inline-flex!important;align-items:center;min-height:44px;padding:0 14px;opacity:1!important;visibility:visible!important;background:var(--ds-surface)!important;border:1px solid var(--ds-line)!important;color:var(--ds-ink)!important;white-space:nowrap}
+/* P22: aviso de prazos compacto logo ao entrar */
+.alert-popup.compact{max-height:none!important}
+.alert-popup.compact>:not(.cardtop):not(.alert-more){display:none!important}
+.alert-more{min-height:44px;margin-top:8px}

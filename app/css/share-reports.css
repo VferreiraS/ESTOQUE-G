@@ -1,0 +1,10 @@
+
+#report-dialog{width:min(560px,calc(100% - 24px));max-width:560px;padding:0}
+#report-dialog form{padding:22px}
+#report-dialog h2{margin:0 0 6px;font-size:18px;letter-spacing:-.02em}
+.report-groups{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.report-groups button[aria-pressed=true]{background:var(--ds-ink);border-color:var(--ds-ink);color:var(--ds-bg)}
+.report-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.report-actions .wide{grid-column:1/-1}
+#report-text{width:100%;min-height:200px;margin-top:14px;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap}
+@media (max-width:520px){.report-actions{grid-template-columns:1fr}}

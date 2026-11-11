@@ -1,0 +1,8 @@
+
+/* v116 (pedido do dono): nenhum S vermelho — o S da abertura segue a cor de destaque do tema (mesma letra, forma e brilho).
+   O S de partículas e o logo sazonal são recoloridos no JS (space-js / logoSvg); o logo da marca já seguia o tema (v114). */
+html[data-e99-theme] #stok-intro{background:radial-gradient(ellipse at 50% 14%,rgba(var(--neon-rgb),.16) 0,#0b0809 36%,#020203 76%,#000 100%)!important}
+html[data-e99-theme] #stok-intro .si-scan{stroke:var(--neon-hot);filter:drop-shadow(0 0 4px var(--neon))}
+html[data-e99-theme] #stok-intro .si-mark{fill:var(--neon)}
+html[data-e99-theme] #stok-intro .si-sub{color:var(--neon-hot)}
+@keyframes si-stock{0%{fill:#292d32}35%{fill:var(--neon,#ff6047);stroke:var(--neon-hot,#ffb5a3);filter:drop-shadow(0 0 3px var(--neon,#ff3828))}100%{fill:#292d32;stroke:#777d85;filter:none}}

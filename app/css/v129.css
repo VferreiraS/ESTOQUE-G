@@ -1,0 +1,65 @@
+
+/* v129 · interface mais clara (referências: Apple HIG — escala de texto do iOS, toques ≥44 pt, folhas; padrões de tabela densa).
+   Só tokens, espaçamento, hierarquia e estados. Não muda cores dos temas, a marca S, dados nem lógica. */
+:root{
+  /* escala de texto (iOS: footnote 13 · subhead 15 · body 17 · headline 17 · title3 20 · title2 22) */
+  --t-xs:12px;--t-sm:13px;--t-body:15px;--t-callout:16px;--t-h3:17px;--t-h2:20px;--t-lh:1.45;
+  /* espaçamento em passos de 4 */
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:32px;
+  --e99-focus:var(--neon,#E7B8EF)}
+/* papéis de texto */
+html body #view .panel>h2,html body #view .panelhead h2,html body #view .panel.help>h2{font-size:var(--t-h2);line-height:1.25;font-weight:700;letter-spacing:-.01em;margin:0 0 var(--sp-2)}
+html body #view .card h3,html body #view .panel h3{font-size:var(--t-h3);line-height:1.3;font-weight:650}
+html body #view .eyebrow{font-size:var(--t-xs);line-height:1.3;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--ds-muted)}
+html body #view p.small,html body #view .small{font-size:var(--t-sm);line-height:var(--t-lh)}
+html body #view .panel>p:not(.small){font-size:var(--t-body);line-height:var(--t-lh)}
+/* números: tabulares (alinham na coluna) */
+#view .stat strong,#view .pn-kpi strong,#view td[data-label="Volumes"],#view .nf-count,#alert-total{font-variant-numeric:tabular-nums}
+html body #view .stats .stat span{font-size:var(--t-sm);line-height:1.35;color:var(--ds-muted)}
+/* foco visível igual em tudo, na cor do tema */
+html body :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible{outline:2px solid var(--e99-focus)!important;outline-offset:2px!important}
+/* navegação: item ativo evidente */
+html:root body.dark .layout aside #nav button[aria-current="page"],html:root body.dark .layout aside #nav button.active{background:rgba(var(--neon-rgb),.14)!important;color:var(--ds-ink)!important;border-color:rgba(var(--neon-rgb),.45)!important;font-weight:700;box-shadow:inset 3px 0 0 var(--neon)!important}
+html:root body.dark .layout aside #nav button[aria-current="page"] svg.ic{stroke:var(--neon)}
+html body #mobile-bottom button{font-weight:550}
+html:root body.dark #mobile-bottom button[aria-current="page"],html:root body.dark #mobile-bottom button.active{color:var(--neon)!important;font-weight:750}
+html body #mobile-bottom button[aria-current="page"]>span,html body #mobile-bottom button.active>span{background:rgba(var(--neon-rgb),.18);border-radius:999px;padding:2px 14px;display:inline-flex}
+/* Painel: período escolhido aparece selecionado */
+html body #view .pn-period button[aria-pressed="true"]{background:var(--neon-btn)!important;color:var(--neon-ink)!important;font-weight:750}
+/* listas de notas (PC): números à direita, linha realçada ao passar o mouse */
+@media(min-width:761px){
+  #view td[data-label="Volumes"]{text-align:right;padding-right:24px}
+  #view tbody tr[data-q]:hover>td{background:rgba(var(--neon-rgb),.04)}
+}
+/* conferência: o contador sem a borda vermelha (resto do holograma) */
+html body .cf-countbox{border-color:rgba(var(--neon-rgb),.28)!important;box-shadow:none!important}
+/* texto de PC × texto de toque */
+.e99-touch{display:none}
+@media (pointer:coarse){.e99-touch{display:inline}.e99-pc{display:none}}
+/* Administração: uma lista só */
+#view .admin-account{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-2) var(--sp-3)}
+#view .admin-account .e99-acc-acts{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+#view .admin-account .e99-acc-tag{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;font-size:var(--t-xs);background:rgba(var(--neon-rgb),.12);color:var(--ds-ink)}
+@media(max-width:760px){
+  /* cabeçalho dos cartões alinhado à esquerda (antes: uns centrados, outros não) */
+  html body #view .panelhead{text-align:left;align-items:flex-start}
+  html body #view .panelhead h2{text-align:left;width:100%}
+  html body #view .panel{padding:var(--sp-4)}
+  /* nota fiscal em cartão: o principal em cima, status numa fileira só, Abrir e Excluir lado a lado */
+  html body #view tr[data-q]>td:first-child b{font-size:var(--t-h3);line-height:1.3}
+  html body #view tr[data-q]>td:first-child small{color:var(--ds-muted)}
+  html body #view .nf-actions{display:grid!important;grid-template-columns:1fr 1fr;gap:var(--sp-2);width:100%}
+  html body #view .nf-actions .nf-quick{grid-column:1/-1;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0}
+  html body #view .nf-quick button{font-size:var(--t-xs)!important;line-height:1.15;padding:4px 2px!important;min-width:0!important;white-space:normal;word-break:keep-all;overflow-wrap:normal;hyphens:none}
+  html body #view .nf-actions .nf-open,html body #view .nf-actions .e99-del{width:100%;margin:0!important}
+  /* folhas do celular: Salvar/Cancelar fixos embaixo */
+  html body dialog .formfoot{position:sticky;bottom:-1px;z-index:5;display:flex;gap:var(--sp-2);margin-top:var(--sp-4);padding:var(--sp-3) 0 calc(var(--sp-3) + env(safe-area-inset-bottom));background:linear-gradient(to bottom,rgba(16,14,18,0),rgba(16,14,18,.96) 28%)}
+  html body dialog .formfoot>button{flex:1 1 0}
+  html body dialog .formfoot>button.primary{flex:1.6 1 0}
+  /* Minha conta: botões empilhados, mesma largura e altura */
+  html body #view .panel>button[onclick^="authExport"],html body #view .panel>button[onclick^="authLogout"],html body #view .panel>button[onclick^="checkSiteUpdate"]{display:flex;width:100%;justify-content:center;align-items:center;min-height:48px;margin:var(--sp-2) 0 0}
+}
+/* erro ao lado do campo */
+html body .e99-field-err{display:block;margin-top:6px;color:#ffb4a8;font-size:var(--t-sm);font-weight:600}
+html body :is(input,select,textarea)[aria-invalid="true"]{border-color:#ff8f82!important}
+@media (prefers-reduced-motion:reduce){html body #mobile-bottom button>span{transition:none!important}}

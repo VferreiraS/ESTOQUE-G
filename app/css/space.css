@@ -1,0 +1,22 @@
+
+/* Visual escuro "espaço": fonte Oswald, fundo estrelado e o G da Lojas G em partículas douradas e azuis (só o efeito é colorido). */
+@font-face{font-family:'Oswald';font-style:normal;font-weight:400 700;font-display:swap;src:url(../../vendor/fonts/oswald-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Oswald';font-style:normal;font-weight:400 700;font-display:swap;src:url(../../vendor/fonts/oswald-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+body.dark{--ds-bg:#000;--ds-surface:#0c0c0e;--ds-accent-soft:#1a1a1d;--ds-line:#26262a;background-color:#000!important;
+  background-image:radial-gradient(1px 1px at 12% 18%,#ffffff55 50%,transparent 51%),radial-gradient(1px 1px at 72% 9%,#ffffff40 50%,transparent 51%),radial-gradient(1.5px 1.5px at 35% 66%,#ffffff35 50%,transparent 51%),radial-gradient(1px 1px at 88% 52%,#ffffff45 50%,transparent 51%),radial-gradient(1px 1px at 55% 88%,#ffffff30 50%,transparent 51%),radial-gradient(1px 1px at 22% 82%,#ffffff40 50%,transparent 51%)!important;
+  background-size:420px 420px!important;background-attachment:fixed!important}
+body.dark .hero h1,body.dark .auth-card h1,body.dark .pn-card h2,body.dark .panelhead h2,body.dark .stat strong,body.dark .pn-kpi strong{font-family:'Oswald','Arial Narrow',system-ui,sans-serif;letter-spacing:.01em}
+body.dark .hero h1,body.dark .auth-card h1{text-transform:uppercase;font-weight:700;line-height:.98}
+body.dark .hero h1{font-size:clamp(32px,5.2vw,58px)!important}
+body.dark .hero-home h1{font-size:clamp(40px,7vw,84px)!important;max-width:9ch}
+body.dark .auth-card h1{font-size:clamp(38px,6vw,64px)!important;max-width:10ch}
+body.dark .stat strong,body.dark .pn-kpi strong{font-weight:700}
+#auth-screen{position:relative;overflow:hidden}
+#auth-screen>.auth-card{position:relative;z-index:1}
+.hero-home{position:relative;min-height:clamp(240px,34vw,420px);align-items:center!important}
+@media (min-width:901px){body.dark .hero-home{flex-direction:column;align-items:flex-start!important;justify-content:center;padding-right:0!important}}
+
+@media (max-width:900px){
+  .hero-home{min-height:300px;align-items:flex-start!important}
+  body.dark .hero-home h1{text-shadow:0 2px 18px #000,0 0 2px #000}
+}

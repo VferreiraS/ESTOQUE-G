@@ -1,0 +1,3 @@
+
+/* v117: a entrada suave (ds-rise) só toca ao abrir a tela; depois (ou se o navegador travar a animação) tudo fica 100% visível */
+body.e99-norise #view>*,body.e99-norise .stats>.stat{animation:none!important;opacity:1!important;transform:none!important}

@@ -1,0 +1,7 @@
+
+/* Puxar para atualizar (celular): bolinha que gira no topo */
+#ptr{position:fixed;left:50%;top:0;z-index:200;width:42px;height:42px;margin-left:-21px;border-radius:50%;background:#151517;border:1px solid #ffffff22;box-shadow:0 6px 20px #000a;display:grid;place-items:center;transform:translateY(-60px);opacity:0;pointer-events:none;transition:opacity .15s}
+#ptr i{width:22px;height:22px;border-radius:50%;border:3px solid #ffffff2a;border-top-color:#ff2a1f}
+#ptr.spin i{animation:ptr-spin .7s linear infinite}
+@keyframes ptr-spin{to{transform:rotate(360deg)}}
+@media (max-width:900px){html,body{overscroll-behavior-y:contain}}

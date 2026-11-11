@@ -1,0 +1,87 @@
+
+/* v91 · visual inspirado em TRON: Legacy, Daft Punk e no vidro do iOS 26. Fica o preto, o vermelho da marca, a Oswald, o S de partículas e o selo.
+   Grade de luz só no Início e na tela de entrar; rastros de luz só nos cartões que estão na tela. Tudo para com Efeitos desligados,
+   "menos movimento", "Pausar animação", fora da tela e em segundo plano. Só tema escuro. Último bloco: vence os anteriores. */
+:root,html body,html body.dark{
+  /* neon vermelho da marca no Tron nos destaques e nas linhas (o vermelho fica só no S da marca); para trocar a cor do neon, só aqui */
+  --neon:#FF2A1F;--neon-rgb:255,42,31;--neon-hot:#FF8A7A;--neon-hot-rgb:255,138,122;--neon-btn:#DB2318;--neon-ink:#FFFFFF;
+  --brand:#FF2A1F;--red:#FF2A1F;--red2:#DB2318;
+  --grid:rgba(255,42,31,.32);--grid-c:44px;
+  --glass:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.018) 42%,rgba(255,255,255,0) 100%),rgba(17,17,21,.62);
+  --glass-card:#121216;--glass-bar:rgba(11,11,14,.8);--glass-pop:rgba(15,15,19,.92);--glass-solid:#111114;
+  --glass-edge:rgba(255,255,255,.11);--glass-hi:inset 0 1px 0 rgba(255,255,255,.12);
+  --glass-blur:saturate(1.4) blur(14px);--spring:cubic-bezier(.34,1.56,.64,1)}
+
+html body.dark #view .hero-home .subtitle,html body.dark #view .hero-home .hero-pill{text-shadow:0 0 6px #000,0 0 14px #000,0 1px 2px #000}
+
+/* ---------- vidro do iOS 26 ---------- */
+/* cartões: sem sombra grande borrada e, nos cartões grandes, fundo de cor única (gradiente em cartão comprido pesa na rolagem); o vidro aparece na borda clara, no reflexo de cima, nos cantos e nos rastros */
+html:root body.dark #view .stat,html:root body.dark #view .panel,html:root body.dark #view .card,html:root body.dark #view .pn-card,html:root body.dark #view .pn-kpi,html:root body.dark #view .plan-card,html:root body.dark #view .sync-box,html:root body.dark #view .help{background:var(--glass-card)!important;border:1px solid var(--glass-edge)!important;box-shadow:var(--glass-hi)!important;border-radius:22px!important}
+html:root body.dark #view .stats .stat,html:root body.dark #view .pn-kpi{background:var(--glass)!important}
+html:root body.dark #view .stats .stat:first-child{background:var(--glass)!important;border-color:rgba(var(--neon-rgb),.45)!important}
+@media (max-width:900px){html:root body.dark #view .stat,html:root body.dark #view .panel,html:root body.dark #view .card,html:root body.dark #view .pn-card,html:root body.dark #view .pn-kpi,html:root body.dark #view .plan-card,html:root body.dark #view .sync-box,html:root body.dark #view .help{border-radius:20px!important}}
+/* um nível de cartão só (como na v86) */
+html:root body.dark #view .panel>.help,html:root body.dark #view .panel>.help.panel{background:none!important;border:0!important;box-shadow:none!important;border-radius:0!important}
+html:root body.dark #view .panel:has(>.help>.plan-card){background:none!important;border:0!important;box-shadow:none!important}
+/* topo, barra de baixo, menus e janelas: vidro com desfoque (o conteúdo passa por trás) */
+html:root body.dark header,html:root body.dark.is-scrolled header{background:var(--glass-bar)!important;background-image:none!important;-webkit-backdrop-filter:var(--glass-blur)!important;backdrop-filter:var(--glass-blur)!important;border-bottom:1px solid var(--glass-edge)!important;
+  border-image:linear-gradient(90deg,rgba(var(--neon-rgb),.8),rgba(var(--neon-rgb),.8) 56px,rgba(255,255,255,.16) 56px,rgba(255,255,255,.08) 70%,transparent) 1!important}
+html:root body.dark #mobile-bottom{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02)),var(--glass-bar)!important;border:1px solid var(--glass-edge)!important;box-shadow:var(--glass-hi),0 14px 40px -14px #000!important;-webkit-backdrop-filter:blur(16px)!important;backdrop-filter:blur(16px)!important}
+html:root body.dark #mobile-bottom button.active,html:root body.dark #mobile-bottom button[aria-current="page"]{background:rgba(255,255,255,.1)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 0 0 1px rgba(255,255,255,.06)!important}
+html:root body.dark aside{background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.008)),rgba(12,12,15,.82)!important;border-right:1px solid transparent!important;
+  border-image:linear-gradient(180deg,rgba(var(--neon-rgb),.75),rgba(var(--neon-rgb),.75) 72px,rgba(255,255,255,.14) 72px,rgba(255,255,255,.07) 75%,transparent) 1!important}
+html:root body.dark .more-menu,html:root body.dark dialog,html:root body.dark #auth-sheet,html:root body.dark .alert-popup,html:root body #toast{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.015) 40%,rgba(255,255,255,0)),var(--glass-pop)!important;-webkit-backdrop-filter:blur(24px) saturate(1.7)!important;backdrop-filter:blur(24px) saturate(1.7)!important}
+html:root body.dark .more-menu,html:root body.dark dialog,html:root body.dark #auth-sheet,html:root body.dark .alert-popup{border:1px solid var(--glass-edge)!important;box-shadow:var(--glass-hi),0 30px 80px -24px #000!important}
+html:root body.dark .more-menu{border-radius:18px!important}
+html:root body.dark dialog::backdrop{background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+/* botões secundários e "Mais ações": vidro leve */
+html:root body.dark #view .toolbar>button:not(.primary),html:root body.dark #view .panelhead>button:not(.primary),html:root body.dark #view .cardtop>button:not(.primary),html:root body.dark #view .hero-actions>button:not(.primary),html:root body.dark #view .more-actions>summary,html:root body.dark .bell-btn:hover{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02)),rgba(20,20,24,.7)!important;border-color:var(--glass-edge)!important;box-shadow:var(--glass-hi)!important}
+/* entrada: o formulário vira um painel de vidro sobre a grade */
+html:root body.dark #auth-screen .auth-card form{position:relative;padding:16px 14px 14px;margin:0 -8px;border-radius:26px;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.015) 45%,rgba(255,255,255,0)),rgba(10,10,13,.72);border:1px solid var(--glass-edge);box-shadow:var(--glass-hi),0 30px 70px -30px #000;-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6)}
+html:root body.dark #auth-screen .auth-card form .fields{gap:12px}
+/* animações de entrada com "fill both" faziam o cartão isolar o fundo e o vidro não desfocava a grade: o início fica, o fim volta ao normal (igual) */
+#auth-screen .auth-card,#view>*,.stats>.stat{animation-fill-mode:backwards!important}
+/* textos da entrada legíveis sobre a grade */
+html body.dark #auth-screen .auth-card>.subtitle,html body.dark #auth-screen .auth-links,html body.dark #auth-screen .auth-actions,html body.dark #auth-screen .legal-links,html body.dark #auth-screen .copyright,html body.dark #auth-screen .auth-card>p,html body.dark #auth-screen .auth-card>.small{text-shadow:0 0 6px #000,0 0 14px #000,0 1px 2px #000}
+/* sem suporte a desfoque: fundo sólido (continua legível) */
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  html:root body.dark header,html:root body.dark #mobile-bottom,html:root body.dark .more-menu,html:root body.dark dialog,html:root body.dark #auth-sheet,html:root body.dark .alert-popup,html:root body #toast,html:root body.dark #auth-screen .auth-card form{background:var(--glass-solid)!important}}
+
+html body.dark .hero h1,html body.dark #view .hero:not(.hero-home) h1,html body.dark .auth-card h1{letter-spacing:.04em!important}
+html body.dark .hero-home h1{max-width:10.5ch!important}html body.dark .auth-card h1{max-width:11.6ch!important}
+html body.dark #view .panelhead h2,html body.dark #view .pn-card h2{letter-spacing:.035em}
+html:root body.dark #auth-screen .auth-card{position:relative}
+
+/* ---------- toque: mola nos botões principais ---------- */
+body:not(.fx-off) #view button.primary,body:not(.fx-off) #auth-screen button.primary,body:not(.fx-off) #view .hero button,body:not(.fx-off) #view .more-actions>summary,body:not(.fx-off) #mobile-bottom button,body:not(.fx-off) header .bell-btn{transition:transform .55s var(--spring),background-color .15s,border-color .15s,box-shadow .2s,filter .15s,color .15s!important}
+body:not(.fx-off) #view button.primary:not(:disabled):active,body:not(.fx-off) #auth-screen button.primary:not(:disabled):active,body:not(.fx-off) #view .hero button:not(:disabled):active,body:not(.fx-off) #view .more-actions>summary:not(:disabled):active,body:not(.fx-off) header .bell-btn:not(:disabled):active{transform:scale(.94)!important;transition-duration:.08s!important}
+body:not(.fx-off) #mobile-bottom button:active{transform:scale(.9)!important;transition-duration:.08s!important}
+/* botão principal com brilho de neon (a cor continua a mesma) */
+html:root body.dark #view button.primary,html:root body.dark #auth-screen button.primary{box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 0 0 1px rgba(var(--neon-hot-rgb),.5),0 10px 28px -12px rgba(var(--neon-rgb),.85),0 0 22px -8px rgba(var(--neon-rgb),.7)!important}
+html:root body.dark #view .more-menu button.primary{box-shadow:none!important}
+
+/* ---------- Tron: linhas de circuito finas nos separadores ---------- */
+html:root body.dark aside .brand,html:root body.dark #auth-screen .brand,html:root body.dark #view .nf-tabs,html:root body.dark #prefs-panel .pref-row+.pref-row{border-image:linear-gradient(90deg,rgba(var(--neon-rgb),.8),rgba(var(--neon-rgb),.8) 36px,rgba(255,255,255,.16) 36px,rgba(255,255,255,.08) 70%,transparent) 1!important}
+html:root body.dark hr{border:0;height:1px;background:linear-gradient(90deg,rgba(var(--neon-rgb),.8),rgba(var(--neon-rgb),.8) 36px,rgba(255,255,255,.16) 36px,rgba(255,255,255,.08) 70%,transparent)}
+/* ---------- cores (v93): vermelho da marca nos destaques e nas linhas; botão #DB2318 com letra branca (4,9:1) ---------- */
+html:root body.dark button.primary,html:root body.dark .primary,html:root body.dark #view button.primary,html:root body.dark #auth-screen button.primary,html:root body.dark #view .toolbar button.primary,html:root body.dark .hero button.primary{background:var(--neon-btn)!important;background-image:none!important;border:1px solid var(--neon-btn)!important;color:var(--neon-ink)!important;font-weight:700}
+@media(hover:hover){html:root body.dark button.primary:hover{background:#B81C12!important;border-color:#B81C12!important}}
+html:root body.dark #view .more-menu button.primary,html:root body.dark .more-menu .primary{background:transparent!important;border:0!important;color:var(--ds-ink)!important}
+html:root body.dark .bell-btn .alert-count{background:var(--neon-btn)!important;color:var(--neon-ink)!important;font-weight:700}
+html:root body.dark input:focus,html:root body.dark select:focus,html:root body.dark textarea:focus{box-shadow:0 0 0 3px rgba(var(--neon-rgb),.22)!important}
+html:root body #scroll-progress{background:var(--neon)!important}
+html:root body.dark::before{background:radial-gradient(38vmax 30vmax at 82% 8%,rgba(var(--neon-rgb),.11),transparent 70%),radial-gradient(30vmax 26vmax at 8% 62%,rgba(var(--neon-rgb),.08),transparent 70%),radial-gradient(34vmax 24vmax at 70% 96%,rgba(var(--neon-rgb),.07),transparent 70%)!important}
+html:root body #toast,html:root body .toast{border-color:rgba(var(--neon-rgb),.55)!important}
+#ptr i{border-top-color:var(--neon)!important}
+/* chat e perfil */
+.chat-quote,.chat-reply{border-left-color:var(--neon)!important}
+@keyframes chat-flash{0%,60%{box-shadow:0 0 0 3px var(--neon)}100%{box-shadow:0 0 0 3px transparent}}
+.chat-msg .reacts button.me{border-color:var(--neon)!important;background:rgba(var(--neon-rgb),.16)!important}
+.chat-msg.mentioned{box-shadow:inset 3px 0 0 var(--neon)!important}
+.push-card{background:rgba(var(--neon-rgb),.05)!important}
+/* abertura: prateleiras e scanner em vermelho; o S continua vermelho */
+#stok-intro{background:radial-gradient(ellipse at 50% 14%,#2a0806 0,#0b0404 36%,#020203 76%,#000 100%)!important}
+#stok-intro .si-scan{stroke:var(--neon-hot)!important;filter:drop-shadow(0 0 4px var(--neon))!important}
+#stok-intro .si-sub{color:var(--neon-hot)!important}
+@keyframes si-stock{0%{fill:#292d32}35%{fill:#FF2A1F;stroke:#FF8A7A;filter:drop-shadow(0 0 3px #FF2A1F)}100%{fill:#292d32;stroke:#777d85;filter:none}}
+
