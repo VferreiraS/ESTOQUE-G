@@ -33,6 +33,11 @@ rules_version = '2';
 //   Chave para recuperar a conta pelo e-mail (só o dono lê e grava).
 //   - login (1..80), salt (16..40), bits (40..60), at (int)
 //
+// Coleção: backups              Documento: {uid}   (v133)
+//   Backup da conta, JÁ cifrado no aparelho com a senha (AES-GCM/PBKDF2). Só o dono lê e grava.
+//   - v: 1   - login (1..80)   - rev: int ≥1   - n: 1..12 pedaços   - len: int   - h: SHA-256 (64 hex)   - at: int   - slim: bool
+//   Subcoleção partes/{0..11}: d (1..800000 caracteres), at (int)
+//
 // Coleção: correio              Documento: id automático
 //   Fila de e-mails que o robô (tarefa agendada) envia. Só o robô lê e apaga.
 //   - de: uid de quem criou    - para: uid do destinatário (o robô busca o e-mail)
@@ -186,6 +191,20 @@ service cloud.firestore {
         isStr(d.login, 1, 80) && isStr(d.salt, 16, 40) && isStr(d.bits, 40, 60) && isValidTime(d.at);
     }
 
+    // v133: backup cifrado da conta (cabeçalho + pedaços)
+    function isValidBackup(d) {
+      return hasOnlyAllowedFields(['v', 'login', 'rev', 'n', 'len', 'h', 'at', 'slim']) &&
+        hasRequiredFields(['v', 'login', 'rev', 'n', 'len', 'h', 'at', 'slim']) &&
+        d.v == 1 && isStr(d.login, 1, 80) && d.rev is int && d.rev >= 1 && d.rev <= 100000000 &&
+        d.n is int && d.n >= 1 && d.n <= 12 && d.len is int && d.len >= 1 && d.len <= 9600000 &&
+        d.h is string && d.h.matches('^[0-9a-f]{64}$') && isValidTime(d.at) &&
+        d.at <= request.time.toMillis() + 60000 && d.slim is bool;
+    }
+    function isValidBackupParte(d) {
+      return hasOnlyAllowedFields(['d', 'at']) && hasRequiredFields(['d', 'at']) &&
+        isStr(d.d, 1, 800000) && isValidTime(d.at) && d.at <= request.time.toMillis() + 60000;
+    }
+
     function isValidEquipe(d) {
       return hasOnlyAllowedFields(['code', 'name', 'team', 'owner', 'sync', 'at']) && hasRequiredFields(['code', 'name', 'team', 'owner', 'sync', 'at']) &&
         isStr(d.code, 8, 20) && isStr(d.name, 0, 40) && isStr(d.team, 0, 80) && d.owner is bool && d.sync is bool && isValidTime(d.at);
@@ -221,6 +240,18 @@ service cloud.firestore {
       allow get: if isOwner(uid);
       allow create, update: if isOwner(uid) && isValidCofre(request.resource.data);
       allow delete: if isOwner(uid);
+    }
+
+    // v133: backup cifrado da conta: só o dono (uid). Pedaços 0..11.
+    match /backups/{uid} {
+      allow get: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isValidBackup(request.resource.data);
+      allow delete: if isOwner(uid);
+      match /partes/{parte} {
+        allow get: if isOwner(uid);
+        allow create, update: if isOwner(uid) && parte.matches('^([0-9]|1[01])$') && isValidBackupParte(request.resource.data);
+        allow delete: if isOwner(uid);
+      }
     }
 
     // Contas verificadas (selo): só o administrador grava (console ou CLI); qualquer aparelho lê,
