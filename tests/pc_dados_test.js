@@ -18,7 +18,7 @@ const HAS=(n)=>!!document.getElementById('local-note')&&new RegExp(n).test(docum
  ok(await until(P,()=>!!document.querySelector('#cloud-pull[open]'),null,8000),'PC: mesmo login abre "Trazer da nuvem"');
  await P.fill('#cloud-pull input[name=email]',email);await P.click('#cloud-pull button.primary');ok(await until(P,()=>!!authSession,null,20000),'PC: conta trazida');
  ok(await until(P,()=>state.nfs.some(n=>n.number==='48213')&&state.plans.some(p=>p.id==='p1')&&state.corridors.some(c=>c.id==='c7')&&state.team.some(t=>t.id==='ana'),null,30000),'PC: NF, plano, corredor e equipe do iPhone chegam');
- await P.evaluate(()=>go('home'));await P.waitForTimeout(600);ok(await P.evaluate(()=>!document.getElementById('local-note')),'PC sincronizado: sem aviso');
+ await P.evaluate(()=>go('home'));await P.waitForTimeout(600);/* v134: desde a v133 os dados podem chegar pelo backup antes de a equipe ficar pronta; o aviso some quando sincroniza */ok(await until(P,()=>{render();return !document.getElementById('local-note')},null,20000),'PC sincronizado: sem aviso');
  // 3) convite no PC com o iPhone fechado → aguardando; iPhone abre → dados chegam
  const link=await L.makeInvite(I,'Computador');const ictx=I.context();await I.close();
  const X=await pc();await L.auxAccept(X,link,null,'3690');ok(await until(X,()=>!!(window.e99Team&&e99Team.get())),'PC: entra por convite');
