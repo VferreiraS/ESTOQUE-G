@@ -134,10 +134,13 @@ const st=p=>p.evaluate(()=>e99Conf.state());
  const rep=await p.evaluate(()=>document.getElementById('conf-dlg').innerText);
  ok(/Total de volumes\s*9/.test(rep)&&/Pela câmera\s*6/.test(rep)&&/À mão\s*3/.test(rep)&&/Desfeitas\s*1/.test(rep)&&/Correções/.test(rep),'relatório: total 9, câmera 6, à mão 3, desfeitas 1, correções');
  ok(await p.evaluate(i=>state.confs.find(c=>c.id===i).status==='finalizada'&&state.confs.find(c=>c.id===i).end!=='',id),'finalizada gravada com término');
- ok(await p.isVisible('#cf-csv')&&await p.isVisible('#cf-pdf'),'botões "Baixar planilha (Excel/CSV)" e "PDF / Imprimir"');
+ ok(await p.isVisible('#cf-csv')&&await p.isVisible('#cf-pdf'),'botões "Baixar CSV", "Excel (.xlsx)" e "PDF / Imprimir"');
  {const [dl]=await Promise.all([p.waitForEvent('download',{timeout:8000}).catch(()=>null),p.click('#cf-csv')]);let txt='';if(dl){const f=await dl.path();txt=fs.readFileSync(f,'utf8')}
   const rows=txt.split('\r\n').filter(l=>/^"?\d+"?;.*;"?(Câmera|Manual)"?;"?(Válida|Desfeita)"?$/.test(l));
   ok(dl&&/\.csv$/.test(dl.suggestedFilename())&&rows.length===10&&/Total de volumes";"9"/.test(txt),'v97: "Baixar planilha" baixa o CSV com as 10 leituras reais e total 9 ('+rows.length+')');
+ {/* v131: Excel (.xlsx) de verdade, gerado no aparelho, com as mesmas linhas do CSV */const csvN=(await p.evaluate(i=>e99Conf.csv(i),id)).split('\r\n').length;
+  const [dl]=await Promise.all([p.waitForEvent('download',{timeout:8000}).catch(()=>null),p.click('#cf-xlsx')]);let buf=Buffer.alloc(0);if(dl)buf=fs.readFileSync(await dl.path());const t=buf.toString('utf8');
+  ok(dl&&/\.xlsx$/.test(dl.suggestedFilename())&&buf.readUInt32LE(0)===0x04034b50&&/xl\/worksheets\/sheet1\.xml/.test(t)&&(t.match(/<row /g)||[]).length===csvN&&/>Total de volumes<\/t><\/is><\/c><c r="B\d+"><v>9<\/v>|>Total de volumes<\/t><\/is><\/c><c r="B\d+" t="inlineStr"><is><t xml:space="preserve">9</.test(t),'v131: "Excel (.xlsx)" do relatório: zip válido com as '+csvN+' linhas do CSV e total 9')}
   const html=await p.evaluate(async()=>{let out='';const w0=window.open;window.open=()=>({document:{open(){},write(h){out+=h},close(){}},focus(){},print(){}});document.getElementById('cf-pdf').click();window.open=w0;return out});
   ok((html.match(/<tr class="(x)?"><td>\d+<\/td>/g)||[]).length===10&&/Total de volumes<\/th><td>9/.test(html),'v97: "PDF / Imprimir" monta a página com as 10 leituras e total 9')}
  ok(await p.isVisible('#cf-assoc-sel'),'gestor/estoque: "Associar a uma NF" depois de finalizar');
