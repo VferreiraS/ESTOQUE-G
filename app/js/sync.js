@@ -24,10 +24,10 @@ async function dec(ch,bytes){bytes=new Uint8Array(bytes);return new Uint8Array(a
 async function encStr(ch,o){return 'S99:'+authB64(await enc(ch,authBytes(JSON.stringify(o))))}
 async function decStr(ch,str){if(typeof str!=='string'||str.indexOf('S99:')!==0)return null;try{return JSON.parse(new TextDecoder().decode(await dec(ch,authUn64(str.slice(4)))))}catch(e){return null}}
 /* ---------- marcar mudanças locais (roda antes de cada gravação) ---------- */
-function stamp(){if(!active())return false;var s=sy();if(!s.ready||s.topic!==chan.topic)return false;var now=Date.now(),by=info.name,touched=false,pend=new Set(s.pending);
-  C.forEach(function(c){if(amAux()&&!auxColl(c))return;var meta=s.meta[c],seen={};arr(c).forEach(function(x){if(!x||!okId(x.id))return;seen[x.id]=1;var h=hashItem(x),m=meta[x.id];if(!m||m[2]||m[3]!==h){meta[x.id]=[Math.max(now,m?m[0]+1:0),by,0,h];pend.add(c+'|'+x.id);touched=true}});
-    Object.keys(meta).forEach(function(id){var m=meta[id];if(!seen[id]&&!m[2]){meta[id]=[Math.max(now,m[0]+1),by,1,''];pend.add(c+'|'+id);touched=true}else if(m[2]&&now-m[0]>30*864e5&&!pend.has(c+'|'+id))delete meta[id]})});
-  s.pending=Array.from(pend);return touched}
+function stamp(){if(!active())return false;var s=sy();if(!s.ready||s.topic!==chan.topic)return false;var now=Date.now(),by=info.name,touched=false,pend=new Set(s.pending),cp=new Set(Array.isArray(s.cloudPend)?s.cloudPend:[]);
+  C.forEach(function(c){if(amAux()&&!auxColl(c))return;var meta=s.meta[c],seen={};arr(c).forEach(function(x){if(!x||!okId(x.id))return;seen[x.id]=1;var h=hashItem(x),m=meta[x.id];if(!m||m[2]||m[3]!==h){meta[x.id]=[Math.max(now,m?m[0]+1:0),by,0,h];pend.add(c+'|'+x.id);cp.add(c+'|'+x.id);touched=true}});
+    Object.keys(meta).forEach(function(id){var m=meta[id];if(!seen[id]&&!m[2]){meta[id]=[Math.max(now,m[0]+1),by,1,''];pend.add(c+'|'+id);cp.add(c+'|'+id);touched=true}else if(m[2]&&now-m[0]>30*864e5&&!pend.has(c+'|'+id)&&!cp.has(c+'|'+id))delete meta[id]})});
+  s.pending=Array.from(pend);s.cloudPend=Array.from(cp);return touched}
 var baseSave=save;
 save=async function(){var t=false;try{t=stamp()}catch(e){}var r=await baseSave.apply(this,arguments);if(t||(active()&&state.sync&&state.sync.pending&&state.sync.pending.length))schedulePublish();return r};
 function persist(){return baseSave()}
@@ -215,6 +215,8 @@ async function refresh(){var my=++gen;stop();var t=window.e99Team&&window.e99Tea
   if(!s.ready&&!s.replace)mergeTimer=setTimeout(async function(){if(my!==gen||!active())return;var ss=sy();if(!ss.ready){ss.ready=true;dropDefaults();if(stamp())schedulePublish(500);await persist();paintStatus()}},20000);
   connect();paintStatus()}
 if(window.e99Team)window.e99Team.onChange(function(){refresh()});
+/* v136: núcleo para a nuvem da loja (v136.js) usar o mesmo aplicador, a mesma chave e as mesmas regras */
+window.e99SyncCore={C:C,sy:sy,arr:arr,active:active,chan:function(){return chan},info:function(){return info},stamp:stamp,persist:persist,applyOps:applyOps,auxPlanOp:auxPlanOp,confOp:confOp,okId:okId,hashItem:hashItem,dropDefaults:dropDefaults,amAux:amAux,me:me,paint:paintStatus,render:scheduleRender,schedulePublish:schedulePublish};
 /* v100: "no PC não aparecem os dados das outras contas". Os dados ficam no aparelho que os criou; outro aparelho só recebe
    pela equipe (sincronização). O Início diz isso e mostra o caminho: convite / mesmo login, ou abrir o Stok no outro aparelho. */
 function hereKey(){return 'lojasg.estoque99.local-note:'+(authSession?authSession.storeKey:'')}
