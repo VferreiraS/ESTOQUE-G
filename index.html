@@ -432,7 +432,7 @@ function nfParseXML(source){
  if(nfXmlText(ide,'mod',true)!=='55'||String(Number(nfXmlText(ide,'nNF',true)))!==parsed.number||String(Number(nfXmlText(ide,'serie',true)))!==parsed.series||nfXmlText(emit,'CNPJ',true)!==parsed.cnpj)throw Error('Número, série ou CNPJ do XML divergem da chave de acesso.');
  const supplier=nfXmlText(emit,'xNome',true),details=nfXmlChildren(inf,'det');
  if(!details.length||details.length>1000)throw Error('O XML deve conter de 1 a 1.000 itens.');
- const items=details.map(det=>{const prod=nfXmlOne(det,'prod');return {code:nfXmlText(prod,'cProd',true,100),description:nfXmlText(prod,'xProd',true),unit:nfXmlText(prod,'uCom',true,30),quantity:nfXmlDecimal(nfXmlText(prod,'qCom',true),'produto'),ean:nfXmlText(prod,'cEAN',false,30)}});
+ const items=details.map(det=>{const prod=nfXmlOne(det,'prod');return {code:nfXmlText(prod,'cProd',true,100),description:nfXmlText(prod,'xProd',true),unit:nfXmlText(prod,'uCom',true,30),quantity:nfXmlDecimal(nfXmlText(prod,'qCom',true),'produto'),ean:nfXmlText(prod,'cEAN',false,30),eanTrib:nfXmlText(prod,'cEANTrib',false,30),qtyTrib:nfXmlDecimal(nfXmlText(prod,'qTrib',false,40),'produto',true)}});
  const groups=nfXmlChildren(nfXmlOne(inf,'transp'),'vol');if(groups.length>1000)throw Error('Muitos grupos de volumes.');
  let sum=0,complete=groups.length>0;
  const volumeDetails=groups.map(g=>{const count=nfXmlText(g,'qVol');if(!count)complete=false;else {if(!/^\d{1,15}$/.test(count)||!Number.isSafeInteger(Number(count)))throw Error('Quantidade de volumes inválida.');sum+=Number(count)}return {quantity:count,species:nfXmlText(g,'esp'),brand:nfXmlText(g,'marca'),numbering:nfXmlText(g,'nVol'),netWeight:nfXmlDecimal(nfXmlText(g,'pesoL'),'peso líquido',true),grossWeight:nfXmlDecimal(nfXmlText(g,'pesoB'),'peso bruto',true)}});
@@ -444,7 +444,7 @@ function nfParseXML(source){
 function nfValidateExtras(n){
  if(n.arrivalTime!==undefined&&n.arrivalTime!==''&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(n.arrivalTime))throw Error('Horário de chegada inválido.');
  if(n.xmlKey!==undefined&&n.xmlKey!==''&&(!/^\d{44}$/.test(n.xmlKey)||n.xmlKey!==n.accessKey))throw Error('Os itens pertencem a outra chave. Importe o XML correto.');
- if(n.items!==undefined){if(!Array.isArray(n.items)||n.items.length>1000)throw Error('Itens inválidos.');for(const item of n.items){for(const k of ['code','description','unit','quantity','ean'])if(typeof item[k]!=='string'||item[k].length>500)throw Error('Item inválido.');nfXmlDecimal(item.quantity,'produto')}}
+ if(n.items!==undefined){if(!Array.isArray(n.items)||n.items.length>1000)throw Error('Itens inválidos.');for(const item of n.items){for(const k of ['code','description','unit','quantity','ean'])if(typeof item[k]!=='string'||item[k].length>500)throw Error('Item inválido.');for(const k of ['eanTrib','qtyTrib'])if(item[k]!==undefined&&(typeof item[k]!=='string'||item[k].length>40))throw Error('Item inválido.');nfXmlDecimal(item.quantity,'produto');if(item.qtyTrib)nfXmlDecimal(item.qtyTrib,'produto')}}
  if(n.volumeDetails!==undefined){if(!Array.isArray(n.volumeDetails)||n.volumeDetails.length>1000)throw Error('Volumes inválidos.');for(const v of n.volumeDetails){for(const k of ['quantity','species','brand','numbering','netWeight','grossWeight'])if(typeof v[k]!=='string'||v[k].length>500)throw Error('Detalhe de volume inválido.');nfXmlDecimal(v.netWeight,'peso líquido',true);nfXmlDecimal(v.grossWeight,'peso bruto',true)}}
  if(n.declaredVolumes!==undefined&&n.declaredVolumes!==null&&(!Number.isSafeInteger(n.declaredVolumes)||n.declaredVolumes<0))throw Error('Volumes declarados inválidos.');
  if(n.emissionDate!==undefined&&n.emissionDate!==''&&(typeof n.emissionDate!=='string'||!validDate(n.emissionDate)))throw Error('Data de emissão inválida.');
@@ -5856,8 +5856,26 @@ function nfOf(c){return c&&c.nf?(state.nfs||[]).find(function(n){return n.id===c
 function compare(nf){var list=(state.confs||[]).filter(function(c){return c.nf===nf.id&&c.status==='finalizada'}),total=list.reduce(function(s,c){return s+(c.total|0)},0),byCode={};
   list.forEach(function(c){(c.reads||[]).forEach(function(r){if(r[5]==='v'&&r[2])byCode[r[2]]=(byCode[r[2]]||0)+1})});
   var exp=Number.isSafeInteger(nf.volumes)&&nf.volumes>0?nf.volumes:null,dec=Number.isSafeInteger(nf.declaredVolumes)?nf.declaredVolumes:null,items=[];
-  (nf.items||[]).forEach(function(it){if(it&&it.ean&&byCode[it.ean]!=null)items.push([it.ean,String(it.description||'').slice(0,80),byCode[it.ean],it.quantity])});
-  var want=exp!=null?exp:dec;return {sessions:list,total:total,volumes:exp,declared:dec,items:items,ok:want==null?null:total===want,want:want}}
+  var want=exp!=null?exp:dec;return {sessions:list,total:total,volumes:exp,declared:dec,items:items,xml:xmlCheck(nf,byCode),ok:want==null?null:total===want,want:want}}
+/* v132: confere a nota pelo XML — cada leitura conta 1 unidade do código; compara por EAN (cEAN; sem cEAN, cEANTrib). Mostra só o que faltou, sobrou ou não está na nota. */
+function gtin(v){v=String(v||'').replace(/\s/g,'');return /^\d{8,14}$/.test(v)?v:''}
+function xmlCheck(nf,byCode){var its=Array.isArray(nf.items)?nf.items:[];if(!its.length)return null;var want={},name={},alias={},noEan=0;
+  its.forEach(function(it){if(!it)return;var e=gtin(it.ean),t=gtin(it.eanTrib),k=e||t,q=Number(k===e?it.quantity:(it.qtyTrib||it.quantity));if(!k){noEan++;return}want[k]=(want[k]||0)+(isFinite(q)?q:0);if(!name[k])name[k]=String(it.description||'').slice(0,80);if(e&&t&&t!==e&&!want[t])alias[t]=e});
+  var miss=[],over=[],extra=[],pack=[];Object.keys(want).forEach(function(k){var got=byCode[k]||0,w=Math.round(want[k]*1000)/1000;if(got<w)miss.push([k,name[k],w,got]);else if(got>w)over.push([k,name[k],w,got])});
+  Object.keys(byCode).forEach(function(c){if(want[c]!=null)return;if(alias[c])pack.push([c,name[alias[c]]||'',byCode[c]]);else extra.push([c,byCode[c]])});
+  return {codes:Object.keys(want).length,noEan:noEan,miss:miss,over:over,extra:extra,pack:pack,ok:!miss.length&&!over.length&&!extra.length&&!pack.length}}
+function nb(v){return Number(v).toLocaleString('pt-BR',{maximumFractionDigits:3})}
+function xmlHtml(x){if(!x)return '<div class="cf-xml" id="cf-xml"><h3>Itens da nota (XML)</h3><p class="small">Importe o XML da NF-e para conferir item por item.</p></div>';
+  var t=function(title,cls,head,rows){return rows.length?'<h4 class="cf-xml-'+cls+'">'+title+' ('+rows.length+')</h4><table class="cf-table"><thead><tr>'+head.map(function(h){return '<th>'+h+'</th>'}).join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>':''};
+  var h='<div class="cf-xml'+(x.ok?' ok':' bad')+'" id="cf-xml"><h3>Itens da nota (XML)</h3>';
+  if(!x.codes)h+='<p class="small">Os itens deste XML não trazem EAN: confira à mão.</p>';
+  else if(x.ok)h+='<p class="cf-xml-okmsg"><b>Tudo confere:</b> '+(x.codes===1?'o código da nota bate':'os '+x.codes+' códigos da nota batem')+' com o que foi lido.</p>';
+  else h+=t('Faltou','miss',['Item','EAN','Na nota','Lidos'],x.miss.map(function(r){return '<tr><td>'+esc(r[1])+'</td><td><code>'+esc(r[0])+'</code></td><td>'+nb(r[2])+'</td><td>'+r[3]+'</td></tr>'}))
+    +t('Sobrou','over',['Item','EAN','Na nota','Lidos'],x.over.map(function(r){return '<tr><td>'+esc(r[1])+'</td><td><code>'+esc(r[0])+'</code></td><td>'+nb(r[2])+'</td><td>'+r[3]+'</td></tr>'}))
+    +t('Não está na nota','extra',['Código lido','Lidos'],x.extra.map(function(r){return '<tr><td><code>'+esc(r[0])+'</code></td><td>'+r[1]+'</td></tr>'}))
+    +t('Lido pelo código da embalagem (confira à mão)','pack',['Código lido','Item','Lidos'],x.pack.map(function(r){return '<tr><td><code>'+esc(r[0])+'</code></td><td>'+esc(r[1])+'</td><td>'+r[2]+'</td></tr>'}));
+  if(x.noEan)h+='<p class="small">'+(x.noEan===1?'1 item da nota não tem EAN':x.noEan+' itens da nota não têm EAN')+': confira à mão.</p>';
+  return h+'<p class="small">Cada leitura conta 1 unidade do código lido.</p></div>'}
 function showReport(id){var c=confById(id);if(!c){say('Conferência não encontrada.');return}stopCam();var d=dlg(),x=data(c),aux=isAuxNow(),nf=aux?null:nfOf(c);
   var h='<div class="cf-wrap cf-rep"><div class="cf-head"><div><h2 id="cf-title">Relatório · '+esc(c.n)+'</h2><p class="small">'+esc(ST[c.status]||c.status)+'</p></div><button type="button" class="cf-x" id="cf-close" aria-label="Fechar">✕</button></div>'
    +'<dl class="cf-kv"><dt>Número</dt><dd>'+esc(c.n)+'</dd><dt>ID</dt><dd>'+esc(c.id)+'</dd><dt>Funcionário</dt><dd>'+esc(c.by)+(c.login?' ('+esc(c.login)+')':'')+'</dd><dt>Início</dt><dd>'+esc(dt(x.start))+'</dd><dt>Término</dt><dd>'+esc(x.end?dt(x.end):'—')+'</dd>'
@@ -5868,7 +5886,7 @@ function showReport(id){var c=confById(id);if(!c){say('Conferência não encontr
   if(!aux&&c.status==='finalizada'){h+='<div class="cf-assoc"><h3>Associar a uma NF</h3><p class="small">Depois de associar, o app compara o total contado com a NF.</p><label>Nota fiscal<select id="cf-assoc-sel"><option value="">— escolha a NF —</option>'
      +(state.nfs||[]).slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'')}).slice(0,300).map(function(n){return '<option value="'+esc(n.id)+'"'+(n.id===c.nf?' selected':'')+'>NF '+esc(n.number)+' · '+esc(n.supplier)+' · '+esc(date(n.date))+'</option>'}).join('')+'</select></label><button type="button" id="cf-assoc-go" data-id="'+esc(c.id)+'">Associar</button></div>';
     if(nf){var k=compare(nf),bad=k.ok===false;h+='<div class="cf-cmp'+(bad?' bad':'')+'" id="cf-cmp"><h3>Comparação com a NF '+esc(nf.number)+'</h3><dl class="cf-kv"><dt>Contados (todas as conferências desta NF)</dt><dd><b>'+k.total+'</b> em '+k.sessions.length+' conferência(s)</dd><dt>Volumes na NF</dt><dd>'+(k.volumes==null?'não informado':k.volumes)+'</dd><dt>Volumes no XML</dt><dd>'+(k.declared==null?'não informado':k.declared)+'</dd></dl>'
-      +(k.items.length?'<table class="cf-table"><thead><tr><th>EAN</th><th>Item</th><th>Lidos</th><th>XML</th></tr></thead><tbody>'+k.items.map(function(r){return '<tr><td><code>'+esc(r[0])+'</code></td><td>'+esc(r[1])+'</td><td>'+r[2]+'</td><td>'+esc(r[3])+'</td></tr>'}).join('')+'</tbody></table><p class="small">Por código é só informativo: um EAN de produto pode ter várias unidades por caixa.</p>':'')
+      +xmlHtml(k.xml)
       +(k.ok===null?'<p class="small">A NF não tem volumes informados para comparar.</p>':bad?'<p><b>Divergência:</b> contados '+k.total+' de '+k.want+' volumes.</p><div class="cf-repbtns"><button type="button" id="cf-mark" data-id="'+esc(c.id)+'" data-st="Em divergência">Marcar NF em divergência</button></div>':'<p><b>Confere:</b> '+k.total+' de '+k.want+' volumes.</p><div class="cf-repbtns"><button type="button" id="cf-mark" data-id="'+esc(c.id)+'" data-st="Conferido">Marcar NF como Conferido</button></div>')+'</div>'}}
   h+='<div class="cf-repbtns"><button type="button" class="primary" id="cf-csv" data-id="'+esc(c.id)+'">Baixar CSV</button><button type="button" id="cf-xlsx" data-id="'+esc(c.id)+'">Excel (.xlsx)</button><button type="button" id="cf-pdf" data-id="'+esc(c.id)+'">PDF / Imprimir</button></div>'
    +'<details class="cf-histbox"><summary>Todas as leituras ('+x.reads.length+')</summary><ol class="cf-hist">'+x.reads.slice().reverse().map(function(r){return '<li class="'+(r.st==='x'?'x':'')+'"><b>'+pad(r.seq)+'</b><span>'+esc(tm(r.at))+'</span><code>'+esc(r.code||'(sem código)')+'</code><span class="small">'+(r.m==='h'?'manual':'câmera')+(r.st==='x'?' · desfeita':'')+'</span></li>'}).join('')+'</ol></details></div>';
@@ -7213,6 +7231,171 @@ window.e99NfXmlPick=function(){if(!authSession)return;var i=D.getElementById('nf
   i.addEventListener('change',function(){var l=i.files;files(l).finally(function(){i.value=''})});D.body.appendChild(i)}i.click()};
 window.e99NfXmlFiles=files;
 var md=D.getElementById('modal');if(md)md.addEventListener('close',function(){if(queue.length)setTimeout(next,250)});
+})();
+</script>
+<style id="v132-css">
+/* v132: busca geral, histórico da nota, planos que se repetem, cartões do Início que pedem ação, conferência × XML, cabeçalho fixo das NFs no PC */
+.e99-search-btn{display:inline-flex!important;align-items:center;gap:6px;min-height:44px}
+.e99-search-btn svg{width:18px;height:18px;flex:none}
+.e99-search-btn kbd{font:600 11px/1 var(--font-ui,inherit);padding:3px 5px;border:1px solid var(--ds-line,#333);border-radius:6px;opacity:.75}
+@media (max-width:900px){.e99-search-btn .lbl,.e99-search-btn kbd{display:none}.e99-search-btn{width:44px;justify-content:center;padding:0!important}}
+#e99-search{width:min(640px,calc(100vw - 24px));max-height:min(80vh,720px);padding:0;border-radius:24px;overflow:hidden;margin:8vh auto auto}
+#e99-search::backdrop{background:rgba(0,0,0,.6)}
+#e99-search .sx-top{display:flex;gap:8px;align-items:center;padding:12px;border-bottom:1px solid var(--ds-line,#2a2a2a)}
+#e99-search .sx-top input{flex:1;min-width:0;min-height:44px;font-size:16px}
+#e99-search .sx-res{overflow:auto;max-height:calc(min(80vh,720px) - 70px);padding:8px 12px 16px}
+#e99-search .sx-g{margin:12px 0 4px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ds-muted,#aaa)}
+#e99-search .sx-it{display:block;width:100%;text-align:left;min-height:44px;margin:4px 0;padding:10px 12px!important;border-radius:14px!important;white-space:normal;overflow-wrap:anywhere}
+#e99-search .sx-it b{display:block;font-weight:700}
+#e99-search .sx-it small{display:block;color:var(--ds-muted,#aaa);font-weight:500}
+#e99-search .sx-empty{padding:16px 4px;color:var(--ds-muted,#aaa)}
+.e99-flash{outline:2px solid var(--neon,#e7b8ef);outline-offset:3px;border-radius:16px}
+#view .stats>.stat.e99-go{cursor:pointer}
+#view .stats>.stat.e99-go:focus-visible{outline:2px solid var(--neon,#e7b8ef);outline-offset:2px}
+#view .stats>.stat .e99-go-l{display:block;margin-top:6px;font-size:13px;font-weight:650;color:var(--neon,#e7b8ef)}
+#view .stats>.stat.e99-zero strong{opacity:.55}
+.e99-hist{margin-top:12px;border:1px solid var(--ds-line,#2a2a2a);border-radius:14px;padding:0 12px}
+.e99-hist summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:650}
+.e99-hist ol{list-style:none;margin:0 0 12px;padding:0}
+.e99-hist li{padding:8px 0;border-top:1px solid var(--ds-line,#2a2a2a);font-size:14px;overflow-wrap:anywhere}
+.e99-hist li small{display:block;color:var(--ds-muted,#aaa)}
+.e99-rep{border:1px solid var(--ds-line,#2a2a2a);border-radius:14px;padding:12px;margin:12px 0;display:grid;gap:8px}
+.e99-rep .e99-check{display:flex;align-items:center;gap:10px;min-height:44px;font-weight:650}
+.e99-rep .e99-check input{width:22px;height:22px;min-height:0}
+.e99-rep-pill{margin-left:6px}
+.cf-xml{margin-top:12px}
+.cf-xml h4{margin:12px 0 6px;font-size:15px}
+.cf-xml .cf-xml-miss,.cf-xml .cf-xml-extra{color:#ffb4a8}
+.cf-xml-okmsg{padding:10px 12px;border-radius:12px;border:1px solid var(--ds-line,#2a2a2a)}
+@media (min-width:1100px) and (pointer:fine){html.e99-sticky #view .panel.e99-nfpanel{overflow:clip}html.e99-sticky #nf-results .tablewrap{overflow:visible}html.e99-sticky #nf-results thead th{position:sticky;top:var(--e99-head,0px);z-index:3;background:var(--ds-surface,#141416)}}
+</style>
+<script id="v132-js">
+/* v132 · (1) conferir a nota pelo XML (itens com EAN na NF; comparação no relatório da conferência, no conf-js)
+   (2) busca geral (topo; Ctrl+K ou "/" no PC) · (3) histórico da nota (quem, quando, o quê; até 30 por nota; vai junto com a NF pelo sync)
+   (4) planos que se repetem toda semana (id determinístico; só gestor/estoque configuram) · (5) cabeçalho fixo das NFs no PC · (6) Início com o que pede ação hoje */
+(function(){'use strict';var D=document,W=window;
+function aux(){return !!(W.isAux&&W.isAux())}
+function me(){try{var t=W.e99Team&&W.e99Team.get();if(t&&t.name)return String(t.name).slice(0,60)}catch(x){}return authSession?String(authSession.record.login).slice(0,60):''}
+function two(n){return ('0'+n).slice(-2)}
+function brDate(d){d=String(d||'');var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(d);return m?m[3]+'/'+m[2]+'/'+m[1]:d}
+function brTime(ms){var d=new Date(ms);return isNaN(d)?'':two(d.getDate())+'/'+two(d.getMonth()+1)+'/'+d.getFullYear()+' '+two(d.getHours())+':'+two(d.getMinutes())}
+W.e99BrDate=brDate;
+var WD=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+
+/* ================= (3) histórico da nota ================= */
+var HMAX=30;
+function cleanHist(h){if(!Array.isArray(h))return null;var out=[];h.slice(-200).forEach(function(e){if(Array.isArray(e)&&Number.isSafeInteger(e[0])&&e[0]>0&&typeof e[1]==='string'&&typeof e[2]==='string'&&e[2].trim())out.push([e[0],e[1].slice(0,60),e[2].slice(0,160)])});return out.slice(-HMAX)}
+var vx=nfValidateExtras;nfValidateExtras=function(n){var r=vx.apply(this,arguments);if(n&&typeof n==='object'&&'hist' in n){var h=cleanHist(n.hist);if(h&&h.length)n.hist=h;else delete n.hist}return r};
+function h32(str){var h=0x811c9dc5;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
+function fields(n){return {number:String(n.number||''),supplier:String(n.supplier||''),status:String(n.status||''),volumes:Number(n.volumes)||0,owner:String(n.owner||''),notes:String(n.notes||''),date:String(n.date||''),arrivalTime:String(n.arrivalTime||''),accessKey:String(n.accessKey||''),items:Array.isArray(n.items)?n.items.length:0}}
+var snap=new Map();
+function takeSnap(){snap=new Map();(state.nfs||[]).forEach(function(n){if(n&&n.id)snap.set(n.id,{f:fields(n),h:Array.isArray(n.hist)?n.hist.slice():null})})}
+var LBL={number:'número',supplier:'fornecedor',notes:'observações',date:'data de chegada',arrivalTime:'hora de chegada',accessKey:'chave de acesso'};
+function nameOf(id){try{return owner(id)}catch(x){return id||'A definir'}}
+function diffText(a,b){var parts=[],other=[];if(a.status!==b.status)parts.push('Status: '+(a.status||'—')+' → '+b.status);if(a.volumes!==b.volumes)parts.push('Volumes: '+a.volumes+' → '+b.volumes);if(a.owner!==b.owner)parts.push('Conferido por: '+nameOf(a.owner)+' → '+nameOf(b.owner));
+  if(a.items!==b.items)parts.push(b.items?'Importou '+(b.items===1?'1 item':b.items+' itens')+' do XML':'Tirou os itens do XML');
+  Object.keys(LBL).forEach(function(k){if(a[k]!==b[k])other.push(LBL[k])});if(other.length)parts.push('Editou '+other.join(', '));return parts.join('; ').slice(0,160)}
+function synced(n){try{var m=state.sync&&state.sync.meta&&state.sync.meta.nfs&&state.sync.meta.nfs[n.id];return !!(m&&!m[2]&&m[3]&&m[3]===h32(JSON.stringify(n)))}catch(x){return false}}
+function record(){if(!authSession||!Array.isArray(state.nfs))return;var now=Date.now(),who=me();
+  state.nfs.forEach(function(n){if(!n||!n.id)return;var s=snap.get(n.id),f=fields(n);
+    if(!s){if(synced(n))return;var h=cleanHist(n.hist)||[];if(!h.length){h.push([now,String(n.cby||who).slice(0,60),'Criou a nota'+(n.xmlKey?' pelo XML':'')]);n.hist=h}return}
+    if(!Array.isArray(n.hist)&&s.h&&s.h.length)n.hist=s.h.slice();
+    if(synced(n))return;if(JSON.stringify(n.hist||null)!==JSON.stringify(s.h||null)&&Array.isArray(n.hist)&&n.hist.length>(s.h?s.h.length:0))return;
+    var t=diffText(s.f,f);if(!t)return;var h2=cleanHist(n.hist)||[];h2.push([now,who,t]);n.hist=h2.slice(-HMAX)});
+  takeSnap()}
+var sv=save;save=async function(){try{record()}catch(x){}return sv.apply(this,arguments)};
+W.e99NfHist=function(id){var n=(state.nfs||[]).find(function(x){return x.id===id});return n&&Array.isArray(n.hist)?n.hist.slice():[]};
+function histHtml(n){var h=Array.isArray(n.hist)?n.hist:[];return '<details class="e99-hist" id="e99-hist"><summary>Histórico ('+h.length+')</summary>'+(h.length?'<ol>'+h.slice().reverse().map(function(e){return '<li>'+esc(e[2])+'<small>'+esc(brTime(e[0]))+' · '+esc(e[1]||'—')+'</small></li>'}).join('')+'</ol>':'<p class="small">Ainda sem registros. As próximas mudanças aparecem aqui.</p>')+'</details>'}
+var oe=openEditor;openEditor=function(kind,id){var r=oe.apply(this,arguments);try{if(kind==='nf'&&id&&editing&&editing.id===id){var n=(state.nfs||[]).find(function(x){return x.id===id}),f=D.getElementById('fields');if(n&&f&&!f.querySelector('#e99-hist')){var w=D.createElement('div');w.innerHTML=histHtml(n);var del=f.querySelector(':scope > button.danger');if(del)f.insertBefore(w.firstChild,del);else f.appendChild(w.firstChild)}}}catch(x){}return r};
+
+/* ================= (4) planos que se repetem toda semana ================= */
+function wdOf(d){var x=new Date(d+'T12:00:00');return isNaN(x)?0:x.getDay()}
+function repOk(r){return r&&typeof r==='object'&&Number.isInteger(r.d)&&r.d>=0&&r.d<=6}
+var vp=validatePlans;validatePlans=function(plans){if(Array.isArray(plans))plans.forEach(function(p){if(!p||typeof p!=='object')return;if('rep' in p){if(repOk(p.rep))p.rep={d:p.rep.d};else delete p.rep}if('repOf' in p&&!safePlanId(p.repOf))delete p.repOf});return vp.apply(this,arguments)};
+function sidOf(p){return p.repOf||p.id}
+W.e99RepSet=function(on){if(!planDraft||aux())return;if(on)planDraft.rep={d:wdOf(planDraft.date)};else delete planDraft.rep;planDraftDirty=true;var s=D.getElementById('e99-rep-d');if(s){s.disabled=!on;if(on)s.value=String(planDraft.rep.d)}};
+W.e99RepDay=function(v){if(!planDraft||aux()||!planDraft.rep)return;var d=+v;if(d>=0&&d<=6){planDraft.rep={d:d};planDraftDirty=true}};
+function repHtml(){var p=planDraft;if(!p||aux())return '';var on=repOk(p.rep),d=on?p.rep.d:wdOf(p.date);
+  return '<div class="e99-rep"><label class="e99-check"><input type="checkbox" id="e99-rep-on"'+(on?' checked':'')+' onchange="e99RepSet(this.checked)">Repetir toda semana</label><label>Dia da semana<select id="e99-rep-d" onchange="e99RepDay(this.value)"'+(on?'':' disabled')+'>'+WD.map(function(n,i){return '<option value="'+i+'"'+(i===d?' selected':'')+'>'+n+'</option>'}).join('')+'</select></label><p class="small" style="margin:0">O app cria sozinho o plano da próxima semana, com as mesmas atividades (sem fotos e sem marcar feito). Desmarque para parar.</p></div>'}
+var rpe=renderPlanEditor;renderPlanEditor=function(){var h=rpe.apply(this,arguments);try{var x=repHtml();if(x){var i=h.indexOf('<p class="small">Até 5 fotos');if(i>0)h=h.slice(0,i)+x+h.slice(i)}}catch(e){}return h};
+var spv=savePlan;savePlan=async function(ev){try{if(planDraft&&authSession){var old=planById(planDraft.id);
+    if(aux()){if(old&&repOk(old.rep))planDraft.rep={d:old.rep.d};else delete planDraft.rep;if(old&&old.repOf)planDraft.repOf=old.repOf}
+    else{var sid=sidOf(old||planDraft),on=repOk(planDraft.rep);(state.plans||[]).forEach(function(p){if(p.id!==planDraft.id&&sidOf(p)===sid){if(on)p.rep={d:planDraft.rep.d};else delete p.rep}})}}}catch(x){}
+  var r=await spv.apply(this,arguments);try{if(!planDraft)runRep()}catch(x){}return r};
+function addDays(d,n){var x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return iso(x)}
+function genRep(){if(!authSession||aux()||!Array.isArray(state.plans))return [];var today=iso(),lim=addDays(today,7),series={},out=[];
+  state.plans.forEach(function(p){if(p&&p.id){var k=sidOf(p);(series[k]=series[k]||[]).push(p)}});
+  Object.keys(series).forEach(function(sid){var l=series[sid].slice().sort(function(a,b){return a.date.localeCompare(b.date)}),last=l[l.length-1];if(!repOk(last.rep))return;
+    var c=addDays(last.date,1);while(wdOf(c)!==last.rep.d)c=addDays(c,1);if(c<today){c=today;while(wdOf(c)!==last.rep.d)c=addDays(c,1)}
+    if(c>lim||l.some(function(p){return p.date===c}))return;var id=(sid+'-w'+c.replace(/-/g,'')).slice(0,100);if(!safePlanId(id)||state.plans.some(function(p){return p.id===id})||out.some(function(p){return p.id===id}))return;
+    var np={id:id,title:last.title,date:c,repOf:sid,rep:{d:last.rep.d},activities:last.activities.map(function(a){var n={id:a.id,title:a.title,owner:a.owner||'',notes:a.notes||'',photos:[]};if(a.time)n.time=a.time;return n})};
+    ['cby','cdev','clogin'].forEach(function(k){if(last[k])np[k]=last[k]});out.push(np)});return out}
+var repBusy=false;async function runRep(){if(repBusy)return 0;var add=genRep();if(!add.length)return 0;var next=(state.plans||[]).concat(add);if(next.length>500)return 0;try{validatePlans(JSON.parse(JSON.stringify(next)))}catch(e){return 0}
+  repBusy=true;try{state.plans=next;await save();if(page==='plans'||page==='home')render()}finally{repBusy=false}return add.length}
+W.e99RepRun=runRep;
+var repT=0;function repTick(){if(!authSession||aux()||planDraft)return;var n=Date.now();if(n-repT<60000)return;repT=n;setTimeout(function(){runRep().catch(function(){})},50)}
+function repDeco(){if(page!=='plans'||planDraft)return;var seen={};D.querySelectorAll('#view .plan-card [onclick*="Plan(\'"]').forEach(function(b){var m=/Plan\('([^']+)'/.exec(b.getAttribute('onclick')||'');if(!m||seen[m[1]])return;seen[m[1]]=1;var p=planById(m[1]),card=b.closest('.plan-card'),pill=card&&card.querySelector('.pill');if(!p||!repOk(p.rep)||!pill||card.querySelector('.e99-rep-pill'))return;var s=D.createElement('span');s.className='pill e99-rep-pill';s.textContent='Repete '+(p.rep.d===0?'todo domingo':p.rep.d===6?'todo sábado':'toda '+WD[p.rep.d]+'-feira');pill.after(s)})}
+
+/* ================= (6) Início: o que pede ação hoje ================= */
+stats=function(){var a=aux(),acts=todayActs(),todo=acts.filter(function(x){return !x.a.done}).length,al=[];try{al=collectAlerts()}catch(x){}
+  var late=al.filter(function(x){return x.kind==='act'}).length,nfLate=al.filter(function(x){return x.kind==='nf'}).length,div=(state.nfs||[]).filter(function(n){return n.status==='Em divergência'}).length;
+  var cards=[[todo,'Para fazer hoje',todo?'atividades do plano de hoje':acts.length?'Tudo feito hoje':'Nenhum plano para hoje',"planFilter=iso();go('plans')",'Ver plano de hoje'],
+    [late,'Atrasadas',late?'passaram do horário ou ficaram de ontem':'Nenhuma atividade atrasada',a?"go('plans')":"go('alerts')",'Ver prazos'],
+    [nfLate,'Notas paradas',nfLate?'esperando conferência além do prazo':'Nenhuma nota fora do prazo',"nfStatusFilter='';go('nfs')",'Conferir notas'],
+    [div,'Divergências a resolver',div?'notas com falta, sobra ou avaria':'Nenhuma divergência aberta',"nfStatusFilter='Em divergência';go('nfs')",'Resolver']];
+  return '<div class="stats e99-todo" aria-label="O que pede ação hoje">'+cards.map(function(c){return '<div class="stat e99-go'+(c[0]?'':' e99-zero')+'" role="button" tabindex="0" data-go="'+esc(c[3])+'" aria-label="'+esc(c[1]+': '+c[0]+'. '+c[2])+'"><strong>'+c[0]+'</strong><span>'+esc(c[1])+'</span><small class="small">'+esc(c[2])+'</small>'+(c[0]?'<span class="e99-go-l" aria-hidden="true">'+esc(c[4])+' →</span>':'')+'</div>'}).join('')+'</div>'};
+var GO={"planFilter=iso();go('plans')":function(){planFilter=iso();go('plans')},"go('plans')":function(){go('plans')},"go('alerts')":function(){go('alerts')},"nfStatusFilter='';go('nfs')":function(){nfStatusFilter='';go('nfs')},"nfStatusFilter='Em divergência';go('nfs')":function(){nfStatusFilter='Em divergência';go('nfs')}};
+function goCard(el){var f=GO[el.getAttribute('data-go')];if(f)f()}
+D.addEventListener('click',function(e){var c=e.target&&e.target.closest&&e.target.closest('#view .stats>.stat.e99-go');if(c)goCard(c)});
+D.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target&&e.target.matches&&e.target.matches('#view .stats>.stat.e99-go')){e.preventDefault();goCard(e.target)}});
+
+/* ================= (2) busca geral ================= */
+var IC='<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+function nt(v){return normalText(v)}
+function dig(v){return String(v||'').replace(/\D/g,'')}
+function hit(q,qd,parts,digits){var t=nt(parts.join(' '));if(q.split(' ').every(function(w){return t.indexOf(w)>=0}))return true;return qd.length>=3&&digits.some(function(x){return dig(x).indexOf(qd)>=0})}
+function find(raw){var q=nt(raw),qd=dig(raw),out={nfs:[],plans:[],corr:[],team:[]};if(!q||!authSession)return out;var a=aux();
+  (state.nfs||[]).forEach(function(n){if(hit(q,qd,[n.number,n.supplier,n.cnpj,n.accessKey,n.status,'nf '+n.number],[n.number,n.cnpj,n.accessKey]))out.nfs.push(n)});
+  out.nfs.sort(function(x,y){return (y.date||'').localeCompare(x.date||'')});
+  (state.plans||[]).forEach(function(p){var acts=(p.activities||[]).filter(function(x){return hit(q,'',[x.title,x.owner,x.notes],[])});if(acts.length||hit(q,'',[p.title,brDate(p.date)],[]))out.plans.push({p:p,acts:acts})});
+  out.plans.sort(function(x,y){return y.p.date.localeCompare(x.p.date)});
+  if(!a){(state.corridors||[]).forEach(function(c){if(hit(q,'',['corredor '+c.number,c.sector,c.products||'',nameOf(c.owner)],[]))out.corr.push(c)});
+    (state.team||[]).forEach(function(t){if(hit(q,'',[t.name,t.role],[]))out.team.push(t)})}
+  return out}
+W.e99Find=function(q){var r=find(q);return {nfs:r.nfs.map(function(n){return n.id}),plans:r.plans.map(function(x){return x.p.id}),corridors:r.corr.map(function(c){return c.id}),team:r.team.map(function(t){return t.id})}};
+var dlg=null,LIM=8;
+function ensure(){if(dlg)return dlg;dlg=D.createElement('dialog');dlg.id='e99-search';dlg.setAttribute('aria-label','Busca geral');
+  dlg.innerHTML='<div class="sx-top">'+IC.replace('<svg','<svg width="20" height="20"')+'<input id="e99-sx-q" type="search" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-label="Buscar notas, planos, corredores e pessoas" placeholder="Nota, fornecedor, CNPJ, plano, pessoa…"><button type="button" id="e99-sx-x" aria-label="Fechar busca">Fechar</button></div><div class="sx-res" id="e99-sx-res" role="region" aria-live="polite"></div>';
+  D.body.appendChild(dlg);var T=0;D.getElementById('e99-sx-q').addEventListener('input',function(){clearTimeout(T);T=setTimeout(paint,120)});
+  D.getElementById('e99-sx-q').addEventListener('keydown',function(e){if(e.key==='Enter'){var b=dlg.querySelector('.sx-it');if(b){e.preventDefault();b.click()}}});
+  D.getElementById('e99-sx-x').addEventListener('click',close);dlg.addEventListener('keydown',function(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close()}});dlg.addEventListener('click',function(e){if(e.target===dlg){close();return}var b=e.target.closest&&e.target.closest('.sx-it');if(b)pick(b.getAttribute('data-k'),b.getAttribute('data-id'),b.getAttribute('data-a'))});return dlg}
+function group(title,rows,total,more){return rows.length?'<div class="sx-g">'+esc(title)+' ('+total+')</div>'+rows.join('')+(total>rows.length?'<p class="small" style="margin:4px 2px">e mais '+(total-rows.length)+'. '+esc(more)+'</p>':''):''}
+function item(k,id,title,sub,a){return '<button type="button" class="sx-it" data-k="'+k+'" data-id="'+esc(id)+'"'+(a?' data-a="'+esc(a)+'"':'')+'><b>'+esc(title)+'</b><small>'+esc(sub)+'</small></button>'}
+function paint(){var box=D.getElementById('e99-sx-res'),q=D.getElementById('e99-sx-q').value;if(!nt(q)){box.innerHTML='<p class="sx-empty">Digite para buscar notas (número, fornecedor, CNPJ ou chave), planos e atividades'+(aux()?'':', corredores e pessoas da equipe')+'.</p>';return}
+  var r=find(q),h=group('Notas fiscais',r.nfs.slice(0,LIM).map(function(n){return item('nf',n.id,'NF '+n.number+(n.supplier?' · '+n.supplier:''),n.status+' · chegada '+brDate(n.date)+(n.cnpj?' · CNPJ '+n.cnpj:''))}),r.nfs.length,'Refine a busca.')
+   +group('Planos e atividades',r.plans.slice(0,LIM).map(function(x){var a=x.acts[0];return item('plan',x.p.id,a?a.title:x.p.title,(a?x.p.title+' · ':'')+brDate(x.p.date)+(a&&a.owner?' · '+a.owner:''),a?a.id:'')}),r.plans.length,'Refine a busca.')
+   +group('Corredores',r.corr.slice(0,LIM).map(function(c){return item('corridor',c.id,'Corredor '+c.number+' · '+c.sector,'Responsável: '+nameOf(c.owner))}),r.corr.length,'Refine a busca.')
+   +group('Equipe',r.team.slice(0,LIM).map(function(t){return item('person',t.id,t.name,t.role||'')}),r.team.length,'Refine a busca.');
+  box.innerHTML=h||'<p class="sx-empty">Nada encontrado para “'+esc(q.trim())+'”.</p>'}
+function close(){if(dlg&&dlg.open)dlg.close()}
+function flash(sel){setTimeout(function(){var el=D.querySelector(sel);if(!el)return;el.scrollIntoView({block:'center'});el.classList.add('e99-flash');setTimeout(function(){el.classList.remove('e99-flash')},2200)},120)}
+function pick(k,id,a){close();if(k==='nf'){var n=(state.nfs||[]).find(function(x){return x.id===id});if(!n)return;nfStatusFilter='';go('nfs');if(aux()&&!(W.e99Mine&&W.e99Mine(n))){nfQuery=String(n.number);refreshNFs();var s=D.querySelector('#view input[name="nf-busca"]');if(s)s.value=nfQuery;flash('#nf-results tbody tr');return}openEditor('nf',id)}
+  else if(k==='plan'){var p=planById(id);if(!p)return;planFilter=p.date;go('plans');flash('#view .plan-card [onclick*="\''+id.replace(/[^a-zA-Z0-9_-]/g,'')+'\'"]')}
+  else if(k==='corridor'&&!aux()){go('corridors');openEditor('corridor',id)}else if(k==='person'&&!aux()){go('team');openEditor('person',id)}}
+function open(){if(!authSession)return;ensure();if(!dlg.open)dlg.showModal();var i=D.getElementById('e99-sx-q');i.focus();i.select();paint()}
+W.e99Search={open:open,close:close};
+function addBtn(){var tb=D.querySelector('header .toolbar');if(!tb||tb.querySelector('.e99-search-btn'))return;var b=D.createElement('button');b.type='button';b.className='e99-search-btn';b.setAttribute('aria-label','Buscar (Ctrl+K)');b.setAttribute('aria-keyshortcuts','Control+K /');b.innerHTML=IC+'<span class="lbl">Buscar</span><kbd>Ctrl K</kbd>';b.addEventListener('click',open);tb.insertBefore(b,tb.firstChild)}
+D.addEventListener('keydown',function(e){if(!authSession||e.defaultPrevented)return;var k=String(e.key||'').toLowerCase();
+  if((e.ctrlKey||e.metaKey)&&!e.altKey&&k==='k'){e.preventDefault();open();return}
+  if(k==='/'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){var t=e.target,ed=t&&(t.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));if(ed||(typeof modal!=='undefined'&&modal.open)||D.querySelector('dialog[open]'))return;e.preventDefault();open()}});
+
+/* ================= (5) cabeçalho fixo da tabela de NFs no PC ================= */
+function headH(){var h=D.querySelector('header');if(!h)return 0;var cs=getComputedStyle(h);if(cs.position!=='sticky'&&cs.position!=='fixed')return 0;var r=h.getBoundingClientRect();return Math.max(0,Math.round(r.bottom))}
+function sticky(){try{var r=D.getElementById('nf-results'),pn=r&&r.closest('.panel');if(pn)pn.classList.add('e99-nfpanel');D.documentElement.classList.add('e99-sticky');D.documentElement.style.setProperty('--e99-head',headH()+'px')}catch(x){}}
+
+/* ================= ganchos ================= */
+var rb=render;render=function(){var r=rb.apply(this,arguments);try{if(authSession){takeSnap();addBtn();repDeco();if(page==='nfs')sticky();if(page==='home'||page==='plans')repTick()}}catch(x){}return r};
+addBtn();
 })();
 </script>
 </body></html>
