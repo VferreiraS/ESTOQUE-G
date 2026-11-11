@@ -2572,7 +2572,7 @@ window.chatOptions=function(id,btn){if(window.e99MsgMenu)window.e99MsgMenu(id,bt
 /* aviso para leitor de tela: só a mensagem nova (a lista não é lida inteira a cada atualização) */
 var annT=0,annQ=[];function announce(m){annQ.push(m);clearTimeout(annT);annT=setTimeout(function(){var q=annQ;annQ=[];var el=document.getElementById('chat-ann');if(!el||!q.length)return;var x=q[q.length-1];
   el.textContent=q.length>1?q.length+' mensagens novas no chat.':'Mensagem de '+x.from+': '+(x.text?x.text.slice(0,200):x.audio?'áudio':x.img?'foto':'')},700)}
-window.e99ChatSay=function(t){var el=document.getElementById('chat-ann');if(el){el.textContent='';setTimeout(function(){el.textContent=String(t||'')},50)}};
+window.e99ChatSay=function(t){window.__e99ChatAnn={t:String(t||''),at:Date.now()};var el=document.getElementById('chat-ann');if(el){el.textContent='';setTimeout(function(){var e2=document.getElementById('chat-ann')||el;e2.textContent=String(t||'')},50)}};
 function viewImg(u,alt){var d=document.getElementById('chat-img-view');if(!d){d=document.createElement('dialog');d.id='chat-img-view';d.setAttribute('aria-label','Foto do chat');d.innerHTML='<img alt="Foto do chat"><button type="button" onclick="this.closest(\'dialog\').close()">Fechar</button>';document.body.appendChild(d)}var im=d.querySelector('img');im.src=u;im.alt=alt||'Foto do chat';var back=document.activeElement;d.onclose=function(){try{if(back&&back.isConnected)back.focus()}catch(e){}};d.showModal();var c=d.querySelector('button');if(c)c.focus()}
 function setup(){var box=document.getElementById('chat-list');if(!box)return;var ex=document.getElementById('chat-extras');
   /* status da sincronização e contas dos auxiliares vão para baixo do campo de escrever: a conversa vem primeiro */
@@ -2590,7 +2590,7 @@ window.renderChat=function(){if(!cfg){return hero('Chat da equipe','')+'<div cla
   /* o redesenho da tela (sincronização da equipe) não perde o rascunho nem a posição da leitura */
   var t0=document.getElementById('chat-text');if(t0)draft=t0.value;var b0=document.getElementById('chat-list');keepTop=b0&&!stuck?b0.scrollTop:null;
   if(!inChat){inChat=true;sepShown=false;stuck=true;newCount=0;keepTop=null;unreadFrom=localStorage.getItem(readKey())||'';unreadTo=new Date().toISOString()}
-  setTimeout(function(){setup();paint(false);markRead();setStatus(connected);recBar();replyBar()},0);
+  setTimeout(function(){setup();paint(false);markRead();setStatus(connected);recBar();replyBar();/* v134: o redesenho da tela não apaga o aviso recente ao leitor de tela */var a=window.__e99ChatAnn,an=document.getElementById('chat-ann');if(a&&an&&!an.textContent&&Date.now()-a.at<10000)an.textContent=a.t},0);
   return '<div class="panel chat-wrap"><div class="chat-head"><div class="chat-title"><h2 id="chat-h">Chat · '+esc2(cfg.team||'Equipe')+'</h2><p class="chat-sub"><span class="chat-status" id="chat-status">Conectando…</span><span id="chat-people"></span></p></div><div class="chat-head-acts"><button type="button" class="chat-invite" onclick="chatInvite()">Convidar</button></div></div>'
    +'<div class="chat-body"><div id="chat-list" role="log" aria-live="off" aria-labelledby="chat-h" tabindex="0"></div><button type="button" id="chat-jump" class="chat-jump" hidden onclick="chatToBottom()">'+IC.down+'<span>Ir para o fim</span></button></div>'
    +'<div id="chat-ann" class="chat-sr" role="status" aria-live="polite" aria-atomic="true"></div>'
@@ -7573,7 +7573,7 @@ async function restore(ev){ev.preventDefault();var f=ev.target,err=D.getElementB
   try{var cl=await cloud();if(!cl)throw Error('Ligue a nuvem nesta conta para restaurar.');var got;try{got=await fetchStr(cl.c.db,cl.u.uid)}catch(x){if(x&&x.code)throw Error(x.code==='unavailable'?await W.e99NetWhy():'Não foi possível ler o backup agora.');throw x}if(!got)throw Error('Ainda não há backup desta conta na nuvem.');
     var rec=authCheckRecord(JSON.parse(got.str));if(authLoginName(rec.login)!==authLoginName(s.record.login))throw Error('Este backup é de outra conta.');var op;try{op=await authDecrypt(rec,pw)}catch(x){throw Error('Senha incorreta para este backup.')}
     if(authSession!==s)return;var next=validate(op.payload.state);['photoKey','confKey','sealKey'].forEach(function(k){if(state[k])next[k]=state[k]});var cu=cust();if(cu.priv||cu.gk)next.custody=Object.assign({},next.custody,cu);next.sealed=Object.assign({},next.sealed||{},state.sealed||{});
-    state=next;corrupt=false;await save();D.getElementById('bk-dlg').close();render();notify('Dados restaurados do backup da nuvem'+(got.slim?' (sem as fotos grandes)':'')+'.')}
+    state=next;corrupt=false;await save();/* v134: depois de restaurar, a nuvem recebe o estado restaurado já (um envio em andamento podia deixar lá a cópia anterior por 10 min) */Promise.resolve(running).then(function(){if(authSession===s)return go1(true,s)}).catch(function(){});D.getElementById('bk-dlg').close();render();notify('Dados restaurados do backup da nuvem'+(got.slim?' (sem as fotos grandes)':'')+'.')}
   catch(x){err.textContent=x.message||'Não foi possível restaurar.'}finally{btn.disabled=false}}
 W.e99Backup={now:now,ask:ask,restore:restore,soon:soon,run:function(f){return go1(!!f)},meta:function(){return authSession?meta(authSession):null},on:BK_ON};
 /* ganchos de tela */
