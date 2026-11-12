@@ -63,7 +63,7 @@ function rid(c,seq){return c+'-'+pad(seq,5)}
 
 /* ---------- sessão atual ---------- */
 var S=null,lockRel=null,M={st:'off',cand:null,lockCode:'',lastSeen:0,hintAt:0,otherAt:0,saving:false,ask:null},cp={n:0,t:0,seq:0,dirty:false},saveOk=true,tickT=0;
-function metaOf(s){return {id:s.id,n:s.n,by:s.by,login:s.login,role:s.role,dev:s.dev,start:s.start,end:s.end,status:s.status,mode:s.mode,rule:s.rule,fixes:s.fixes,nf:s.nf||'',assocBy:s.assocBy||'',assocAt:s.assocAt||'',note:s.note||''}}
+function metaOf(s){return {id:s.id,n:s.n,by:s.by,login:s.login,role:s.role,dev:s.dev,start:s.start,end:s.end,status:s.status,mode:s.mode,rule:s.rule,fixes:s.fixes,nf:s.nf||'',assocBy:s.assocBy||'',assocAt:s.assocAt||'',note:s.note||'',src:s.src==='coletor'?'coletor':''}}
 async function putMeta(){if(!S)return;var r=await seal(metaOf(S),'s|'+S.id);await idbPut('sessions',{id:S.id,acct:S.acct,iv:r.iv,ct:r.ct})}
 async function putRead(x){var r=await seal({seq:x.seq,at:x.at,code:x.code,fmt:x.fmt,m:x.m,st:x.st},'r|'+S.id+'|'+x.seq);return {id:rid(S.id,x.seq),acct:S.acct,conf:S.id,seq:x.seq,synced:x.synced?1:0,iv:r.iv,ct:r.ct}}
 function valid(s){return (s||S).reads.filter(function(r){return r.st==='v'})}
@@ -74,8 +74,8 @@ async function addRead(code,fmt,m){var x={seq:nextSeq(),at:Date.now(),code:code,
   try{await idbPut('reads',await putRead(x))}catch(e){saveOk=false;paint();return null}
   saveOk=true;S.reads.push(x);cp.n++;cp.dirty=true;return x}
 function compact(s){var st=Date.parse(s.start)||Date.now();return {id:s.id,n:s.n,by:s.by,login:s.login,role:s.role,dev:s.dev,start:s.start,end:s.end||'',status:s.status,mode:s.mode,rule:{codes:Object.assign({},s.rule&&s.rule.codes||{})},
-  reads:s.reads.slice().sort(function(a,b){return a.seq-b.seq}).slice(-5000).map(function(r){return [r.seq,Math.max(0,Math.round((r.at-st)/1000)),r.code,r.fmt,r.m,r.st]}),fixes:(s.fixes||[]).slice(-2000),total:valid(s).length,nf:s.nf||'',assocBy:s.assocBy||'',assocAt:s.assocAt||'',note:s.note||''}}
-function expand(c){var st=Date.parse(c.start)||Date.now();return {id:c.id,n:c.n,by:c.by,login:c.login,role:c.role,dev:c.dev,start:c.start,end:c.end||'',status:c.status,mode:c.mode||'toque',rule:{codes:Object.assign({},c.rule&&c.rule.codes||{})},fixes:(c.fixes||[]).slice(),nf:c.nf||'',assocBy:c.assocBy||'',assocAt:c.assocAt||'',note:c.note||'',
+  reads:s.reads.slice().sort(function(a,b){return a.seq-b.seq}).slice(-5000).map(function(r){return [r.seq,Math.max(0,Math.round((r.at-st)/1000)),r.code,r.fmt,r.m,r.st]}),fixes:(s.fixes||[]).slice(-2000),total:valid(s).length,nf:s.nf||'',assocBy:s.assocBy||'',assocAt:s.assocAt||'',note:s.note||'',...(s.src==='coletor'?{src:'coletor'}:{})}}
+function expand(c){var st=Date.parse(c.start)||Date.now();return {id:c.id,n:c.n,by:c.by,login:c.login,role:c.role,dev:c.dev,start:c.start,end:c.end||'',status:c.status,mode:c.mode||'toque',rule:{codes:Object.assign({},c.rule&&c.rule.codes||{})},fixes:(c.fixes||[]).slice(),nf:c.nf||'',assocBy:c.assocBy||'',assocAt:c.assocAt||'',note:c.note||'',src:c.src==='coletor'?'coletor':'',
   reads:(c.reads||[]).map(function(r){return {seq:r[0],at:st+r[1]*1000,code:r[2],fmt:r[3],m:r[4],st:r[5],synced:1}})}}
 /* ponto de controle: copia para state.confs (preserva a associação feita por outro aparelho) e grava/sincroniza */
 async function checkpoint(why){if(!S||!logged()||S.acct!==acct())return false;var c=compact(S),list=(state.confs||[]).slice(),i=list.findIndex(function(x){return x&&x.id===c.id});
@@ -208,7 +208,7 @@ async function refocus(manual){if(!cam.track)return;var tok=cam.token;cam.refocu
   if(!manual)return false;camMsg('Reabrindo a câmera para focar…');await startCam('Câmera reaberta. Segure parado a uns 15 cm até focar.');return true}
 async function cycleZoom(){if(cam.zooms.length<2)return;var i=cam.zooms.indexOf(cam.zoom),z=cam.zooms[(i+1)%cam.zooms.length];if(await setC({zoom:z})){cam.zoom=z;lsSet(ZK,String(z));camMsg('Zoom '+zl(z)+'. Se a etiqueta não couber, diminua.')}else say('Zoom indisponível nesta câmera.');paintCam()}
 function zl(z){return String(z).replace('.',',')+'×'}
-async function startCam(okMsg){if(!S||S.status!=='ativa')return;stopCam();var tok=cam.token;cam.err='';camMsg('Abrindo a câmera…');paintCam();
+async function startCam(okMsg){if(!S||S.status!=='ativa')return;if(S.src==='coletor')return startKbd(okMsg);stopCam();var tok=cam.token;cam.err='';camMsg('Abrindo a câmera…');paintCam();
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){camError({name:'nosupport'});return}
   var prep=prepDecoder().catch(function(e){return e});
   var video=Object.assign(cam.devId?{deviceId:{exact:cam.devId}}:{facingMode:{ideal:'environment'}},{width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30}}),stream;
@@ -239,13 +239,14 @@ function feed(r,now){now=now==null?performance.now():now;if(!S||S.status!=='ativ
   M.cand={code:v.code,t:now}}
 async function countIt(v,now,m){M.saving=true;var x=await addRead(v.code,v.fmt,m||'c');M.saving=false;
   if(!x){M.st='armado';camMsg('Não salvo — tente de novo.');paint();return null}
+  if(S&&S.src==='coletor'){M.st='armado';feedback();camMsg('Contou! Leia a próxima caixa.');paint();maybeCheckpoint();return x}
   M.st='travado';M.lockCode=v.code;M.lastSeen=now==null?performance.now():now;M.otherAt=M.lastSeen;feedback();
   camMsg(S.mode==='auto'?'Contou! Tire a câmera da etiqueta e aponte para a próxima caixa.':'Contou! Toque em "Próxima caixa" e aponte para a próxima etiqueta.');
   paint();maybeCheckpoint();var nx=$i('cf-next');if(nx&&S.mode!=='auto')try{nx.focus({preventScroll:true})}catch(e){}return x}
-function rearm(){if(!S)return;M.st=cam.stream||M.fake?'armado':'off';M.cand=null;M.lockCode='';cam.since=performance.now();camMsg('Pronto para a próxima caixa.');paint()}
+function rearm(){if(!S)return;M.st=armable()?'armado':'off';M.cand=null;M.lockCode='';cam.since=performance.now();camMsg('Pronto para a próxima caixa.');paint()}
 function askBox(v,now){M.st='ask';v.now=now;M.ask=v;sheet('',false);var box=$i('cf-ask');if(box){box.hidden=false;box.innerHTML='<p><b>Este código é da CAIXA?</b></p><p class="small">'+esc(FMT_NAME[v.fmt]||v.fmt)+' · <code>'+esc(v.code)+'</code></p><p class="small">A resposta vale para esta conferência.</p><div class="cf-askbtns"><button type="button" class="primary" id="cf-yes">Sim, é da caixa (conta 1)</button><button type="button" id="cf-no">Não, é do produto (não conta)</button></div>';var y=$i('cf-yes');if(y)try{y.focus({preventScroll:true})}catch(e){}}camMsg('Código novo nesta conferência: responda abaixo.')}
 async function answer(yes){var v=M.ask;if(!S||!v)return;M.ask=null;var box=$i('cf-ask');if(box){box.hidden=true;box.innerHTML=''}S.rule.codes[v.code]=yes?1:0;cp.dirty=true;var pm=putMeta().catch(function(){});
-  if(yes){M.st='armado';await countIt(v,v.now)}else{M.st=cam.stream||M.fake?'armado':'off';camMsg('Certo: esse código não conta. Aponte para a etiqueta da caixa.');paint()}await pm}
+  if(yes){M.st='armado';await countIt(v,v.now)}else{M.st=armable()?'armado':'off';camMsg(S.src==='coletor'?'Certo: esse código não conta. Leia a etiqueta da caixa.':'Certo: esse código não conta. Aponte para a etiqueta da caixa.');paint()}await pm;if(S&&S.src==='coletor')kbdDrain()}
 function feedback(){try{if(window.siteSoundEnabled!==false&&typeof playSiteSound==='function')playSiteSound('tap')}catch(e){}try{if(navigator.vibrate)navigator.vibrate(60)}catch(e){}
   var c=$i('cf-count');if(c){c.classList.add('hit');setTimeout(function(){c.classList.remove('hit')},260)}}
 function maybeCheckpoint(){if(S&&cp.n>=CP_READS)checkpoint('20')}
@@ -315,7 +316,7 @@ function shell(){var d=dlg();d.innerHTML='<div class="cf-bg" aria-hidden="true">
   +'<p class="cf-meta" id="cf-meta"></p><label class="cf-auto"><input type="checkbox" id="cf-autochk"> Rearme automático: conta de novo quando nenhum código aparece por 1,2 s</label><ol class="cf-hist" id="cf-hist"></ol></section>'
   +'<form class="cf-sheet cf-manual" id="cf-manual-form" hidden><div class="cf-shead"><h3>Volume à mão</h3><button type="button" class="cf-ib" id="cf-mcancel" aria-label="Cancelar">'+ic('x')+'</button></div><label>Código da caixa (opcional)<input id="cf-mcode" maxlength="64" inputmode="text" autocomplete="off" spellcheck="false" placeholder="Deixe vazio se não tiver código"></label><button type="submit" class="primary">Adicionar 1 volume</button></form>'}
 var ST={ativa:'Contando',pausada:'Pausada',finalizada:'Finalizada',cancelada:'Cancelada'};
-function paintCam(){if(!S)return;var box=$i('cf-cam'),off=$i('cf-camoff');if(!box)return;var on=!!cam.stream,pz=S.status==='pausada';box.classList.toggle('off',!on);
+function paintCam(){if(!S)return;var box=$i('cf-cam'),off=$i('cf-camoff');if(!box)return;if(S.src==='coletor')return paintKbd(box,off);var on=!!cam.stream,pz=S.status==='pausada';box.classList.toggle('off',!on);
   if(off){off.hidden=on;var t=$i('cf-camofft');if(t)t.textContent=pz?'Pausada':cam.err?'Câmera desligada':'Ligando a câmera…'}
   var r=$i('cf-retry');if(r)r.hidden=!(cam.err&&S.status==='ativa');var rs=$i('cf-resume');if(rs)rs.hidden=!pz;
   var sw=$i('cf-switch');if(sw)sw.hidden=!(on&&cam.devs.length>1);
@@ -332,22 +333,70 @@ function paint(){if(!S||!$i('cf-count'))return;var v=valid(),n=v.length;
   $i('cf-undo').disabled=!n;var dc=$i('cf-discard');if(dc)dc.disabled=S.status==='finalizada';var ac=$i('cf-autochk');if(ac)ac.checked=S.mode==='auto';
   $i('cf-last').textContent=lastTxt(S.reads.slice(-1)[0]);
   $i('cf-hn').textContent=String(S.reads.length);
-  $i('cf-hist').innerHTML=S.reads.slice(-50).reverse().map(function(r){return '<li class="'+(r.st==='x'?'x':'')+'"><b>'+pad(r.seq)+'</b><span>'+esc(tm(r.at))+'</span><code>'+esc(r.code||'(sem código)')+'</code><span class="small">'+(r.m==='h'?'manual':'câmera')+(r.st==='x'?' · desfeita':'')+'</span></li>'}).join('');
+  $i('cf-hist').innerHTML=S.reads.slice(-50).reverse().map(function(r){return '<li class="'+(r.st==='x'?'x':'')+'"><b>'+pad(r.seq)+'</b><span>'+esc(tm(r.at))+'</span><code>'+esc(r.code||'(sem código)')+'</code><span class="small">'+mName(S,r).toLowerCase()+(r.st==='x'?' · desfeita':'')+'</span></li>'}).join('');
+  if(S.src==='coletor')nx.hidden=true;
   paintCam()}
 function tick(){if(!S){clearInterval(tickT);tickT=0;return}if(!logged()||S.acct!==acct()){stopCam();S=null;var d=$i('conf-dlg');if(d&&d.open)try{d.close()}catch(e){}return}
   if(S.status==='ativa'&&cp.dirty&&Date.now()-cp.t>=CP_MS)checkpoint('60s');markSynced().then(function(){var el=$i('cf-save');if(el&&S)el.textContent=(saveOk?'Salvo no aparelho ✓':'Não salvo — tente de novo')+' · '+syncText()})}
-async function openCounting(s){S=s;M={st:'off',cand:null,lockCode:'',lastSeen:0,hintAt:0,otherAt:0,saving:false,ask:null};cam.err='';shell();openDlg();paint();clearInterval(tickT);tickT=setInterval(tick,3000);
+async function openCounting(s){S=s;M={st:'off',cand:null,lockCode:'',lastSeen:0,hintAt:0,otherAt:0,saving:false,ask:null};cam.err='';kbd.q=[];kbd.buf='';shell();if(S.src==='coletor')kbdShell();openDlg();paint();clearInterval(tickT);tickT=setInterval(tick,3000);
   if(S.status==='ativa')await startCam();else camMsg('Conferência pausada. Toque em "Continuar" para seguir contando.')}
 
+/* ---------- v142: coletor de dados (leitor tipo Eyoyo no modo teclado HID: digita o código e manda Enter) ----------
+   Sem câmera e sem ZXing. Ouvinte de teclado no documento enquanto a tela de contagem do coletor está aberta e ativa
+   (sem campo focado: o teclado virtual do celular não abre). Junta as teclas que chegam rápidas (≤60 ms entre elas)
+   até Enter/Tab, ou fecha sozinho 80 ms depois da última tecla quando vieram ≥6 caracteres (coletor sem Enter no fim).
+   Digitação lenta (pessoa) zera o pedaço e não conta. Cada leitura conta 1 na hora (mesmo código de novo = mais 1).
+   As leituras gravam m:'c' (como a câmera, para aparelhos antigos aceitarem) e a conferência leva src:'coletor'. */
+var KBD_SVG='<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10v4M10 10v4M12.5 10v4M15 10v4M17 10v4"/>';
+var kbd={buf:'',last:0,timer:0,q:[],busy:false},KBD_GAP=60,KBD_IDLE=80,KBD_MIN=6;
+function armable(){return !!(cam.stream||M.fake||(S&&S.src==='coletor'&&S.status==='ativa'))}
+function mName(c,r){return r.m==='h'?'Manual':c&&c.src==='coletor'?'Coletor':'Câmera'}
+function errSound(){try{if(window.siteSoundEnabled===false||typeof siteSoundEnabled!=='undefined'&&!siteSoundEnabled)return;var ctx=typeof siteAudio!=='undefined'?siteAudio:null;if(!ctx||ctx.state!=='running'||D.hidden)return;var t=ctx.currentTime;
+  [[220,0],[175,.12]].forEach(function(n){var o=ctx.createOscillator(),g=ctx.createGain();o.type='square';o.frequency.setValueAtTime(n[0],t+n[1]);g.gain.setValueAtTime(0,t+n[1]);g.gain.linearRampToValueAtTime(.03,t+n[1]+.01);g.gain.exponentialRampToValueAtTime(.0001,t+n[1]+.11);o.connect(g);g.connect(ctx.destination);o.start(t+n[1]);o.stop(t+n[1]+.13)})}catch(e){}
+  try{if(navigator.vibrate)navigator.vibrate([40,40,40])}catch(e){}}
+/* o mesmo check() da câmera, sem saber o formato: só números de 8/12/13/14 dígitos exigem o dígito verificador */
+function kbdCheck(t){t=String(t==null?'':t).replace(/[\u0000-\u001f\u007f]/g,'').trim();if(!t)return null;
+  if(/^\d+$/.test(t)&&[8,12,13,14].indexOf(t.length)>=0)return check(t,t.length===13?'EAN_13':t.length===8?'EAN_8':t.length===12?'UPC_A':'ITF');
+  if(t.length<4||t.length>40)return null;return check(t,'CODE_128')}
+async function startKbd(okMsg){if(!S||S.status!=='ativa')return;stopCam();kbd.buf='';var tok=cam.token;
+  try{if(navigator.wakeLock&&navigator.wakeLock.request)navigator.wakeLock.request('screen').then(function(w){if(tok===cam.token)cam.wake=w;else try{w.release()}catch(e){}}).catch(function(){})}catch(e){}
+  if(M.st!=='ask')M.st='armado';try{var a=D.activeElement;if(a&&a!==D.body&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))a.blur()}catch(e){}
+  camMsg(okMsg||'Pronto. Aponte o coletor para a etiqueta da caixa e aperte o gatilho.');paintCam();kbdDrain()}
+function kbdShell(){var box=$i('cf-cam');if(!box)return;box.classList.add('cf-kbdbox');['cf-video'].forEach(function(id){var e=$i(id);if(e)e.remove()});
+  Array.prototype.forEach.call(box.querySelectorAll('.cf-frame,.cf-camfoot,#cf-torch,#cf-switch'),function(e){e.remove()});
+  var i=D.createElement('div');i.className='cf-kbdinfo';i.id='cf-kbdinfo';i.innerHTML='<svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+KBD_SVG+'</svg><p class="cf-kbdst" id="cf-kbdst">Pronto para ler</p><p class="cf-kbdtip">Aponte o coletor e aperte o gatilho. O coletor precisa estar no modo teclado (HID).</p>';
+  box.insertBefore(i,box.firstChild);var tl=box.querySelector('.cf-tools');if(tl)tl.setAttribute('aria-label','Coletor e opções');
+  var au=$i('cf-autochk');if(au&&au.closest('label'))au.closest('label').remove();var nx=$i('cf-next');if(nx)nx.hidden=true;
+  var d=$i('conf-dlg');if(d)d.classList.add('cf-kbdmode')}
+function paintKbd(box,off){var on=S.status==='ativa',pz=S.status==='pausada';box.classList.toggle('off',!on);if(off){off.hidden=on;var t=$i('cf-camofft');if(t)t.textContent=pz?'Pausada':'Finalizada'}
+  var r=$i('cf-retry');if(r)r.hidden=true;var rs=$i('cf-resume');if(rs)rs.hidden=!pz;var inf=$i('cf-kbdinfo');if(inf)inf.hidden=!on;
+  var st=$i('cf-kbdst');if(st)st.textContent=M.st==='ask'?'Responda a pergunta abaixo':'Pronto para ler';
+  var p=$i('cf-pause');if(p){p.innerHTML=ic(on?'pause':'play');p.setAttribute('aria-label',on?'Pausar':'Continuar');p.title=on?'Pausar':'Continuar';p.disabled=S.status==='finalizada'}}
+/* 1 = captura e conta; 2 = engole (pergunta "é da CAIXA?" aberta: o Enter do coletor não pode responder sozinho); 0 = não mexe */
+function kbdActive(){if(!S||S.src!=='coletor'||S.status!=='ativa')return 0;var d=$i('conf-dlg');if(!d||!d.open||!$i('cf-count'))return 0;
+  var a=D.activeElement;if(a&&(a.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)))return 0;if(sheetOpen())return 0;return M.st==='ask'?2:1}
+function kbdEnd(){clearTimeout(kbd.timer);kbd.timer=0;var c=kbd.buf;kbd.buf='';if(c.length<4)return;if(kbd.swallow){camMsg('Responda a pergunta antes de ler outro código.');return}kbd.q.push({t:c,now:performance.now()});kbdDrain()}
+async function kbdDrain(){if(kbd.busy)return;kbd.busy=true;try{while(kbd.q.length&&S&&S.src==='coletor'&&S.status==='ativa'&&M.st!=='ask'){var it=kbd.q.shift(),v=kbdCheck(it.t);
+    if(!v){errSound();camMsg('Código não aceito (formato ou dígito errado). Não contou.');continue}
+    var rule=ruleFor(v);if(rule===0){errSound();camMsg('Código do produto: não conta. Leia a etiqueta da caixa.');continue}
+    if(rule===null){askBox(v,it.now);paintCam();break}
+    M.st='armado';await countIt(v,it.now,'c')}}finally{kbd.busy=false}}
+D.addEventListener('keydown',function(ev){var mode=kbdActive();if(!mode){if(kbd.buf){kbd.buf='';clearTimeout(kbd.timer)}return}kbd.swallow=mode===2;if(ev.ctrlKey||ev.metaKey||ev.altKey||ev.isComposing)return;var k=ev.key,now=performance.now();
+  if(k==='Enter'||k==='Tab'){if(kbd.buf&&now-kbd.last<=400){var long=kbd.buf.length>=4;if(long){ev.preventDefault();ev.stopPropagation()}kbdEnd()}else kbd.buf='';return}
+  if(typeof k!=='string'||k.length!==1)return;
+  if(kbd.buf&&now-kbd.last>KBD_GAP)kbd.buf='';kbd.buf+=k;kbd.last=now;if(kbd.buf.length>64)kbd.buf=kbd.buf.slice(-64);ev.preventDefault();ev.stopPropagation();
+  clearTimeout(kbd.timer);kbd.timer=setTimeout(function(){if(kbd.buf.length>=KBD_MIN&&performance.now()-kbd.last>=KBD_IDLE-5)kbdEnd();else kbd.buf=''},KBD_IDLE)},true);
+D.addEventListener('keyup',function(ev){if(kbdActive()&&(ev.key===' '||ev.key==='Enter')&&kbd.last&&performance.now()-kbd.last<200)ev.preventDefault()},true);
+
 /* ---------- começar ---------- */
-window.confStart=async function(){if(!logged())return;try{if(typeof unlockSiteAudio==='function')unlockSiteAudio()}catch(e){}
+window.confStart=async function(src){src=src==='coletor'?'coletor':'';if(!logged())return;try{if(typeof unlockSiteAudio==='function')unlockSiteAudio()}catch(e){}
   if(S&&S.status!=='finalizada'&&S.acct===acct()){openCounting(S);if(S.status==='pausada')resume();return}
   var open=await interrupted();if(open.length){var o=open[0],tot=(o.reads||[]).filter(function(r){return Array.isArray(r)?r[5]==='v':r.st==='v'}).length||o.total||0;
     if(confirm('Existe a conferência '+o.n+' interrompida. Continuar essa?\n\nOK = continuar · Cancelar = começar uma nova')){return window.confResume(o.id)}}
   var id='cf-'+devBase()+'-'+Date.now().toString(36);
   try{await ckey()}catch(e){say(e.message||'Não foi possível preparar a conferência.');return}
   if(!(await lock(id))){say('Esta conferência está aberta em outra aba.');return}
-  var s={id:id,acct:acct(),n:nextNumber(),by:myName(),login:myLogin(),role:['auxiliar','estoque','gestor'].indexOf(role())>=0?role():'estoque',dev:meDev(),start:nowIso(),end:'',status:'ativa',mode:'toque',rule:{codes:{}},fixes:[],reads:[],nf:'',assocBy:'',assocAt:'',note:''};
+  var s={id:id,acct:acct(),n:nextNumber(),by:myName(),login:myLogin(),role:['auxiliar','estoque','gestor'].indexOf(role())>=0?role():'estoque',dev:meDev(),start:nowIso(),end:'',status:'ativa',mode:'toque',rule:{codes:{}},fixes:[],reads:[],nf:'',assocBy:'',assocAt:'',note:''};if(src)s.src=src;
   S=s;cp={n:0,t:Date.now(),seq:0,dirty:true};try{await putMeta()}catch(e){saveOk=false;say('Este navegador não deixa salvar a conferência no aparelho (modo privado?). A contagem fica só na memória até o próximo ponto de controle.')}
   await openCounting(s);checkpoint('inicio')};
 window.confResume=async function(id){if(!logged())return;if(S&&S.id===id&&S.status!=='finalizada'){openCounting(S).then(function(){if(S&&S.status==='pausada')resume()});return}
@@ -358,7 +407,7 @@ window.confReport=function(id){showReport(id)};
 /* ---------- relatório ---------- */
 function confById(id){if(S&&S.id===id)return compact(S);return (state.confs||[]).find(function(c){return c.id===id})||null}
 function data(c){var st=Date.parse(c.start)||0,rs=c.reads||[],v=rs.filter(function(r){return r[5]==='v'}),codes={};v.forEach(function(r){var k=r[2]||'(sem código)';codes[k]=(codes[k]||0)+1});
-  return {c:c,total:v.length,camN:v.filter(function(r){return r[4]==='c'}).length,manN:v.filter(function(r){return r[4]==='h'}).length,undone:rs.filter(function(r){return r[5]==='x'}).length,
+  return {c:c,src:c.src==='coletor',total:v.length,camN:v.filter(function(r){return r[4]==='c'}).length,manN:v.filter(function(r){return r[4]==='h'}).length,undone:rs.filter(function(r){return r[5]==='x'}).length,
     codes:Object.keys(codes).map(function(k){return [k,codes[k]]}).sort(function(a,b){return b[1]-a[1]||(a[0]<b[0]?-1:1)}),reads:rs.map(function(r){return {seq:r[0],at:st+r[1]*1000,code:r[2],fmt:r[3],m:r[4],st:r[5]}}),fixes:c.fixes||[],start:st,end:Date.parse(c.end)||0}}
 function nfOf(c){return c&&c.nf?(state.nfs||[]).find(function(n){return n.id===c.nf})||null:null}
 function compare(nf){var list=(state.confs||[]).filter(function(c){return c.nf===nf.id&&c.status==='finalizada'}),total=list.reduce(function(s,c){return s+(c.total|0)},0),byCode={};
@@ -387,7 +436,7 @@ function xmlHtml(x){if(!x)return '<div class="cf-xml" id="cf-xml"><h3>Itens da n
 function showReport(id){var c=confById(id);if(!c){say('Conferência não encontrada.');return}stopCam();var d=dlg(),x=data(c),aux=isAuxNow(),nf=aux?null:nfOf(c);
   var h='<div class="cf-wrap cf-rep"><div class="cf-head"><div><h2 id="cf-title">Relatório · '+esc(c.n)+'</h2><p class="small">'+esc(ST[c.status]||c.status)+'</p></div><button type="button" class="cf-x" id="cf-close" aria-label="Fechar">✕</button></div>'
    +'<dl class="cf-kv"><dt>Número</dt><dd>'+esc(c.n)+'</dd><dt>ID</dt><dd>'+esc(c.id)+'</dd><dt>Funcionário</dt><dd>'+esc(c.by)+(c.login?' ('+esc(c.login)+')':'')+'</dd><dt>Início</dt><dd>'+esc(dt(x.start))+'</dd><dt>Término</dt><dd>'+esc(x.end?dt(x.end):'—')+'</dd>'
-   +(x.end?'<dt>Duração</dt><dd>'+esc(dur(x.start,x.end))+'</dd>':'')+'<dt>Total de volumes</dt><dd><b>'+x.total+'</b></dd><dt>Pela câmera</dt><dd>'+x.camN+'</dd><dt>À mão</dt><dd>'+x.manN+'</dd><dt>Desfeitas</dt><dd>'+x.undone+'</dd>'
+   +(x.end?'<dt>Duração</dt><dd>'+esc(dur(x.start,x.end))+'</dd>':'')+'<dt>Total de volumes</dt><dd><b>'+x.total+'</b></dd><dt>'+(x.src?'Pelo coletor':'Pela câmera')+'</dt><dd>'+x.camN+'</dd><dt>À mão</dt><dd>'+x.manN+'</dd><dt>Desfeitas</dt><dd>'+x.undone+'</dd>'
    +(nf?'<dt>NF associada</dt><dd>NF '+esc(nf.number)+' · '+esc(nf.supplier)+'</dd>':c.nf&&!aux?'<dt>NF associada</dt><dd>(NF apagada)</dd>':'')+'</dl>'
    +'<h3>Quantidade por código</h3>'+(x.codes.length?'<table class="cf-table"><thead><tr><th>Código</th><th>Volumes</th></tr></thead><tbody>'+x.codes.map(function(r){return '<tr><td><code>'+esc(r[0])+'</code></td><td>'+r[1]+'</td></tr>'}).join('')+'</tbody></table>':'<p class="small">Nenhuma leitura válida.</p>')
    +'<h3>Correções</h3>'+(x.fixes.length?'<ul>'+x.fixes.map(function(f){return '<li class="small">'+esc(dt(Date.parse(f[1])))+' · '+esc(f[2])+' · '+(f[3]==='undo'?'desfez a leitura ':'adicionou à mão a leitura ')+pad(f[4])+'</li>'}).join('')+'</ul>':'<p class="small">Nenhuma correção.</p>');
@@ -397,7 +446,7 @@ function showReport(id){var c=confById(id);if(!c){say('Conferência não encontr
       +xmlHtml(k.xml)
       +(k.ok===null?'<p class="small">A NF não tem volumes informados para comparar.</p>':bad?'<p><b>Divergência:</b> contados '+k.total+' de '+k.want+' volumes.</p><div class="cf-repbtns"><button type="button" id="cf-mark" data-id="'+esc(c.id)+'" data-st="Em divergência">Marcar NF em divergência</button></div>':'<p><b>Confere:</b> '+k.total+' de '+k.want+' volumes.</p><div class="cf-repbtns"><button type="button" id="cf-mark" data-id="'+esc(c.id)+'" data-st="Conferido">Marcar NF como Conferido</button></div>')+'</div>'}}
   h+='<div class="cf-repbtns"><button type="button" class="primary" id="cf-csv" data-id="'+esc(c.id)+'">Baixar CSV</button><button type="button" id="cf-xlsx" data-id="'+esc(c.id)+'">Excel (.xlsx)</button><button type="button" id="cf-pdf" data-id="'+esc(c.id)+'">PDF / Imprimir</button></div>'
-   +'<details class="cf-histbox"><summary>Todas as leituras ('+x.reads.length+')</summary><ol class="cf-hist">'+x.reads.slice().reverse().map(function(r){return '<li class="'+(r.st==='x'?'x':'')+'"><b>'+pad(r.seq)+'</b><span>'+esc(tm(r.at))+'</span><code>'+esc(r.code||'(sem código)')+'</code><span class="small">'+(r.m==='h'?'manual':'câmera')+(r.st==='x'?' · desfeita':'')+'</span></li>'}).join('')+'</ol></details></div>';
+   +'<details class="cf-histbox"><summary>Todas as leituras ('+x.reads.length+')</summary><ol class="cf-hist">'+x.reads.slice().reverse().map(function(r){return '<li class="'+(r.st==='x'?'x':'')+'"><b>'+pad(r.seq)+'</b><span>'+esc(tm(r.at))+'</span><code>'+esc(r.code||'(sem código)')+'</code><span class="small">'+mName(c,r).toLowerCase()+(r.st==='x'?' · desfeita':'')+'</span></li>'}).join('')+'</ol></details></div>';
   d.innerHTML=h;openDlg()}
 async function assocSave(id){if(isAuxNow()){say('Só gestor ou estoque associa a NF.');return}var sel=$i('cf-assoc-sel'),nfId=sel?sel.value:'';if(!nfId){say('Escolha a NF.');return}
   var list=(state.confs||[]).slice(),i=list.findIndex(function(c){return c.id===id});if(i<0)return;if(list[i].status!=='finalizada'){say('Finalize a conferência antes de associar.');return}
@@ -407,17 +456,17 @@ async function markNF(id,st){if(isAuxNow())return;var c=confById(id),nf=nfOf(c);
   if(st==='Em divergência'){var note=prompt('Nota da divergência:',('Contados '+k.total+' de '+k.want+' volumes ('+k.sessions.map(function(s){return s.n}).join(', ')+'). '+(nf.notes||'')).trim().slice(0,10000));if(note===null)return;if(!note.trim()){say('Descreva a divergência.');return}nf.notes=note.trim().slice(0,10000)}
   nf.status=st;await save();try{checkAlerts()}catch(e){}say('NF '+nf.number+': '+st+'.');showReport(id)}
 function csvText(c){return '\ufeff'+csvRows(c).map(function(r){return r.map(csvCell).join(';')}).join('\r\n')}
-function csvRows(c){var x=data(c),nf=isAuxNow()?null:nfOf(c),rows=[['Conferência',c.n],['ID',c.id],['Funcionário',c.by],['Login',c.login],['Início',dt(x.start)],['Término',x.end?dt(x.end):''],['Status',ST[c.status]||c.status],['Total de volumes',x.total],['Leituras pela câmera',x.camN],['Adicionados à mão',x.manN],['Leituras desfeitas',x.undone],['NF associada',nf?nf.number+' · '+nf.supplier:''],[],['Código','Quantidade']];
-  x.codes.forEach(function(r){rows.push([r[0],r[1]])});rows.push([],['Seq','Data/hora','Código','Formato','Método','Status']);x.reads.forEach(function(r){rows.push([r.seq,dt(r.at)+':'+pad(new Date(r.at).getSeconds()),r.code,FMT_NAME[r.fmt]||r.fmt,r.m==='h'?'Manual':'Câmera',r.st==='v'?'Válida':'Desfeita'])});
+function csvRows(c){var x=data(c),nf=isAuxNow()?null:nfOf(c),rows=[['Conferência',c.n],['ID',c.id],['Funcionário',c.by],['Login',c.login],['Início',dt(x.start)],['Término',x.end?dt(x.end):''],['Status',ST[c.status]||c.status],['Total de volumes',x.total],[x.src?'Leituras pelo coletor':'Leituras pela câmera',x.camN],['Adicionados à mão',x.manN],['Leituras desfeitas',x.undone],['NF associada',nf?nf.number+' · '+nf.supplier:''],[],['Código','Quantidade']];
+  x.codes.forEach(function(r){rows.push([r[0],r[1]])});rows.push([],['Seq','Data/hora','Código','Formato','Método','Status']);x.reads.forEach(function(r){rows.push([r.seq,dt(r.at)+':'+pad(new Date(r.at).getSeconds()),r.code,FMT_NAME[r.fmt]||r.fmt,mName(c,r),r.st==='v'?'Válida':'Desfeita'])});
   rows.push([],['Correção','Data/hora','Quem','Tipo','Leitura']);x.fixes.forEach(function(f){rows.push([f[0],dt(Date.parse(f[1])),f[2],f[3]==='undo'?'Desfez':'Adicionou à mão',f[4]])});
   return rows}
 function xlsx(id){var c=confById(id);if(!c)return;try{planDownload(window.e99Xlsx(csvRows(c),'Conferência'),'conferencia-'+c.n+'-'+String(c.start).slice(0,10)+'.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');say('Excel baixado. Confira os downloads.')}catch(e){say('Não foi possível gerar o Excel.')}}
 function csv(id){var c=confById(id);if(!c)return;planDownload(csvText(c),'conferencia-'+c.n+'-'+String(c.start).slice(0,10)+'.csv','text/csv;charset=utf-8');say('Planilha baixada (abre no Excel). Confira os downloads.')}
 function printHtml(c){var x=data(c),nf=isAuxNow()?null:nfOf(c);return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Conferência '+esc(c.n)+'</title><style>body{font:13px -apple-system,Segoe UI,system-ui,sans-serif;color:#111;background:#fff;margin:28px}h1{font-size:18px;margin:0 0 6px}h2{font-size:14px;margin:18px 0 6px}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #ddd;padding:6px 8px;text-align:left}th{font-size:11px;text-transform:uppercase;color:#555}.x{color:#888;text-decoration:line-through}</style></head><body>'
-  +'<h1>Conferência de volumes '+esc(c.n)+'</h1><table><tbody>'+[['Funcionário',c.by+(c.login?' ('+c.login+')':'')],['ID',c.id],['Início',dt(x.start)],['Término',x.end?dt(x.end):'—'],['Total de volumes',x.total],['Pela câmera',x.camN],['À mão',x.manN],['Desfeitas',x.undone],['NF associada',nf?'NF '+nf.number+' · '+nf.supplier:'—']].map(function(r){return '<tr><th>'+esc(r[0])+'</th><td>'+esc(r[1])+'</td></tr>'}).join('')+'</tbody></table>'
+  +'<h1>Conferência de volumes '+esc(c.n)+'</h1><table><tbody>'+[['Funcionário',c.by+(c.login?' ('+c.login+')':'')],['ID',c.id],['Início',dt(x.start)],['Término',x.end?dt(x.end):'—'],['Total de volumes',x.total],[x.src?'Pelo coletor':'Pela câmera',x.camN],['À mão',x.manN],['Desfeitas',x.undone],['NF associada',nf?'NF '+nf.number+' · '+nf.supplier:'—']].map(function(r){return '<tr><th>'+esc(r[0])+'</th><td>'+esc(r[1])+'</td></tr>'}).join('')+'</tbody></table>'
   +'<h2>Quantidade por código</h2><table><thead><tr><th>Código</th><th>Volumes</th></tr></thead><tbody>'+x.codes.map(function(r){return '<tr><td>'+esc(r[0])+'</td><td>'+r[1]+'</td></tr>'}).join('')+'</tbody></table>'
   +'<h2>Correções</h2>'+(x.fixes.length?'<table><tbody>'+x.fixes.map(function(f){return '<tr><td>'+esc(dt(Date.parse(f[1])))+'</td><td>'+esc(f[2])+'</td><td>'+(f[3]==='undo'?'Desfez':'Adicionou à mão')+' a leitura '+pad(f[4])+'</td></tr>'}).join('')+'</tbody></table>':'<p>Nenhuma.</p>')
-  +'<h2>Leituras</h2><table><thead><tr><th>Seq</th><th>Hora</th><th>Código</th><th>Método</th></tr></thead><tbody>'+x.reads.map(function(r){return '<tr class="'+(r.st==='x'?'x':'')+'"><td>'+pad(r.seq)+'</td><td>'+esc(tm(r.at))+'</td><td>'+esc(r.code||'(sem código)')+'</td><td>'+(r.m==='h'?'Manual':'Câmera')+(r.st==='x'?' (desfeita)':'')+'</td></tr>'}).join('')+'</tbody></table></body></html>'}
+  +'<h2>Leituras</h2><table><thead><tr><th>Seq</th><th>Hora</th><th>Código</th><th>Método</th></tr></thead><tbody>'+x.reads.map(function(r){return '<tr class="'+(r.st==='x'?'x':'')+'"><td>'+pad(r.seq)+'</td><td>'+esc(tm(r.at))+'</td><td>'+esc(r.code||'(sem código)')+'</td><td>'+mName(c,r)+(r.st==='x'?' (desfeita)':'')+'</td></tr>'}).join('')+'</tbody></table></body></html>'}
 function pdf(id){var c=confById(id);if(!c)return;var html=printHtml(c),w=null;try{w=window.open('','_blank')}catch(e){}
   if(w){w.document.open();w.document.write(html);w.document.close();setTimeout(function(){try{w.focus();w.print()}catch(e){}},300);say('Na janela de impressão, escolha "Salvar como PDF".');return}
   var f=D.createElement('iframe');f.setAttribute('aria-hidden','true');f.style.cssText='position:fixed;width:0;height:0;border:0;right:0;bottom:0';D.body.appendChild(f);var fd=f.contentDocument;fd.open();fd.write(html);fd.close();
@@ -426,12 +475,13 @@ function pdf(id){var c=confById(id);if(!c)return;var html=printHtml(c),w=null;tr
 /* ---------- tela de Notas fiscais: botão principal, sessão interrompida e lista ---------- */
 function histHtml(){var me=meDev(),aux=isAuxNow(),list=(state.confs||[]).filter(function(c){return c.status!=='cancelada'&&(!aux||c.dev===me)}).slice(0,10);if(!list.length)return '';
   return '<details class="conf-hist"><summary>Conferências por câmera ('+list.length+')</summary><ul class="conf-hist-list">'+list.map(function(c){var nf=aux?null:nfOf(c);
-    return '<li><span><b>'+esc(c.n)+'</b> · '+esc(c.by)+' · '+esc(dt(Date.parse(c.start)))+' · '+(c.total|0)+' volume(s) · '+esc(ST[c.status]||c.status)+(nf?' · NF '+esc(nf.number):'')+'</span><button type="button" data-conf-rep="'+esc(c.id)+'">Relatório</button>'+(c.dev===me?'<button type="button" class="danger" data-conf-del="'+esc(c.id)+'">Excluir</button>':'')+'</li>'}).join('')+'</ul></details>'}
+    return '<li><span><b>'+esc(c.n)+'</b>'+(c.src==='coletor'?' (coletor)':'')+' · '+esc(c.by)+' · '+esc(dt(Date.parse(c.start)))+' · '+(c.total|0)+' volume(s) · '+esc(ST[c.status]||c.status)+(nf?' · NF '+esc(nf.number):'')+'</span><button type="button" data-conf-rep="'+esc(c.id)+'">Relatório</button>'+(c.dev===me?'<button type="button" class="danger" data-conf-del="'+esc(c.id)+'">Excluir</button>':'')+'</li>'}).join('')+'</ul></details>'}
 function ctaHtml(){return '<section class="panel conf-cta" id="conf-cta" aria-label="Conferência por câmera"><button type="button" class="primary conf-go" id="conf-go" onclick="confStart()"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 8v8M11 8v8M13.5 8v8M16 8v8"/></svg>Iniciar conferência por câmera</button>'
-  +'<p class="small">Conte os volumes lendo o código de barras de cada caixa com a câmera. A contagem é às cegas: a quantidade da nota não aparece. Funciona sem internet.</p><div class="conf-resume" id="conf-resume"></div>'+histHtml()+'</section>'}
+  +'<button type="button" class="conf-go conf-go-kbd" id="conf-go-kbd" onclick="confStart(\'coletor\')"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+KBD_SVG+'</svg>Conferir com coletor</button>'
+  +'<p class="small">Conte os volumes lendo o código de barras de cada caixa com a câmera ou com o coletor de dados (leitor no modo teclado). A contagem é às cegas: a quantidade da nota não aparece. Funciona sem internet.</p><div class="conf-resume" id="conf-resume"></div>'+histHtml()+'</section>'}
 async function banner(){var box=$i('conf-resume');if(!box||!logged())return;var open=await interrupted();box=$i('conf-resume');if(!box)return;
   box.innerHTML=open.map(function(o){var tot=Array.isArray(o.reads)?o.reads.filter(function(r){return Array.isArray(r)?r[5]==='v':r.st==='v'}).length:(o.total|0);
-    return '<div class="conf-banner" role="status"><b>Conferência '+esc(o.n)+' interrompida · '+tot+' volume(s) salvos</b><button type="button" class="primary" data-conf-res="'+esc(o.id)+'">Continuar</button><button type="button" data-conf-rep="'+esc(o.id)+'">Ver</button><button type="button" class="danger" data-conf-del="'+esc(o.id)+'">Excluir</button></div>'}).join('')}
+    return '<div class="conf-banner" role="status"><b>Conferência '+esc(o.n)+(o.src==='coletor'?' (coletor)':'')+' interrompida · '+tot+' volume(s) salvos</b><button type="button" class="primary" data-conf-res="'+esc(o.id)+'">Continuar</button><button type="button" data-conf-rep="'+esc(o.id)+'">Ver</button><button type="button" class="danger" data-conf-del="'+esc(o.id)+'">Excluir</button></div>'}).join('')}
 /* v103: excluir uma conferência (finalizada ou interrompida). Só o aparelho/conta que fez; fica só o marcador 'cancelada' (como no Descartar). */
 async function delConf(id){if(S&&S.id===id&&S.status!=='finalizada')return discard();var c=(state.confs||[]).find(function(x){return x&&x.id===id})||null,rec=null;if(!c){try{rec=(await idbAll('sessions')).find(function(x){return x&&x.id===id})}catch(e){}}
   var dev=c?c.dev:(rec&&rec.dev),n=c?c.n:(rec&&rec.n)||'';if(dev&&dev!==meDev()){say('Só quem fez a conferência, neste aparelho, pode excluir.');return}
@@ -451,7 +501,7 @@ window.addEventListener('pagehide',function(){if(S&&S.status==='ativa'){stopCam(
 window.addEventListener('online',function(){if(S&&(cp.dirty||pendingMine(S.id)))checkpoint('online')});
 window.e99ConfPurge=function(storeKey){var a=h32(storeKey);['sessions','reads'].forEach(function(st){try{run(st,'readwrite',function(o){var c=o.openCursor();c.onsuccess=function(){var cur=c.result;if(!cur)return;if(cur.value&&cur.value.acct===a)cur.delete();cur.continue()}}).catch(function(){})}catch(e){}})};
 /* para os testes (leitor falso): alimentar a máquina de estados quadro a quadro */
-window.e99Conf={check:check,compare:function(nf){return nf?compare(nf):null},feed:function(r,t){feed(r,t)},arm:function(){if(S&&S.status==='ativa'){M.fake=true;M.st='armado';M.cand=null}},state:function(){return S?{id:S.id,n:S.n,status:S.status,machine:M.st,total:valid().length,seq:S.reads.length?S.reads[S.reads.length-1].seq:0,cpSeq:cp.seq,dirty:cp.dirty,mode:S.mode,synced:S.reads.filter(function(r){return r.synced}).length}:null},
+window.e99Conf={check:check,kbdCheck:kbdCheck,compare:function(nf){return nf?compare(nf):null},feed:function(r,t){feed(r,t)},arm:function(){if(S&&S.status==='ativa'){M.fake=true;M.st='armado';M.cand=null}},state:function(){return S?{id:S.id,n:S.n,status:S.status,machine:M.st,total:valid().length,seq:S.reads.length?S.reads[S.reads.length-1].seq:0,cpSeq:cp.seq,dirty:cp.dirty,mode:S.mode,src:S.src||'',synced:S.reads.filter(function(r){return r.synced}).length}:null},
   checkpoint:function(){return checkpoint('teste')},idbReads:readsOf,
   rawRows:function(){return idbAll('reads')},csv:function(id){var c=confById(id);return c?csvText(c):''},decodeCanvas:async function(c){await prepDecoder();return cam.wasm||cam.bd?tryDecode(c):cam.reader?decodeCanvas(c):null},engine:function(){return cam.engine||''},quality:quality,scan:async function(c){await prepDecoder();c.__k=0;var r=await scanFrame(c,function(k){return k===0?c:null});return r&&r.text?{text:r.text,format:r.format}:{blur:!!(r&&r.blur),sharp:r&&r.q?r.q.sharp:0}},cam:function(){return {zoom:cam.zoom,zooms:cam.zooms.slice(),focus:cam.focus.slice(),torch:cam.torch,adv:Object.assign({},cam.adv),devs:cam.devs.length,cur:cam.cur,tick:period(),cost:Math.round(cam.cost),pair:pairWin()}},feedScan:function(c,t){return this.scan(c).then(function(r){feed(r&&r.text?r:null,t);return r})},answer:answer,current:function(){return S}};
 })();

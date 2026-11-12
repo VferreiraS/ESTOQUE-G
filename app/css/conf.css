@@ -108,3 +108,11 @@ body.conf-on #view{visibility:hidden}
 @media (max-height:720px){#conf-dlg .cf-count{font-size:68px}#conf-dlg .cf-scan{gap:8px}#conf-dlg .cf-next{min-height:52px}}
 /* v96: às cegas também na lista — auxiliar não vê a coluna Volumes */
 body.role-aux #nf-results table th:nth-child(3),body.role-aux #nf-results table td:nth-child(3){display:none!important}
+/* v142: conferência com coletor de dados (modo teclado). Mesma tela da câmera, sem vídeo. */
+.conf-cta .conf-go-kbd{min-height:56px;font-size:16px}
+#conf-dlg .cf-cam.cf-kbdbox{flex:0 0 auto;min-height:230px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.1)}
+#conf-dlg .cf-kbdinfo{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:62px 16px 16px;text-align:center;color:#d0d0d4}
+#conf-dlg .cf-kbdinfo[hidden]{display:none}
+#conf-dlg .cf-kbdinfo svg{color:var(--neon,#FF2A1F)}
+#conf-dlg .cf-kbdst{margin:0;font-weight:700;font-size:17px;color:#F7F7F1}
+#conf-dlg .cf-kbdtip{margin:0;font-size:14px;line-height:1.35;max-width:34ch;color:#b8b8bf}
