@@ -1,0 +1,12 @@
+{
+  // Worker de avisos do Stok. Chaves VAPID NUNCA aqui: use
+  //   npx wrangler secret put VAPID_PUBLIC
+  //   npx wrangler secret put VAPID_PRIVATE
+  "name": "stok-push",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-01",
+  "kv_namespaces": [
+    // Troque pelo id que o comando "npx wrangler kv namespace create SUBS" mostrar.
+    { "binding": "SUBS", "id": "COLE_AQUI_O_ID_DO_KV" }
+  ]
+}
