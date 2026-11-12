@@ -25,9 +25,9 @@ function watchPage(p){
   ok(await p.evaluate(()=>{const e=document.querySelector('#stok-intro');return !!e&&e.getAttribute('aria-hidden')==='true'&&getComputedStyle(e).pointerEvents==='none'}),'intro decorativa, aria-hidden e sem bloquear interação');
   await p.fill('#auth-form input[name=login]','teste-input-na-intro');
   ok(await p.evaluate(()=>document.activeElement?.name==='login'&&document.activeElement.value==='teste-input-na-intro'),'campo de login aceita foco e entrada durante a intro');
-  await p.waitForTimeout(1800);ok(!(await p.$('#stok-intro')),'intro removida ao fim da sequência curta');
+  await p.waitForTimeout(3000);ok(!(await p.$('#stok-intro')),'intro removida ao fim da sequência curta');
   await p.evaluate(()=>window.replayEntrySplash());ok(!!(await p.$('#stok-intro')),'replayEntrySplash reapresenta a intro');
-  await p.waitForTimeout(1800);
+  await p.waitForTimeout(3000);
 
   // Cria conta local de teste e autentica pelo caminho normal, sem dados de produção.
   const login='intro'+Date.now().toString(36);await L.signup(p,login,'Loja teste intro');
@@ -41,13 +41,13 @@ function watchPage(p){
   ok(await p.evaluate(()=>typeof window.playStokIntro==='function'&&typeof window.replayEntrySplash==='function'),'callbacks continuam disponíveis após autenticação');
 
   await p.evaluate(()=>{authLogout()});await p.waitForTimeout(900);
-  await p.evaluate(()=>window.playStokIntro());ok(!!(await p.$('#stok-intro .si-mark')),'v122: abertura com o S sempre (sem preferência Efeitos)');
+  await p.evaluate(()=>window.playStokIntro());ok(!!(await p.$('#stok-intro canvas.si-canvas')),'v122/v140: abertura com o S (canvas) sempre (sem preferência Efeitos)');
 
   const rc=await b.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});const rp=await rc.newPage();watchPage(rp);
   await rp.goto('http://localhost:8000/index.html?ntfy='+L.N);await rp.waitForSelector('#auth-form');
   await rp.evaluate(()=>window.playStokIntro());await rp.waitForSelector('#stok-intro');
   ok(await rp.evaluate(()=>getComputedStyle(document.querySelector('.entry-splash')).display==='none'),'splash legado oculto por seletor computado com prefers-reduced-motion');
-  ok(await rp.evaluate(()=>{const e=document.querySelector('#stok-intro');return e.dataset.reducedMotion==='true'&&getComputedStyle(e.querySelector('.si-word')).animationName==='none'&&getComputedStyle(e.querySelector('.si-scan')).display==='none'}),'prefers-reduced-motion mostra apenas marca estática, sem transições');
+  ok(await rp.evaluate(()=>{const e=document.querySelector('#stok-intro');return e.dataset.reducedMotion==='true'&&getComputedStyle(e.querySelector('.si-word')).animationName==='none'&&getComputedStyle(e.querySelector('.si-cap')).display==='none'&&window.__e99IntroStats.done&&!window.e99IntroRunning()}),'prefers-reduced-motion mostra apenas marca estática, sem transições');
   ok(await rp.evaluate(()=>getComputedStyle(document.querySelector('#stok-intro')).pointerEvents==='none'),'intro reduzida também não intercepta interação');
   await rp.fill('#auth-form input[name=login]','teste-input-reduzido');
   ok(await rp.evaluate(()=>document.activeElement?.name==='login'&&document.activeElement.value==='teste-input-reduzido'),'campo de login segue interativo com movimento reduzido');

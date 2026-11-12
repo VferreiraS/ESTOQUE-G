@@ -79,9 +79,4 @@ html:root body #toast,html:root body .toast{border-color:rgba(var(--neon-rgb),.5
 .chat-msg .reacts button.me{border-color:var(--neon)!important;background:rgba(var(--neon-rgb),.16)!important}
 .chat-msg.mentioned{box-shadow:inset 3px 0 0 var(--neon)!important}
 .push-card{background:rgba(var(--neon-rgb),.05)!important}
-/* abertura: prateleiras e scanner em vermelho; o S continua vermelho */
-#stok-intro{background:radial-gradient(ellipse at 50% 14%,#2a0806 0,#0b0404 36%,#020203 76%,#000 100%)!important}
-#stok-intro .si-scan{stroke:var(--neon-hot)!important;filter:drop-shadow(0 0 4px var(--neon))!important}
-#stok-intro .si-sub{color:var(--neon-hot)!important}
-@keyframes si-stock{0%{fill:#292d32}35%{fill:#FF2A1F;stroke:#FF8A7A;filter:drop-shadow(0 0 3px #FF2A1F)}100%{fill:#292d32;stroke:#777d85;filter:none}}
 

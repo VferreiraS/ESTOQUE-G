@@ -23,5 +23,4 @@ body.e99-anime .hero-home>#e99-aura{display:block}
 .e99-powerup{display:flex;align-items:center;justify-content:center}
 .e99-powerup i{width:40px;height:40px;border-radius:50%;border:3px solid var(--neon,#E7B8EF);box-shadow:0 0 30px var(--neon,#E7B8EF);animation:e99pow .7s ease-out forwards}
 @keyframes e99pow{0%{opacity:.85;transform:scale(.4)}100%{opacity:0;transform:scale(9)}}
-body.e99-anime #stok-intro .si-tile{filter:drop-shadow(0 0 22px var(--neon-hot,#FF8A7A))}
 @media (prefers-reduced-motion:reduce){#e99-aura,#e99-charge,.e99-speed,.e99-powerup{display:none!important;animation:none!important}}

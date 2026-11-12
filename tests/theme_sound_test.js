@@ -3,7 +3,7 @@ let PW;try{PW=require('playwright')}catch(e){PW=require('/opt/node22/lib/node_mo
 (async()=>{
  // som: no iPhone a abertura v84 não pede toque ("Toque para abrir" removido); o som é liberado no primeiro toque do usuário
  const raw=await PW.chromium.launch();const c=await raw.newContext(PW.devices['iPhone 13']);const P=await c.newPage();await P.goto('http://localhost:8000/index.html?ntfy='+L.N);await P.waitForTimeout(200);
- ok(await P.evaluate(()=>!document.getElementById('stok-gate')&&!!document.getElementById('stok-intro')),'iPhone: abertura sem tela "Toque para abrir"');await P.waitForTimeout(1500);await P.tap('body');await P.waitForTimeout(300);
+ ok(await P.evaluate(()=>!document.getElementById('stok-gate')&&!!document.getElementById('stok-intro')),'iPhone: abertura sem tela "Toque para abrir"');await P.waitForTimeout(1500);await P.tap('body');/* v140: a abertura dura ~2,8 s */await P.waitForTimeout(1500);
  ok(await P.evaluate(()=>!document.getElementById('stok-intro')),'abertura some sozinha e não bloqueia');ok(await P.evaluate(()=>siteAudio&&siteAudio.state==='running'),'som liberado no toque');await raw.close();
  // temas únicos
  const b=await L.chromium.launch();const errs=[];const A=await (await b.newContext({viewport:{width:1440,height:900}})).newPage(),B=await (await b.newContext({viewport:{width:1440,height:900}})).newPage();[A,B].forEach(p=>p.on('pageerror',e=>errs.push(e.message)));

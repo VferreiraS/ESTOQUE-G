@@ -1,33 +1,26 @@
-
-html[data-e99-theme] body #stok-intro,html body #stok-intro{background-color:#000!important}
+/* v140: abertura "Do caos à ordem" — canvas com os quadradinhos (app/js/intro.js) + textos. Fundo #000 desde o 1º quadro (v123). */
+html[data-e99-theme] body #stok-intro,html body #stok-intro{background:#000!important}
 .entry-splash{display:none!important}
 body:not(.fx-user-off) .entry-splash{display:none!important}
-#stok-intro{position:fixed;z-index:100001;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:18px 12px 0;gap:4px;overflow:hidden;pointer-events:none;color:#fff;background:radial-gradient(ellipse at 50% 14%,#260b08 0,#0b0708 36%,#020203 76%,#000 100%)}
-#stok-intro .si-scene{display:block;width:min(62vw,250px);height:auto;overflow:visible}
-#stok-intro .si-racks{transform-box:fill-box;transform-origin:center;animation:si-collapse .3s ease .9s forwards}
-#stok-intro .si-shelf{fill:none;stroke:#676b72;stroke-opacity:.42;stroke-width:1.15;stroke-linecap:round}
-#stok-intro .si-upright{stroke:#555a61;stroke-opacity:.35;stroke-width:1.1}
-#stok-intro .si-cell{fill:#292d32;stroke:#777d85;stroke-opacity:.52;stroke-width:.8;animation:si-stock .34s ease-out both}
-#stok-intro .si-cell:nth-of-type(2){animation-delay:.08s}#stok-intro .si-cell:nth-of-type(3){animation-delay:.14s}#stok-intro .si-cell:nth-of-type(4){animation-delay:.2s}#stok-intro .si-cell:nth-of-type(5){animation-delay:.26s}#stok-intro .si-cell:nth-of-type(6){animation-delay:.32s}#stok-intro .si-cell:nth-of-type(7){animation-delay:.38s}#stok-intro .si-cell:nth-of-type(8){animation-delay:.44s}#stok-intro .si-cell:nth-of-type(9){animation-delay:.5s}#stok-intro .si-cell:nth-of-type(10){animation-delay:.56s}
-#stok-intro .si-scan{fill:none;stroke:#ff6248;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100;opacity:0;filter:drop-shadow(0 0 4px #ff442c);animation:si-scan .88s cubic-bezier(.42,0,.2,1) .12s forwards}
-#stok-intro .si-mark{fill:#ff3828;opacity:0;transform-box:fill-box;transform-origin:center;animation:si-mark .35s cubic-bezier(.2,.8,.2,1) .87s forwards}
-#stok-intro .si-word{margin-top:-5px;font:750 clamp(25px,7vw,34px)/1 system-ui,sans-serif;letter-spacing:.34em;margin-right:-.34em;opacity:0;animation:si-type .26s ease-out 1.08s forwards}
-#stok-intro .si-sub{margin-top:6px;color:#ff9585;font:650 10px/1.2 system-ui,sans-serif;letter-spacing:.2em;text-align:center;opacity:0;animation:si-type .24s ease-out 1.22s forwards}
-#stok-intro.si-ending{animation:si-exit .18s ease-in 1.5s forwards}
-#stok-intro[data-reduced-motion="true"] .si-racks,#stok-intro[data-reduced-motion="true"] .si-scan{display:none!important}
-#stok-intro[data-reduced-motion="true"] .si-mark,#stok-intro[data-reduced-motion="true"] .si-word,#stok-intro[data-reduced-motion="true"] .si-sub{animation:none!important;opacity:1!important;transform:none!important;filter:none!important}
-#stok-intro[data-reduced-motion="true"].si-ending{animation:none!important}
+#stok-intro{position:fixed;z-index:100001;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;overflow:hidden;pointer-events:none;color:#F7F7F1;contain:strict}
+#stok-intro .si-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#stok-intro .si-space{flex:none;position:relative}
+#stok-intro .si-txt{position:relative;margin-top:clamp(16px,3.5vh,40px);display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+#stok-intro .si-cap{position:absolute;left:50%;top:14px;transform:translateX(-50%);white-space:nowrap;color:#8a8590;font:500 15px/1.3 var(--font-text,system-ui,sans-serif);opacity:0;animation:si-cap .95s ease .05s forwards}
+#stok-intro .si-word{font:700 clamp(40px,11vw,60px)/1 var(--font-head,system-ui,sans-serif);letter-spacing:-.01em;color:#F7F7F1;opacity:0;animation:si-type .3s ease-out 1.75s forwards}
+#stok-intro .si-tag{color:#C9C3CC;font:500 clamp(15px,4vw,18px)/1.3 var(--font-text,system-ui,sans-serif);opacity:0;animation:si-type .3s ease-out 1.9s forwards}
+#stok-intro .si-sub{margin-top:clamp(8px,2.5vh,26px);margin-right:-.3em;color:rgba(247,247,241,.55);font:600 11px/1.2 var(--font-text,system-ui,sans-serif);letter-spacing:.3em;opacity:0;animation:si-type .3s ease-out 2s forwards}
+#stok-intro.si-ending{animation:si-exit .2s ease-in 2.6s forwards}
 #stok-intro.si-ending.si-hold{animation-delay:3.2s}
+#stok-intro[data-reduced-motion="true"] .si-cap{display:none!important}
+#stok-intro[data-reduced-motion="true"] :is(.si-word,.si-tag,.si-sub){animation:none!important;opacity:1!important;transform:none!important}
+#stok-intro[data-reduced-motion="true"].si-ending{animation:none!important}
 #stok-intro .si-tap{position:absolute;left:50%;bottom:calc(30px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);pointer-events:auto;min-height:48px;padding:12px 26px;border-radius:999px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;font:650 16px/1.2 system-ui,-apple-system,sans-serif;letter-spacing:.02em;cursor:pointer;opacity:0;animation:si-tapin .3s ease-out .6s forwards;-webkit-tap-highlight-color:transparent}
-@keyframes si-tapin{from{opacity:0}to{opacity:1}}
 #stok-intro .si-tap:focus-visible{outline:2px solid #fff;outline-offset:3px}
 #stok-intro[data-reduced-motion="true"] .si-tap{animation:none;opacity:1}
 #stok-intro.si-tapped{animation:si-exit .2s ease-in forwards!important}
 body.stok-intro-active #auth-screen .auth-card .brand{visibility:hidden}
-@media(min-width:700px){#stok-intro{align-items:center;justify-content:center;padding:24px}#stok-intro .si-scene{width:min(34vw,300px)}#stok-intro .si-word,#stok-intro .si-sub{width:min(34vw,300px)}}
-@keyframes si-stock{0%{fill:#292d32}35%{fill:#ff6047;stroke:#ffb5a3;filter:drop-shadow(0 0 3px #ff3828)}100%{fill:#292d32;stroke:#777d85;filter:none}}
-@keyframes si-scan{0%{opacity:0;stroke-dashoffset:100}12%{opacity:.9}78%{opacity:.7}100%{opacity:0;stroke-dashoffset:0}}
-@keyframes si-collapse{to{opacity:0;transform:scale(.88)}}
-@keyframes si-mark{0%{opacity:0;transform:scale(.68)}100%{opacity:1;transform:scale(1)}}
-@keyframes si-type{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes si-tapin{from{opacity:0}to{opacity:1}}
+@keyframes si-cap{0%{opacity:0}25%{opacity:1}70%{opacity:1}100%{opacity:0}}
+@keyframes si-type{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes si-exit{to{opacity:0;visibility:hidden}}

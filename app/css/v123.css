@@ -43,8 +43,5 @@ html:root body.dark #auth-screen .auth-card form{background:var(--ios-card)!impo
 /* logo: ícone squircle de vidro com o S (v123) */
 .logo img,img[data-e99-logo],img.entry-logo{border-radius:22.5%!important;background:none!important}
 html body.dark .logo{background:none!important;border:0!important;box-shadow:none!important;border-radius:22.5%!important;overflow:visible}
-/* abertura: fundo sempre opaco (o centro translúcido deixava a tela de entrar aparecer por trás) e o S dentro do ícone */
+/* abertura: fundo sempre opaco (o centro translúcido deixava a tela de entrar aparecer por trás) (v140: abertura nova em intro.css) */
 html[data-e99-theme] body #stok-intro,body #stok-intro{background-color:#000!important}
-#stok-intro .si-tile{fill:url(#si-tg);stroke:rgba(255,255,255,.28);stroke-width:.8;opacity:0;transform-box:fill-box;transform-origin:center;animation:si-mark .35s cubic-bezier(.2,.8,.2,1) .8s forwards}
-#stok-intro[data-reduced-motion="true"] .si-tile{animation:none!important;opacity:1!important}
-#stok-intro .si-word{font-family:var(--font-head);letter-spacing:.3em}

@@ -24,8 +24,8 @@ const SEED=()=>{try{if(sessionStorage.getItem('seeded'))return;sessionStorage.se
   ok(await P.evaluate(()=>!labels.novidades&&!window.e99VerTipo&&!document.querySelector('.vbadge,.vbadge-canvas')),nome+': sem "O que mudou?" e selos (v127: o perfil voltou, sem selos)');
   ok(await P.evaluate(()=>{go('profile');const a=page;go('novidades');return a==='profile'&&page==='home'}),nome+': "O que mudou?" leva ao Início; perfil abre (v127)');
   ok(await P.evaluate(()=>typeof window.e99Sting==='function'&&typeof window.playStokIntro==='function'),nome+': som e abertura (S) continuam');
-  await P.evaluate(()=>{window.playStokIntro(false)});ok(await P.evaluate(()=>!!document.querySelector('#stok-intro .si-mark')),nome+': S da abertura aparece');
-  await P.waitForTimeout(2000);ok(await P.evaluate(()=>!document.getElementById('stok-intro')),nome+': abertura termina');
+  await P.evaluate(()=>{window.playStokIntro(false)});ok(await P.evaluate(()=>!!document.querySelector('#stok-intro canvas.si-canvas')),nome+': S da abertura aparece');
+  await P.waitForTimeout(3000);ok(await P.evaluate(()=>!document.getElementById('stok-intro')),nome+': abertura termina');
   await P.evaluate(()=>go('account'));await P.waitForTimeout(400);
   ok(await P.evaluate(()=>!!document.getElementById('prefs-panel')&&!document.getElementById('pref-fx')&&!document.getElementById('pref-music')&&!/Authenticator/.test(document.getElementById('view').textContent)),nome+': Preferências sem Efeitos/música; sem Authenticator');
   await P.evaluate(async()=>{state.nfs=[{id:'n1',number:'48213',supplier:'Laticínios',date:iso(),status:'Recebida',volumes:3,owner:''}];await save();go('nfs')});await P.waitForTimeout(500);

@@ -13,7 +13,7 @@ const TL=()=>{try{sessionStorage.removeItem('e99-intro')}catch(e){}window.__tl=[
   const cdp=await c.newCDPSession(P);await cdp.send('Emulation.setCPUThrottlingRate',{rate:4});
   await P.goto(URL0);
   ok(await until(P,()=>!!document.getElementById('stok-intro'),null,4000),nome+' (CPU 4x): abertura com o S aparece');
-  ok(await P.evaluate(()=>{const i=document.getElementById('stok-intro');return !!i&&!!i.querySelector('.si-tile')&&!!i.querySelector('.si-mark')}),nome+': S dentro do ícone na abertura');
+  ok(await P.evaluate(()=>{const i=document.getElementById('stok-intro');return !!i&&!!i.querySelector('canvas.si-canvas')&&i.querySelector('.si-word').textContent==='Stok'}),nome+': abertura com o S de quadradinhos (v140)');
   ok(await until(P,()=>!!window.__e99Boot&&!document.getElementById('stok-intro')&&!document.body.classList.contains('e99-booting'),null,6500),nome+': abertura e barra terminam em ≤6 s');
   await P.waitForTimeout(300);const tl=await P.evaluate(()=>window.__tl);
   const bad=tl.filter(x=>x.intro&&x.bg!=='rgb(0, 0, 0)');ok(!bad.length,nome+': abertura opaca (não mostra a tela de entrar por trás)'+(bad.length?' '+JSON.stringify(bad.slice(0,2)):''));
