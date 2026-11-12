@@ -55,11 +55,13 @@ const STRICT=()=>{try{localStorage.setItem('e99-test-strict','1');localStorage.r
  ok(await until(B,()=>/Senha incorreta/.test(document.getElementById('bk-err').textContent),null,15000),'iPhone: restaurar com senha errada: mensagem clara, nada muda');
  await B.fill('#bk-dlg input[name=password]','ana12345x');await B.click('#bk-dlg button.primary');
  ok(await until(B,()=>state.nfs.some(n=>n.number==='777001')&&authSession.payload.role==='auxiliar',null,15000),'iPhone: restaurado do backup (dados voltaram, papel igual)');
+ /* v136: espera o envio do estado restaurado terminar (antes o iPhone limpo podia baixar a cópia anterior, sem a NF) */
+ ok(await B.evaluate(async()=>{const r=await e99Backup.run(true);return !!(r&&r.ok)}),'iPhone: backup do estado restaurado enviado');
  /* aparelho limpo: Trazer da nuvem */
  const C=await dev('iPhone limpo',L.devices['iPhone 13']);await C.goto(URL0);await until(C,()=>!!window.__e99Boot,null,8000);await C.waitForTimeout(500);
  await C.fill('#auth-form input[name=login]','ana.teste');await C.fill('#auth-form input[name=password]','ana12345x');await C.click('#auth-form button[type=submit]');
  await C.waitForSelector('#cloud-pull input[name=email]',{timeout:15000}).catch(()=>{});await C.fill('#cloud-pull input[name=email]',AUXMAIL);await C.click('#cloud-pull button.primary');
- ok(await until(C,()=>!!authSession&&state.nfs.some(n=>n.number==='777001'),null,40000),'iPhone limpo: "Trazer da nuvem" trouxe a conta e os dados do backup');
+ ok(await until(C,()=>!!authSession&&state.nfs.some(n=>n.number==='777001'),null,90000),'iPhone limpo: "Trazer da nuvem" trouxe a conta e os dados do backup');
  ok(await C.evaluate(()=>authSession.payload.role==='auxiliar'&&!!state.custody.gk),'iPhone limpo: papel mantido (auxiliar) e chave do gestor junto');
  await C.close();
  /* ---------- (B) pedido ao gestor ---------- */

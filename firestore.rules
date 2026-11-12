@@ -224,6 +224,43 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/lojas/$(d.loja)/membros/$(d.para));
     }
 
+    // v135: dono da loja, membro e dados compartilhados.
+    function isLojaDono(loja) {
+      return isAuthenticated() && exists(/databases/$(database)/documents/lojas/$(loja)) &&
+        get(/databases/$(database)/documents/lojas/$(loja)).data.owner == request.auth.uid;
+    }
+    function isMembro(loja) {
+      return isAuthenticated() && exists(/databases/$(database)/documents/lojas/$(loja)/membros/$(request.auth.uid));
+    }
+    function isValidMembroDono(d) {
+      return hasOnlyAllowedFields(['login', 'nome', 'role', 'criado']) &&
+        hasRequiredFields(['login', 'role', 'criado']) &&
+        isStr(d.login, 1, 80) && (!('nome' in d) || isStr(d.nome, 0, 40)) &&
+        isValidRole(d.role) && isValidTime(d.criado);
+    }
+    // v136: dados da loja na nuvem (lojas/{loja}/dados/{c}_{id}), acesso por prova, papéis e entradas.
+    function isVerif() {
+      return isAuthenticated() && exists(/databases/$(database)/documents/verificados/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/verificados/$(request.auth.uid)).data.tipo == 's';
+    }
+    function temAcesso(loja) {
+      return isAuthenticated() && exists(/databases/$(database)/documents/lojas/$(loja)/acesso/$(request.auth.uid));
+    }
+    function nivelAux(loja) {
+      return !isVerif() && (!exists(/databases/$(database)/documents/lojas/$(loja)/papeis/$(request.auth.uid)) ||
+        get(/databases/$(database)/documents/lojas/$(loja)/papeis/$(request.auth.uid)).data.role == 'auxiliar');
+    }
+    function isValidDado(d, doc) {
+      return d.keys().hasOnly(['c', 'at', 'st', 'by', 'cuid', 'del', 'v', 'd', 'slim']) &&
+        d.keys().hasAll(['c', 'at', 'st', 'by', 'cuid', 'del', 'v', 'd']) &&
+        d.c in ['team', 'corridors', 'nfs', 'plans', 'confs'] &&
+        doc.matches('^(team|corridors|nfs|plans|confs)_[A-Za-z0-9_~-]{1,140}$') && doc.split('_')[0] == d.c &&
+        d.at is int && d.at <= request.time.toMillis() + 60000 &&
+        d.st == request.time && d.by == request.auth.uid && d.cuid is string &&
+        d.del is bool && d.v == 1 && d.d is string && d.d.size() <= 900000 && (!d.del || d.d == '') &&
+        (!('slim' in d) || d.slim is bool);
+    }
+
     // ---------- Regras ----------
 
     // Dados particulares: só o dono; o robô só lê (para achar o e-mail de quem confirmou).
@@ -287,9 +324,60 @@ service cloud.firestore {
       match /membros/{uid} {
         allow read: if isAuthenticated() && isLojaId(loja);
         allow create, update: if isOwner(uid) && isLojaId(loja) && isValidMembro(request.resource.data) &&
-          (request.method == 'create' || request.resource.data.criado == resource.data.criado);
+          (request.method == 'create' || request.resource.data.criado == resource.data.criado) &&
+          gestorOk(uid);
         allow delete: if isOwner(uid);
+        // v135: o dono da loja (lojas/{loja}.owner) cria e apaga membros; 'gestor' só com verificados 's'.
+        allow create: if isLojaDono(loja) && isLojaId(loja) && isValidMembroDono(request.resource.data) && gestorOk(uid);
+        allow delete: if isLojaDono(loja);
       }
+
+      // v136: acesso à loja por prova (HKDF do código da equipe). _raiz: 1× por gestor verificado, ninguém lê.
+      match /acesso/{uid} {
+        allow get: if isOwner(uid);
+        allow create: if isLojaId(loja) && uid == '_raiz' && isVerif() &&
+          request.resource.data.keys().hasOnly(['prova']) && isStr(request.resource.data.prova, 16, 200);
+        allow create: if isLojaId(loja) && uid != '_raiz' && isOwner(uid) &&
+          request.resource.data.keys().hasOnly(['prova']) &&
+          exists(/databases/$(database)/documents/lojas/$(loja)/acesso/_raiz) &&
+          request.resource.data.prova == get(/databases/$(database)/documents/lojas/$(loja)/acesso/_raiz).data.prova;
+      }
+
+      // v136: papel na nuvem. Sem documento = nível auxiliar. Só gestor verificado (com acesso) grava.
+      match /papeis/{uid} {
+        allow read: if temAcesso(loja);
+        allow create, update: if isLojaId(loja) && isVerif() && temAcesso(loja) &&
+          request.resource.data.keys().hasOnly(['role', 'at']) && request.resource.data.role in ['auxiliar', 'estoque', 'gestor'] &&
+          (!('at' in request.resource.data) || request.resource.data.at is int) && gestorOk(uid);
+        allow delete: if isVerif() && temAcesso(loja);
+      }
+
+      // v136: dados da loja (blob cifrado). Nunca apagar (exclusão = del:true). Auxiliar: só nfs/plans/confs, sem del, só o que criou.
+      match /dados/{doc} {
+        allow read: if temAcesso(loja);
+        allow create: if isLojaId(loja) && temAcesso(loja) && isValidDado(request.resource.data, doc) &&
+          request.resource.data.cuid == request.auth.uid &&
+          (!nivelAux(loja) || (request.resource.data.c in ['nfs', 'plans', 'confs'] && request.resource.data.del == false));
+        allow update: if isLojaId(loja) && temAcesso(loja) && isValidDado(request.resource.data, doc) &&
+          request.resource.data.cuid == resource.data.cuid && request.resource.data.at >= resource.data.at &&
+          (!nivelAux(loja) || (request.resource.data.c in ['nfs', 'plans', 'confs'] && request.resource.data.del == false &&
+            resource.data.cuid == request.auth.uid));
+        allow delete: if false;
+      }
+    }
+
+    // v136: entrada de conta solta pelo e-mail: lê só o dono do e-mail verificado; grava gestor verificado com acesso à loja.
+    match /entradas/{email} {
+      allow get: if isAuthenticated() && request.auth.token.email_verified == true &&
+        request.auth.token.email.lower() == email;
+      allow create, update: if isVerif() && isValidEmail(email) &&
+        request.resource.data.keys().hasOnly(['code', 'team', 'loja', 'at']) &&
+        request.resource.data.keys().hasAll(['code', 'loja', 'at']) &&
+        isStr(request.resource.data.code, 1, 200) &&
+        (!('team' in request.resource.data) || isStr(request.resource.data.team, 0, 80)) &&
+        isLojaId(request.resource.data.loja) && request.resource.data.at is int &&
+        exists(/databases/$(database)/documents/lojas/$(request.resource.data.loja)/acesso/$(request.auth.uid));
+      allow delete: if isVerif();
     }
 
     // Chat: digitando, lidos, reações e mensagem fixada (equipe lê; cada um grava o seu).
