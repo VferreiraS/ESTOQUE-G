@@ -125,7 +125,9 @@ const APP_FILES = [
   'app/js/v134.js',
   'app/js/v136.js',
   'app/css/v137.css',
-  'app/js/v137.js'
+  'app/js/v137.js',
+  'app/css/v138.css',
+  'app/js/v138.js'
 ];
 const CORE = [
   './index.html',

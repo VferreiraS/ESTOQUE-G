@@ -21,7 +21,7 @@ function str(v,n){return typeof v==='string'?v.slice(0,n):''}
 function img(d){if(!okPh(d))return '';if(urls[d])return urls[d];try{var b=atob(d.split(',')[1]),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);urls[d]=URL.createObjectURL(new Blob([a],{type:'image/jpeg'}))}catch(e){urls[d]=''}return urls[d]}
 /* ---------- dados recebidos ---------- */
 function clean(c,x,id){if(!x||typeof x!=='object')return null;var o={};
-  if(c==='perfis')return {id:id,name:str(x.name,40),cargo:str(x.cargo,40),bio:str(x.bio,200),photo:okPh(x.photo)?x.photo:'',cover:okPh(x.cover)?x.cover:'',lg:str(x.lg,80)};
+  if(c==='perfis')return {id:id,name:str(x.name,40),cargo:str(x.cargo,40),bio:str(x.bio,200),photo:okPh(x.photo)?x.photo:'',cover:okPh(x.cover)?x.cover:'',lg:str(x.lg,80),pk:typeof x.pk==='string'&&/^[A-Za-z0-9+/=]{80,100}$/.test(x.pk)?x.pk:''};
   o.id=str(x.id,100);o.n=str(x.n,40);o.lg=str(x.lg,80);
   if(c==='posts'&&x.l){o.l=1;return o}
   o.t=str(x.t,c==='comments'?500:1000);if(c!=='comments')o.ph=okPh(x.ph)?x.ph:'';if(c==='comments')o.p=str(x.p,100);return o}
@@ -100,7 +100,7 @@ document.addEventListener('keydown',function(e){if(!viewer)return;if(e.key==='Es
 /* perfil na nuvem */
 var lastPf='';
 function pushPerfil(force){var u=me(),p=state.perfil;if(!u||!started)return;var cur=perfil(u),cover=cur&&cur.cover||'';
-  var x={id:u,name:String(p&&p.name||myName()).slice(0,40),cargo:p&&p.cargo||'',bio:p&&p.bio||'',photo:p&&p.photo||'',cover:cover,lg:myLogin()};var sig=JSON.stringify(x);
+  var x={id:u,name:String(p&&p.name||myName()).slice(0,40),cargo:p&&p.cargo||'',bio:p&&p.bio||'',photo:p&&p.photo||'',cover:cover,lg:myLogin(),pk:window.e99CvPk?window.e99CvPk():''};var sig=JSON.stringify(x);
   if(!force&&(sig===lastPf||(cur&&JSON.stringify(Object.assign({},cur,{id:u}))===JSON.stringify(Object.assign({},clean('perfis',x,u))))))return;lastPf=sig;write('perfis','perfis_'+u,x,false)}
 window.e99SocCover=async function(inp){var f=inp.files&&inp.files[0];inp.value='';if(!f)return;try{var d=await shrink(f,1200);setCover(d)}catch(e){notify(e.message)}};
 window.e99SocCoverRm=function(){setCover('')};
@@ -135,7 +135,7 @@ function render0(){if(!authSession)return '';var u=pessoa||me(),isMe=u===me()||!
   var my=posts().filter(function(r){return r.cuid===u}),f=feats([name,isMe?myName():'']);
   return hero('Perfil','')+'<div class="panel sc-prof" id="sc-prof"><div class="sc-cover'+(cv?' img':'')+'"'+(cv?' style="background-image:url(\''+E(cv)+'\')"':'')+'></div><div class="sc-phead">'+(ph?'<img class="sc-pav" src="'+E(ph)+'" alt="Foto de '+E(name)+'">':'<span class="sc-pav" aria-hidden="true">'+E((name[0]||'?').toUpperCase())+'</span>')
    +'<div><h2>'+E(name)+'</h2><div class="small">'+(lg?'@'+E(lg):'')+(p.cargo?' · '+E(p.cargo):'')+'</div></div></div>'+(p.bio?'<p>'+E(p.bio)+'</p>':'')
-   +(isMe?'<div class="row toolbar"><button type="button" onclick="openProfile(\'me\')">Editar perfil</button><label class="as-file">Capa (imagem)<input type="file" accept="image/*" onchange="e99SocCover(this)"></label>'+(p.cover?'<button type="button" onclick="e99SocCoverRm()">Capa na cor do tema</button>':'')+'</div>':'')
+   +(!isMe&&u?'<div class="row toolbar"><button type="button" class="primary" onclick="e99Cv.dmTo(\''+E(u)+'\')">Mensagem</button></div>':'')+(isMe?'<div class="row toolbar"><button type="button" onclick="openProfile(\'me\')">Editar perfil</button><label class="as-file">Capa (imagem)<input type="file" accept="image/*" onchange="e99SocCover(this)"></label>'+(p.cover?'<button type="button" onclick="e99SocCoverRm()">Capa na cor do tema</button>':'')+'</div>':'')
    +'<div class="sc-feats" aria-label="Conquistas da semana"><div><b>'+f.cr+'</b><span>notas criadas na semana</span></div><div><b>'+f.cf+'</b><span>notas conferidas na semana</span></div><div><b>'+f.acts+'</b><span>atividades feitas</span></div></div></div>'
    +'<h2 class="sc-h">Publicações</h2>'+(my.length?my.slice(0,limit).map(postHTML).join(''):'<p class="small">Nenhuma publicação.</p>')}
 window.extraPages=window.extraPages||{};window.extraPages.pessoa=render0;
@@ -145,5 +145,5 @@ function peopleHTML(){var ps=Object.keys(S).filter(function(k){return k.indexOf(
 var focusIn=function(){var a=document.activeElement;return a&&a.closest&&a.closest('#sc-mural form,#st-new')&&a.value}
 var rt=0;function refresh(now){clearTimeout(rt);rt=setTimeout(function(){if(!authSession||viewer)return;if(page==='team'||page==='pessoa'){if(!now&&focusIn())return;var y=scrollY;render();scrollTo(0,y)}},now?0:250)}
 var rd=render;render=function(){var r=rd.apply(this,arguments);try{if(authSession&&page==='team'&&!document.getElementById('sc-mural')){var h=document.querySelector('#view .hero');if(h){h.insertAdjacentHTML('afterend',muralHTML()+peopleHTML());if(isAux())document.querySelectorAll('#view .hero button,#view .card button[onclick^="openEditor"]').forEach(function(b){b.remove()})}}}catch(e){}return r};
-window.e99Social={state:function(){return {posts:posts().length,stories:stories().length,ctx:!!cx(),pend:pend.length,started:started}},S:function(){return S}};
+window.e99Social={state:function(){return {posts:posts().length,stories:stories().length,ctx:!!cx(),pend:pend.length,started:started}},S:function(){return S},pushPerfil:function(f){pushPerfil(f)}};
 })();

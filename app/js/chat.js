@@ -79,6 +79,7 @@ function notifyNew(m){nq.push(m);if(!nFirst)nFirst=Date.now();clearTimeout(nTime
   var m1=l[0];window.showSiteNotification('Chat · '+m1.from,m1.audio?'🎤 Áudio ('+mmss(m1.audio.dur)+')':m1.img&&!m1.text?'📷 Foto':String(m1.text||'').slice(0,140),'estoque99-chat','chat')},Date.now()-nFirst>4000?0:1500)}
 /* ---------- não lidas ---------- */
 async function unread(){if(!team)return 0;var last=localStorage.getItem(readKey())||'';var l=await allMsgs();return l.filter(function(r){return !r.mine&&(r.rx?new Date(r.rx).toISOString():String(r.at))>last}).length}
+window.e99ChatUnread=function(){return unread()};
 function markRead(){if(team)localStorage.setItem(readKey(),new Date(Date.now()+1000).toISOString());badges()}
 function badges(){unread().then(function(n){document.querySelectorAll('[onclick="go(\'chat\')"]').forEach(function(b){var s=b.querySelector('.nav-unread');if(n>0){if(!s){s=document.createElement('span');s.className='nav-unread';b.appendChild(s)}s.textContent=n>99?'99+':String(n)}else if(s)s.remove()})})}
 /* ---------- enviar ---------- */

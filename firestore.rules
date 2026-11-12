@@ -253,11 +253,21 @@ service cloud.firestore {
     function isSocial(c) {
       return c in ['posts', 'comments', 'stories', 'perfis'];
     }
+    // v138: conversas privadas/grupos (conteúdo cifrado de ponta a ponta). Só o autor grava o seu.
+    function isChat(c) {
+      return c in ['cv', 'msgs', 'pres', 'rcpt'];
+    }
+    function chatDocOk(d, doc) {
+      return (d.c != 'pres' || doc == 'pres_' + request.auth.uid) &&
+        (d.c != 'rcpt' || doc.matches('^rcpt_[A-Za-z0-9]{1,40}~' + request.auth.uid + '$')) &&
+        (d.c != 'msgs' || doc.matches('^msgs_[A-Za-z0-9]{1,40}~[A-Za-z0-9]{1,40}(~r~' + request.auth.uid + ')?$')) &&
+        (d.c != 'cv' || doc.matches('^cv_g[A-Za-z0-9]{1,40}$')) && d.d.size() <= 600000;
+    }
     function isValidDado(d, doc) {
       return d.keys().hasOnly(['c', 'at', 'st', 'by', 'cuid', 'del', 'v', 'd', 'slim']) &&
         d.keys().hasAll(['c', 'at', 'st', 'by', 'cuid', 'del', 'v', 'd']) &&
-        d.c in ['team', 'corridors', 'nfs', 'plans', 'confs', 'posts', 'comments', 'stories', 'perfis'] &&
-        doc.matches('^(team|corridors|nfs|plans|confs|posts|comments|stories|perfis)_[A-Za-z0-9_~-]{1,140}$') && doc.split('_')[0] == d.c &&
+        d.c in ['team', 'corridors', 'nfs', 'plans', 'confs', 'posts', 'comments', 'stories', 'perfis', 'cv', 'msgs', 'pres', 'rcpt'] &&
+        doc.matches('^(team|corridors|nfs|plans|confs|posts|comments|stories|perfis|cv|msgs|pres|rcpt)_[A-Za-z0-9_~-]{1,140}$') && doc.split('_')[0] == d.c &&
         d.at is int && d.at <= request.time.toMillis() + 60000 &&
         d.st == request.time && d.by == request.auth.uid && d.cuid is string &&
         d.del is bool && d.v == 1 && d.d is string && d.d.size() <= 900000 && (!d.del || d.d == '') &&
@@ -362,17 +372,19 @@ service cloud.firestore {
         // gestor/estoque (papel) só marca del:true em posts/comments/stories alheios; perfis_{uid} só o próprio.
         allow create: if isLojaId(loja) && temAcesso(loja) && isValidDado(request.resource.data, doc) &&
           request.resource.data.cuid == request.auth.uid && (
+            (isChat(request.resource.data.c) && request.resource.data.del == false && chatDocOk(request.resource.data, doc)) ||
             (isSocial(request.resource.data.c) && request.resource.data.del == false &&
               (request.resource.data.c != 'perfis' || doc == 'perfis_' + request.auth.uid)) ||
-            (!isSocial(request.resource.data.c) &&
+            (!isSocial(request.resource.data.c) && !isChat(request.resource.data.c) &&
               (!nivelAux(loja) || (request.resource.data.c in ['nfs', 'plans', 'confs'] && request.resource.data.del == false))));
         allow update: if isLojaId(loja) && temAcesso(loja) && isValidDado(request.resource.data, doc) &&
           request.resource.data.cuid == resource.data.cuid && request.resource.data.at >= resource.data.at && (
+            (isChat(request.resource.data.c) && resource.data.cuid == request.auth.uid && chatDocOk(request.resource.data, doc)) ||
             (isSocial(request.resource.data.c) && (
               (resource.data.cuid == request.auth.uid &&
                 (request.resource.data.c != 'perfis' || doc == 'perfis_' + request.auth.uid)) ||
               (request.resource.data.c != 'perfis' && !nivelAux(loja) && request.resource.data.del == true))) ||
-            (!isSocial(request.resource.data.c) &&
+            (!isSocial(request.resource.data.c) && !isChat(request.resource.data.c) &&
               (!nivelAux(loja) || (request.resource.data.c in ['nfs', 'plans', 'confs'] && request.resource.data.del == false &&
                 resource.data.cuid == request.auth.uid))));
         allow delete: if false;
