@@ -21,7 +21,7 @@ window.planActsFor=function(name){var n=normalText(name),lim=new Date();lim.setD
 ['tasks','ruptures','expiry'].forEach(function(k){delete labels[k];delete icons[k]});
 if(labels.plans){var ks=Object.keys(labels),pos=ks.indexOf('home');ks.slice(pos+1).filter(function(k){return k!=='plans'}).forEach(function(k){var v=labels[k];delete labels[k];labels[k]=v})}
 var FULL=null;function snapshot(){FULL={labels:Object.assign({},labels),icons:Object.assign({},icons)}}
-var ALLOWED={home:1,nfs:1,plans:1,chat:1,account:1,profile:1,reports:1,'mobile-menu':1};
+var ALLOWED={home:1,nfs:1,plans:1,chat:1,account:1,profile:1,reports:1,team:1,pessoa:1,'mobile-menu':1};
 function applyRole(){if(!FULL)snapshot();if(isAux()){Object.keys(labels).forEach(function(k){if(!ALLOWED[k]){delete labels[k];delete icons[k]}})}else{var extra={};Object.keys(labels).forEach(function(k){if(!(k in FULL.labels))extra[k]=[labels[k],icons[k]]});Object.keys(labels).forEach(function(k){delete labels[k];delete icons[k]});
     Object.keys(FULL.labels).forEach(function(k){labels[k]=FULL.labels[k];icons[k]=FULL.icons[k]});Object.keys(extra).forEach(function(k){labels[k]=extra[k][0];icons[k]=extra[k][1]})}document.body.classList.toggle('role-aux',isAux())}
 var logoutRole=authLogout;authLogout=async function(){var r=await logoutRole.apply(this,arguments);if(!authSession)document.body.classList.remove('role-aux');return r};

@@ -1,0 +1,52 @@
+/* v137: mural, status e perfil */
+.sc{display:grid;gap:var(--sp-3,12px);margin-bottom:var(--sp-4,16px)}
+.sc-stories{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:thin}
+.sc-story{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:72px;min-height:44px;background:none!important;border:0!important;padding:4px!important;color:inherit;box-shadow:none!important}
+.sc-story .sc-av{width:60px;height:60px;font-size:22px;outline:2px solid rgba(255,255,255,.18);outline-offset:2px}
+.sc-story.new .sc-av{outline:3px solid var(--neon,#E7B8EF)}
+.sc-story span:last-child{font-size:12px;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-story.add .sc-av{outline-style:dashed}
+.sc-av{display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;object-fit:cover;background:var(--ios-fill,#222);font-weight:700;flex:0 0 auto}
+.sc-av.sm{width:28px;height:28px;font-size:13px}
+.sc-new textarea{width:100%;min-height:80px}
+.sc-file,.sc-file input{min-height:44px}
+.sc-prev{max-width:100%;max-height:260px;border-radius:14px;display:block}
+.sc-prevbox{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.sc-post header{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.sc-who{display:flex;align-items:center;gap:10px;background:none!important;border:0!important;padding:0!important;color:inherit;text-align:left;min-height:44px;box-shadow:none!important}
+.sc-who .small{display:block}
+.sc-text{white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0}
+.sc-img{width:100%;max-height:520px;object-fit:contain;border-radius:16px;background:#000}
+.sc-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.sc-like,.sc-link,.sc-x{min-height:44px}
+.sc-like[aria-pressed=true]{background:var(--neon-btn,#C79BD0)!important;color:var(--neon-ink,#111)!important}
+.sc-link{background:none!important;border:0!important;text-decoration:underline;color:inherit;padding:0 6px!important;box-shadow:none!important}
+.sc-cmts{display:grid;gap:8px;margin-top:8px}
+.sc-cmt{display:flex;gap:8px;align-items:flex-start;overflow-wrap:anywhere}
+.sc-cform{display:flex;gap:8px;margin-top:8px}.sc-cform input{flex:1;min-height:44px}
+.sc-people{display:flex;flex-wrap:wrap;gap:8px 16px}
+.sc-prof{padding:0!important;overflow:hidden}
+.sc-prof>*:not(.sc-cover){margin-left:16px;margin-right:16px}
+.sc-cover{height:150px;background:linear-gradient(135deg,var(--neon-hot,#E7B8EF),var(--neon-btn,#C79BD0));background-size:cover;background-position:center}
+.sc-phead{display:flex;gap:14px;align-items:flex-end;margin-top:-40px}
+.sc-pav{width:96px;height:96px;border-radius:50%;object-fit:cover;border:4px solid var(--bg,#111);display:inline-grid;place-items:center;font-size:36px;font-weight:700;background:var(--ios-fill,#222)}
+.sc-feats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 16px 16px}
+.sc-feats div{background:var(--ios-fill,rgba(255,255,255,.06));border-radius:14px;padding:10px;text-align:center}
+.sc-feats b{display:block;font-size:24px}.sc-feats span{font-size:12px}
+.sc-h{margin:16px 0 8px}
+.sc-sheet{max-width:min(520px,calc(100vw - 32px))}
+#st-view{position:fixed;inset:0;z-index:10050;background:#000;color:#fff;display:flex;flex-direction:column}
+#st-view .st-bars{display:flex;gap:4px;padding:10px 12px 0}
+#st-view .st-bars i{flex:1;height:3px;background:rgba(255,255,255,.3);border-radius:2px;overflow:hidden}
+#st-view .st-bars i b{display:block;height:100%;width:0;background:#fff}
+#st-view .st-bars i.done b{width:100%}
+#st-view .st-bars i.on b{animation:st-fill 5s linear forwards}
+@keyframes st-fill{to{width:100%}}
+@media (prefers-reduced-motion:reduce){#st-view .st-bars i.on b{animation:none;width:100%}}
+#st-view .st-top{display:flex;align-items:center;gap:10px;padding:10px 12px;position:relative;z-index:2}
+#st-view .st-top .sc-x{margin-left:auto}#st-view .st-top .sc-x+.sc-x{margin-left:0}
+#st-view .st-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;overflow:hidden}
+#st-view .st-body img{max-width:100%;max-height:70vh;object-fit:contain}
+#st-view .st-body p{font-size:22px;text-align:center;white-space:pre-wrap;overflow-wrap:anywhere;max-width:620px}
+#st-view .st-prev,#st-view .st-next{position:absolute;top:70px;bottom:0;width:35%;background:transparent!important;border:0!important;box-shadow:none!important}
+#st-view .st-prev{left:0}#st-view .st-next{right:0}

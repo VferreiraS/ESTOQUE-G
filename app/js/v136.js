@@ -123,5 +123,5 @@ setInterval(tick,3000);setTimeout(tick,500);
 setInterval(function(){if(document.hidden||!db)return;if(status==='sem-acesso'||status==='erro'){runKey='';tick();return}if(cl().seeded)reconcile();confirmPapeis();schedulePush(200)},60000);
 addEventListener('online',function(){if(status==='erro'||status==='sem-acesso')runKey='';else schedulePush(300)});
 document.addEventListener('visibilitychange',function(){if(!document.hidden&&db)schedulePush(300)});
-window.e99Loja={start:function(){runKey='';tick()},stop:stop,pushNow:function(){return push()},reconcile:reconcile,status:function(){return {status:status,pend:(sy().cloudPend||[]).length,lastAt:lastAt,loja:loja,uid:uid,seeded:!!cl().seeded,err:lastErr,denied:Object.keys(denied).length,papeis:Object.assign({},papeis)}}};
+window.e99Loja={ctx:function(){return db&&ch&&uid&&loja&&(status==='ok'||status==='erro'&&cl().seeded)?{db:db,L:L,uid:uid,loja:loja,FS:FS,seal:seal,unseal:unseal,papeis:papeis}:null},start:function(){runKey='';tick()},stop:stop,pushNow:function(){return push()},reconcile:reconcile,status:function(){return {status:status,pend:(sy().cloudPend||[]).length,lastAt:lastAt,loja:loja,uid:uid,seeded:!!cl().seeded,err:lastErr,denied:Object.keys(denied).length,papeis:Object.assign({},papeis)}}};
 })();
