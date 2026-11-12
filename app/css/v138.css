@@ -11,7 +11,7 @@
 .cv-wrap{display:flex;flex-direction:column;max-width:920px;margin:0 auto;height:calc(100dvh - 190px);min-height:420px}
 .cv-head{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)}
 .cv-back{min-width:44px;min-height:44px;font-size:22px}
-.cv-geralbar{margin:0 0 8px}.cv-geralbar .cv-back{font-size:15px}
+.cv-geralbar{height:0;margin:0;display:flex;justify-content:flex-end;position:relative;z-index:3}.cv-geralbar .cv-back{font-size:15px}
 .cv-e2e{text-align:center;opacity:.75;margin:6px 0}
 .cv-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:8px 4px}
 .cv-b{position:relative;max-width:min(620px,82%);align-self:flex-start;padding:8px 40px 8px 12px;border-radius:16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);overflow-wrap:anywhere}
