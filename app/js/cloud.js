@@ -132,9 +132,16 @@ window.e99CloudLink=async function(ev){ev.preventDefault();if(linkBusy||!authSes
 async function onEnter(){if(!authSession)return;var pc=!!ls('lojasg.estoque99.pc-account:'+authSession.storeKey);/* conta do PC do estoque: e-mail interno automático */var s=authSession,c;try{c=await load()}catch(x){return}if(authSession!==s)return;var u=c.auth.currentUser,em=pc?'pc-'+(await sha('pc|'+authLoginName(s.record.login))).slice(0,24)+'@pc.stok-e99.app':myEmail(),pw=freshPw();
   if(pc){if(u&&u.email===em){after(false);return}if(pw)try{await link(em,pw)}catch(x){try{console.warn('Stok nuvem PC:',x.code||x)}catch(y){}}return}
   if(u&&em&&u.email===em){if(pw){try{var d=await derive(s.record.login,pw),h=(await sha(d)).slice(0,16);if(!(await pwSame(s,h))){await u.updatePassword(d);await pwSet(s,h)}}catch(x){}}after(false);return}
-  if(em&&pw){try{await link(em,pw);return}catch(x){if(soft(x))return;linkErr=msg(x);linkSoft=false}}
-  else if(u&&!em){try{await c.auth.signOut()}catch(x){}}
+  if(em&&pw){try{await link(em,pw);return}catch(x){if(soft(x)&&x&&x.code)return;linkErr=msg(x);linkSoft=false}}
+  /* v139: conta sem e-mail (ou e-mail que não ligou) entra na nuvem da loja com login anônimo, guardado no aparelho */
+  if(await anon(c,s))return;
   try{if(sessionStorage.getItem('e99-cloud-later'))return}catch(x){}showLink()}
+var anonErr='',anonBusy=false;
+async function anon(c,s){if(authSession!==s)return true;var u=c.auth.currentUser;if(u&&!u.isAnonymous)return false;
+  var k='lojasg.estoque99.anon-uid:'+s.storeKey;
+  if(u&&u.isAnonymous&&ls(k)&&ls(k)!==u.uid){try{await c.auth.signOut()}catch(x){}u=null}
+  if(!u){anonBusy=true;try{u=(await c.auth.signInAnonymously()).user;anonErr=''}catch(x){anonErr=x&&x.code||'erro';anonBusy=false;try{console.warn('Stok nuvem anônima:',anonErr)}catch(y){}return false}anonBusy=false}
+  if(authSession!==s)return true;ls(k,u.uid);after(true).catch(function(){});return true}
 var enterBefore=authEnter;authEnter=function(){var r=enterBefore.apply(this,arguments);linkErr='';linkSoft=false;setTimeout(onEnter,700);return r};
 var logoutBefore=authLogout;authLogout=async function(){var r=await logoutBefore.apply(this,arguments);if(!authSession){if(memUnsub){memUnsub();memUnsub=null;memSid=''}cloudMem={};stash=null;load().then(function(c){return c.auth.signOut()}).catch(function(){})}return r};
 var cpBefore=authChangePassword;authChangePassword=async function(ev){var v=readForm(ev.target),s=authSession,rev=s&&s.record.revision;var r=await cpBefore.apply(this,arguments);
@@ -169,6 +176,6 @@ window.e99CloudVerify=function(){var u=user();if(u)verify(u,true)};
 window.e99CloudOpen=function(){try{sessionStorage.removeItem('e99-cloud-later')}catch(x){}linkErr='';linkSoft=false;showLink()};
 /* entrou numa equipe (ou trocou): grava o status na loja nova na hora */
 var lastSid='';setInterval(function(){if(document.hidden||!authSession||!user())return;sid().then(function(s){if(s&&s!==lastSid){lastSid=s;after(true).catch(function(){})}}).catch(function(){})},15000);
-window.e99Cloud={load:load,user:user,sid:sid,after:after,onEnter:onEnter,relisten:function(){if(memUnsub){memUnsub();memUnsub=null}var s=memSid;memSid='';listen(s)}};
+window.e99Cloud={anon:function(){return {busy:anonBusy,err:anonErr}},load:load,user:user,sid:sid,after:after,onEnter:onEnter,relisten:function(){if(memUnsub){memUnsub();memUnsub=null}var s=memSid;memSid='';listen(s)}};
 if(typeof authSession!=='undefined'&&authSession)setTimeout(onEnter,1500);
 })();

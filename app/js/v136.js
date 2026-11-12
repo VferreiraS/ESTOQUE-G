@@ -3,7 +3,7 @@
 /* v136: dados da loja na nuvem — todas as contas da loja veem o mesmo (NFs, planos, equipe, corredores, conferências),
    mesmo sem outro aparelho aberto. lojas/{loja}/dados/{c}_{id}: blob cifrado com a chave do código da equipe (a mesma do sync),
    AAD = loja|docId. Acesso por prova (HKDF do código). Papel na nuvem = papeis/{uid} (sem documento = nível auxiliar).
-   Sem login anônimo: conta sem nuvem/e-mail vê "Ligue o e-mail para ver os dados da loja" e continua recebendo pelo ntfy. */
+   v139: sem e-mail entra com login anônimo; só se falhar vê "Peça ao gestor para ativar o acesso automático" e continua recebendo pelo ntfy. */
 var K=window.e99SyncCore;if(!K||!window.e99Cloud)return;
 var C=K.C,AUXC=['nfs','plans','confs'];
 var FS=null,db=null,uid='',loja='',ch=null,unsubD=null,unsubP=null,papeis={},cuids={},cloudAt={},denied={},gen=0,status='off',lastAt=0,pushing=false,pushTimer=0,lastErr='',chain=Promise.resolve(),runKey='',loaded={},entChecked={};
@@ -30,7 +30,7 @@ async function access(t){var p=await prova(t.code),me=L().collection('acesso').d
   await me.set({prova:p})}
 async function start(){var my=++gen;stopListen();var t=team();
   if(!authSession||!t||!t.sync||!K.active()||!K.chan()){status='off';paint();return}
-  var u=user();if(!u){status=hasMail()?'entrando':'sem-nuvem';paint();return}
+  var u=user();if(!u){var an=e99Cloud.anon?e99Cloud.anon():{};status=an.err?'sem-nuvem':'entrando';paint();return}
   var c;try{c=await e99Cloud.load()}catch(e){status='erro';paint();return}
   if(my!==gen)return;db=c.db;FS=firebase.firestore;uid=u.uid;ch=K.chan();loja=await e99Cloud.sid();if(my!==gen||!loja)return;
   var cc=cl();if(cc.loja!==loja){cc.loja=loja;cc.cursor=0;cc.seeded=false}
@@ -93,7 +93,7 @@ async function push(){if(pushing||!db||!ch||status==='sem-acesso')return;var s=s
 /* gestor confirma o papel das contas que vieram de convite dele (e o próprio) */
 async function confirmPapeis(){if(!db||!isGestor())return;try{if(papeis[uid]!=='gestor'){await L().collection('papeis').doc(uid).set({role:'gestor',at:Date.now()});papeis[uid]='gestor'}}catch(e){}
   var inv=[];try{inv=JSON.parse(localStorage.getItem('lojasg.estoque99.aux-invites:'+authSession.storeKey)||'[]')||[]}catch(e){}if(!Array.isArray(inv))inv=[];
-  var mem=window.e99CloudMembers?window.e99CloudMembers():[];
+  var mem=[];try{(await L().collection('membros').get()).forEach(function(d){var x=d.data()||{};mem.push({uid:d.id,login:String(x.login||''),inviteId:x.inviteId||''})})}catch(e){mem=window.e99CloudMembers?window.e99CloudMembers():[]}if(!db)return;
   for(var i=0;i<mem.length;i++){var m=mem[i];if(!m||!m.uid||m.uid===uid||papeis[m.uid])continue;var x=inv.find(function(v){return v&&((v.inviteId&&v.inviteId===m.inviteId)||(v.login&&m.login&&authLoginName(v.login)===authLoginName(m.login)))});if(!x)continue;
     var r=x.papel==='estoque'?'estoque':'auxiliar';try{await L().collection('papeis').doc(m.uid).set({role:r,at:Date.now()});papeis[m.uid]=r}catch(e){}}}
 /* conta solta: o gestor a põe na loja pelo e-mail; ela lê entradas/{email} ao entrar e liga a equipe */
@@ -107,7 +107,7 @@ window.e99LojaAddMail=async function(ev){ev.preventDefault();var f=ev.target,em=
 /* ---------- tela ---------- */
 function hhmm(t){var d=new Date(t);return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)}
 function noteHTML(){var t=team();if(!authSession||!t||!t.sync)return '';
-  if(status==='sem-nuvem')return '<div class="panel help" id="loja-note"><h2>Ligue o e-mail para ver os dados da loja</h2><p>Com o e-mail ligado à nuvem, esta conta vê as notas, planos, corredores, equipe e conferências da loja mesmo sem outro aparelho aberto. Sem ele, os dados só chegam quando alguém da equipe está com o Stok aberto.</p><div class="row toolbar"><button type="button" onclick="e99CloudOpen&&e99CloudOpen()">Ligar o e-mail</button></div></div>';
+  if(status==='sem-nuvem')return '<div class="panel help" id="loja-note"><h2>Peça ao gestor para ativar o acesso automático</h2><p>Esta conta não conseguiu entrar sozinha nos dados da loja (o acesso automático está desligado). Até lá, os dados só chegam quando alguém da equipe está com o Stok aberto. Se preferir, ligue o e-mail.</p><div class="row toolbar"><button type="button" onclick="e99CloudOpen&&e99CloudOpen()">Ligar o e-mail</button></div></div>';
   if(status==='sem-acesso')return '<p class="small" id="loja-note">Dados da loja na nuvem: aguardando o gestor abrir o Stok uma vez com a nuvem ligada.</p>';
   if(status!=='ok')return '';var n=(sy().cloudPend||[]).length;
   return '<p class="small" id="loja-note">Dados da loja na nuvem · atualizado às '+hhmm(lastAt||Date.now())+(n?' · '+n+(n===1?' mudança esperando':' mudanças esperando')+' internet':'')+'</p>'}
@@ -117,7 +117,7 @@ var sv=save;save=async function(){var r=await sv.apply(this,arguments);if(db&&sy
 /* ---------- ciclo ---------- */
 function tick(){if(!authSession){if(runKey){runKey='';stop();}return}
   if(hasMail()&&!user()&&!loaded[authSession.storeKey]){loaded[authSession.storeKey]=1;e99Cloud.load().catch(function(){})}
-  entradas();var t=team(),u=user(),c=K.chan();var key=authSession.storeKey+'|'+(t&&t.sync?1:0)+'|'+(c?c.topic:'')+'|'+(u?u.uid:'')+'|'+(K.active()?1:0);
+  entradas();var t=team(),u=user(),c=K.chan();var key=authSession.storeKey+'|'+(t&&t.sync?1:0)+'|'+(c?c.topic:'')+'|'+(u?u.uid:'')+'|'+(K.active()?1:0)+'|'+(e99Cloud.anon?e99Cloud.anon().err:'');
   if(key!==runKey){runKey=key;start().catch(function(){})}}
 setInterval(tick,3000);setTimeout(tick,500);
 setInterval(function(){if(document.hidden||!db)return;if(status==='sem-acesso'||status==='erro'){runKey='';tick();return}if(cl().seeded)reconcile();confirmPapeis();schedulePush(200)},60000);

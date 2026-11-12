@@ -66,7 +66,8 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == 'YVRBgV80TiNIBRXuoB5uP9qZNeY2';
     }
     function emailVerified() {
-      return request.auth.token.email_verified == true;
+      // v139: login anônimo não tem email_verified no token
+      return request.auth.token.get('email_verified', false) == true;
     }
     function hasOnlyAllowedFields(fields) {
       return request.resource.data.keys().hasOnly(fields);
