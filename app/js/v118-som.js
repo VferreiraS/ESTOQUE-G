@@ -21,6 +21,7 @@ function onGesture(){if(pending&&!played)attempt(true)}
 document.addEventListener('visibilitychange',function(){if(document.hidden){hiddenAt=Date.now();return}if(hiddenAt&&Date.now()-hiddenAt>60000){played=false;pending=false;attempt(false)}});
 W.e99LoginSound={played:function(){return played},pending:function(){return pending},count:function(){return W.__e99LoginSounds}};
 /* v121: espera a barra de carregamento (app carregado e áudio preparado) antes de tentar; sem a barra, tenta em 7 s */
-var kicked=false;function kick(){if(kicked)return;kicked=true;attempt(false)}
+/* v141: com a abertura esperando o toque em "Entrar", o som toca no toque (intro.js chama playSiteSound('login')) */
+var kicked=false;function kick(){if(kicked)return;kicked=true;if(W.e99IntroHeld&&W.e99IntroHeld())return;attempt(false)}
 if(W.__e99Boot)setTimeout(kick,0);else{W.addEventListener('e99:boot',kick);setTimeout(kick,7000)}
 })();

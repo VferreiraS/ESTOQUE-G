@@ -3,15 +3,19 @@
 /* v140: abertura "Do caos à ordem". Quadradinhos soltos na cor do tema se arrumam numa grade (prateleira), a linha do
    scanner passa e a grade vira o S vermelho da marca feito de quadradinhos; depois "Stok", "Tudo no lugar." e
    "Lojas G · Estoque 99". Um canvas só (aria-hidden), requestAnimationFrame até ~2,1 s e para; o canvas sai com a abertura.
-   Contrato antigo mantido: fundo #000, não bloqueia o login, "Toque para abrir" + som (v124/v118), some sozinha. */
+   Contrato: fundo #000; aberturas depois do login (replayEntrySplash/authEnter) não bloqueiam e somem sozinhas.
+   v141 (pedido do dono: "não quero que o app abra enquanto não clicar no botão de entrar"): na abertura do app (a 1ª da
+   sessão) a animação para no quadro final e a abertura fica na frente, sem prazo, até tocar em "Entrar" (destrava o áudio
+   e toca o som de abertura uma vez). Enquanto isso o resto da página fica inerte e as janelas (showModal) esperam.
+   Falha segura: erro ao montar a abertura = ela sai. Testes antigos (localhost) usam e99-test-autointro=1: some sozinha. */
 var S_PATH='M42 14h30.5a7.5 7.5 0 0 1 0 15H42a3.5 3.5 0 0 0 0 7H58a21 21 0 0 1 0 42H27.5a7.5 7.5 0 0 1 0-15H58a6 6 0 0 0 0-12H42a18.5 18.5 0 0 1 0-37z';
-var RED=[255,42,31],DUR=2.1,END=2800,END_HOLD=3400,END_R=950,END_RHOLD=2600;
-var active=null,removeTimer=0,anim=null;
+var RED=[255,42,31],DUR=2.1,END=2800,END_R=950;
+var active=null,removeTimer=0,anim=null,held=false,inerted=[],mo=null,waitDlg=[],nativeSM=null,keyH=null,watch=0;
 function off(){return false}
 function reduced(){try{if(typeof window.__osReduce==='boolean')return window.__osReduce;return !!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)}catch(x){return false}}
-function endMs(hold){return reduced()?(hold?END_RHOLD:END_R):(hold?END_HOLD:END)}
+function endMs(){return reduced()?END_R:END}
 var stats=window.__e99IntroStats={frames:0,n:0,sPts:0,font:'',done:false,finalRed:false};
-function clear(){if(removeTimer)clearTimeout(removeTimer);removeTimer=0;if(anim){anim.stop();anim=null}
+function clear(){if(removeTimer)clearTimeout(removeTimer);removeTimer=0;if(anim){anim.stop();anim=null}unlock();
   if(active){var cv=active.querySelector('canvas');if(cv){cv.width=0;cv.height=0}if(active.parentNode)active.remove()}active=null;document.body&&document.body.classList.remove('stok-intro-active')}
 function ease(t){return t<0?0:t>1?1:t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}
 function cl(t,a,b){return Math.min(1,Math.max(0,(t-a)/(b-a)))}
@@ -66,23 +70,44 @@ function start(d,cv,box,red){var W=innerWidth,H=innerHeight,dpr=Math.min(2,windo
     if(t>=DUR){if(!sReady)placeS();frame(DUR,true);stats.done=true;stats.finalRed=true;return}frame(t,false);raf=requestAnimationFrame(loop)}
   function stop(){stopped=true;if(raf)cancelAnimationFrame(raf);raf=0}
   if(red){frame(DUR,true);stats.done=true;stats.finalRed=true}else raf=requestAnimationFrame(loop);
-  return {stop:stop,running:function(){return !!raf}}}
-function show(first){if(off()||document.hidden||!document.body)return;if(active&&active.parentNode)return;clear();
+  /* v141: termina já no quadro final (aba em segundo plano com a abertura esperando o toque) */
+  function finish(){if(stats.done)return;if(!sReady)placeS();stop();try{frame(DUR,true)}catch(x){}stats.done=true;stats.finalRed=true}
+  return {stop:stop,finish:finish,running:function(){return !!raf}}}
+function testAuto(){try{return /^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&localStorage.getItem('e99-test-autointro')==='1'}catch(x){return false}}
+function show(first){if(off()||!document.body)return;var gate=first===true&&!testAuto();if(document.hidden&&!gate)return;if(active&&active.parentNode)return;clear();
   var red=reduced(),d=document.createElement('div');d.id='stok-intro';d.setAttribute('aria-hidden','true');if(red)d.setAttribute('data-reduced-motion','true');
   d.innerHTML='<canvas class="si-canvas" aria-hidden="true"></canvas><div class="si-space"></div><div class="si-txt"><div class="si-cap">Cada caixa tem um lugar.</div><div class="si-word">Stok</div><div class="si-tag">Tudo no lugar.</div><div class="si-sub">LOJAS G · ESTOQUE 99</div></div>';
-  active=d;document.body.classList.add('stok-intro-active');document.body.appendChild(d);d.classList.add('si-ending');
+  if(gate){try{d.style.cssText='position:fixed;inset:0;z-index:100002;background:#000';document.body.appendChild(d);active=d;addEnter(d)}catch(x){held=false;try{d.remove()}catch(y){}active=null;return}}
+  else{active=d;document.body.appendChild(d);d.classList.add('si-ending')}
+  document.body.classList.add('stok-intro-active');
   var sp=d.querySelector('.si-space'),Sh=Math.round(Math.max(120,Math.min(innerWidth*.62,innerHeight*.42,340)));sp.style.width=sp.style.height=Sh+'px';
   try{anim=start(d,d.querySelector('canvas'),sp.getBoundingClientRect(),red)}catch(x){anim=null}
-  /* v124: na abertura do app, botão "Toque para abrir" (destrava o áudio e toca o som de abertura); segura a abertura até 3,4 s */
-  var hold=first===true&&wantTap();if(hold)addTap(d);removeTimer=setTimeout(clear,endMs(hold))}
-function wantTap(){try{if(typeof siteSoundEnabled!=='undefined'&&!siteSoundEnabled)return false;if(window.e99LoginSound&&window.e99LoginSound.played())return false;if(navigator.userActivation&&navigator.userActivation.hasBeenActive)return false;return true}catch(x){return false}}
-function soundGone(){try{return (typeof siteSoundEnabled!=='undefined'&&!siteSoundEnabled)||!!(window.e99LoginSound&&window.e99LoginSound.played())}catch(x){return true}}
-function addTap(d){var t0=Date.now();d.classList.add('si-hold');d.removeAttribute('aria-hidden');Array.prototype.forEach.call(d.children,function(c){c.setAttribute('aria-hidden','true')});
-  var b=document.createElement('button');b.type='button';b.id='si-tap';b.className='si-tap';b.textContent='Toque para abrir';b.setAttribute('aria-label','Toque para abrir o app com som');d.appendChild(b);
-  var done=false,w=0;function end(ms){if(done)return;done=true;clearInterval(w);if(b.parentNode)b.remove();if(removeTimer)clearTimeout(removeTimer);removeTimer=setTimeout(clear,Math.max(0,ms))}
-  b.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();window.__e99IntroTap=Date.now();try{if(typeof unlockSiteAudio==='function')unlockSiteAudio()}catch(x){}try{if(typeof playSiteSound==='function')playSiteSound('login')}catch(x){}d.classList.add('si-tapped');end(220)});
-  /* som já tocou sozinho (PC/Android) ou som desligado: tira o botão e a abertura termina no tempo normal */
-  w=setInterval(function(){if(!d.isConnected){clearInterval(w);return}if(!done&&soundGone()){d.classList.remove('si-hold');end(endMs(false)-(Date.now()-t0))}},250)}
+  if(!gate)removeTimer=setTimeout(clear,endMs())}
+/* v141: botão "Entrar" na abertura do app. A abertura fica até o toque; nada por baixo pode ser tocado nem focado. */
+function addEnter(d){d.classList.add('si-gate');d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.setAttribute('aria-label','Stok, Lojas G Estoque 99. Toque em Entrar para abrir o app.');d.removeAttribute('aria-hidden');
+  Array.prototype.forEach.call(d.children,function(c){c.setAttribute('aria-hidden','true')});
+  var b=document.createElement('button');b.type='button';b.id='si-enter';b.className='si-enter';b.textContent='Entrar';
+  b.style.cssText='position:absolute;left:50%;bottom:calc(36px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);min-height:52px;min-width:200px';d.appendChild(b);
+  held=true;lock(d);var fired=false;
+  function go(ev){if(ev){ev.preventDefault();ev.stopPropagation()}if(fired||!held)return;fired=true;window.__e99IntroTap=Date.now();
+    try{if(typeof unlockSiteAudio==='function')unlockSiteAudio()}catch(x){}try{if(typeof playSiteSound==='function')playSiteSound('login')}catch(x){}
+    unlock();d.classList.add('si-tapped');b.disabled=true;if(removeTimer)clearTimeout(removeTimer);removeTimer=setTimeout(clear,reduced()?0:220)}
+  b.addEventListener('click',go);d.__e99Enter=go;
+  var fo=function(){try{if(held&&b.isConnected&&document.activeElement!==b)b.focus({preventScroll:true})}catch(x){}};fo();setTimeout(fo,400);setTimeout(fo,2300);
+  /* falha segura: botão sem tamanho (estilo não carregou, erro) = a abertura sai em vez de prender a pessoa */
+  watch=setTimeout(function(){watch=0;try{if(!held||!d.isConnected)return;var r=b.getBoundingClientRect();if(!b.isConnected||r.width<10||r.height<10)clear()}catch(x){clear()}},3000)}
+function lock(d){var B=document.body;
+  function ine(el){if(el===d||el.nodeType!==1||el.hasAttribute('inert')||/^(SCRIPT|STYLE|LINK|TEMPLATE)$/.test(el.tagName))return;el.setAttribute('inert','');inerted.push(el)}
+  Array.prototype.forEach.call(B.children,ine);
+  try{mo=new MutationObserver(function(l){l.forEach(function(m){Array.prototype.forEach.call(m.addedNodes,function(n){if(n.parentNode===B)ine(n)})})});mo.observe(B,{childList:true})}catch(x){}
+  /* janelas que o app abre por baixo (e-mail, senha, código...) esperam o toque em "Entrar" */
+  try{var P=HTMLDialogElement.prototype;if(!nativeSM){nativeSM=P.showModal;P.showModal=function(){if(held){if(waitDlg.indexOf(this)<0)waitDlg.push(this);return}return nativeSM.apply(this,arguments)}}}catch(x){}
+  keyH=function(ev){if(!held)return;if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){var b=document.getElementById('si-enter');if(b&&document.activeElement!==b&&d.__e99Enter)d.__e99Enter(ev)}};
+  document.addEventListener('keydown',keyH,true)}
+function unlock(){if(watch){clearTimeout(watch);watch=0}if(!held&&!inerted.length&&!mo&&!keyH)return;held=false;
+  if(mo){try{mo.disconnect()}catch(x){}mo=null}inerted.forEach(function(el){try{el.removeAttribute('inert')}catch(x){}});inerted=[];
+  if(keyH){document.removeEventListener('keydown',keyH,true);keyH=null}
+  var q=waitDlg;waitDlg=[];q.forEach(function(dl){try{if(dl.isConnected&&!dl.open)nativeSM.call(dl)}catch(x){}})}
 /* Som sintético só em contexto já desbloqueado e quando o som do app está ligado. */
 function tudum(ctx){var t=ctx.currentTime+.02,out=ctx.createGain();out.gain.value=.75;out.connect(ctx.destination);
   function thud(at,f0,f1,len,vol){var o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(f0,at);o.frequency.exponentialRampToValueAtTime(f1,at+len);g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(vol,at+.012);g.gain.exponentialRampToValueAtTime(.0001,at+len);o.connect(g);g.connect(out);o.start(at);o.stop(at+len+.05)}
@@ -90,8 +115,9 @@ function tudum(ctx){var t=ctx.currentTime+.02,out=ctx.createGain();out.gain.valu
 function play(){try{if(document.hidden||typeof siteSoundEnabled!=='undefined'&&!siteSoundEnabled)return;if(navigator.userActivation&&!navigator.userActivation.hasBeenActive)return;var ctx=typeof unlockSiteAudio==='function'?unlockSiteAudio():null;if(!ctx)return;var go=function(){if(ctx.state==='running'){if(window.e99Sting)window.e99Sting(ctx);else tudum(ctx)}};if(ctx.state==='running')go();else ctx.resume().then(go).catch(function(){})}catch(x){}}
 window.playStokIntro=function(withSound){show();if(withSound&&!off())play()};
 window.e99IntroRunning=function(){return !!(anim&&anim.running())};
+window.e99IntroHeld=function(){return held};
 var en=typeof authEnter==='function'?authEnter:null;if(en)authEnter=function(){var r=en.apply(this,arguments);show();return r};
 window.replayEntrySplash=function(){show()};
-document.addEventListener('visibilitychange',function(){if(document.hidden)clear()});
+document.addEventListener('visibilitychange',function(){if(!document.hidden)return;if(held){if(anim)anim.finish()}else clear()});
 try{if(!sessionStorage.getItem('e99-intro')){sessionStorage.setItem('e99-intro','1');show(true)}}catch(x){show(true)}
 })();

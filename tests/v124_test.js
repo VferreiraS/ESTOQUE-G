@@ -5,7 +5,7 @@
    - erro do navegador que não é de senha não vira "Senha incorreta";
    - nenhuma conta é regravada por tentativa errada;
    - campo de login escondido nos formulários de troca de senha (gerenciador de senhas atualiza);
-   - "Toque para abrir" na abertura: destrava o áudio e toca o som uma vez; some; abertura e barra terminam em ≤6 s. */
+   - botão da abertura (v141: "Entrar"): destrava o áudio e toca o som uma vez; some; barra termina. */
 const L=require('./lib.js');const {ok,until}=L;const U='http://localhost:8000/index.html?ntfy='+L.N;
 const IOS=()=>{const O=window.AudioContext,G=Object.getOwnPropertyDescriptor(BaseAudioContext.prototype,'state').get;
  class F extends O{constructor(o){super(o);this.__s=1}get state(){return this.__s?'suspended':G.call(this)}
@@ -59,22 +59,19 @@ for(const [nome,opt] of [['PC',{viewport:{width:1440,height:900}}],['iPhone',L.d
  await p.evaluate(async([x,y,m])=>{for(const l of [x,y]){const s=await authCreate(l,'Loja','mesma2026q',authEmpty(),'estoque',m);authSaveNewAccount(s);e99MailIdx.set(m,s.record.login)}},[x,y,m]);await p.reload();
  const r=await tryLogin(p,m,'mesma2026q');ok(!r.ok&&/mais de uma conta/.test(r.err)&&r.err.indexOf('@'+x)>=0,'PC: senha que abre 2 contas do e-mail pede o login');
  const r2=await tryLogin(p,y,'mesma2026q');ok(r2.ok&&r2.login===y,'PC: com o login entra');await ctx.close()}
-/* "Toque para abrir" */
+/* v141: o "Toque para abrir" virou o botão "Entrar" (a abertura espera o toque; ver tests/v141_test.js) */
+const GATE=()=>{try{sessionStorage.removeItem('e99-intro');localStorage.setItem('e99-test-gate','1');localStorage.removeItem('e99-test-autointro')}catch(e){}};
 for(const [nome,opt,ios] of [['iPhone',L.devices['iPhone 13'],true],['iPhone menos movimento',{...L.devices['iPhone 13'],reducedMotion:'reduce'},true]]){
- const ctx=await b.newContext(opt);if(ios)await ctx.addInitScript(IOS);await ctx.addInitScript(()=>{try{sessionStorage.removeItem('e99-intro')}catch(e){}});
- const p=await ctx.newPage();p.on('pageerror',e=>errs.push(nome+' '+e.message));const t0=Date.now();await p.goto(U);
- ok(await until(p,()=>!!document.querySelector('#stok-intro #si-tap'),null,3000),nome+': abertura mostra "Toque para abrir"');
- const box=await p.evaluate(()=>{const b=document.getElementById('si-tap').getBoundingClientRect(),bar=document.getElementById('e99-boot');const br=bar?bar.getBoundingClientRect():{bottom:0};return {top:b.top,bottom:b.bottom,h:innerHeight,bar:br.bottom,text:document.getElementById('si-tap').textContent}});
- ok(box.top>box.bar&&box.bottom<=box.h&&box.text==='Toque para abrir',nome+': botão embaixo, sem cobrir a barra de carregamento');
- await p.waitForTimeout(700);await p.tap('#si-tap');
+ const ctx=await b.newContext(opt);if(ios)await ctx.addInitScript(IOS);await ctx.addInitScript(GATE);
+ const p=await ctx.newPage();p.on('pageerror',e=>errs.push(nome+' '+e.message));await p.goto(U);
+ ok(await until(p,()=>!!document.querySelector('#stok-intro #si-enter'),null,3000),nome+': abertura mostra "Entrar"');
+ const box=await p.evaluate(()=>{const b=document.getElementById('si-enter').getBoundingClientRect(),bar=document.getElementById('e99-boot');const br=bar?bar.getBoundingClientRect():{bottom:0};return {top:b.top,bottom:b.bottom,h:innerHeight,bar:br.bottom,text:document.getElementById('si-enter').textContent}});
+ ok(box.top>box.bar&&box.bottom<=box.h&&box.text==='Entrar',nome+': botão embaixo, sem cobrir a barra de carregamento');
+ await p.waitForTimeout(2200);await p.tap('#si-enter');
  ok(await until(p,()=>window.__e99LoginSounds===1,null,4000),nome+': tocar destrava o áudio e toca o som de abertura');
  ok(await until(p,()=>!document.getElementById('stok-intro'),null,1500),nome+': depois do toque a abertura some');
- ok(await until(p,()=>!!window.__e99Boot&&!document.body.classList.contains('e99-booting'),null,6000)&&Date.now()-t0<=7000,nome+': barra termina e formulário liberado em ≤6 s');
+ ok(await until(p,()=>!!window.__e99Boot&&!document.body.classList.contains('e99-booting'),null,6000),nome+': barra termina e formulário liberado');
  await p.tap('#auth-form input[name=login]');await p.waitForTimeout(800);ok(await p.evaluate(()=>window.__e99LoginSounds===1),nome+': som não repete no toque seguinte');
  await ctx.close()}
-/* sem tocar: abertura some sozinha em ≤6 s e o formulário fica livre */
-{const ctx=await b.newContext(L.devices['iPhone 13']);await ctx.addInitScript(IOS);await ctx.addInitScript(()=>{try{sessionStorage.removeItem('e99-intro')}catch(e){}});const p=await ctx.newPage();const t0=Date.now();await p.goto(U);
- ok(await until(p,()=>!document.getElementById('stok-intro')&&!!window.__e99Boot&&!document.body.classList.contains('e99-booting'),null,6000),'iPhone sem tocar: abertura e barra terminam sozinhas em ≤6 s ('+(Date.now()-t0)+' ms)');
- ok(await p.evaluate(()=>!!document.querySelector('#auth-form input[name=login]')&&getComputedStyle(document.querySelector('#auth-form')).pointerEvents!=='none'),'iPhone sem tocar: formulário de entrar livre');await ctx.close()}
 ok(!errs.length,'sem erros de página '+errs.slice(0,3).join(' | '));
 await b.close()})();

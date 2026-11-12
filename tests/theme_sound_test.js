@@ -2,7 +2,7 @@ const L=require('./lib.js');const {ok,until}=L;
 let PW;try{PW=require('playwright')}catch(e){PW=require('/opt/node22/lib/node_modules/playwright')}
 (async()=>{
  // som: no iPhone a abertura v84 não pede toque ("Toque para abrir" removido); o som é liberado no primeiro toque do usuário
- const raw=await PW.chromium.launch();const c=await raw.newContext(PW.devices['iPhone 13']);const P=await c.newPage();await P.goto('http://localhost:8000/index.html?ntfy='+L.N);await P.waitForTimeout(200);
+ const raw=await PW.chromium.launch();const c=await raw.newContext(PW.devices['iPhone 13']);await c.addInitScript(()=>{try{localStorage.setItem('e99-test-autointro','1')}catch(e){}});const P=await c.newPage();await P.goto('http://localhost:8000/index.html?ntfy='+L.N);await P.waitForTimeout(200);
  ok(await P.evaluate(()=>!document.getElementById('stok-gate')&&!!document.getElementById('stok-intro')),'iPhone: abertura sem tela "Toque para abrir"');await P.waitForTimeout(1500);await P.tap('body');/* v140: a abertura dura ~2,8 s */await P.waitForTimeout(1500);
  ok(await P.evaluate(()=>!document.getElementById('stok-intro')),'abertura some sozinha e não bloqueia');ok(await P.evaluate(()=>siteAudio&&siteAudio.state==='running'),'som liberado no toque');await raw.close();
  // temas únicos

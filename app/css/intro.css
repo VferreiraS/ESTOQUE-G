@@ -15,9 +15,12 @@ body:not(.fx-user-off) .entry-splash{display:none!important}
 #stok-intro[data-reduced-motion="true"] .si-cap{display:none!important}
 #stok-intro[data-reduced-motion="true"] :is(.si-word,.si-tag,.si-sub){animation:none!important;opacity:1!important;transform:none!important}
 #stok-intro[data-reduced-motion="true"].si-ending{animation:none!important}
-#stok-intro .si-tap{position:absolute;left:50%;bottom:calc(30px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);pointer-events:auto;min-height:48px;padding:12px 26px;border-radius:999px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;font:650 16px/1.2 system-ui,-apple-system,sans-serif;letter-spacing:.02em;cursor:pointer;opacity:0;animation:si-tapin .3s ease-out .6s forwards;-webkit-tap-highlight-color:transparent}
-#stok-intro .si-tap:focus-visible{outline:2px solid #fff;outline-offset:3px}
-#stok-intro[data-reduced-motion="true"] .si-tap{animation:none;opacity:1}
+/* v141: abertura do app espera o toque em "Entrar" (cor do botão principal do tema, ≥44 px, foco visível) */
+#stok-intro.si-gate{pointer-events:auto;z-index:100002}
+html body #stok-intro .si-enter{position:absolute;left:50%;bottom:calc(36px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);pointer-events:auto;min-height:52px;min-width:min(200px,80vw);padding:14px 40px;border-radius:999px!important;border:0!important;background:var(--neon-btn,#DB2318)!important;background-image:none!important;color:var(--neon-ink,#fff)!important;font:700 18px/1.2 var(--font-text,system-ui,-apple-system,sans-serif)!important;letter-spacing:.02em;cursor:pointer;box-shadow:0 0 0 1px rgba(255,255,255,.18),0 8px 28px rgba(var(--neon-rgb,255,42,31),.28)!important;opacity:0;animation:si-tapin .35s ease-out 1.7s forwards;-webkit-tap-highlight-color:transparent}
+html body #stok-intro .si-enter:focus-visible{outline:3px solid #fff!important;outline-offset:4px}
+html body #stok-intro .si-enter:active{transform:translateX(-50%) scale(.97)}
+#stok-intro[data-reduced-motion="true"] .si-enter{animation:none!important;opacity:1}
 #stok-intro.si-tapped{animation:si-exit .2s ease-in forwards!important}
 body.stok-intro-active #auth-screen .auth-card .brand{visibility:hidden}
 @keyframes si-tapin{from{opacity:0}to{opacity:1}}

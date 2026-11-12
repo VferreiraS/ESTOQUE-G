@@ -61,6 +61,7 @@ function placeNote(){var n=document.getElementById('storage-note');if(!n)return;
   if(document.body.classList.contains('locked')&&box&&!box.hidden){if(n.parentNode!==box){var ref=box.querySelector('.legal-links')||box.querySelector('.copyright');box.insertBefore(n,ref||null)}}
   else if(n.parentNode!==document.body)document.body.appendChild(n)}
 function showNote(tries){if(get(NOTE)||document.getElementById('storage-note'))return;
+  if(window.e99IntroHeld&&window.e99IntroHeld()){setTimeout(function(){showNote(tries||0)},800);return}
   if(document.getElementById('stok-gate')||document.getElementById('stok-intro')){if((tries||0)<30)setTimeout(function(){showNote((tries||0)+1)},800);return}
   noteOn=true;makeNote();placeNote()}
 function makeNote(){
