@@ -80,7 +80,11 @@ function buildReport(kind,group){
     return (i+1)+'. *'+first+'*\n   '+rest;
   }).join('\n\n'):'Nenhum item neste grupo.';
   var text=head+'\n\n'+body+'\n\n— Estoque 99';
-  return {kind:kind,group:group,title:title,store:store,stamp:stamp,headers:built.headers,rows:built.rows,text:text};
+  /* v144: texto formatado (e99Msg) com banner */
+  var msg={title:title,subtitle:[store,built.extra].filter(Boolean).join(' · '),file:'estoque99-'+kind+'-'+group,subject:title+(store?' · '+store:''),
+    sections:[{title:'Total: '+built.rows.length,lines:built.rows.map(function(r,i){return {b:(i+1)+'. '+r[0],t:'',sub:[r.slice(1).map(function(v,j){return built.headers[j+1]+': '+(v===''||v==null?'—':v)}).join(' · ')]}})}]};
+  if(window.e99Msg)text=e99Msg.text(msg);
+  return {kind:kind,group:group,title:title,store:store,stamp:stamp,headers:built.headers,rows:built.rows,text:text,msg:msg};
 }
 function reportCsv(data){
   var rows=[data.headers].concat(data.rows);
@@ -96,7 +100,7 @@ function ensureDialog(){
   var d=document.getElementById('report-dialog');
   if(d)return d;
   d=document.createElement('dialog');d.id='report-dialog';d.setAttribute('aria-labelledby','report-title');
-  d.innerHTML='<form method="dialog" onsubmit="return false"><h2 id="report-title"></h2><p class="small" id="report-note"></p><div class="report-groups" id="report-groups" role="group" aria-label="Grupo do relatório"></div><div class="report-actions"><button type="button" class="primary wide" onclick="reportShare()">Enviar (WhatsApp, Outlook…)</button><button type="button" onclick="reportCopy()">Copiar texto</button><button type="button" onclick="reportCsvFile()">Baixar CSV</button><button type="button" class="wide" onclick="reportPdf()">Baixar PDF (para imprimir ou anexar)</button></div><textarea id="report-text" readonly aria-label="Prévia do relatório"></textarea><div class="formfoot"><button type="button" onclick="document.getElementById(\'report-dialog\').close()">Fechar</button></div></form>';
+  d.innerHTML='<form method="dialog" onsubmit="return false"><h2 id="report-title"></h2><p class="small" id="report-note"></p><div class="report-groups" id="report-groups" role="group" aria-label="Grupo do relatório"></div><div class="report-actions"><button type="button" class="primary wide" onclick="reportShare()" aria-haspopup="dialog">Enviar (WhatsApp, Outlook…)</button><button type="button" onclick="reportCopy()">Copiar texto</button><button type="button" onclick="reportCsvFile()">Baixar CSV</button><button type="button" class="wide" onclick="reportPdf()">Baixar PDF (para imprimir ou anexar)</button></div><textarea id="report-text" readonly aria-label="Prévia do relatório"></textarea><div class="formfoot"><button type="button" onclick="document.getElementById(\'report-dialog\').close()">Fechar</button></div></form>';
   document.body.appendChild(d);
   return d;
 }
@@ -148,6 +152,7 @@ window.reportPdf=function(){
 };
 window.reportShare=function(){
   var data=report.data,title=data.title+' · '+data.store;
+  if(window.e99Msg){var extra=[];try{if(data.rows.length)extra.push(new File([reportCsv(data)],reportFileName(data,'csv'),{type:'text/csv'}))}catch(e){}e99Msg.preview(data.msg,{heading:'Enviar: '+data.title,files:extra});return}
   if(!navigator.share){window.reportCopy();return}
   var files=[];
   try{

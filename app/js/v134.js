@@ -90,7 +90,7 @@ function open(mon){if(!authSession||aux())return;wkMon=mondayOf(mon||addDays(mon
   var data=weekData(wkMon),g=role()==='gestor',p=pref();
   d.innerHTML='<div class="wk-top"><h2 id="wk-title">Relatório da semana</h2><label>Semana (segunda a domingo)<select onchange="e99Week.open(this.value)">'+weeks().map(function(m,i){return '<option value="'+m+'"'+(m===wkMon?' selected':'')+'>'+esc(brS(m)+' a '+br(addDays(m,6)))+(i===0?' (esta semana)':i===1?' (semana passada)':'')+'</option>'}).join('')+'</select></label></div>'
    +'<div class="wk-body" id="wk-body">'+bodyHtml(data)+'</div>'
-   +'<div class="wk-foot">'+(g?'<label class="wk-pref"><input type="checkbox" '+(p.off?'':'checked ')+'onchange="e99Week.pref(this.checked)"> Enviar o resumo por e-mail toda segunda</label>':'')+'<button type="button" onclick="this.closest(\'dialog\').close()">Fechar</button><button type="button" class="primary" onclick="e99Week.pdf()">Salvar em PDF</button></div>';
+   +'<div class="wk-foot">'+(g?'<label class="wk-pref"><input type="checkbox" '+(p.off?'':'checked ')+'onchange="e99Week.pref(this.checked)"> Enviar o resumo por e-mail toda segunda</label>':'')+'<button type="button" onclick="this.closest(\'dialog\').close()">Fechar</button><button type="button" onclick="e99Week.share()" aria-haspopup="dialog">Compartilhar</button><button type="button" class="primary" onclick="e99Week.pdf()">Salvar em PDF</button></div>';
   if(!d.open){try{d.showModal()}catch(e){d.setAttribute('open','')}}var s=d.querySelector('select');if(s&&!mon)s.focus()}
 function pdf(){if(!authSession||aux())return;var html=printHtml(weekData(wkMon||addDays(mondayOf(iso()),-7))),w=null;try{w=W.open('','_blank')}catch(e){}
   if(w){w.document.open();w.document.write(html);w.document.close();setTimeout(function(){try{w.focus();w.print()}catch(e){}},300);notify('Na janela de impressão, escolha "Salvar como PDF".');return}
@@ -112,7 +112,18 @@ function fields(d){var f={};f['Loja']=d.store;f['Semana']=label(d)+' (segunda a 
   if(d.late.length)f['Atrasadas']=d.late.slice(0,15).map(function(x){return x.title+' · '+x.owner+' · '+br(x.date)}).join('\n')+(d.late.length>15?'\n+ '+(d.late.length-15)+' no app':'');
   f['Corredores sem responsável']=d.cor.length?d.cor.slice(0,20).map(function(c){return c.number+(c.sector?' · '+c.sector:'')}).join('\n'):'Nenhum';
   f['Mais detalhes']='Abra o Stok → Painel → Relatório da semana para salvar em PDF.';
-  f._subject=('Estoque 99 · Resumo da semana '+label(d)+' · '+d.store).slice(0,200);f._template='table';f._captcha='false';return f}
+  f._subject=('Estoque 99 · Resumo da semana '+label(d)+' · '+d.store).slice(0,200);f._template='table';f._captcha='false';
+  /* v144: o mesmo texto formatado das mensagens vem primeiro no corpo (campos de antes continuam) */
+  if(W.e99Msg){try{f=Object.assign({'Mensagem':e99Msg.text(payload(d),{plain:true})},f)}catch(e){}}return f}
+/* v144: resumo da semana para WhatsApp/Outlook (e99Msg) */
+function payload(d){var sec=[];
+  sec.push({title:'Notas recebidas ('+d.nfs+')',lines:d.nfs?ST.map(function(s,i){return s+': '+d.byStatus[i]}).concat(d.withVal?['Valor: '+money(d.val)+(d.withVal<d.nfs?' ('+d.withVal+' de '+d.nfs+' notas com valor)':'')]:[]):['Nenhuma nota na semana']});
+  sec.push({title:'Divergências ('+d.div.length+')',lines:d.div.length?d.div.slice(0,15).map(function(x){return {b:'NF '+x.number,t:[x.supplier,x.status].filter(Boolean).join(' · '),sub:x.notes?[x.notes]:[]}}).concat(d.div.length>15?['+ '+(d.div.length-15)+' no app']:[]):['Nenhuma']});
+  sec.push({title:'Conferências por câmera',lines:d.confs.length?[d.confs.length+' finalizadas · '+d.confs.reduce(function(a,c){return a+c.total},0)+' leituras · '+d.confs.filter(function(c){return c.bad}).length+' com falta ou sobra']:['Nenhuma']});
+  sec.push({title:'Plano de ação',lines:(d.acts?[d.done+' de '+d.acts+' atividades feitas · '+d.late.length+' atrasadas']:['Nenhum plano']).concat(d.late.slice(0,15).map(function(x){return {b:x.title,t:x.owner+' · '+br(x.date)}}))});
+  sec.push({title:'Corredores sem responsável ('+d.cor.length+')',lines:d.cor.length?d.cor.slice(0,20).map(function(c){return c.number+(c.sector?' · '+c.sector:'')}):['Nenhum']});
+  return {title:'Resumo da semana',subtitle:d.store+' · '+label(d),file:'resumo-semana-'+(wkMon||''),subject:'Resumo da semana '+label(d)+' · '+d.store,sections:sec,note:'Detalhes no Stok → Painel → Relatório da semana.'}}
+function shareWeek(){if(!authSession||aux()||!W.e99Msg)return;e99Msg.preview(payload(weekData(wkMon||addDays(mondayOf(iso()),-7))),{heading:'Enviar resumo da semana'})}
 var busy=false;
 function local(){return /^(localhost|127\.0\.0\.1)$/.test(location.hostname)||location.protocol==='file:'}
 function due(){if(!authSession||role()!=='gestor')return null;var p=pref(),c=mailCfg(),cur=mondayOf(iso());if(p.off||p.sent===cur||Date.now()<p.retryAt)return null;if(c.enabled!==true||!okMail(c.to))return null;
@@ -126,7 +137,7 @@ async function send(){var x=due();if(!x||busy||navigator.onLine===false)return f
   catch(e){if(authSession===s){var q=pref();q.retryAt=Date.now()+5*60000;q.status='Sem conexão para enviar o resumo da semana. Nova tentativa em 5 min.';setPref(q)}return false}
   finally{busy=false}}
 async function tick(){if(!due())return;if(navigator.locks&&navigator.locks.request)await navigator.locks.request('estoque99-weekmail:'+authSession.storeKey,{ifAvailable:true},function(l){return l?send():null});else await send()}
-W.e99Week={open:open,pdf:pdf,data:weekData,html:printHtml,fields:fields,tick:tick,due:function(){return !!due()},monday:mondayOf,
+W.e99Week={open:open,pdf:pdf,data:weekData,html:printHtml,fields:fields,payload:payload,share:shareWeek,tick:tick,due:function(){return !!due()},monday:mondayOf,
   pref:function(on){if(!authSession)return;var p=pref();p.off=!on;setPref(p);notify(on?'Resumo da semana por e-mail ligado (toda segunda).':'Resumo da semana por e-mail desligado.');if(on)tick()},get:function(){return authSession?pref():null}};
 /* opção no "Relatório por e-mail" (Alertas) */
 var ep=W.emailPanelHTML;if(typeof ep==='function')W.emailPanelHTML=function(){var h=ep.apply(this,arguments);if(!h||!authSession||role()!=='gestor')return h;var p=pref(),c=mailCfg();

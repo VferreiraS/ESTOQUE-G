@@ -1,0 +1,21 @@
+/* v144 · folha "Enviar mensagem" (banner + texto para WhatsApp/Outlook). Só tema escuro. */
+#e99-msg{width:min(560px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:0;border-radius:24px;background:var(--e99-bg,#0B0B0D);color:#F2F2F2;border:1px solid rgba(255,255,255,.12);overflow:auto;margin:auto}
+#e99-msg::backdrop{background:rgba(0,0,0,.62)}
+#e99-msg .e99m-wrap{padding:16px 16px 18px;display:flex;flex-direction:column;gap:12px}
+#e99-msg .e99m-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#e99-msg h2{margin:0;font-size:var(--t-h2,20px)}
+#e99-msg .e99m-x{min-width:44px;min-height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:999px}
+#e99-msg .e99m-banner{position:relative;aspect-ratio:1080/420;border-radius:16px;overflow:hidden;background:#141218;border:1px solid rgba(255,255,255,.10)}
+#e99-msg .e99m-banner img{display:block;width:100%;height:100%;object-fit:cover}
+#e99-msg .e99m-banner img:not([src]){display:none}
+#e99-msg #e99m-wait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:var(--t-sm,13px);color:#b9b9c0}
+#e99-msg #e99m-wait[hidden]{display:none}
+#e99-msg .e99m-text{margin:0;max-height:34vh;overflow:auto;white-space:pre-wrap;word-break:break-word;font:var(--t-sm,13px)/1.45 var(--font-text,system-ui,sans-serif);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:12px}
+#e99-msg .e99m-manual textarea{width:100%;box-sizing:border-box;font-size:13px}
+#e99-msg .e99m-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#e99-msg .e99m-actions button{min-height:44px;flex:1 1 200px}
+#e99-msg .e99m-actions button[hidden]{display:none}
+#e99-msg .e99m-mail{display:inline-flex;align-items:center;min-height:44px;padding:0 6px;color:var(--neon,#FF2A1F);text-decoration:underline;text-underline-offset:3px}
+#e99-msg .e99m-mail:focus-visible,#e99-msg button:focus-visible{outline:2px solid var(--neon,#FF2A1F);outline-offset:2px}
+#e99-msg #e99m-status:empty{display:none}
+#e99-msg #e99m-status{margin:0}

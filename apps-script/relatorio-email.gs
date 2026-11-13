@@ -18,7 +18,7 @@
  * Campos com "_" no começo são de controle: _token (obrigatório), _subject (assunto).
  */
 
-var DESTINO = 'ferreiradasilvavitorhugo44@gmail.com';
+var DESTINO = 'stok99.app@gmail.com';
 var COPIA = '99.estoque@lojasg.com.br';
 var MAX_CAMPOS = 120;
 var MAX_VALOR = 1000;      // caracteres por campo

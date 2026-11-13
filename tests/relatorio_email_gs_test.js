@@ -20,7 +20,7 @@ sb=box(null);r=JSON.parse(sb.doPost({parameter:campos}));ok(!r.ok&&sb.sent.lengt
 // 3) com token (formulário)
 sb=box(T);r=JSON.parse(sb.doPost({parameter:campos}));const m=sb.sent[0]||{};
 ok(r.ok&&sb.sent.length===1,'com token → envia');
-ok(m.to==='ferreiradasilvavitorhugo44@gmail.com'&&m.cc==='99.estoque@lojasg.com.br','destinatário e cópia fixos');
+ok(m.to==='stok99.app@gmail.com'&&m.cc==='99.estoque@lojasg.com.br','destinatário e cópia fixos');
 ok(m.subject===campos._subject,'assunto vem de _subject');
 ok(!/<script>/i.test(m.htmlBody)&&/&lt;script&gt;alert\(1\)&lt;\/script&gt;/.test(m.htmlBody),'<script> vira texto escapado');
 ok(/Fornecedor &amp; Cia/.test(m.htmlBody)&&/&quot;corredor&quot;/.test(m.htmlBody),'& e aspas escapados');
