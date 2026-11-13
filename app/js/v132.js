@@ -57,7 +57,7 @@ function genRep(){if(!authSession||aux()||!Array.isArray(state.plans))return [];
   Object.keys(series).forEach(function(sid){var l=series[sid].slice().sort(function(a,b){return a.date.localeCompare(b.date)}),last=l[l.length-1];if(!repOk(last.rep))return;
     var c=addDays(last.date,1);while(wdOf(c)!==last.rep.d)c=addDays(c,1);if(c<today){c=today;while(wdOf(c)!==last.rep.d)c=addDays(c,1)}
     if(c>lim||l.some(function(p){return p.date===c}))return;var id=(sid+'-w'+c.replace(/-/g,'')).slice(0,100);if(!safePlanId(id)||skip.indexOf(id)>=0||state.plans.some(function(p){return p.id===id})||out.some(function(p){return p.id===id}))return;
-    var np={id:id,title:last.title,date:c,repOf:sid,rep:{d:last.rep.d},activities:last.activities.map(function(a){var n={id:a.id,title:a.title,owner:a.owner||'',notes:a.notes||'',photos:[]};if(a.time)n.time=a.time;return n})};
+    var np={id:id,title:last.title,date:c,repOf:sid,rep:{d:last.rep.d},activities:last.activities.map(function(a){var n={id:a.id,title:a.title,owner:a.owner||'',notes:a.notes||'',photos:[]};if(a.time)n.time=a.time;if(a.demanda)n.demanda=a.demanda;return n})};
     ['cby','cdev','clogin'].forEach(function(k){if(last[k])np[k]=last[k]});out.push(np)});return out}
 function skipKey(){return 'lojasg.estoque99.rep-skip:'+(authSession?authSession.storeKey:'')}
 function skips(){try{var a=JSON.parse(localStorage.getItem(skipKey())||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}

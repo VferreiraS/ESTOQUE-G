@@ -3,7 +3,7 @@
 'use strict';
 /* Sincroniza NFs, planos de ação, equipe e corredores entre os aparelhos da equipe do chat.
    Canal próprio no ntfy.sh, tudo cifrado com o código da equipe. Cada item tem [quando, quem, apagado, hash]; ganha a última mudança. */
-var C=['team','corridors','nfs','plans','confs'];
+var C=['team','corridors','nfs','plans','confs','dresp'];/* v143: dresp = responsáveis das demandas (só pelo ntfy: a nuvem v136 não aceita essa coleção) */
 function auxColl(c){return c==='nfs'||c==='plans'||c==='confs'}
 function amAux(){return !!(authSession&&authSession.payload.role==='auxiliar')}
 var DEV=(function(){var k='lojasg.estoque99.device',v='';try{v=localStorage.getItem(k)||''}catch(e){}if(!/^[a-z0-9]{12}$/.test(v)){v=Array.from(crypto.getRandomValues(new Uint8Array(12)),function(b){return 'abcdefghijklmnopqrstuvwxyz0123456789'[b%36]}).join('');try{localStorage.setItem(k,v)}catch(e){}}return v})();
@@ -25,8 +25,8 @@ async function encStr(ch,o){return 'S99:'+authB64(await enc(ch,authBytes(JSON.st
 async function decStr(ch,str){if(typeof str!=='string'||str.indexOf('S99:')!==0)return null;try{return JSON.parse(new TextDecoder().decode(await dec(ch,authUn64(str.slice(4)))))}catch(e){return null}}
 /* ---------- marcar mudanças locais (roda antes de cada gravação) ---------- */
 function stamp(){if(!active())return false;var s=sy();if(!s.ready||s.topic!==chan.topic)return false;var now=Date.now(),by=info.name,touched=false,pend=new Set(s.pending),cp=new Set(Array.isArray(s.cloudPend)?s.cloudPend:[]);
-  C.forEach(function(c){if(amAux()&&!auxColl(c))return;var meta=s.meta[c],seen={};arr(c).forEach(function(x){if(!x||!okId(x.id))return;seen[x.id]=1;var h=hashItem(x),m=meta[x.id];if(!m||m[2]||m[3]!==h){meta[x.id]=[Math.max(now,m?m[0]+1:0),by,0,h];pend.add(c+'|'+x.id);cp.add(c+'|'+x.id);touched=true}});
-    Object.keys(meta).forEach(function(id){var m=meta[id];if(!seen[id]&&!m[2]){meta[id]=[Math.max(now,m[0]+1),by,1,''];pend.add(c+'|'+id);cp.add(c+'|'+id);touched=true}else if(m[2]&&now-m[0]>30*864e5&&!pend.has(c+'|'+id)&&!cp.has(c+'|'+id))delete meta[id]})});
+  C.forEach(function(c){if(amAux()&&!auxColl(c))return;var meta=s.meta[c],seen={};arr(c).forEach(function(x){if(!x||!okId(x.id))return;seen[x.id]=1;var h=hashItem(x),m=meta[x.id];if(!m||m[2]||m[3]!==h){meta[x.id]=[Math.max(now,m?m[0]+1:0),by,0,h];pend.add(c+'|'+x.id);if(c!=='dresp')cp.add(c+'|'+x.id);touched=true}});
+    Object.keys(meta).forEach(function(id){var m=meta[id];if(!seen[id]&&!m[2]){meta[id]=[Math.max(now,m[0]+1),by,1,''];pend.add(c+'|'+id);if(c!=='dresp')cp.add(c+'|'+id);touched=true}else if(m[2]&&now-m[0]>30*864e5&&!pend.has(c+'|'+id)&&!cp.has(c+'|'+id))delete meta[id]})});
   s.pending=Array.from(pend);s.cloudPend=Array.from(cp);return touched}
 var baseSave=save;
 save=async function(){var t=false;try{t=stamp()}catch(e){}var r=await baseSave.apply(this,arguments);if(t||(active()&&state.sync&&state.sync.pending&&state.sync.pending.length))schedulePublish();return r};
@@ -151,6 +151,7 @@ function describe(op,prev){var x=op.x||{},p=prev||{};
    case 'team':return op.d?'tirou '+first(p.name)+' da equipe':!prev?'adicionou '+first(x.name)+' à equipe':'atualizou '+first(x.name)+' na equipe';
    case 'plans':{if(op.d)return 'apagou o plano “'+first(p.title)+'”';if(!prev)return 'criou o plano “'+first(x.title)+'”';var pa=p.activities||[],newly=(x.activities||[]).filter(function(a){return a.done&&!(pa.find(function(b){return b.id===a.id})||{}).done});return newly.length?'fez “'+first(newly[0].title)+'”'+(newly.length>1?' e mais '+(newly.length-1):''):'atualizou o plano “'+first(x.title)+'”'}
    case 'confs':return op.d?'':!prev?'começou a conferência '+first(x.n):x.status==='finalizada'&&p.status!=='finalizada'?'finalizou a conferência '+first(x.n)+' ('+(x.total|0)+' volumes)':x.nf&&x.nf!==p.nf?'associou a conferência '+first(x.n)+' a uma NF':'';
+   case 'dresp':return 'definiu o responsável de uma demanda';
    case 'corridors':return op.d?'apagou o corredor '+first(p.number):!prev?'criou o corredor '+first(x.number):'atualizou o corredor '+first(x.number)}return ''}
 /* ---------- membros da equipe (quem já criou conta / visto por último) ---------- */
 function memKey(){return 'lojasg.estoque99.members:'+authSession.storeKey+':'+chan.topic}

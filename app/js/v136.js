@@ -5,7 +5,7 @@
    AAD = loja|docId. Acesso por prova (HKDF do código). Papel na nuvem = papeis/{uid} (sem documento = nível auxiliar).
    v139: sem e-mail entra com login anônimo; só se falhar vê "Peça ao gestor para ativar o acesso automático" e continua recebendo pelo ntfy. */
 var K=window.e99SyncCore;if(!K||!window.e99Cloud)return;
-var C=K.C,AUXC=['nfs','plans','confs'];
+var C=K.C.filter(function(c){return c!=='dresp'}),AUXC=['nfs','plans','confs'];
 var FS=null,db=null,uid='',loja='',ch=null,unsubD=null,unsubP=null,papeis={},cuids={},cloudAt={},denied={},gen=0,status='off',lastAt=0,pushing=false,pushTimer=0,lastErr='',chain=Promise.resolve(),runKey='',loaded={},entChecked={};
 function ls(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function team(){return window.e99Team&&window.e99Team.get()}

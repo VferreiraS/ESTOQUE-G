@@ -23,3 +23,14 @@ body.role-aux .plan-card button[onclick^="openPlan"]:not(.e99-own),body.role-aux
 .aux-card form{display:grid;gap:10px}
 .aux-list{display:grid;gap:6px}
 .aux-list div{display:flex;justify-content:space-between;gap:8px;align-items:center;border-top:1px solid var(--ds-line);padding-top:6px;font-size:14px}
+/* v143: etiqueta da demanda na atividade e cartão "Demandas do estoque" no Início */
+.act-dem{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:650;line-height:1.4;color:var(--ds-muted);border:1px solid rgba(255,255,255,.18);vertical-align:middle;white-space:normal}
+.e99-dem-list{margin:0;padding:4px 0 4px 1.4em;display:grid;gap:6px}
+.e99-dem-list li{line-height:1.45}
+.e99-dem-list li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px}
+.e99-dem-name{flex:1 1 220px;font-weight:600}
+.e99-dem-resp{color:var(--ds-muted)}
+.e99-dem-field{display:flex;align-items:center;gap:8px;flex:0 1 280px;margin:0}
+.e99-dem-field .small{color:var(--ds-muted);white-space:nowrap}
+.e99-dem-field input{min-height:44px;flex:1 1 auto;min-width:0;width:auto;margin:0}
+@media (max-width:600px){.e99-dem-field{flex:1 1 100%}}
