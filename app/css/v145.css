@@ -1,0 +1,24 @@
+/* v145: lista de notas compacta no celular. Cada nota = uma linha (botão .nf-sum) que abre os detalhes e as ações; no PC a tabela não muda. */
+.nf-sum{display:none}
+@media screen and (max-width:900px){
+  html body #view #nf-results table.mobile-cards{margin:0}
+  html body #view #nf-results table.mobile-cards tr[data-nf]{display:block;margin:8px 0!important;padding:0!important;border:1px solid var(--ds-line,#2a2a2e);border-radius:16px;overflow:hidden;contain-intrinsic-size:auto 96px;scroll-margin:96px 0 calc(112px + env(safe-area-inset-bottom))}
+  html body #view #nf-results tr[data-nf]>td:first-child{display:block;padding:0!important;border:0!important;margin:0}
+  html body #view #nf-results tr[data-nf] .nf-pc{display:none}
+  html body #view #nf-results .nf-sum{display:grid!important;grid-template-columns:minmax(0,1fr);gap:3px;width:100%;min-height:72px;margin:0;padding:10px 12px!important;text-align:left;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:var(--ds-ink,#f4f4f5)!important;font:inherit;transform:none!important;transition:none!important;cursor:pointer}
+  html body #view #nf-results .nf-sum:focus-visible{outline:2px solid var(--neon,#e7b8ef);outline-offset:-3px;border-radius:16px!important}
+  html body #view #nf-results .nf-s1{display:flex;align-items:center;gap:8px;min-width:0}
+  html body #view #nf-results .nf-s1 b{flex:1 1 auto;min-width:0;font-size:16px!important;line-height:1.25;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  html body #view #nf-results .nf-s1 .badge{flex:none;font-size:11.5px;line-height:1.3;padding:2px 9px;white-space:nowrap}
+  html body #view #nf-results .nf-s1::after{content:"";flex:none;width:7px;height:7px;margin:0 3px 3px 2px;border-right:2px solid var(--ds-muted,#a1a1aa);border-bottom:2px solid var(--ds-muted,#a1a1aa);transform:rotate(45deg)}
+  html body #view #nf-results tr.nf-x .nf-s1::after{transform:rotate(-135deg);margin-bottom:-3px}
+  html body #view #nf-results .nf-s2{display:block;font-size:14px;line-height:1.3;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  html body #view #nf-results .nf-s3{display:block;font-size:12px;line-height:1.35;font-weight:500;color:var(--ds-muted,#a1a1aa);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+  html body #view #nf-results .nf-s3 i{font-style:normal}
+  html body #view #nf-results tr.nf-x .nf-s1 b,html body #view #nf-results tr.nf-x .nf-s2,html body #view #nf-results tr.nf-x .nf-s3{white-space:normal;overflow:visible}
+  /* fechada: só a linha; aberta: detalhes da conferência + ações (chegada, volumes e status já estão na linha) */
+  html body #view #nf-results tr[data-nf]:not(.nf-x)>td:not(:first-child){display:none!important}
+  html body #view #nf-results tr.nf-x>td:nth-child(2),html body #view #nf-results tr.nf-x>td:nth-child(3),html body #view #nf-results tr.nf-x>td:nth-child(5){display:none!important}
+  html body #view #nf-results tr.nf-x>td:nth-child(4){display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px;padding:8px 12px!important;border:0;border-top:1px solid var(--ds-line,#2a2a2e)!important;font-size:13px}
+  html body #view #nf-results tr.nf-x>td.nf-act{display:block;padding:4px 12px 12px!important;border:0}
+}

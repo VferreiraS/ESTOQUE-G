@@ -111,7 +111,7 @@ function paint(){var box=D.getElementById('e99-sx-res'),q=D.getElementById('e99-
   box.innerHTML=h||'<p class="sx-empty">Nada encontrado para “'+esc(q.trim())+'”.</p>'}
 function close(){if(dlg&&dlg.open)dlg.close()}
 function flash(sel){setTimeout(function(){var el=D.querySelector(sel);if(!el)return;el.scrollIntoView({block:'center'});el.classList.add('e99-flash');setTimeout(function(){el.classList.remove('e99-flash')},2200)},120)}
-function pick(k,id,a){close();if(k==='nf'){var n=(state.nfs||[]).find(function(x){return x.id===id});if(!n)return;nfStatusFilter='';go('nfs');if(aux()&&!(W.e99Mine&&W.e99Mine(n))){nfQuery=String(n.number);refreshNFs();var s=D.querySelector('#view input[name="nf-busca"]');if(s)s.value=nfQuery;flash('#nf-results tbody tr');return}openEditor('nf',id)}
+function pick(k,id,a){close();if(k==='nf'){var n=(state.nfs||[]).find(function(x){return x.id===id});if(!n)return;nfStatusFilter='';go('nfs');if(aux()&&!(W.e99Mine&&W.e99Mine(n))){nfQuery=String(n.number);refreshNFs();var s=D.querySelector('#view input[name="nf-busca"]');if(s)s.value=nfQuery;try{nfToggle(id,true)}catch(x){}flash('#nf-results tbody tr');return}try{nfReveal(id)}catch(x){}openEditor('nf',id)}
   else if(k==='plan'){var p=planById(id);if(!p)return;planFilter=p.date;go('plans');flash('#view .plan-card [onclick*="\''+id.replace(/[^a-zA-Z0-9_-]/g,'')+'\'"]')}
   else if(k==='corridor'&&!aux()){go('corridors');openEditor('corridor',id)}else if(k==='person'&&!aux()){go('team');openEditor('person',id)}}
 function open(){if(!authSession)return;ensure();if(!dlg.open)dlg.showModal();var i=D.getElementById('e99-sx-q');i.focus();i.select();paint()}

@@ -12,6 +12,9 @@ async function oneConf(p,manual){await p.evaluate(()=>go('nfs'));await p.waitFor
   /* NF */
   await P.evaluate(()=>go('nfs'));await P.waitForTimeout(500);
   ok(await P.evaluate(()=>document.querySelectorAll('#view .nf-actions .e99-del').length===state.nfs.length),nome+': cada NF da lista tem Excluir');
+  /* v145: no celular o Excluir aparece ao abrir a linha da nota */
+  if(nome==='celular'){await P.tap('#nf-results tr[data-nf="n2"] .nf-sum');await P.waitForTimeout(200)}
+  ok(await P.evaluate(()=>{const x=[...document.querySelectorAll('#view tr')].find(r=>/NF 777/.test(r.innerText)).querySelector('.e99-del');const r=x.getBoundingClientRect();return r.width>0&&r.height>0}),nome+': Excluir da NF visível'+(nome==='celular'?' depois de abrir a linha':' na linha'));
   await P.evaluate(()=>{[...document.querySelectorAll('#view tr')].find(r=>/NF 777/.test(r.innerText)).querySelector('.e99-del').click()});
   ok(await until(P,()=>!state.nfs.some(n=>n.id==='n2')&&!/NF 777/.test(document.getElementById('view').innerText)),nome+': exclui a NF pela lista (com confirmação)');
   /* corredor */
