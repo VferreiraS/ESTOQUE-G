@@ -91,8 +91,9 @@ const BAD='V<img src=x onerror=window.__xss=1>';
  await B.evaluate(()=>go('chat'));await B.waitForTimeout(400);await A.evaluate(()=>{go('chat')});await A.fill('#chat-text','Oi equipe').catch(()=>{});await A.evaluate(()=>{const f=document.querySelector('#chat-text');if(f)f.closest('form').requestSubmit()});
  ok(await until(B,()=>{const b=[...document.querySelectorAll('#view .chat-msg button.prof-chip')].find(x=>x.getAttribute('data-name')==='Vitor');return !!b&&!!b.querySelector('img.av')},null,30000),'iPhone: foto do gestor no chat');
  await B.evaluate(()=>{const b=[...document.querySelectorAll('#view .chat-msg button.prof-chip')].find(x=>x.getAttribute('data-name')==='Vitor');b.click()});await B.waitForTimeout(600);
- ok(await B.evaluate(()=>page==='profile'&&!!document.getElementById('pf-view')&&!document.getElementById('pf-form')&&/Gestor do estoque/.test(document.getElementById('view').textContent)),'iPhone: "Ver perfil" do colega abre só leitura');
- ok(await B.evaluate(()=>!window.__xss&&!document.querySelector('img[src="x"]')&&!document.querySelector('#view .pf-bio b')),'iPhone: texto malicioso do colega escapado');
+ /* v147: "Ver perfil" abre a página única do perfil (rota pessoa), só leitura */
+ ok(await B.evaluate(()=>page==='pessoa'&&!!document.getElementById('sc-prof')&&!document.getElementById('pf-view')&&!document.getElementById('pf-form')&&/Gestor do estoque/.test(document.getElementById('view').textContent)&&/Sobre <b>eu<\/b>/.test(document.getElementById('view').textContent)),'iPhone: "Ver perfil" do colega abre só leitura');
+ ok(await B.evaluate(()=>!window.__xss&&!document.querySelector('img[src="x"]')&&!document.querySelector('#view .pf-bio b')&&!document.querySelector('#view .sc-bio b')&&!document.querySelector('#sc-prof h2 *')),'iPhone: texto malicioso do colega escapado');
  await B.evaluate(()=>openProfile('me'));await B.waitForTimeout(400);await B.fill('#pf-name','Ana Souza');await B.click('#pf-form button[type=submit]');await B.waitForTimeout(800);
  ok(await until(A,()=>e99ProfilesAll().some(p=>!p.me&&p.p.name==='Ana Souza'),null,30000),'PC: perfil do auxiliar chega ao gestor');
  await A.evaluate(()=>go('team'));await A.waitForTimeout(500);ok(await A.evaluate(()=>!!document.querySelector('#view .e99-prof-open')),'PC: Equipe tem "Ver perfil"');

@@ -15,13 +15,16 @@ function cx(){return window.e99Loja&&e99Loja.ctx&&e99Loja.ctx()}
 function me(){var c=cx();return c?c.uid:''}
 function soc(){return window.e99Social&&e99Social.S?e99Social.S():{}}
 function pf(uid){var r=soc()['perfis_'+uid];return r&&!r.del&&r.x?r.x:null}
-function nm(uid){if(uid===me())return 'Você';var p=pf(uid);return p&&p.name||(p&&p.lg?'@'+p.lg:'Alguém')}
+/* v147: nome e foto vêm da leitura única (window.e99Perfil): o mesmo perfil do chat da equipe, da Equipe e do mural. A chave pública (pk) continua vindo do perfis_{uid} (pf). */
+function PU(uid){try{return uid&&window.e99Perfil?window.e99Perfil({uid:uid}):null}catch(e){return null}}
+function pn(uid){var p=PU(uid);if(p&&p.name)return p.name;p=pf(uid);return p&&p.name||(p&&p.lg?'@'+p.lg:'')}
+function nm(uid){if(uid===me())return 'Você';return pn(uid)||'Alguém'}
 function rid(p){return p+Date.now().toString(36)+Array.from(crypto.getRandomValues(new Uint8Array(6)),function(b){return (b%36).toString(36)}).join('')}
 function prefP(){return ls('lojasg.estoque99.chat-presence')!=='off'}
 function prefR(){return ls('lojasg.estoque99.chat-read')!=='off'}
 function testGeral(){return /^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&ls('e99-test-chatgeral')==='1'}
 function img(d){if(typeof d!=='string'||d.length>MAXPH||!PH.test(d))return '';if(urls[d])return urls[d];try{var b=atob(d.split(',')[1]),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);urls[d]=URL.createObjectURL(new Blob([a],{type:'image/jpeg'}))}catch(e){urls[d]=''}return urls[d]}
-function av(uid,name,photo){var u=photo?img(photo):'';if(!u&&uid){var p=pf(uid);u=p&&p.photo?img(p.photo):''}
+function av(uid,name,photo){var u=photo?img(photo):'';if(!u&&uid){var p=PU(uid)||pf(uid);u=p&&p.photo?img(p.photo):''}
   return u?'<img class="cv-av" src="'+E(u)+'" alt="">':'<span class="cv-av" aria-hidden="true">'+E((String(name||'?').trim()[0]||'?').toUpperCase())+'</span>'}
 function hm(t){var d=new Date(t);return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)}
 function when(t){if(!t)return '';var d=new Date(t),n=new Date();if(d.toDateString()===n.toDateString())return hm(t);var y=new Date(n-864e5);if(d.toDateString()===y.toDateString())return 'ontem';return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear()}
@@ -98,6 +101,7 @@ async function presence(force,ty){if(!cx())return;var now=Date.now();if(!force&&
   try{await putX('pres','pres_'+me(),{on:on,ty:ty===undefined?typCv:ty,tt:ty?now:0})}catch(e){}}
 setInterval(function(){listen();if(!cx())return;if(!document.hidden)presence(false,typCv&&Date.now()-lastTyp<6000?typCv:'');if(page==='chat'&&sub&&sub!=='geral'){var s=document.getElementById('cv-sub');if(s)s.textContent=subtitle(sub)}prefRow()},2000);
 addEventListener('visibilitychange',function(){if(!document.hidden){presence(true);receipts()}});
+addEventListener('e99:perfil',function(){if(authSession&&page==='chat'&&sub!=='geral')refresh()});
 /* ---------- tela ---------- */
 var rt=0;function refresh(){clearTimeout(rt);rt=setTimeout(function(){if(!authSession||page!=='chat'){navBadge();return}if(sub&&sub!=='geral'){paintMsgs();var s=document.getElementById('cv-sub');if(s)s.textContent=subtitle(sub);return}if(!sub)render()},120)}
 function navBadge(){var n=convs().reduce(function(a,c){return a+c.unread},0);document.querySelectorAll('[onclick="go(\'chat\')"]').forEach(function(b){var s=b.querySelector('.cv-unread');if(n>0){if(!s){s=document.createElement('span');s.className='cv-unread nav-unread';b.appendChild(s)}s.textContent=n>99?'99+':String(n)}else if(s)s.remove()})}
@@ -109,7 +113,7 @@ function listView(){var l=convs(),c=cx();
      return '<li><button type="button" class="cv-item" data-cv="'+E(x.cv)+'" onclick="e99Cv.open(\''+E(x.cv)+'\')">'+av(x.uid,x.name,x.photo)+'<span class="cv-mid"><b>'+E(x.name)+'</b><span class="small cv-last">'+E(pv.slice(0,80))+'</span></span><span class="cv-end"><span class="small">'+E(when(x.at))+'</span>'+(x.unread?'<span class="cv-badge" aria-label="'+x.unread+' não lidas">'+x.unread+'</span>':'')+'</span></button></li>'}).join('')+'</ul></div>';
   if(window.e99ChatUnread)e99ChatUnread().then(function(n){if(n!==geralN){geralN=n;if(page==='chat'&&!sub)refresh()}}).catch(function(){});return h}
 function convView(cv){var g=CV[cv],name=cv[0]==='d'?nm(dmMap[cv]):g?g.nm:'Grupo';
-  return '<div class="cv-wrap" data-open="'+E(cv)+'"><header class="cv-head"><button type="button" class="cv-back" aria-label="Voltar às conversas" onclick="e99Cv.list()">‹</button>'+av(cv[0]==='d'?dmMap[cv]:'',name,g&&g.ph)
+  return '<div class="cv-wrap" data-open="'+E(cv)+'"><header class="cv-head"><button type="button" class="cv-back" aria-label="Voltar às conversas" onclick="e99Cv.list()">‹</button>'+(cv[0]==='d'&&dmMap[cv]?'<button type="button" class="cv-who" aria-label="Ver perfil de '+E(name)+'" onclick="e99Pessoa(\''+E(dmMap[cv])+'\')">'+av(dmMap[cv],name)+'</button>':av('',name,g&&g.ph))
    +'<span class="cv-mid"><b>'+E(name)+'</b><span id="cv-sub" class="small" aria-live="polite">'+E(subtitle(cv))+'</span></span>'+(g?'<button type="button" onclick="e99Cv.info()">Grupo</button>':'')+'</header>'
    +'<p class="small cv-e2e">'+(g&&g.m.indexOf(me())<0?'Você não participa mais deste grupo.':'Cifrada de ponta a ponta: só '+(g?'os membros':'vocês dois')+' leem.')+'</p><div id="cv-msgs" class="cv-msgs" role="log" aria-live="off" aria-label="Mensagens"></div><div id="cv-ann" class="chat-sr" role="status"></div>'
    +'<div id="cv-rp"></div><div id="cv-phprev"></div><form class="cv-compose" onsubmit="e99Cv.send(event)"><label class="as-file cv-phbtn" aria-label="Enviar foto">Foto<input type="file" accept="image/*" onchange="e99Cv.photo(this)"></label>'
@@ -154,7 +158,7 @@ async function editGroup(id,ch){var g=CV[id];if(!g||g.ow!==me())throw Error('Só
   var w=await wrapAll(id,m,raw);await putX('cv','cv_'+id,{id:id,ow:me(),nm:ch.nm!==undefined?String(ch.nm).trim().slice(0,40)||'Grupo':g.nm,ph:ch.ph!==undefined?ch.ph:g.ph,m:m,kv:kv,w:w});rings={};await build();refresh()}
 /* folhas */
 function sheet(id,html){var d=document.getElementById(id);if(!d){d=document.createElement('dialog');d.id=id;d.className='cv-sheet';document.body.appendChild(d)}d.innerHTML=html;if(!d.open)d.showModal();return d}
-function personBtn(u,act){var p=pf(u)||{};return '<button type="button" class="cv-item" onclick="'+act+'">'+av(u,p.name)+'<span class="cv-mid"><b>'+E(p.name||'Pessoa')+'</b><span class="small">'+E(p.lg?'@'+p.lg:'')+(p.pk?'':' · ainda sem o Stok atualizado')+'</span></span></button>'}
+function personBtn(u,act){var p=pf(u)||{},n=pn(u);return '<button type="button" class="cv-item" onclick="'+act+'">'+av(u,n)+'<span class="cv-mid"><b>'+E(n||'Pessoa')+'</b><span class="small">'+E(p.lg?'@'+p.lg:'')+(p.pk?'':' · ainda sem o Stok atualizado')+'</span></span></button>'}
 var gDraft={ph:''};
 window.e99Cv={
   open:function(cv){if(cv!=='geral'&&!/^[dg][A-Za-z0-9]{6,40}$/.test(cv))return;leave();sub=cv;render();if(cv!=='geral'){setLr(cv,Date.now());receipts();var t=document.querySelector('.cv-compose textarea');if(t&&matchMedia('(pointer:fine)').matches)t.focus()}},
@@ -162,7 +166,7 @@ window.e99Cv={
   dmTo:async function(uid){if(!/^[A-Za-z0-9]{1,128}$/.test(uid||'')||uid===me())return;if(!cx()){notify('Ligue o e-mail (nuvem) para conversar em particular.');return}await people();var id=dmMap['u:'+uid]||await dmId(uid);dmMap[id]=uid;dmMap['u:'+uid]=id;var d=document.getElementById('cv-new');if(d&&d.open)d.close();if(page!=='chat'){go('chat')}e99Cv.open(id)},
   newChat:async function(group){if(!cx()){notify('Ligue o e-mail (nuvem) em Minha conta para conversar em particular e em grupos.');return}var ps=await people();gDraft={ph:''};
     sheet('cv-new','<form method="dialog" onsubmit="e99Cv.mkGroup(event)"><h2>'+(group?'Novo grupo':'Nova conversa')+'</h2>'+(ps.length?'':'<p class="small">Ninguém da equipe abriu o Stok com a nuvem ligada ainda.</p>')
-      +(group?'<label>Nome do grupo<input name="nm" required maxlength="40"></label><label class="as-file">Foto do grupo (opcional)<input type="file" accept="image/*" onchange="e99Cv.gPhoto(this)"></label><fieldset class="cv-pick"><legend>Membros</legend>'+ps.map(function(u){var p=pf(u)||{};return '<label class="cv-pref"><input type="checkbox" name="m" value="'+E(u)+'"'+(p.pk?'':' disabled')+'> '+E(p.name||'Pessoa')+(p.lg?' (@'+E(p.lg)+')':'')+'</label>'}).join('')+'</fieldset>'
+      +(group?'<label>Nome do grupo<input name="nm" required maxlength="40"></label><label class="as-file">Foto do grupo (opcional)<input type="file" accept="image/*" onchange="e99Cv.gPhoto(this)"></label><fieldset class="cv-pick"><legend>Membros</legend>'+ps.map(function(u){var p=pf(u)||{};return '<label class="cv-pref"><input type="checkbox" name="m" value="'+E(u)+'"'+(p.pk?'':' disabled')+'> '+E(pn(u)||'Pessoa')+(p.lg?' (@'+E(p.lg)+')':'')+'</label>'}).join('')+'</fieldset>'
         :'<div class="cv-list">'+ps.map(function(u){return personBtn(u,"e99Cv.dmTo('"+E(u)+"')")}).join('')+'</div>')
       +'<div class="row toolbar"><button type="button" onclick="this.closest(\'dialog\').close()">Cancelar</button>'+(group?'<button class="primary" type="submit">Criar grupo</button>':'<button type="button" onclick="e99Cv.newChat(1)">Novo grupo</button>')+'</div></form>')},
   gPhoto:async function(inp){var f=inp.files&&inp.files[0];inp.value='';if(!f)return;try{gDraft.ph=await shrink(f)}catch(e){notify(e.message)}},
@@ -173,7 +177,7 @@ window.e99Cv={
   info:function(){var g=CV[sub];if(!g)return;var own=g.ow===me(),out=Object.keys(soc()).map(function(k){return soc()[k]}).filter(function(r){return r.c==='perfis'&&!r.del&&r.x&&g.m.indexOf(r.cuid)<0}).map(function(r){return r.cuid});
     sheet('cv-info','<form method="dialog" onsubmit="e99Cv.saveInfo(event)"><h2>'+E(g.nm)+'</h2>'+(own?'<label>Nome do grupo<input name="nm" maxlength="40" value="'+E(g.nm)+'"></label><label class="as-file">Trocar foto<input type="file" accept="image/*" onchange="e99Cv.gPhoto(this)"></label>':'<p class="small">Só quem criou o grupo muda nome, foto e membros.</p>')
       +'<h3>Membros ('+g.m.length+')</h3><ul class="cv-mem">'+g.m.map(function(u){return '<li>'+av(u,nm(u))+'<span>'+E(nm(u))+(u===g.ow?' · criou':'')+'</span>'+(own&&u!==me()?'<button type="button" class="danger" onclick="e99Cv.rm(\''+E(u)+'\')">Remover</button>':'')+'</li>'}).join('')+'</ul>'
-      +(own&&out.length?'<fieldset class="cv-pick"><legend>Adicionar</legend>'+out.map(function(u){var p=pf(u)||{};return '<label class="cv-pref"><input type="checkbox" name="add" value="'+E(u)+'"'+(p.pk?'':' disabled')+'> '+E(p.name||'Pessoa')+'</label>'}).join('')+'</fieldset>':'')
+      +(own&&out.length?'<fieldset class="cv-pick"><legend>Adicionar</legend>'+out.map(function(u){var p=pf(u)||{};return '<label class="cv-pref"><input type="checkbox" name="add" value="'+E(u)+'"'+(p.pk?'':' disabled')+'> '+E(pn(u)||'Pessoa')+'</label>'}).join('')+'</fieldset>':'')
       +'<div class="row toolbar"><button type="button" onclick="this.closest(\'dialog\').close()">Fechar</button>'+(own?'<button class="primary" type="submit">Salvar</button>':'')+'</div></form>');gDraft={ph:''}},
   saveInfo:async function(ev){ev.preventDefault();var f=ev.target,add=[].slice.call(f.querySelectorAll('input[name=add]:checked')).map(function(i){return i.value});try{await editGroup(sub,{nm:f.elements.nm.value,add:add,ph:gDraft.ph||undefined});f.closest('dialog').close();render()}catch(e){notify(e.message)}},
   rm:async function(u){if(!confirm('Remover '+nm(u)+' do grupo? A chave do grupo será trocada e essa pessoa não lerá as próximas mensagens.'))return;try{await editGroup(sub,{rm:[u]});var d=document.getElementById('cv-info');if(d)d.close();render();notify('Removido do grupo.')}catch(e){notify(e.message)}},

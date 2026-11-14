@@ -5,7 +5,7 @@
    posts_{id}, posts_{id}~l~{uid} (curtida), comments_{id}, stories_{id}, perfis_{uid}. Nunca apaga: exclusão = del:true.
    Tudo da rede passa por esc(); foto só JPEG data: verificada → blob:. Nada aqui dá papel. */
 var SOC=['posts','comments','stories','perfis'],DAY=864e5,MAXPH=340000,PH=/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/;
-var S={},gen=0,unsub=null,ctxKey='',pend=[],limit=20,urls={},draft={t:'',ph:''},stDraft=null,pessoa='',viewer=null,timer=0,started=false;
+var S={},gen=0,unsub=null,ctxKey='',pend=[],limit=20,urls={},draft={t:'',ph:''},stDraft=null,pessoa='',viewer=null,timer=0,started=false,pfDirty=false;
 function E(v){return esc(v)}
 function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
 function cx(){return window.e99Loja&&window.e99Loja.ctx&&window.e99Loja.ctx()}
@@ -21,7 +21,7 @@ function str(v,n){return typeof v==='string'?v.slice(0,n):''}
 function img(d){if(!okPh(d))return '';if(urls[d])return urls[d];try{var b=atob(d.split(',')[1]),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);urls[d]=URL.createObjectURL(new Blob([a],{type:'image/jpeg'}))}catch(e){urls[d]=''}return urls[d]}
 /* ---------- dados recebidos ---------- */
 function clean(c,x,id){if(!x||typeof x!=='object')return null;var o={};
-  if(c==='perfis')return {id:id,name:str(x.name,40),cargo:str(x.cargo,40),bio:str(x.bio,200),photo:okPh(x.photo)?x.photo:'',cover:okPh(x.cover)?x.cover:'',lg:str(x.lg,80),pk:typeof x.pk==='string'&&/^[A-Za-z0-9+/=]{80,100}$/.test(x.pk)?x.pk:''};
+  if(c==='perfis')return {id:id,name:str(x.name,40),cargo:str(x.cargo,40),bio:str(x.bio,200),photo:okPh(x.photo)?x.photo:'',cover:okPh(x.cover)?x.cover:'',lg:str(x.lg,80),pk:typeof x.pk==='string'&&/^[A-Za-z0-9+/=]{80,100}$/.test(x.pk)?x.pk:'',pat:Number.isSafeInteger(x.pat)&&x.pat>0?Math.min(x.pat,Date.now()+DAY):0};
   o.id=str(x.id,100);o.n=str(x.n,40);o.lg=str(x.lg,80);
   if(c==='posts'&&x.l){o.l=1;return o}
   o.t=str(x.t,c==='comments'?500:1000);if(c!=='comments')o.ph=okPh(x.ph)?x.ph:'';if(c==='comments')o.p=str(x.p,100);return o}
@@ -30,10 +30,10 @@ async function takeDoc(c0,d){var x=d.data();if(!x||SOC.indexOf(x.c)<0)return;var
   if(x.del){S[id]={id:id,c:c,at:at,cuid:x.cuid,del:true};return}
   var pl=await c0.unseal(id,x.d);if(!pl||!pl.x)return;var lk=key.indexOf('~l~');var base=lk<0?key:key.slice(0,lk);
   var o=clean(c,pl.x,base);if(!o||(c!=='perfis'&&o.id!==base))return;if(c==='perfis'&&base!==x.cuid)return;if(lk>=0&&(c!=='posts'||!o.l||key.slice(lk+3)!==x.cuid))return;
-  S[id]={id:id,c:c,at:at,cuid:String(x.cuid||''),del:false,x:o,like:lk>=0}}
+  S[id]={id:id,c:c,at:at,cuid:String(x.cuid||''),del:false,x:o,like:lk>=0};if(c==='perfis')pfDirty=true}
 function listen(){var c=cx(),k=c?c.loja+'|'+c.uid:'';if(k===ctxKey)return;ctxKey=k;gen++;if(unsub){try{unsub()}catch(e){}unsub=null}S={};if(!c)return;var my=gen,chain=Promise.resolve();
   unsub=c.L().collection('dados').where('c','in',SOC).onSnapshot(function(q){var docs=[];q.docChanges().forEach(function(ch){if(ch.type!=='removed')docs.push(ch.doc)});
-    chain=chain.then(async function(){if(my!==gen)return;for(var i=0;i<docs.length;i++)await takeDoc(c,docs[i]);started=true;refresh();pushPerfil()}).catch(function(e){window.__e99SocErr=String(e)})},function(e){window.__e99SocErr=e&&e.code||String(e);ctxKey=''});flush()}
+    chain=chain.then(async function(){if(my!==gen)return;for(var i=0;i<docs.length;i++)await takeDoc(c,docs[i]);started=true;refresh();pushPerfil();if(pfDirty){pfDirty=false;try{dispatchEvent(new Event('e99:perfil-nuvem'))}catch(e){}}}).catch(function(e){window.__e99SocErr=String(e)})},function(e){window.__e99SocErr=e&&e.code||String(e);ctxKey=''});flush()}
 /* ---------- gravar ---------- */
 async function write(c,docId,x,del,cuid){var k=cx();if(!k){pend.push([c,docId,x,del,cuid]);return false}
   var at=Math.max(nowMs(),(S[docId]&&S[docId].at||0)+1),data={c:c,at:Math.floor(at),st:k.FS.FieldValue.serverTimestamp(),by:k.uid,cuid:cuid||k.uid,del:!!del,v:1,d:''};
@@ -49,10 +49,12 @@ function likes(pid){return Object.keys(S).filter(function(k){var r=S[k];return r
 function comments(pid){return live('comments').filter(function(r){return r.x.p===pid}).sort(function(a,b){return a.at-b.at})}
 function stories(){var t=nowMs();return live('stories').filter(function(r){return t-r.at<DAY&&r.at<=t+6e4}).sort(function(a,b){return a.at-b.at})}
 function perfil(uid){var r=S['perfis_'+uid];return r&&!r.del&&r.x?r.x:null}
-function nameOf(r){var p=perfil(r.cuid);return p&&p.name||r.x&&r.x.n||'Alguém'}
-function loginOf(r){var p=perfil(r.cuid);return p&&p.lg||r.x&&r.x.lg||''}
-function av(uid,name,cls){var p=perfil(uid),u=p&&p.photo?img(p.photo):'';if(uid===me()&&!u&&state.perfil&&state.perfil.photo)u=img(state.perfil.photo);
-  return u?'<img class="sc-av '+(cls||'')+'" src="'+E(u)+'" alt="">':'<span class="sc-av '+(cls||'')+'" aria-hidden="true">'+E((String(name||'?').trim()[0]||'?').toUpperCase())+'</span>'}
+/* v147: nome, @login e foto vêm da leitura única (window.e99Perfil, no v127.js): o mesmo perfil do chat e da Equipe */
+function P(ref){try{return window.e99Perfil?window.e99Perfil(ref):null}catch(e){return null}}
+function nameOf(r){var p=P(r.cuid);return p&&p.name||r.x&&r.x.n||'Alguém'}
+function loginOf(r){var p=P(r.cuid);return p&&p.login||r.x&&r.x.lg||''}
+function av(uid,name,cls){var p=uid?P(uid):null,u=p&&p.photo?img(p.photo):'';
+  return u?'<img class="sc-av '+(cls||'')+'" src="'+E(u)+'" alt="">':'<span class="sc-av '+(cls||'')+'" aria-hidden="true">'+E((String(p&&p.name||name||'?').trim()[0]||'?').toUpperCase())+'</span>'}
 function when(t){var d=nowMs()-t;if(d<6e4)return 'agora';if(d<36e5)return Math.floor(d/6e4)+' min';if(d<DAY)return Math.floor(d/36e5)+' h';var x=new Date(t);return ('0'+x.getDate()).slice(-2)+'/'+('0'+(x.getMonth()+1)).slice(-2)+'/'+x.getFullYear()}
 function seenKey(){return 'lojasg.estoque99.st-seen:'+(authSession?authSession.storeKey:'')}
 function seen(){try{return JSON.parse(ls(seenKey())||'[]')||[]}catch(e){return []}}
@@ -98,13 +100,19 @@ function showStory(){clearTimeout(timer);var gs=groups(),g=gs[viewer.g];if(!g){c
   timer=setTimeout(function(){window.e99StStep(1)},5000)}
 document.addEventListener('keydown',function(e){if(!viewer)return;if(e.key==='Escape')closeStory();else if(e.key==='ArrowRight')window.e99StStep(1);else if(e.key==='ArrowLeft')window.e99StStep(-1)});
 /* perfil na nuvem */
-var lastPf='';
-function pushPerfil(force){var u=me(),p=state.perfil;if(!u||!started)return;var cur=perfil(u),cover=cur&&cur.cover||'';
-  var x={id:u,name:String(p&&p.name||myName()).slice(0,40),cargo:p&&p.cargo||'',bio:p&&p.bio||'',photo:p&&p.photo||'',cover:cover,lg:myLogin(),pk:window.e99CvPk?window.e99CvPk():''};var sig=JSON.stringify(x);
-  if(!force&&(sig===lastPf||(cur&&JSON.stringify(Object.assign({},cur,{id:u}))===JSON.stringify(Object.assign({},clean('perfis',x,u))))))return;lastPf=sig;write('perfis','perfis_'+u,x,false)}
+var lastPf='',adopting=false;
+/* v147: o perfil da nuvem é cópia do state.perfil (a fonte da verdade). pat = hora da edição. Se a nuvem tem uma edição minha mais nova
+   (outro aparelho da mesma conta, ou a capa que antes só existia na nuvem), este aparelho adota em vez de sobrescrever. */
+function cloudX(u){var p=state.perfil||{};return {id:u,name:String(p.name||myName()).slice(0,40),cargo:p.cargo||'',bio:p.bio||'',photo:p.photo||'',cover:p.cover||'',lg:myLogin(),pk:window.e99CvPk?window.e99CvPk():'',pat:Number(p.at)||0}}
+function pushPerfil(force){var u=me();if(!u||!started||adopting)return;var cur=perfil(u),x=cloudX(u),cl=clean('perfis',x,u);
+  if(cur){var cat=cur.pat||S['perfis_'+u].at||0,dif=['name','cargo','bio','photo','cover'].some(function(k){return (cur[k]||'')!==(cl[k]||'')});
+    if(dif&&cat>x.pat&&cur.name){var np=validatePerfil({name:cur.name,cargo:cur.cargo,bio:cur.bio,photo:cur.photo.length<=120000?cur.photo:(state.perfil&&state.perfil.photo||''),cover:cur.cover,at:Math.floor(cat)});
+      if(np&&np.name){adopting=true;state.perfil=np;Promise.resolve().then(function(){return save()}).catch(function(){}).then(function(){adopting=false;try{dispatchEvent(new Event('e99:perfil-nuvem'))}catch(e){}pushPerfil()});return}}}
+  var sig=JSON.stringify(x);if(!force&&(sig===lastPf||(cur&&JSON.stringify(Object.assign({},cur,{id:u}))===JSON.stringify(cl))))return;lastPf=sig;write('perfis','perfis_'+u,x,false)}
 window.e99SocCover=async function(inp){var f=inp.files&&inp.files[0];inp.value='';if(!f)return;try{var d=await shrink(f,1200);setCover(d)}catch(e){notify(e.message)}};
 window.e99SocCoverRm=function(){setCover('')};
-function setCover(d){var u=me();if(!u){notify('Ligue o e-mail (nuvem) para mudar a capa.');return}var p=state.perfil||{},x={id:u,name:String(p.name||myName()).slice(0,40),cargo:p.cargo||'',bio:p.bio||'',photo:p.photo||'',cover:d,lg:myLogin()};lastPf=JSON.stringify(x);write('perfis','perfis_'+u,x,false)}
+async function setCover(d){if(!authSession)return;var p=state.perfil||{},np=validatePerfil({name:p.name||myName(),cargo:p.cargo||'',bio:p.bio||'',photo:p.photo||'',cover:d,at:Date.now()});if(!np)return;state.perfil=np;try{await save()}catch(e){}
+  pushPerfil(true);if(window.e99PerfilPublish)window.e99PerfilPublish();refresh(true)}
 var ps=window.e99PerfilSave;if(ps)window.e99PerfilSave=async function(){var r=await ps.apply(this,arguments);setTimeout(function(){pushPerfil(true)},300);return r};
 /* ---------- tela ---------- */
 function postHTML(r){var pid=r.x.id,ls_=likes(pid),liked=ls_.some(function(l){return l.cuid===me()}),cs=comments(pid),name=nameOf(r);
@@ -129,19 +137,20 @@ function wk(){var d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.get
 function feats(names){var n=names.filter(Boolean).map(function(v){return String(v).toLowerCase().trim()}),has=function(v){return n.indexOf(String(v||'').toLowerCase().trim())>=0},w=wk(),cr=0,cf=0,acts=0;
   (state.nfs||[]).forEach(function(nf){var h=Array.isArray(nf.hist)?nf.hist:[];h.forEach(function(e){if(!Array.isArray(e)||e[0]<w||!has(e[1]))return;if(/^Criou a nota/.test(e[2]))cr++;if(/→ Conferido/.test(e[2]))cf++})});
   (state.plans||[]).forEach(function(p){(p.activities||[]).forEach(function(a){if(a&&a.done&&has(a.doneBy))acts++})});return {cr:cr,cf:cf,acts:acts}}
-function render0(){if(!authSession)return '';var u=pessoa||me(),isMe=u===me()||!u,p=perfil(u)||{};
-  if(isMe&&state.perfil){p=Object.assign({},p,{name:state.perfil.name||p.name,cargo:state.perfil.cargo,bio:state.perfil.bio,photo:state.perfil.photo||p.photo})}
-  var name=p.name||(isMe?myName():'Pessoa'),lg=p.lg||(isMe?myLogin():''),ph=p.photo?img(p.photo):'',cv=p.cover?img(p.cover):'';
-  var my=posts().filter(function(r){return r.cuid===u}),f=feats([name,isMe?myName():'']);
-  return hero('Perfil','')+'<div class="panel sc-prof" id="sc-prof"><div class="sc-cover'+(cv?' img':'')+'"'+(cv?' style="background-image:url(\''+E(cv)+'\')"':'')+'></div><div class="sc-phead">'+(ph?'<img class="sc-pav" src="'+E(ph)+'" alt="Foto de '+E(name)+'">':'<span class="sc-pav" aria-hidden="true">'+E((name[0]||'?').toUpperCase())+'</span>')
-   +'<div><h2>'+E(name)+'</h2><div class="small">'+(lg?'@'+E(lg):'')+(p.cargo?' · '+E(p.cargo):'')+'</div></div></div>'+(p.bio?'<p>'+E(p.bio)+'</p>':'')
-   +(!isMe&&u?'<div class="row toolbar"><button type="button" class="primary" onclick="e99Cv.dmTo(\''+E(u)+'\')">Mensagem</button></div>':'')+(isMe?'<div class="row toolbar"><button type="button" onclick="openProfile(\'me\')">Editar perfil</button><label class="as-file">Capa (imagem)<input type="file" accept="image/*" onchange="e99SocCover(this)"></label>'+(p.cover?'<button type="button" onclick="e99SocCoverRm()">Capa na cor do tema</button>':'')+'</div>':'')
+/* v147: a ÚNICA página de perfil do app. pessoa = 'me' | 'u:<uid>' | 'd:<aparelho>' (perfil que só veio pela equipe, sem nuvem) */
+function render0(){if(!authSession)return '';var p=P(pessoa||'me');
+  if(!p)return hero('Perfil','')+'<div class="panel sc-prof" id="sc-prof"><p class="small" style="padding:16px 0">Essa pessoa ainda não mandou o perfil para a equipe.</p></div>';
+  var isMe=!!p.me,u=p.uid||'',name=p.name||(isMe?myName():'Pessoa'),lg=p.login||'',ph=p.photo?img(p.photo):'',cv=p.cover?img(p.cover):'';
+  var my=u?posts().filter(function(r){return r.cuid===u}):[],f=feats([name].concat(p.names||[]));
+  return hero('Perfil','')+'<div class="panel sc-prof" id="sc-prof" data-ref="'+E(p.ref)+'"><div class="sc-cover'+(cv?' img':'')+'"'+(cv?' style="background-image:url(\''+E(cv)+'\')"':'')+'></div><div class="sc-phead">'+(ph?'<img class="sc-pav" src="'+E(ph)+'" alt="Foto de '+E(name)+'">':'<span class="sc-pav" aria-hidden="true">'+E((name[0]||'?').toUpperCase())+'</span>')
+   +'<div><h2>'+E(name)+'</h2><div class="small">'+(lg?'@'+E(lg):'')+(p.cargo?(lg?' · ':'')+E(p.cargo):'')+'</div></div></div>'+(p.bio?'<p class="sc-bio">'+E(p.bio)+'</p>':'')
+   +(!isMe&&u&&cx()?'<div class="row toolbar"><button type="button" class="primary" onclick="e99Cv.dmTo(\''+E(u)+'\')">Mensagem</button></div>':'')+(isMe?'<div class="row toolbar"><button type="button" onclick="openProfile(\'me\')">Editar perfil</button><label class="as-file">Capa (imagem)<input type="file" accept="image/*" onchange="e99SocCover(this)"></label>'+(p.cover?'<button type="button" onclick="e99SocCoverRm()">Capa na cor do tema</button>':'')+'</div>':'')
    +'<div class="sc-feats" aria-label="Conquistas da semana"><div><b>'+f.cr+'</b><span>notas criadas na semana</span></div><div><b>'+f.cf+'</b><span>notas conferidas na semana</span></div><div><b>'+f.acts+'</b><span>atividades feitas</span></div></div></div>'
    +'<h2 class="sc-h">Publicações</h2>'+(my.length?my.slice(0,limit).map(postHTML).join(''):'<p class="small">Nenhuma publicação.</p>')}
 window.extraPages=window.extraPages||{};window.extraPages.pessoa=render0;
-window.e99Pessoa=function(u){pessoa=typeof u==='string'&&/^[A-Za-z0-9]{1,128}$/.test(u)?u:'';go('pessoa')};
-function peopleHTML(){var ps=Object.keys(S).filter(function(k){return k.indexOf('perfis_')===0&&!S[k].del&&S[k].x}).map(function(k){return S[k]});if(!ps.length)return '';
-  return '<div class="panel"><h2>Pessoas</h2><div class="sc-people">'+ps.map(function(r){var p=r.x;return '<button type="button" class="sc-who" onclick="e99Pessoa(\''+E(r.cuid)+'\')">'+av(r.cuid,p.name)+'<span><b>'+E(p.name||'Pessoa')+'</b><span class="small">'+E(p.cargo||(p.lg?'@'+p.lg:''))+'</span></span></button>'}).join('')+'</div></div>'}
+window.e99Pessoa=function(u){var p=P(typeof u==='string'&&u?u:'me');pessoa=p?p.ref:(typeof u==='string'&&/^(u:|d:)?[A-Za-z0-9]{1,128}$/.test(u)?u:'me');go('pessoa')};
+function peopleHTML(){var ps=window.e99PerfilAll?window.e99PerfilAll():[];if(!ps.length)return '';
+  return '<div class="panel" id="sc-people-panel"><h2>Pessoas</h2><div class="sc-people">'+ps.map(function(p){return '<button type="button" class="sc-who" data-ref="'+E(p.ref)+'" onclick="e99Pessoa(\''+E(p.ref)+'\')">'+av(p.ref,p.name)+'<span><b>'+E(p.name||'Pessoa')+'</b><span class="small">'+E(p.cargo||(p.login?'@'+p.login:''))+'</span></span></button>'}).join('')+'</div></div>'}
 var focusIn=function(){var a=document.activeElement;return a&&a.closest&&a.closest('#sc-mural form,#st-new')&&a.value}
 var rt=0;function refresh(now){clearTimeout(rt);rt=setTimeout(function(){if(!authSession||viewer)return;if(page==='team'||page==='pessoa'){if(!now&&focusIn())return;var y=scrollY;render();scrollTo(0,y)}},now?0:250)}
 var rd=render;render=function(){var r=rd.apply(this,arguments);try{if(authSession&&page==='team'&&!document.getElementById('sc-mural')){var h=document.querySelector('#view .hero');if(h){h.insertAdjacentHTML('afterend',muralHTML()+peopleHTML());if(isAux())document.querySelectorAll('#view .hero button,#view .card button[onclick^="openEditor"]').forEach(function(b){b.remove()})}}}catch(e){}return r};

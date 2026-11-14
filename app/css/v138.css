@@ -36,3 +36,4 @@
 .cv-rxrow{display:flex;gap:6px;flex-wrap:wrap}.cv-rxrow button{min-width:44px;min-height:44px;font-size:20px}.cv-rxrow button[aria-pressed=true]{outline:2px solid var(--neon)}
 @media (max-width:760px){.cv-wrap{height:calc(100dvh - 210px)}.cv-more{min-width:44px;min-height:44px}}
 @media (prefers-reduced-motion:reduce){.cv-item,.cv-b{transition:none}}
+.cv-who{appearance:none;background:none!important;border:0!important;padding:0;min-height:44px;min-width:44px;border-radius:50%;cursor:pointer;display:inline-flex;align-items:center}.cv-who:focus-visible{outline:2px solid var(--neon,#c9a);outline-offset:2px}
