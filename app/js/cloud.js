@@ -61,7 +61,7 @@ window.e99CloudTry={K:'lojasg.estoque99.cloud-tries',get:function(){try{return J
   wait:function(){var o=this.get();return o.until&&o.until>Date.now()?Math.ceil((o.until-Date.now())/60000):0},
   fail:function(){var o=this.get();o.n=(o.n||0)+1;if(o.n>=5){o.b=(o.b||0)+1;o.until=Date.now()+5*60000*Math.pow(2,o.b-1);o.n=0}try{localStorage.setItem(this.K,JSON.stringify(o))}catch(x){}},
   ok:function(){try{localStorage.removeItem(this.K)}catch(x){}}};
-async function link(email,pw){var s=authSession;if(!s)throw Error('Entre na conta.');email=String(email||'').trim().toLowerCase();if(!EMAIL_RE.test(email)||email.length>120)throw Error('Digite um e-mail válido.');
+async function link(email,pw){var s=authSession;if(!s)throw Error('Entre na conta.');email=String(email||'').replace(/\s+/g,'').toLowerCase();if(!EMAIL_RE.test(email)||email.length>120)throw Error('Digite um e-mail válido.');
   var c=await load(),d=await derive(s.record.login,pw),u=c.auth.currentUser;
   if(u&&u.email!==email){await c.auth.signOut();u=null}
   if(!u){try{u=(await c.auth.createUserWithEmailAndPassword(email,d)).user}catch(x){if(x.code!=='auth/email-already-in-use')throw x;try{u=(await c.auth.signInWithEmailAndPassword(email,d)).user}catch(y){if(y.code==='auth/network-request-failed'||y.code==='auth/too-many-requests')throw y;throw Error('Este e-mail já está ligado a outra conta do Stok, com outra senha. Use a mesma senha daquela conta ou outro e-mail.')}}}
@@ -125,6 +125,7 @@ window.e99CloudLater=function(){var d=document.getElementById('cloud-link');if(d
 window.e99CloudLink=async function(ev){ev.preventDefault();if(linkBusy||!authSession)return;var v=readForm(ev.target),pw=freshPw()||String(v.password||'');linkErr='';
   if(!pw){linkErr='Digite sua senha.';showLink();return}
   if(!freshPw()){try{await decBefore(authSession.record,pw)}catch(x){linkErr='Senha incorreta.';showLink();return}stash={login:authLoginName(authSession.record.login),pw:pw,t:Date.now()}}
+  /* v147: e-mail de outra conta deste aparelho não liga */if(window.e99EmailOwner){var o47=await window.e99EmailOwner(v.email,authSession.record.login);if(o47){linkErr=window.e99EmailInUse(o47)+' Use outro e-mail.';showLink();return}}
   linkBusy=true;showLink();try{await link(v.email,pw);linkBusy=false;var d=document.getElementById('cloud-link');if(d)d.close();var u=user();notify(u&&!u.emailVerified?'E-mail vinculado! Abra a mensagem que enviamos para '+u.email+' e toque no link de confirmação.':'E-mail vinculado à nuvem.');if(page==='account')render()}
   catch(x){linkBusy=false;linkErr=msg(x);linkSoft=soft(x);showLink();if(x&&x.code==='auth/network-request-failed')window.e99NetWhy().then(function(t){if(linkErr===msg(x)){linkErr=t;showLink()}}).catch(function(){})}};
 

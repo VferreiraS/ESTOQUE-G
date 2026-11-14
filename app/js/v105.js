@@ -40,11 +40,11 @@ function paint(){var s=authSession;if(!s)return;var d=gate(),pc=isPc(s),keep=d.q
 function shut(){var d=D.getElementById('email-gate');if(d&&d.open)try{d.close()}catch(x){d.removeAttribute('open')}}
 function check(){try{if(!authSession){shut();err='';return}align();if(needs()&&!skipped()){var d=D.getElementById('email-gate');if(!d||!d.open)paint()}else shut()}catch(x){}}
 window.e99EmailGateOut=function(){shut();Promise.resolve(authLogout()).then(function(){if(authSession)check()}).catch(function(){check()})};
-window.e99EmailGateSave=async function(ev){ev.preventDefault();var s=authSession;if(!s||busy)return;var m=String((ev.target.querySelector('input[name=email]')||{}).value||'').trim().toLowerCase();
+window.e99EmailGateSave=async function(ev){ev.preventDefault();var s=authSession;if(!s||busy)return;var m=String((ev.target.querySelector('input[name=email]')||{}).value||'').replace(/\s+/g,'').toLowerCase();
   if(!m){err='Informe seu e-mail. Toda conta do Stok precisa de um e-mail.';paint();return}
   if(!ok(m)){err='Digite um e-mail válido (ex.: voce@gmail.com).';paint();return}
   /* o mesmo e-mail não pode ficar em duas contas deste aparelho (o login pelo e-mail e a nuvem ficariam confusos) */
-  try{var other=window.e99MailIdx.get(m);if(other&&authLoginName(other)!==authLoginName(s.record.login)&&localStorage.getItem(await authStorageKey(other))){err='Este e-mail já é de outra conta deste aparelho ('+other+'). Use outro e-mail.';paint();return}}catch(x){}
+  /* v147: confere o índice, o cloud-email: de cada conta e a mesma conta pode salvar de novo o próprio e-mail */try{var other=window.e99EmailOwner?await window.e99EmailOwner(m,s.record.login):window.e99MailIdx.get(m);if(other&&authLoginName(other)!==authLoginName(s.record.login)&&localStorage.getItem(await authStorageKey(other))){err=(window.e99EmailInUse?window.e99EmailInUse(other):'Este e-mail já está em uso pela conta @'+other+'.')+' Use outro e-mail.';paint();return}}catch(x){}
   busy=true;err='';paint();try{s.payload.email=m;if(!isPc(s)){ls('lojasg.estoque99.cloud-email:'+s.storeKey,m);mapLogin(s,m)}await persist(s)}finally{busy=false}
   if(authSession!==s)return;shut();notify('E-mail salvo na sua conta.');
   if(!isPc(s)&&window.e99Cloud&&typeof window.e99Cloud.onEnter==='function')setTimeout(function(){if(authSession===s)window.e99Cloud.onEnter()},400)};

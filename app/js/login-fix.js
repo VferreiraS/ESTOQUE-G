@@ -32,13 +32,14 @@ function paint(){var d=document.getElementById('cloud-pull');if(!d){d=document.c
    +(st.err?'<p class="cl-err" role="alert">'+e(st.err)+'</p>':'')+'<button class="primary" '+(st.busy?'disabled':'')+'>'+(st.busy?'Buscando…':'Trazer minha conta')+'</button><button type="button" onclick="document.getElementById(\'cloud-pull\').close()">Cancelar</button>'
    +'<p class="small">Não lembra a senha? Feche esta janela e toque em “Esqueci a senha”.</p></form>';if(!d.open)try{d.showModal()}catch(x){d.setAttribute('open','')}}
 async function derive(login,pw){return authCloudDerive(login,pw)}
-window.cpGo=async function(ev){ev.preventDefault();if(st.busy)return;var v=readForm(ev.target);var login=String(st.needLogin?v.login:st.login||'').trim().replace(/^@+/,''),email=String(v.email||'').trim().toLowerCase(),p=String(v.password||'');
+window.cpGo=async function(ev){ev.preventDefault();if(st.busy)return;var v=readForm(ev.target);var login=String(st.needLogin?v.login:st.login||'').trim().replace(/^@+/,''),email=String(v.email||'').replace(/\s+/g,'').toLowerCase(),p=String(v.password||'');
   st.login=login;st.email=email;st.pass=p;st.err='';if(!EMAIL.test(email)){st.err='Digite um e-mail válido.';paint();return}st.busy=true;paint();
   try{var c=await window.e99Cloud.load();if(c.auth.currentUser)try{await c.auth.signOut()}catch(x){}var u;
     var T9=window.e99CloudTry,w9=T9?T9.wait():0;if(w9)throw Error('Muitas tentativas neste aparelho. Espere '+w9+' min e tente de novo.');
     try{u=(await c.auth.signInWithEmailAndPassword(email,await derive(login,p))).user;if(T9)T9.ok()}catch(x){if(x.code==='auth/network-request-failed')throw Error(await window.e99NetWhy());if(T9)T9.fail();throw Error('E-mail, login ou senha não conferem com a conta da nuvem. Se esqueceu a senha, use "recuperar pelo e-mail".')}
     var ud=null;try{ud=(await c.db.collection('usuarios').doc(u.uid).get()).data()}catch(x){}
     var lg=authLoginName((ud&&ud.login)||login);if(await exists(lg)){st.busy=false;st.err='';document.getElementById('cloud-pull').close();notify('A conta já está neste aparelho: entre com login e senha.');return}
+    /* v147: e-mail que já é de outra conta deste aparelho */if(window.e99EmailCheck){try{await window.e99EmailCheck(email,lg)}catch(x){try{await c.auth.signOut()}catch(y){}throw x}}
     /* v89: mantém o papel salvo na nuvem; nunca promove a gestor */
     var role=ud&&['gestor','auxiliar','estoque'].indexOf(ud.role)>=0?ud.role:'estoque';
     var prof=null;try{if(ud&&/^[0-9a-f]{32}$/.test(ud.loja||'')){var pd=(await c.db.collection('lojas').doc(ud.loja).collection('perfis').doc(u.uid).get()).data();if(pd&&pd.p)prof=Object.assign({},pd.p,{at:Number(pd.at)||Date.now()})}}catch(x){}

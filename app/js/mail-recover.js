@@ -31,7 +31,7 @@ var raM=renderAccount;renderAccount=function(){return raM.apply(this,arguments)+
 function code(x){var c=x&&x.code||'';return c==='auth/invalid-credential'||c==='auth/wrong-password'||c==='auth/user-not-found'?'E-mail ou senha da nuvem incorretos. Use a senha que você criou no link do e-mail.':c==='auth/too-many-requests'?'Muitas tentativas. Espere alguns minutos.':c==='auth/network-request-failed'?'Sem internet.':(x&&x.message)||'Não foi possível recuperar.'}
 window.mrGo=async function(ev){ev.preventDefault();if(busy)return;var v=readForm(ev.target);err='';busy=true;paint();
   try{var c=await window.e99Cloud.load();
-    if(step===1){email=String(v.email||'').trim().toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email))throw Error('Digite um e-mail válido.');try{await c.auth.sendPasswordResetEmail(email)}catch(x){if(x.code!=='auth/user-not-found')throw x}step=2;busy=false;paint();return}
+    if(step===1){email=String(v.email||'').replace(/\s+/g,'').toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email))throw Error('Digite um e-mail válido.');try{await c.auth.sendPasswordResetEmail(email)}catch(x){if(x.code!=='auth/user-not-found')throw x}step=2;busy=false;paint();return}
     authPasswordCheck(v.password,v.confirmation);var T9=window.e99CloudTry,w9=T9?T9.wait():0;if(w9)throw Error('Muitas tentativas neste aparelho. Espere '+w9+' min e tente de novo.');
     var u;try{u=(await c.auth.signInWithEmailAndPassword(email,String(v.cloud||''))).user;if(T9)T9.ok()}catch(x){if(T9&&x&&x.code!=='auth/network-request-failed')T9.fail();throw x}
     var vd=null,ud=null;try{vd=(await c.db.collection('cofre').doc(u.uid).get()).data()}catch(x){}try{ud=(await c.db.collection('usuarios').doc(u.uid).get()).data()}catch(x){}
@@ -40,6 +40,7 @@ window.mrGo=async function(ev){ev.preventDefault();if(busy)return;var v=readForm
     if(record&&authSession&&authSession.storeKey===storeKey&&authLoginName(authSession.record.login)===login){/* conta já aberta (Manter conectado): troca a senha sem perder nada */await authResetWithBits(record,raw,storeKey,authSession.payload,v.password,newCode,null);authShownCode=newCode}
     else if(record&&vd&&vd.salt===record.salt){var opened=await authOpenWithBits(record,authUn64(vd.bits));await authResetWithBits(record,raw,storeKey,opened.payload,v.password,newCode,null);authShownCode=newCode}
     else{var msg=record?'Esta conta foi criada antes da recuperação por e-mail existir, então os dados guardados só neste aparelho não podem ser abertos. Recomeçar a conta com o mesmo login e e-mail? Sua equipe e dados da equipe voltam pela nuvem e pela sincronização.':'Não há cópia desta conta neste aparelho. Criar a conta aqui com o mesmo login e e-mail? Seu perfil e os dados da equipe voltam pela nuvem e pela sincronização.';
+      /* v147: confere antes de apagar ou criar */if(window.e99EmailCheck)await window.e99EmailCheck(email,login);
       if(!confirm(msg)){busy=false;err='';paint();return}
       if(raw){localStorage.removeItem(storeKey);['lojasg.estoque99.chat:','lojasg.estoque99.agents:','lojasg.estoque99.totp:','lojasg.estoque99.vault:'].forEach(function(p){try{localStorage.removeItem(p+storeKey)}catch(x){}})}/* conta antiga excluída do aparelho */
       /* v89: mantém o papel salvo na nuvem; nunca promove a gestor */

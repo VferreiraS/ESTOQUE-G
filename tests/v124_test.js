@@ -22,7 +22,7 @@ for(const [nome,opt] of [['PC',{viewport:{width:1440,height:900}}],['iPhone',L.d
  await p.goto(U);await p.waitForTimeout(2000);
  const a='a'+nome.toLowerCase()+T,c='c'+nome.toLowerCase()+T,d='d'+nome.toLowerCase()+T,mail='dono'+nome.toLowerCase()+T+'@teste.com';
  await p.evaluate(async([a,c,d,mail])=>{
-   const mk=async(l,pw,em)=>{const s=await authCreate(l,'Loja',pw,authEmpty(),'estoque',em);authSaveNewAccount(s);localStorage.setItem('lojasg.estoque99.cloud-email:'+s.storeKey,em);e99MailIdx.set(em,s.record.login)};
+   const mk=async(l,pw,em)=>{/* v147: criar com e-mail repetido é recusado; aqui são contas antigas já duplicadas (e-mail só no cloud-email/índice) */const s=await authCreate(l,'Loja',pw,authEmpty(),'estoque');authSaveNewAccount(s);localStorage.setItem('lojasg.estoque99.cloud-email:'+s.storeKey,em);e99MailIdx.set(em,s.record.login)};
    await mk(a,'ação2026x',mail);await mk(c,'outra2026y',mail);await mk(d,'igual2026z','x'+mail)},[a,c,d,mail]);
  await p.reload();
  /* mensagem com o login + dica + nada regravado */
@@ -56,7 +56,7 @@ for(const [nome,opt] of [['PC',{viewport:{width:1440,height:900}}],['iPhone',L.d
 /* mesma senha em 2 contas do mesmo e-mail: pede o login */
 {const ctx=await b.newContext({viewport:{width:1440,height:900}});const p=await ctx.newPage();p.on('dialog',d=>d.accept());await p.goto(U);await p.waitForTimeout(1500);
  const m='mesma'+T+'@teste.com',x='mx'+T,y='my'+T;
- await p.evaluate(async([x,y,m])=>{for(const l of [x,y]){const s=await authCreate(l,'Loja','mesma2026q',authEmpty(),'estoque',m);authSaveNewAccount(s);e99MailIdx.set(m,s.record.login)}},[x,y,m]);await p.reload();
+ await p.evaluate(async([x,y,m])=>{for(const l of [x,y]){/* v147: contas antigas já duplicadas */const s=await authCreate(l,'Loja','mesma2026q',authEmpty(),'estoque');authSaveNewAccount(s);localStorage.setItem('lojasg.estoque99.cloud-email:'+s.storeKey,m);e99MailIdx.set(m,s.record.login)}},[x,y,m]);await p.reload();
  const r=await tryLogin(p,m,'mesma2026q');ok(!r.ok&&/mais de uma conta/.test(r.err)&&r.err.indexOf('@'+x)>=0,'PC: senha que abre 2 contas do e-mail pede o login');
  const r2=await tryLogin(p,y,'mesma2026q');ok(r2.ok&&r2.login===y,'PC: com o login entra');await ctx.close()}
 /* v141: o "Toque para abrir" virou o botão "Entrar" (a abertura espera o toque; ver tests/v141_test.js) */
