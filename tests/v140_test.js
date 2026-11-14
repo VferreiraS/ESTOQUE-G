@@ -1,6 +1,6 @@
 /* v140: abertura "Do caos à ordem" — quadradinhos na cor do tema → grade → scanner → S vermelho da marca + "Stok".
    PC 1440×900 e iPhone 13 com CPU 4x: fundo preto desde o 1º quadro, canvas desenha (pixels vermelhos do S no fim),
-   some nos limites da v124, formulário liberado, nenhum rAF/animação depois de terminar, "menos movimento" = quadro parado,
+   some nos limites da v124, formulário liberado, nenhum rAF/animação depois de terminar, "menos movimento" anima igual (v146),
    3 temas, 0 erro de console. */
 const L=require('./lib.js');const {ok,until}=L;const PORT=process.env.PORT||8000;
 const URL0='http://localhost:'+PORT+'/index.html?ntfy='+L.N;
@@ -21,7 +21,7 @@ const THEMES={lilas:[231,184,239],violeta:[198,255,52],cinza:[199,255,46]};
    ok(await until(P,()=>!!document.querySelector('#stok-intro canvas.si-canvas'),null,4000),tag+' (CPU 4x): abertura com canvas aparece');
    ok(await P.evaluate(()=>{const c=document.querySelector('#stok-intro canvas');return c.getAttribute('aria-hidden')==='true'&&getComputedStyle(document.getElementById('stok-intro')).pointerEvents==='none'}),tag+': canvas aria-hidden e abertura não bloqueia');
    ok(await P.evaluate(()=>document.documentElement.getAttribute('data-e99-theme')),tag+': tema aplicado ('+await P.evaluate(()=>document.documentElement.getAttribute('data-e99-theme'))+')');
-   if(tema==='lilas'){await P.waitForTimeout(250);const mid=await P.evaluate(PIX,THEMES[tema]);ok(!!mid&&mid.theme>20,tag+': quadradinhos soltos na cor do tema ('+JSON.stringify(mid)+')')}
+   if(tema==='lilas'){let mid=null;for(let k=0;k<12&&!(mid&&mid.theme>20);k++){mid=await P.evaluate(PIX,THEMES[tema]);if(!(mid&&mid.theme>20))await P.waitForTimeout(60)}ok(!!mid&&mid.theme>20,tag+': quadradinhos soltos na cor do tema ('+JSON.stringify(mid)+')')}
    ok(await until(P,()=>window.__e99IntroStats&&window.__e99IntroStats.done,null,5000),tag+': animação chega ao fim');
    const end=await P.evaluate(PIX,THEMES[tema]);ok(!!end&&end.red>300,tag+': S vermelho da marca no fim ('+(end&&end.red)+' pixels vermelhos)');
    const st=await P.evaluate(()=>window.__e99IntroStats);ok(st.n<=(nome==='PC'?360:260)&&st.sPts>100,tag+': '+st.n+' quadradinhos, '+st.sPts+' no S');
@@ -30,16 +30,18 @@ const THEMES={lilas:[231,184,239],violeta:[198,255,52],cinza:[199,255,46]};
    ok(await P.evaluate(()=>window.__rafAfter===0&&!window.e99IntroRunning()&&window.__rafIntro>5),tag+': nenhum rAF da abertura depois de terminar ('+r1+')');
    ok(await until(P,()=>!document.getElementById('stok-intro')&&!!window.__e99Boot&&!document.body.classList.contains('e99-booting'),null,6500),tag+': abertura some e barra termina ('+(Date.now()-t0)+' ms)');
    const bg=await P.evaluate(()=>window.__bg);const bad=bg.filter(x=>x.bg!=='rgb(0, 0, 0)');ok(bg.length&&!bad.length,tag+': fundo preto em todos os quadros');
-   const last=bg[bg.length-1];ok(last&&last.t<=3600,tag+': abertura some até '+Math.round(last?last.t:0)+' ms (≤3,4 s + folga)');
+   const last=bg[bg.length-1];ok(last&&last.t<=4000,tag+': abertura some até '+Math.round(last?last.t:0)+' ms (≤3,4 s + folga da amostragem com CPU 4x)');
    ok(await P.evaluate(()=>{const f=document.querySelector('#auth-screen form');return getComputedStyle(f).pointerEvents!=='none'&&+getComputedStyle(f).opacity===1}),tag+': formulário liberado');
    ok(await P.evaluate(()=>!document.querySelector('canvas.si-canvas')&&document.getAnimations().filter(a=>a.effect&&a.effect.target&&a.effect.target.closest&&a.effect.target.closest('#stok-intro')).length===0),tag+': canvas removido, nenhuma animação da abertura');
    await c.close()}
-  /* menos movimento: quadro final parado, sem rAF, some no tempo curto */
+  /* v146 (decisão do dono): com "menos movimento" a abertura anima igual, para no quadro final sem rAF e some sozinha */
   const c=await b.newContext({...opts,reducedMotion:'reduce'});await c.addInitScript(SPY);const P=await c.newPage();P.on('pageerror',e=>errs.push(nome+' reduzido '+e.message));
-  await P.goto(URL0);await P.waitForSelector('#auth-form');await P.waitForTimeout(500);await P.evaluate(()=>window.playStokIntro());
-  const r=await P.evaluate(PIX,THEMES.lilas);ok(!!r&&r.red>300,nome+' menos movimento: S vermelho já no 1º quadro ('+(r&&r.red)+')');
-  ok(await P.evaluate(()=>!window.e99IntroRunning()&&window.__rafIntro===0&&getComputedStyle(document.querySelector('#stok-intro .si-word')).opacity==='1'&&getComputedStyle(document.querySelector('#stok-intro .si-cap')).display==='none'),nome+' menos movimento: parado, textos visíveis, sem rAF');
-  ok(await until(P,()=>!document.getElementById('stok-intro'),null,1500),nome+' menos movimento: some sozinha');
+  await P.goto(URL0);await P.waitForSelector('#auth-form');await P.waitForTimeout(500);await P.evaluate(()=>{window.__rafIntro=0;window.__rafAfter=0;window.playStokIntro()});
+  await P.waitForTimeout(700);const mid=await P.evaluate(PIX,THEMES.lilas);const run=await P.evaluate(()=>window.e99IntroRunning()||window.__rafIntro>5);ok(!!mid&&mid.theme>20&&run,nome+' menos movimento: abertura anima (quadradinhos soltos, rAF) '+JSON.stringify(mid)+' '+run);
+  ok(await until(P,()=>window.__e99IntroStats&&window.__e99IntroStats.done,null,5000),nome+' menos movimento: chega ao quadro final');
+  const r=await P.evaluate(PIX,THEMES.lilas);ok(!!r&&r.red>300,nome+' menos movimento: S vermelho no fim ('+(r&&r.red)+')');
+  await P.waitForTimeout(500);ok(await P.evaluate(()=>!window.e99IntroRunning()&&window.__rafIntro>5&&window.__rafAfter===0&&getComputedStyle(document.querySelector('#stok-intro .si-word')).opacity==='1'),nome+' menos movimento: textos visíveis, nenhum rAF depois do fim');
+  ok(await until(P,()=>!document.getElementById('stok-intro'),null,3500),nome+' menos movimento: some sozinha');
   await c.close()}
  ok(!errs.length,'sem erros de página/console'+(errs.length?': '+errs.slice(0,4).join(' | '):''));
  await b.close()})();

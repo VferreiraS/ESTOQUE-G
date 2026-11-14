@@ -64,10 +64,25 @@ for(const [nome,opt] of [['PC',{viewport:{width:1440,height:900}}],['iPhone',L.d
  /* menos movimento */
  const rc=await b.newContext({...opt,reducedMotion:'reduce'});await rc.addInitScript(GATE);await rc.addInitScript(SPY);const rp=await rc.newPage();watch(rp,nome+' reduzido');
  await rp.goto(U);ok(await until(rp,()=>!!document.getElementById('si-enter'),null,4000),nome+' menos movimento: botão "Entrar"');
+ ok(await rp.evaluate(()=>window.e99IntroRunning()&&!window.__e99IntroStats.done),nome+' menos movimento: abertura anima (v146, decisão do dono)');
  await rp.waitForTimeout(6500);
- ok(await rp.evaluate(()=>{const bt=document.getElementById('si-enter');return !!bt&&+getComputedStyle(bt).opacity===1&&document.activeElement===bt&&!window.e99IntroRunning()&&window.__e99IntroStats.done&&getComputedStyle(document.querySelector('#stok-intro .si-word')).opacity==='1'}),nome+' menos movimento: quadro final parado + botão focado, sem prazo');
+ ok(await rp.evaluate(()=>{const bt=document.getElementById('si-enter');return !!bt&&+getComputedStyle(bt).opacity===1&&document.activeElement===bt&&!window.e99IntroRunning()&&window.__e99IntroStats.done&&window.__rafAfter===0&&getComputedStyle(document.querySelector('#stok-intro .si-word')).opacity==='1'}),nome+' menos movimento: animou, parou no quadro final sem rAF + botão focado, sem prazo (v146)');
  await rp.keyboard.press('Space');ok(await until(rp,()=>!document.getElementById('stok-intro'),null,1500),nome+' menos movimento: Espaço abre');
  await rc.close()}
+/* v146: botão "Entrar" no vermelho da marca, letra branca, contraste ≥4,5, sem contorno branco, igual nos 3 temas */
+{const lum=c=>{const m=c.match(/\d+(\.\d+)?/g).map(Number);const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(m[0])+.7152*f(m[1])+.0722*f(m[2])};
+ const ratio=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
+ for(const tema of ['lilas','violeta','cinza']){const c=await b.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});await c.addInitScript(GATE);await c.addInitScript(t=>{try{localStorage.setItem('lojasg.estoque99.ui-theme',t)}catch(e){}},tema);const p=await c.newPage();
+  await p.goto(U);await until(p,()=>!!document.getElementById('si-enter'),null,4000);await p.waitForTimeout(300);
+  const cs=await p.evaluate(()=>{const s=getComputedStyle(document.getElementById('si-enter'));return {th:document.documentElement.getAttribute('data-e99-theme'),bg:s.backgroundColor,img:s.backgroundImage,color:s.color,bw:s.borderTopWidth,sh:s.boxShadow,ol:s.outlineStyle==='none'?'':s.outlineColor+' '+s.outlineWidth}});
+  const stops=(cs.img.match(/rgba?\([^)]+\)/g)||[]).concat([cs.bg]);const minR=Math.min(...stops.map(x=>ratio(x,cs.color)));
+  ok(cs.th===tema&&cs.bg==='rgb(219, 35, 24)'&&/rgb\(224, 40, 28\)/.test(cs.img),tema+': botão "Entrar" vermelho da marca (#DB2318, gradiente '+stops.length+' cores)');
+  ok(cs.color==='rgb(255, 255, 255)'&&minR>=4.5,tema+': letra branca, contraste '+minR.toFixed(2)+':1 (≥4,5)');
+  ok(cs.bw==='0px'&&!/rgba?\(255, 255, 255(, 0\.[2-9]\d*|, 1)?\) 0px 0px 0px [2-9]/.test(cs.sh)&&/rgba\(255, 42, 31/.test(cs.sh),tema+': sem contorno branco grosso, anel/brilho vermelho');
+  ok(!/rgb\(255, 255, 255\)/.test(cs.ol),tema+': sem contorno branco ao aparecer ('+(cs.ol||'sem contorno')+')');
+  await p.keyboard.press('Shift');const ol2=await p.evaluate(()=>{const s=getComputedStyle(document.getElementById('si-enter'));return document.activeElement.id+' '+s.outlineColor+' '+s.outlineWidth});
+  ok(/^si-enter rgb\(255, 255, 255\) 3px/.test(ol2),tema+': com o teclado o foco fica bem visível ('+ol2+')');
+  await c.close()}}
 /* falha segura: erro ao montar o canvas não prende; botão aparece do mesmo jeito */
 {const c=await b.newContext({viewport:{width:1440,height:900}});await c.addInitScript(GATE);await c.addInitScript(()=>{HTMLCanvasElement.prototype.getContext=function(){throw new Error('sem canvas')}});const p=await c.newPage();
  await p.goto(U);ok(await until(p,()=>!!document.getElementById('si-enter'),null,4000),'PC sem canvas: botão "Entrar" aparece mesmo assim');await p.click('#si-enter');ok(await until(p,()=>!document.getElementById('stok-intro'),null,1500),'PC sem canvas: toque abre');await c.close()}

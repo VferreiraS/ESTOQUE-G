@@ -47,12 +47,12 @@ function watchPage(p){
   await rp.goto('http://localhost:8000/index.html?ntfy='+L.N);await rp.waitForSelector('#auth-form');
   await rp.evaluate(()=>window.playStokIntro());await rp.waitForSelector('#stok-intro');
   ok(await rp.evaluate(()=>getComputedStyle(document.querySelector('.entry-splash')).display==='none'),'splash legado oculto por seletor computado com prefers-reduced-motion');
-  ok(await rp.evaluate(()=>{const e=document.querySelector('#stok-intro');return e.dataset.reducedMotion==='true'&&getComputedStyle(e.querySelector('.si-word')).animationName==='none'&&getComputedStyle(e.querySelector('.si-cap')).display==='none'&&window.__e99IntroStats.done&&!window.e99IntroRunning()}),'prefers-reduced-motion mostra apenas marca estática, sem transições');
+  ok(await rp.evaluate(()=>{const e=document.querySelector('#stok-intro');return !e.dataset.reducedMotion&&getComputedStyle(e.querySelector('.si-word')).animationName==='si-type'&&getComputedStyle(e.querySelector('.si-cap')).display!=='none'&&window.e99IntroRunning()}),'v146: com prefers-reduced-motion a abertura anima igual (decisão do dono)');
   ok(await rp.evaluate(()=>getComputedStyle(document.querySelector('#stok-intro')).pointerEvents==='none'),'intro reduzida também não intercepta interação');
   await rp.fill('#auth-form input[name=login]','teste-input-reduzido');
   ok(await rp.evaluate(()=>document.activeElement?.name==='login'&&document.activeElement.value==='teste-input-reduzido'),'campo de login segue interativo com movimento reduzido');
   ok(!(await rp.$('#stok-gate')),'movimento reduzido não introduz gate');
-  await rp.waitForTimeout(1100);ok(!(await rp.$('#stok-intro')),'marca estática reduzida também é removida');await rc.close();
+  await rp.waitForTimeout(3400);ok(!(await rp.$('#stok-intro')),'abertura com movimento reduzido também é removida');await rc.close();
   ok(errors.length===0,'sem erros JavaScript de primeira parte'+(errors.length?': '+errors.join(' | '):''));
  }finally{await b.close()}
 })();
