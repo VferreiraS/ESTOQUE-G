@@ -12,7 +12,8 @@ var S_PATH='M42 14h30.5a7.5 7.5 0 0 1 0 15H42a3.5 3.5 0 0 0 0 7H58a21 21 0 0 1 0
 var RED=[255,42,31],DUR=2.1,END=2800,END_R=950;
 var active=null,removeTimer=0,anim=null,held=false,inerted=[],mo=null,waitDlg=[],nativeSM=null,keyH=null,watch=0;
 function off(){return false}
-function reduced(){try{if(typeof window.__osReduce==='boolean')return window.__osReduce;return !!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)}catch(x){return false}}
+/* v146 (decisão do dono): a abertura anima mesmo com "menos movimento" do aparelho (só a abertura; o resto do app continua respeitando). */
+function reduced(){return false}
 function endMs(){return reduced()?END_R:END}
 var stats=window.__e99IntroStats={frames:0,n:0,sPts:0,font:'',done:false,finalRed:false};
 function clear(){if(removeTimer)clearTimeout(removeTimer);removeTimer=0;if(anim){anim.stop();anim=null}unlock();
@@ -102,7 +103,7 @@ function lock(d){var B=document.body;
   try{mo=new MutationObserver(function(l){l.forEach(function(m){Array.prototype.forEach.call(m.addedNodes,function(n){if(n.parentNode===B)ine(n)})})});mo.observe(B,{childList:true})}catch(x){}
   /* janelas que o app abre por baixo (e-mail, senha, código...) esperam o toque em "Entrar" */
   try{var P=HTMLDialogElement.prototype;if(!nativeSM){nativeSM=P.showModal;P.showModal=function(){if(held){if(waitDlg.indexOf(this)<0)waitDlg.push(this);return}return nativeSM.apply(this,arguments)}}}catch(x){}
-  keyH=function(ev){if(!held)return;if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){var b=document.getElementById('si-enter');if(b&&document.activeElement!==b&&d.__e99Enter)d.__e99Enter(ev)}};
+  keyH=function(ev){if(!held)return;try{d.classList.add('si-kbd')}catch(x){}if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){var b=document.getElementById('si-enter');if(b&&document.activeElement!==b&&d.__e99Enter)d.__e99Enter(ev)}};
   document.addEventListener('keydown',keyH,true)}
 function unlock(){if(watch){clearTimeout(watch);watch=0}if(!held&&!inerted.length&&!mo&&!keyH)return;held=false;
   if(mo){try{mo.disconnect()}catch(x){}mo=null}inerted.forEach(function(el){try{el.removeAttribute('inert')}catch(x){}});inerted=[];

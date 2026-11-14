@@ -17,9 +17,12 @@ body:not(.fx-user-off) .entry-splash{display:none!important}
 #stok-intro[data-reduced-motion="true"].si-ending{animation:none!important}
 /* v141: abertura do app espera o toque em "Entrar" (cor do botão principal do tema, ≥44 px, foco visível) */
 #stok-intro.si-gate{pointer-events:auto;z-index:100002}
-html body #stok-intro .si-enter{position:absolute;left:50%;bottom:calc(36px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);pointer-events:auto;min-height:52px;min-width:min(200px,80vw);padding:14px 40px;border-radius:999px!important;border:0!important;background:var(--neon-btn,#DB2318)!important;background-image:none!important;color:var(--neon-ink,#fff)!important;font:700 18px/1.2 var(--font-text,system-ui,-apple-system,sans-serif)!important;letter-spacing:.02em;cursor:pointer;box-shadow:0 0 0 1px rgba(255,255,255,.18),0 8px 28px rgba(var(--neon-rgb,255,42,31),.28)!important;opacity:0;animation:si-tapin .35s ease-out 1.7s forwards;-webkit-tap-highlight-color:transparent}
-html body #stok-intro .si-enter:focus-visible{outline:3px solid #fff!important;outline-offset:4px}
-html body #stok-intro .si-enter:active{transform:translateX(-50%) scale(.97)}
+html body #stok-intro .si-enter{position:absolute;left:50%;bottom:calc(36px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);pointer-events:auto;min-height:52px;min-width:min(200px,80vw);padding:14px 40px;border-radius:999px!important;border:0!important;background:#DB2318!important;background-image:linear-gradient(180deg,#E0281C 0%,#DB2318 55%,#C81F15 100%)!important;color:#fff!important;font:700 18px/1.2 var(--font-text,system-ui,-apple-system,sans-serif)!important;letter-spacing:.02em;cursor:pointer;box-shadow:0 0 0 1px rgba(255,42,31,.55),inset 0 1px 0 rgba(255,255,255,.16),0 8px 28px rgba(255,42,31,.30)!important;text-shadow:none!important;outline:none;opacity:0;animation:si-tapin .35s ease-out 1.7s forwards;-webkit-tap-highlight-color:transparent}
+/* v146: o foco posto pelo app ao aparecer fica num anel fino vermelho-claro; o contorno branco forte só depois de usar o teclado (.si-kbd) */
+html body #stok-intro .si-enter:focus-visible{outline:2px solid rgba(255,138,122,.6)!important;outline-offset:3px}
+html body #stok-intro.si-kbd .si-enter:focus-visible{outline:3px solid #fff!important;outline-offset:4px}
+html body #stok-intro .si-enter:active{transform:translateX(-50%) scale(.97);background:#B81C12!important;background-image:none!important;box-shadow:0 0 0 1px rgba(255,42,31,.45),0 4px 16px rgba(255,42,31,.22)!important}
+#stok-intro[data-reduced-motion="true"] .si-enter:active{transform:translateX(-50%)}
 #stok-intro[data-reduced-motion="true"] .si-enter{animation:none!important;opacity:1}
 #stok-intro.si-tapped{animation:si-exit .2s ease-in forwards!important}
 body.stok-intro-active #auth-screen .auth-card .brand{visibility:hidden}
@@ -27,3 +30,16 @@ body.stok-intro-active #auth-screen .auth-card .brand{visibility:hidden}
 @keyframes si-cap{0%{opacity:0}25%{opacity:1}70%{opacity:1}100%{opacity:0}}
 @keyframes si-type{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes si-exit{to{opacity:0;visibility:hidden}}
+/* v146 (decisão do dono): a abertura anima mesmo com "menos movimento" ligado no aparelho. As regras globais
+   de menos movimento (*{animation:none!important} / animation-duration:.01ms) não valem dentro da abertura. */
+@media (prefers-reduced-motion:reduce){
+html body #stok-intro .si-cap{animation:si-cap .95s ease .05s forwards!important}
+html body #stok-intro .si-word{animation:si-type .3s ease-out 1.75s forwards!important}
+html body #stok-intro .si-tag{animation:si-type .3s ease-out 1.9s forwards!important}
+html body #stok-intro .si-sub{animation:si-type .3s ease-out 2s forwards!important}
+html body #stok-intro.si-ending{animation:si-exit .2s ease-in 2.6s forwards!important}
+html body #stok-intro.si-ending.si-hold{animation-delay:3.2s!important}
+html body #stok-intro.si-tapped{animation:si-exit .2s ease-in forwards!important}
+html body #stok-intro .si-enter{animation:si-tapin .35s ease-out 1.7s forwards!important}
+html body #stok-intro .si-enter:active{transform:translateX(-50%) scale(.97)}
+}
