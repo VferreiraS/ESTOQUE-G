@@ -35,7 +35,8 @@ body.dark .pn-s1{background:linear-gradient(180deg,#fff,rgba(var(--neon-rgb,231,
 body.dark .pn-legend i{border-radius:50%}
 /* título grande esfumado */
 @supports (-webkit-background-clip:text) or (background-clip:text){
-  body.dark #view .hero h1,body.dark #view .pn-head h1{background:linear-gradient(180deg,#fff 30%,rgba(255,255,255,.38) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;font-size:clamp(34px,6vw,64px);letter-spacing:-.035em;line-height:1.02}
+  body.dark #view .pn-head h1{background:linear-gradient(180deg,#fff 30%,rgba(255,255,255,.38) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;font-size:clamp(34px,6vw,64px);letter-spacing:-.035em;line-height:1.02}
+  html body.dark #view .hero h1{background:none!important;-webkit-background-clip:border-box;background-clip:border-box;-webkit-text-fill-color:var(--t,#fff)!important;color:var(--t,#fff)!important;text-shadow:none!important;-webkit-text-stroke:0;font-size:clamp(34px,6vw,64px);letter-spacing:-.035em;line-height:1.02}
 }
 @media (max-width:900px){body.dark #view .stat strong{font-size:32px!important}body.dark .pn-card,body.dark #pn-sup{padding:18px}}
 @media (prefers-reduced-motion:reduce){body.dark .pn-card,body.dark .stat{transition:none!important}}
