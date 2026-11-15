@@ -63,6 +63,8 @@ const L=require('./lib.js');const {ok,until}=L;
  await B.evaluate(()=>go('home'));await B.waitForTimeout(1600);await A.evaluate(async()=>{await chatSend('Não lida um');await chatSend('Não lida dois')});
  ok(await until(B,()=>!!document.querySelector('.nav-unread'),null,20000),'iPhone: contador de não lidas aparece');
  await B.evaluate(()=>go('chat'));ok(await until(B,()=>{const s=document.getElementById('chat-new');const n=s&&s.nextElementSibling;return !!(n&&/Não lida um/.test(n.innerText))},null,8000),'iPhone: separador "Mensagens novas" antes da primeira não lida');
+ /* v149: espera a 2ª não lida chegar (senão as duas caem na mesma janela do aviso e viram "2 mensagens novas", que também é certo) */
+ await until(B,()=>/Não lida dois/.test(document.getElementById('chat-list').innerText),null,20000);await B.waitForTimeout(900);
  await A.evaluate(()=>chatSend('Aviso para leitor de tela'));
  ok(await until(B,()=>/Mensagem de Vitor: Aviso para leitor/.test(document.getElementById('chat-ann').textContent),null,20000),'iPhone: só a mensagem nova é anunciada (role=status)');
 

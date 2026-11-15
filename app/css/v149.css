@@ -1,0 +1,23 @@
+/* v149: conversa no celular — tela fixa do tamanho da área visível (visualViewport), sem 100vh */
+html.e99-convo-lock,html.e99-convo-lock body{overflow:hidden!important;overscroll-behavior:none}
+html:root body.e99-convo #view .cv-wrap[data-open],html:root body.e99-convo #view .chat-wrap.chat-wrap{position:fixed!important;left:0;right:0;top:var(--e99-vvt,0px);height:var(--e99-vvh,100dvh)!important;min-height:0!important;max-width:none!important;margin:0!important;z-index:1000;display:flex!important;flex-direction:column;box-sizing:border-box;padding:max(6px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) 0 max(10px,env(safe-area-inset-left))!important;background:#0b0b0d!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:hidden}
+body.e99-convo .cv-msgs,body.e99-convo #chat-list{flex:1 1 auto;min-height:0!important;height:auto!important;max-height:none!important;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+body.e99-convo .chat-wrap .chat-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;position:relative}
+body.e99-convo .cv-compose,body.e99-convo .chat-wrap .chat-compose{flex:0 0 auto;padding-bottom:max(8px,env(safe-area-inset-bottom))}
+body.e99-convo-kb .cv-compose,body.e99-convo-kb .chat-wrap .chat-compose{padding-bottom:6px}
+body.e99-convo .cv-head,body.e99-convo .cv-e2e,body.e99-convo .chat-wrap .chat-head{flex:0 0 auto}
+/* chat da equipe com o teclado aberto: só cabeçalho, mensagens e campo */
+body.e99-convo .chat-wrap>*:not(.chat-head):not(.chat-body):not(.chat-compose):not(.chat-sr){display:none!important}
+body.e99-convo-kb .cv-e2e{display:none}
+/* barra de baixo e avisos flutuantes saem enquanto a conversa está aberta */
+body.e99-convo #mobile-bottom,body.e99-convo .mobile-bottom,body.e99-convo #sound-control,body.e99-convo #storage-note{display:none!important}
+/* botão Foto da conversa (v138 mostrava o seletor de arquivo do navegador e apertava o campo) */
+.cv-compose{align-items:flex-end}
+.cv-compose textarea{min-width:0}
+.cv-compose>button{flex:0 0 auto;white-space:nowrap}
+.cv-phbtn{position:relative;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0 14px;border-radius:22px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);cursor:pointer;white-space:nowrap;font-weight:600}
+.cv-phbtn input[type=file]{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0);border:0;padding:0;margin:0}
+.cv-phbtn:focus-within{outline:2px solid var(--neon,#c9a);outline-offset:2px}
+body.e99-convo-kb .chat-wrap .chat-head-acts{display:none!important}
+/* aviso do emulador do Firebase (só nos testes em localhost) não cobre o campo */
+body.e99-convo .firebase-emulator-warning{display:none!important}

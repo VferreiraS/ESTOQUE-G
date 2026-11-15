@@ -207,6 +207,7 @@ function jumpBtn(box){var j=document.getElementById('chat-jump');if(!j||!box)ret
 window.chatToBottom=function(){var box=document.getElementById('chat-list');if(!box)return;toBottom(box,true);try{box.focus({preventScroll:true})}catch(e){}};
 /* altura da lista: o chat inteiro (lista + campo de escrever) cabe na tela, no celular e no PC */
 function fit(){var box=document.getElementById('chat-list'),wrap=box&&box.closest('.chat-wrap'),cp=wrap&&wrap.querySelector('.chat-compose');if(!box||!cp||!box.offsetParent)return;
+  if(document.body.classList.contains('e99-convo')){if(box.style.height)box.style.height='';return} /* v149: conversa fixa no celular, a lista ocupa o espaço que sobra */
   var br=box.getBoundingClientRect(),cr=cp.getBoundingClientRect(),y=window.scrollY||0,nav=document.querySelector('.mobile-bottom'),nh=0;
   if(nav&&!document.body.classList.contains('keyboard-open')&&getComputedStyle(nav).display!=='none'&&getComputedStyle(nav).position==='fixed')nh=nav.getBoundingClientRect().height;
   var pb=parseFloat(getComputedStyle(wrap).paddingBottom)||0;var h=Math.max(innerHeight<760?200:260,Math.round(innerHeight-(br.top+y)-(cr.bottom-br.bottom)-pb-nh-16));
@@ -221,8 +222,8 @@ window.chatKey=function(ev){if(ev.key==='Enter'&&!ev.shiftKey&&!ev.altKey&&!ev.i
 window.chatMore=function(b){var m=b.closest('.chat-msg');if(!m)return;var on=m.classList.toggle('open');var id=m.getAttribute('data-id');if(on)opened[id]=1;else delete opened[id];b.textContent=on?'Ver menos':'Ver mais';b.setAttribute('aria-expanded',on?'true':'false');var box=document.getElementById('chat-list');if(box)box.__h=''};
 window.chatOptions=function(id,btn){if(window.e99MsgMenu)window.e99MsgMenu(id,btn);else window.chatReply(id)};
 /* aviso para leitor de tela: só a mensagem nova (a lista não é lida inteira a cada atualização) */
-var annT=0,annQ=[];function announce(m){annQ.push(m);clearTimeout(annT);annT=setTimeout(function(){var q=annQ;annQ=[];var el=document.getElementById('chat-ann');if(!el||!q.length)return;var x=q[q.length-1];
-  el.textContent=q.length>1?q.length+' mensagens novas no chat.':'Mensagem de '+x.from+': '+(x.text?x.text.slice(0,200):x.audio?'áudio':x.img?'foto':'')},700)}
+var annT=0,annQ=[],annSeen={};function announce(m){/* v149: a mesma mensagem processada duas vezes (corrida da leitura) não vira "2 mensagens novas" */if(m&&m.id){if(annSeen[m.id])return;annSeen[m.id]=1}annQ.push(m);clearTimeout(annT);annT=setTimeout(function(){var q=annQ;annQ=[];var el=document.getElementById('chat-ann');if(!el||!q.length)return;var x=q[q.length-1];
+  var at=q.length>1?q.length+' mensagens novas no chat.':'Mensagem de '+x.from+': '+(x.text?x.text.slice(0,200):x.audio?'áudio':x.img?'foto':'');el.textContent=at;window.__e99ChatAnn={t:at,at:Date.now()} /* v149: redesenho não apaga o aviso */},700)}
 window.e99ChatSay=function(t){window.__e99ChatAnn={t:String(t||''),at:Date.now()};var el=document.getElementById('chat-ann');if(el){el.textContent='';setTimeout(function(){var e2=document.getElementById('chat-ann')||el;e2.textContent=String(t||'')},50)}};
 function viewImg(u,alt){var d=document.getElementById('chat-img-view');if(!d){d=document.createElement('dialog');d.id='chat-img-view';d.setAttribute('aria-label','Foto do chat');d.innerHTML='<img alt="Foto do chat"><button type="button" onclick="this.closest(\'dialog\').close()">Fechar</button>';document.body.appendChild(d)}var im=d.querySelector('img');im.src=u;im.alt=alt||'Foto do chat';var back=document.activeElement;d.onclose=function(){try{if(back&&back.isConnected)back.focus()}catch(e){}};d.showModal();var c=d.querySelector('button');if(c)c.focus()}
 function setup(){var box=document.getElementById('chat-list');if(!box)return;var ex=document.getElementById('chat-extras');
