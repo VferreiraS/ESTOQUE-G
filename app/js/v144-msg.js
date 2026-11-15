@@ -39,30 +39,43 @@ function fit(c,s,max,lines){var words=String(s).split(' '),out=[],cur='';words.f
   return out.map(function(l){while(l.length>1&&c.measureText(l).width>max)l=l.slice(0,-2)+'…';return l})}
 function banner(p){var n=norm(p),th=theme(),Wd=1080,H=420;
   return logo().then(function(img){var cv=D.createElement('canvas');cv.width=Wd;cv.height=H;var c=cv.getContext('2d');
-    c.fillStyle=th.bg;c.fillRect(0,0,Wd,H);
-    var g=c.createRadialGradient(Wd*.88,-40,10,Wd*.88,-40,Wd*.75);g.addColorStop(0,'rgba('+th.rgb+',.42)');g.addColorStop(1,'rgba('+th.rgb+',0)');c.fillStyle=g;c.fillRect(0,0,Wd,H);
-    var g2=c.createRadialGradient(-60,H+60,10,-60,H+60,Wd*.55);g2.addColorStop(0,'rgba('+th.rgb+',.18)');g2.addColorStop(1,'rgba('+th.rgb+',0)');c.fillStyle=g2;c.fillRect(0,0,Wd,H);
-    c.fillStyle=th.neon;c.fillRect(0,H-10,Wd,10);
-    var L=72,S=236,Y=(H-10-S)/2;
-    c.save();rr(c,L,Y,S,S,54);c.clip();
-    if(img){c.drawImage(img,L,Y,S,S)}else{c.fillStyle='#121216';c.fillRect(L,Y,S,S);c.fillStyle='#FF2A1F';c.font='800 188px '+th.font;c.textAlign='center';c.textBaseline='middle';c.fillText('S',L+S/2,Y+S/2+8)}
-    c.restore();c.strokeStyle='rgba(255,255,255,.14)';c.lineWidth=2;rr(c,L+1,Y+1,S-2,S-2,53);c.stroke();
-    var X=L+S+56,MW=Wd-X-64;c.textAlign='left';c.textBaseline='alphabetic';
-    c.fillStyle=th.neon;c.font='700 26px '+th.body;c.fillText('STOK · LOJAS G · ESTOQUE 99',X,118);
-    c.fillStyle='#FFFFFF';c.font='700 60px '+th.font;var tl=fit(c,n.title,MW,2),y=192;tl.forEach(function(l){c.fillText(l,X,y);y+=68});
-    c.fillStyle='rgba(255,255,255,.74)';c.font='500 30px '+th.body;fit(c,subLine(n),MW,2).forEach(function(l){c.fillText(l,X,y+4);y+=40});
+    c.fillStyle='#0a0a0c';c.fillRect(0,0,Wd,H);
+    /* cartão escuro arredondado, borda fina e brilho sutil no alto */
+    var CX=24,CY=24,CW=Wd-48,CH=H-48;
+    var cg=c.createLinearGradient(0,CY,0,CY+CH);cg.addColorStop(0,'#16161a');cg.addColorStop(1,'#0c0c0e');
+    rr(c,CX,CY,CW,CH,44);c.fillStyle=cg;c.fill();
+    c.save();rr(c,CX,CY,CW,CH,44);c.clip();
+    var g=c.createRadialGradient(Wd*.80,CY-30,10,Wd*.80,CY-30,Wd*.6);g.addColorStop(0,'rgba('+th.rgb+',.30)');g.addColorStop(1,'rgba('+th.rgb+',0)');c.fillStyle=g;c.fillRect(0,0,Wd,H);
+    var rim=c.createLinearGradient(CX,0,CX+CW,0);rim.addColorStop(0,'rgba(255,255,255,0)');rim.addColorStop(.5,'rgba(255,255,255,.28)');rim.addColorStop(1,'rgba(255,255,255,0)');c.fillStyle=rim;c.fillRect(CX,CY,CW,2);
+    c.restore();
+    c.strokeStyle='rgba(255,255,255,.10)';c.lineWidth=2;rr(c,CX+1,CY+1,CW-2,CH-2,43);c.stroke();
+    var L=72,S=200,Y=(H-S)/2;
+    c.save();rr(c,L,Y,S,S,46);c.clip();
+    if(img){c.drawImage(img,L,Y,S,S)}else{c.fillStyle='#121216';c.fillRect(L,Y,S,S);c.fillStyle='#FF2A1F';c.font='800 160px '+th.font;c.textAlign='center';c.textBaseline='middle';c.fillText('S',L+S/2,Y+S/2+8)}
+    c.restore();c.strokeStyle='rgba(255,255,255,.14)';c.lineWidth=2;rr(c,L+1,Y+1,S-2,S-2,45);c.stroke();
+    var X=L+S+52,MW=Wd-X-72;c.textAlign='left';c.textBaseline='alphabetic';
+    /* cabeçalho em pílula */
+    c.font='700 22px '+th.body;var pt='STOK · LOJAS G · ESTOQUE 99',pw=c.measureText(pt).width+44;
+    rr(c,X,76,pw,44,22);c.fillStyle='rgba(255,255,255,.07)';c.fill();c.strokeStyle='rgba(255,255,255,.14)';c.lineWidth=1.5;rr(c,X+.75,76.75,pw-1.5,42.5,21);c.stroke();
+    c.fillStyle=th.neon;c.fillText(pt,X+22,106);
+    c.fillStyle='#FFFFFF';c.font='700 58px '+th.font;var tl=fit(c,n.title,MW,2),y=190;tl.forEach(function(l){c.fillText(l,X,y);y+=64});
+    c.fillStyle='rgba(255,255,255,.62)';c.font='500 28px '+th.body;fit(c,subLine(n),MW,2).forEach(function(l){c.fillText(l,X,y+2);y+=38});
+    /* linha com check-circle */
+    var ck=X;c.beginPath();c.arc(ck+13,H-84,13,0,Math.PI*2);c.strokeStyle=th.neon;c.lineWidth=2.5;c.stroke();
+    c.beginPath();c.moveTo(ck+7,H-84);c.lineTo(ck+11.5,H-79);c.lineTo(ck+20,H-90);c.strokeStyle='#fff';c.lineWidth=3;c.lineCap='round';c.lineJoin='round';c.stroke();
+    c.fillStyle='rgba(255,255,255,.62)';c.font='500 24px '+th.body;c.fillText('Tudo no lugar.',ck+36,H-75);
     return new Promise(function(res,rej){try{cv.toBlob(function(b){b?res(b):rej(Error('Não deu para gerar o banner.'))},'image/png')}catch(e){rej(e)}})})}
 /* ---------- HTML para o Outlook (estilos inline; sem imagem: o Outlook descarta data: ao colar) ---------- */
-function html(p){var n=norm(p),th=theme(),F="font-family:'Segoe UI',Calibri,Arial,sans-serif;";
-  var h='<div style="'+F+'color:#1b1b1f;max-width:640px">'
-   +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:#141218"><tr><td style="padding:18px 22px;border-left:6px solid '+E(th.neon)+'">'
-   +'<div style="'+F+'font-size:11px;letter-spacing:1px;text-transform:uppercase;color:'+E(th.neon)+'">'+E(FOOT)+'</div>'
-   +'<div style="'+F+'font-size:22px;font-weight:700;color:#ffffff;margin-top:4px">'+E(n.title)+'</div>'
-   +'<div style="'+F+'font-size:13px;color:#c9c9cf;margin-top:2px">'+E(subLine(n))+'</div></td></tr></table>';
-  n.sections.forEach(function(s){if(s.title)h+='<h3 style="'+F+'font-size:15px;margin:18px 0 6px;color:#1b1b1f;border-bottom:1px solid #e3e3e8;padding-bottom:4px">'+E(s.title)+'</h3>';
-    h+='<ul style="'+F+'font-size:14px;margin:0 0 6px;padding-left:20px;color:#2a2a30">'+(s.lines.length?s.lines.map(function(l){return '<li style="margin:3px 0">'+(l.b?'<b>'+E(l.b)+'</b>'+(l.t?' — '+E(l.t):''):E(l.t))+(l.sub.length?'<div style="color:#5a5a63;font-size:13px">'+l.sub.map(E).join('<br>')+'</div>':'')+'</li>'}).join(''):'<li>Nada por aqui.</li>')+'</ul>'});
-  if(n.note)h+='<p style="'+F+'font-size:13px;color:#5a5a63;font-style:italic;margin:14px 0 0">'+E(n.note)+'</p>';
-  h+='<p style="'+F+'font-size:12px;color:#8a8a93;border-top:1px solid #e3e3e8;margin-top:18px;padding-top:8px">'+E(FOOT)+'</p></div>';return h}
+function html(p){var n=norm(p),th=theme(),F="font-family:-apple-system,'Segoe UI',Calibri,Arial,sans-serif;",CK='<span style="display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border:1px solid '+E(th.neon)+';border-radius:9px;color:#ffffff;font-size:11px;margin-right:10px">&#10003;</span>';
+  var h='<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:#0a0a0c;max-width:640px"><tr><td style="padding:12px">'
+   +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;background:#121215;border:1px solid #2a2a2f;border-radius:22px"><tr><td style="padding:22px 24px">'
+   +'<div style="'+F+'margin:0 0 12px"><span style="display:inline-block;padding:6px 14px;border:1px solid #34343a;border-radius:999px;background:#1c1c20;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:'+E(th.neon)+'">'+E(FOOT)+'</span></div>'
+   +'<div style="'+F+'font-size:26px;font-weight:700;color:#ffffff;line-height:1.15">'+E(n.title)+'</div>'
+   +'<div style="'+F+'font-size:13px;color:#9a9aa3;margin-top:4px">'+E(subLine(n))+'</div>';
+  n.sections.forEach(function(s){if(s.title)h+='<div style="'+F+'font-size:13px;font-weight:600;margin:20px 0 6px;color:#9a9aa3;border-top:1px solid #2a2a2f;padding-top:12px">'+E(s.title)+'</div>';
+    h+='<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">'+(s.lines.length?s.lines.map(function(l){return '<tr><td valign="top" width="30" style="padding:6px 0">'+CK+'</td><td style="'+F+'font-size:14px;color:#f2f2f5;padding:6px 0">'+(l.b?'<b style="color:#ffffff">'+E(l.b)+'</b>'+(l.t?' — '+E(l.t):''):E(l.t))+(l.sub.length?'<div style="color:#9a9aa3;font-size:13px">'+l.sub.map(E).join('<br>')+'</div>':'')+'</td></tr>'}).join(''):'<tr><td style="'+F+'font-size:14px;color:#9a9aa3;padding:6px 0">Nada por aqui.</td></tr>')+'</table>'});
+  if(n.note)h+='<p style="'+F+'font-size:13px;color:#9a9aa3;font-style:italic;margin:16px 0 0">'+E(n.note)+'</p>';
+  h+='<p style="'+F+'font-size:12px;color:#6f6f78;border-top:1px solid #2a2a2f;margin:20px 0 0;padding-top:10px">'+E(FOOT)+'</p></td></tr></table></td></tr></table>';return h}
 /* ---------- folha de prévia ---------- */
 var cur=null;
 function slug(n){return (n.file||n.title.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'mensagem')}

@@ -1,0 +1,47 @@
+/* v150: cartões de resumo e gráficos no estilo "cartão de preço" escuro: fundo quase preto, cartão arredondado com borda fina e
+   brilho sutil na borda de cima, título pequeno, valor grande em branco, linhas com check, botão em pílula branca, abas em pílula,
+   título grande esfumado. Só visual; cores do tema (--neon*) e o S da marca ficam; sem animação nova. */
+body.dark{--k-bg:#0a0a0c;--k-card:linear-gradient(180deg,#141416 0%,#0c0c0e 100%);--k-line:rgba(255,255,255,.09);--k-rim:inset 0 1px 0 rgba(255,255,255,.10);--k-glow:0 0 32px rgba(var(--neon-rgb,231,184,239),.07)}
+body.dark .pn-card,body.dark .pn-kpi,body.dark #view .stats .stat,body.dark #view .stats .stat:first-child,body.dark .wk-rep .wk-kv div,body.dark #view .plan-card,body.dark #pn-sup,body.dark #view .stats.e99-todo .stat{
+  background:var(--k-card)!important;border:1px solid var(--k-line)!important;border-radius:24px!important;box-shadow:var(--k-rim),var(--k-glow)!important}
+body.dark .wk-rep .wk-kv div{border-radius:18px!important}
+body.dark .pn-card,body.dark #pn-sup{padding:22px}
+/* título pequeno, valor grande em branco */
+body.dark .pn-kpi span,body.dark #view .stat span,body.dark .wk-rep .wk-kv span{font-size:13px!important;font-weight:600!important;letter-spacing:0!important;text-transform:none!important;color:rgba(255,255,255,.62)!important}
+body.dark .pn-kpi strong,body.dark #view .stat strong,body.dark #view .stat:first-child strong{font-size:40px!important;line-height:1.05;font-weight:700!important;letter-spacing:-.03em;color:#fff!important}
+body.dark #view .stat:first-child span{color:rgba(255,255,255,.62)!important;opacity:1!important}
+body.dark .wk-rep .wk-kv b{font-size:26px;font-weight:700;color:#fff}
+body.dark .pn-card h2,body.dark #pn-sup h2{font-size:15px;font-weight:600;color:rgba(255,255,255,.78)}
+/* abas / período em pílula */
+body.dark .pn-period{background:rgba(255,255,255,.06);border:1px solid var(--k-line);border-radius:999px;padding:4px}
+body.dark .pn-period button{border-radius:999px!important;color:rgba(255,255,255,.65)!important}
+body.dark .pn-period button[aria-pressed=true]{background:#fff!important;color:#0a0a0c!important}
+body.dark .nf-tabs{background:rgba(255,255,255,.05);border:1px solid var(--k-line);border-radius:999px;padding:4px;display:inline-flex;flex-wrap:wrap;gap:4px}
+body.dark .nf-tabs button{border-radius:999px!important}
+body.dark .nf-tabs button[aria-pressed=true]{background:#fff!important;color:#0a0a0c!important;border-color:#fff!important}
+/* botão de ação em pílula branca no destaque */
+body.dark .pn-card .primary,body.dark #wk-dlg .primary,body.dark #pn-sup .primary,body.dark #view .plan-card .primary,body.dark .pn-actions .primary{background:#fff!important;color:#0a0a0c!important;border:0!important;border-radius:999px!important;font-weight:700;box-shadow:0 6px 20px rgba(255,255,255,.10)!important}
+/* linhas com check-circle */
+body.dark .wk-rep ul,body.dark .pn-tip-list{list-style:none;padding:0;margin:8px 0}
+body.dark .wk-rep ul li{position:relative;padding:6px 0 6px 30px}
+body.dark .wk-rep ul li::before{content:"";position:absolute;left:2px;top:9px;width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(var(--neon-rgb,231,184,239),.8);
+  background:no-repeat center/11px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.4l2.3 2.3 4.7-5' fill='none' stroke='%23fff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+/* gráficos: barras arredondadas, grade fina, cor do tema onde a série principal é a destacada */
+body.dark .pn-plot{border-bottom-color:rgba(255,255,255,.18)}
+body.dark .pn-col i,body.dark .pn-stack i:last-child{border-radius:999px 999px 2px 2px}
+body.dark .pn-track{height:12px;border-radius:999px;background:rgba(255,255,255,.07)}
+body.dark .pn-track i:last-child{border-radius:0 999px 999px 0}
+body.dark .pn-s1{background:linear-gradient(180deg,#fff,rgba(var(--neon-rgb,231,184,239),.85))}
+body.dark .pn-legend i{border-radius:50%}
+/* título grande esfumado */
+@supports (-webkit-background-clip:text) or (background-clip:text){
+  body.dark #view .hero h1,body.dark #view .pn-head h1{background:linear-gradient(180deg,#fff 30%,rgba(255,255,255,.38) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;font-size:clamp(34px,6vw,64px);letter-spacing:-.035em;line-height:1.02}
+}
+@media (max-width:900px){body.dark #view .stat strong{font-size:32px!important}body.dark .pn-card,body.dark #pn-sup{padding:18px}}
+@media (prefers-reduced-motion:reduce){body.dark .pn-card,body.dark .stat{transition:none!important}}
+/* vence regras de tema mais específicas */
+html body.dark #view .stats .stat>strong{font-size:clamp(34px,4vw,44px)!important;font-weight:700!important;letter-spacing:-.03em!important;color:#fff!important}
+html body.dark #view .stats .stat>span:not(.e99-go-l){color:rgba(255,255,255,.62)!important;font-weight:600!important}
+html body.dark #view .stats .stat>small{color:rgba(255,255,255,.5)!important}
+html body.dark #view .stats .stat .e99-go-l{display:inline-block;margin-top:10px;padding:8px 16px;border-radius:999px;background:#fff;color:#0a0a0c!important;font-weight:700}
+html body.dark #view .stats .stat.e99-zero{opacity:1}
