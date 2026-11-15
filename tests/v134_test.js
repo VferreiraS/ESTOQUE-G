@@ -1,7 +1,7 @@
 /* v134: (1) Relatório da semana no Painel (janela + "Salvar em PDF" pela impressão; resumo semanal por e-mail 1× por semana, com marcador e opção de desligar)
    (2) Fornecedores no Painel (CNPJ ou nome, % com divergência, tempo até conferir, valor; ordenável; toque abre as notas). PC 1440×900 (gestor) + iPhone 13 (auxiliar); 0 erro de console. */
 const L=require('./lib.js');const {ok,until,signup}=L;const fs=require('fs'),path=require('path');
-const BASE=process.env.BASE||'http://localhost:8000';const U=BASE+'/index.html?ntfy='+L.N,SHOTS=process.env.SHOTS||'';
+const BASE=process.env.BASE||'http://localhost:8000';const U=BASE+'/index.html',SHOTS=process.env.SHOTS||'';
 function watch(p,tag,errs){p.on('pageerror',e=>errs.push(tag+' '+e.message));p.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR|firestore|Firebase|identitytoolkit|WebChannel/i.test(m.text()))errs.push(tag+' console: '+m.text())});p.on('dialog',d=>d.accept())}
 /* semana passada (segunda) e dias dela, no fuso do navegador */
 const SEED=()=>{const mon=e99Week.monday(iso()),d=n=>{const x=new Date(mon+'T12:00:00');x.setDate(x.getDate()+n);return iso(x)};const pm=d(-7),pw=n=>d(-7+n);

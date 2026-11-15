@@ -68,7 +68,7 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 </header>
 
 <div class="box">
-<p><strong>Resumo em poucas linhas:</strong> o Stok é um app interno e gratuito, usado só por funcionários autorizados das Lojas G para organizar o estoque. Ele não vende nada, não mostra anúncios e não usa cookies de rastreamento. A maior parte dos dados fica cifrada no seu próprio aparelho. Alguns dados vão para serviços de terceiros (Google/Firebase, ntfy.sh e outros listados abaixo) só para o app funcionar. Dúvidas ou pedidos: <a href="mailto:99.estoque@lojasg.com.br">99.estoque@lojasg.com.br</a>.</p>
+<p><strong>Resumo em poucas linhas:</strong> o Stok é um app interno e gratuito, usado só por funcionários autorizados das Lojas G para organizar o estoque. Ele não vende nada, não mostra anúncios e não usa cookies de rastreamento. A maior parte dos dados fica cifrada no seu próprio aparelho. Alguns dados vão para serviços de terceiros (Google/Firebase e outros listados abaixo) só para o app funcionar. Dúvidas ou pedidos: <a href="mailto:99.estoque@lojasg.com.br">99.estoque@lojasg.com.br</a>.</p>
 </div>
 
 <nav class="toc" aria-labelledby="toc-title">
@@ -123,8 +123,8 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 <li><strong>correio</strong>: fila de resumos e avisos por e-mail para pessoas da equipe com e-mail confirmado; os itens são apagados depois do envio.</li>
 </ul>
 
-<h3>2.3 Chat e sincronização da equipe (ntfy.sh)</h3>
-<p>As mensagens, fotos e áudios do chat e a sincronização de NFs, planos, equipe, corredores e perfis entre os aparelhos passam pelo serviço gratuito <strong>ntfy.sh</strong>. O conteúdo é <strong>cifrado com o código da equipe</strong> antes de sair do aparelho. No servidor do ntfy, as mensagens ficam cerca de 12 horas e os anexos (fotos e áudios) cerca de 3 horas; o histórico fica guardado em cada aparelho.</p>
+<h3>2.3 Chat e sincronização da equipe (nuvem da loja)</h3>
+<p>As mensagens, fotos e áudios do chat da equipe e a sincronização de NFs, planos, equipe, corredores, demandas e perfis entre os aparelhos passam pela nuvem da loja no <strong>Google Firebase (Firestore, São Paulo)</strong>. O conteúdo é <strong>cifrado no aparelho com o código da equipe</strong> antes de sair; a nuvem guarda só o conteúdo cifrado, quem enviou (identificador da conta) e a data. As mensagens ficam guardadas na nuvem até serem apagadas pela equipe ou a pedido; o histórico também fica no aparelho. O Stok não usa mais nenhum aplicativo externo de avisos: os avisos aparecem só com o Stok aberto.</p>
 
 <h3>2.4 Fotos</h3>
 <p>Fotos que você tira ou escolhe (atividades do plano de ação, chat). Ficam no aparelho; as do chat vão para a equipe pelo canal cifrado.</p>
@@ -166,7 +166,6 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 <ul>
 <li><strong>Google (Firebase Authentication, Cloud Firestore e Firebase Hosting)</strong> — contas, perfis e dados da equipe na nuvem; também hospeda uma das cópias do site.</li>
 <li><strong>GitHub Pages</strong> — hospeda a outra cópia do site (recebe dados técnicos de acesso, como o endereço IP).</li>
-<li><strong>ntfy.sh</strong> — entrega do chat e da sincronização (conteúdo cifrado).</li>
 <li><strong>FormSubmit</strong> — envio dos e-mails de conta nova e do relatório por e-mail.</li>
 <li><strong>Abacus</strong> — contador anônimo de contas criadas.</li>
 <li><strong>Google Sheets / Apps Script</strong> — planilha, se ligada.</li>
@@ -178,14 +177,14 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:v
 
 <section id="internacional">
 <h2>5. Transferência para fora do Brasil</h2>
-<p>O banco Firestore fica em São Paulo. Porém alguns serviços podem tratar dados em servidores fora do Brasil (por exemplo, o login do Firebase, GitHub Pages, ntfy.sh, FormSubmit e Abacus). Essas transferências acontecem só para executar o serviço que você usa (art. 33 da LGPD) e com o mínimo de dados possível; no chat e na sincronização o conteúdo vai cifrado.</p>
+<p>O banco Firestore fica em São Paulo. Porém alguns serviços podem tratar dados em servidores fora do Brasil (por exemplo, o login do Firebase, GitHub Pages, FormSubmit e Abacus). Essas transferências acontecem só para executar o serviço que você usa (art. 33 da LGPD) e com o mínimo de dados possível; no chat e na sincronização o conteúdo vai cifrado.</p>
 </section>
 
 <section id="retencao">
 <h2>6. Por quanto tempo guardamos e como apagar</h2>
 <ul>
 <li><strong>No aparelho:</strong> até você apagar. Em <strong>Dados e ajuda → Apagar tudo neste aparelho</strong> (digite APAGAR) o app remove contas, equipe, cadastros, perfis e chats daquele aparelho. Cada aparelho precisa ser limpo separadamente. Um gestor também pode excluir uma conta antiga do navegador em <strong>Administração → Excluir conta antiga</strong>.</li>
-<li><strong>No ntfy.sh:</strong> mensagens cerca de 12 horas; fotos e áudios cerca de 3 horas.</li>
+<li><strong>Chat e dados da equipe na nuvem:</strong> até serem apagados pela equipe ou a pedido (conteúdo cifrado).</li>
 <li><strong>Na nuvem (Firebase):</strong> enquanto a conta estiver em uso. Hoje o app não apaga sozinho a conta da nuvem: para apagar a conta do Firebase e os dados ligados a ela, peça pelo e-mail <a href="mailto:99.estoque@lojasg.com.br">99.estoque@lojasg.com.br</a>. Os itens da fila de e-mails são apagados depois do envio.</li>
 <li><strong>Planilha e e-mails enviados:</strong> ficam com quem recebeu (a planilha do gestor e as caixas de e-mail), até serem apagados lá.</li>
 <li>Ao fim do vínculo de trabalho, os dados podem ser guardados pelo tempo exigido por lei ou para defesa em processos, e depois apagados.</li>

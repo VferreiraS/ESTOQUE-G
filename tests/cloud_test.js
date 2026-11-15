@@ -26,7 +26,7 @@ const doc=(path,tok)=>j(`${FS}/v1/projects/${P}/databases/(default)/documents/${
  await B.fill('#recovery-last4',(await B.textContent('.recovery-code')).replace(/[^A-Z0-9]/gi,'').slice(-4));await B.click('#recovery-enter');await B.waitForTimeout(2500);
  ok(await until(B,()=>!!(window.e99Cloud&&e99Cloud.user()),null,20000),'auxiliar ligado à nuvem');const bUid=await B.evaluate(()=>e99Cloud.user().uid);
  ok(await until(B,async(a)=>{const r=await fetch('http://127.0.0.1:8080/v1/projects/gen-lang-client-0167474823/databases/(default)/documents/lojas/'+a[0]+'/membros/'+a[1],{headers:{Authorization:'Bearer owner'}});if(r.status!==200)return false;const d=await r.json();return !!(d.fields.inviteId&&d.fields.inviteId.stringValue)},[sid,bUid],60000),'membro do auxiliar na loja (com o convite)');
- // o gestor perde o que veio pelo ntfy e recupera pela nuvem
+ // o gestor perde o que veio pela equipe e recupera pela nuvem
  await A.evaluate(()=>{[...Object.keys(localStorage),...(window.e99SealedKeys?e99SealedKeys():[])].filter(k=>k.startsWith('lojasg.estoque99.members:')).forEach(k=>localStorage.removeItem(k));e99Cloud.relisten()});
  ok(await until(A,()=>Object.keys(syncMembers()).some(k=>/^u/.test(k)&&syncMembers()[k].role==='auxiliar'),null,15000),'gestor recebe o membro pela nuvem');
  await A.evaluate(()=>{go('chat')});await A.waitForTimeout(800);const card=await A.evaluate(()=>e99AuxCardHTML());ok(/Ana[\s\S]*✓ Conta criada/.test(card),'convite marcado como Conta criada');ok(/e-mail a confirmar/.test(card),'mostra e-mail a confirmar');

@@ -5,7 +5,7 @@ const L=require('./lib.js');const {ok,until}=L;
 const STRONG=()=>{localStorage.setItem('e99-test-strong','1');localStorage.removeItem('e99-test-weak-pw')};
 const dlgOpen=p=>p.evaluate(()=>{const d=document.getElementById('pw-upgrade');return !!(d&&d.open)});
 const waitDlg=p=>until(p,()=>{const d=document.getElementById('pw-upgrade');return !!(d&&d.open)},null,8000);
-async function page(b,opts){const c=await b.newContext(opts);await c.addInitScript(STRONG);const p=await c.newPage();p.on('dialog',d=>d.accept());await p.goto('http://localhost:8000/index.html?ntfy='+L.N);await p.waitForTimeout(1500);return p}
+async function page(b,opts){const c=await b.newContext(opts);await c.addInitScript(STRONG);const p=await c.newPage();p.on('dialog',d=>d.accept());await p.goto('http://localhost:8000/index.html');await p.waitForTimeout(1500);return p}
 async function fillSignup(p,l,email,pw){await p.click('#auth-create');await p.fill('#auth-screen input[name=store]','Loja '+l);await p.fill('#auth-screen input[name=login]',l);await p.fill('#auth-screen input[name=email]',email);
  await p.fill('#auth-screen input[name=password]',pw);await p.fill('#auth-screen input[name=confirmation]',pw);const cb=await p.$('#auth-screen input[name=remember]');if(cb&&await cb.isChecked())await cb.uncheck();await L.terms(p,'#auth-form')}
 async function enterRecovery(p){await p.fill('#recovery-last4',(await p.textContent('.recovery-code')).replace(/[^A-Z0-9]/gi,'').slice(-4));await p.click('#recovery-enter');await p.waitForTimeout(2000)}

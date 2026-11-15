@@ -8,7 +8,7 @@ async function openDlg(p){await p.evaluate(()=>{go('plans');scrollTo(0,0)});awai
 async function paste(p,text,start){await p.fill('#cp-text',text);await p.fill('#cp-start',start);await p.dispatchEvent('#cp-start','change');await p.waitForTimeout(500)}
 (async()=>{const b=await L.chromium.launch();const errs=[];
  const c=await b.newContext({...L.devices['iPhone 13']});const p=await c.newPage();p.on('pageerror',e=>errs.push(e.message));
- await p.goto('http://localhost:8000/index.html?ntfy='+L.N);await p.waitForSelector('#auth-form input[name=login]');await p.waitForTimeout(800);
+ await p.goto('http://localhost:8000/index.html');await p.waitForSelector('#auth-form input[name=login]');await p.waitForTimeout(800);
  const login='colar'+Date.now().toString(36);await L.signup(p,login);
  await p.evaluate(async()=>{state.team=[{id:'ana',name:'Ana',role:'Repositora'}];state.plans=[{id:'p0',title:'Plano antigo',date:'2026-10-27',activities:[{id:'a0',title:'Repor arroz',owner:'Ana',notes:'',photos:[]}]}];await save();go('plans')});
  await p.waitForTimeout(400);
@@ -57,7 +57,7 @@ async function paste(p,text,start){await p.fill('#cp-text',text);await p.fill('#
  await p.evaluate(()=>colarPlanoClose());
 
  /* 6. ficou gravado: sai, entra de novo e os planos continuam */
- await p.goto('http://localhost:8000/index.html?ntfy='+L.N);await p.waitForSelector('#auth-form input[name=login]');await p.waitForTimeout(800);await L.login(p,login);
+ await p.goto('http://localhost:8000/index.html');await p.waitForSelector('#auth-form input[name=login]');await p.waitForTimeout(800);await L.login(p,login);
  ok(await p.evaluate(()=>state.plans.filter(x=>x.title==='Planejamento da semana').length===5),'planos gravados (continuam depois de entrar de novo)');
 
  /* 7. auxiliar não vê o botão */

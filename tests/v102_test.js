@@ -5,7 +5,7 @@ async function seed(p,login,role){return p.evaluate(async([l,r])=>{const s=await
 (async()=>{const b=await L.chromium.launch();const errs=[];const T=Date.now();
  for(const [nome,opts] of [['PC',{viewport:{width:1440,height:900}}],['celular',L.devices['iPhone 13']]]){
   const P=await (await b.newContext(opts)).newPage();P.on('pageerror',e=>errs.push(e.message));const ans=[];P.on('dialog',d=>{const v=ans.length?ans.shift():undefined;v===undefined?d.accept():d.accept(v)});
-  await P.goto('http://localhost:8000/index.html?ntfy='+L.N);await P.waitForTimeout(1500);
+  await P.goto('http://localhost:8000/index.html');await P.waitForTimeout(1500);
   await seed(P,'vferreiras','gestor');const auxA='auxa'+T,auxB='auxb'+T,auxC='auxc'+T;await seed(P,auxA,'auxiliar');await seed(P,auxB,'auxiliar');const codeC=await seed(P,auxC,'auxiliar');
   await L.login(P,'vferreiras','1234');await shut(P);
   ok(await P.evaluate(()=>authSession.payload.role==='gestor'),nome+': gestor entra');
@@ -35,10 +35,10 @@ async function seed(p,login,role){return p.evaluate(async([l,r])=>{const s=await
   await P.evaluate(()=>go('admin'));await P.waitForTimeout(300);ok(await P.evaluate(()=>/Só o gestor/.test(document.getElementById('view').innerText)&&!document.querySelector('#view button.danger')),nome+': conta comum não abre Administração');
  }
  /* conta do dono criada em "Criar conta" (estoque) com o uid verificado S: vira gestor e vê Administração */
- const D=await (await b.newContext({viewport:{width:1440,height:900}})).newPage();D.on('pageerror',e=>errs.push(e.message));D.on('dialog',d=>d.accept());await D.goto('http://localhost:8000/index.html?ntfy='+L.N);await D.waitForTimeout(1500);
+ const D=await (await b.newContext({viewport:{width:1440,height:900}})).newPage();D.on('pageerror',e=>errs.push(e.message));D.on('dialog',d=>d.accept());await D.goto('http://localhost:8000/index.html');await D.waitForTimeout(1500);
  await L.signup(D,'dono'+T);ok(await D.evaluate(()=>authSession.payload.role==='estoque'&&!labels.admin),'conta comum sem uid verificado: sem Administração');
  await until(D,()=>!!(window.e99Cloud&&e99Cloud.user()),null,20000);await D.evaluate(()=>{const u=e99Cloud.user().uid;localStorage.setItem('lojasg.estoque99.verificados',JSON.stringify({[u]:'s'}));render()});await D.waitForTimeout(400);
  ok(await D.evaluate(()=>authSession.payload.role==='gestor'&&!!labels.admin),'conta do dono (uid com S) vira gestor e vê Administração');
-  const E2=await (await b.newContext({viewport:{width:1440,height:900}})).newPage();E2.on('dialog',d=>d.accept());await E2.goto('http://localhost:8000/index.html?ntfy='+L.N);await E2.waitForTimeout(1500);await L.signup(E2,'outro'+T);
+  const E2=await (await b.newContext({viewport:{width:1440,height:900}})).newPage();E2.on('dialog',d=>d.accept());await E2.goto('http://localhost:8000/index.html');await E2.waitForTimeout(1500);await L.signup(E2,'outro'+T);
  await E2.evaluate(()=>{localStorage.setItem('lojasg.estoque99.my-uid:'+authSession.storeKey,'uidQualquer12345');render()});await E2.waitForTimeout(300);ok(await E2.evaluate(()=>authSession.payload.role==='estoque'&&!labels.admin),'uid sem S continua sem Administração');
  console.log('errors',errs);await b.close()})();

@@ -3,7 +3,7 @@
    Painel com período selecionado e sem subtítulo repetido, Administração com uma lista só, textos de toque na janela da NF no celular,
    Salvar/Cancelar fixos embaixo na folha do celular, status da NF numa fileira, contador da conferência sem borda vermelha e 0 erro de console. */
 const L=require('./lib.js');const {ok}=L;
-const URL0='http://localhost:8000/index.html?ntfy='+L.N;
+const URL0='http://localhost:8000/index.html';
 (async()=>{const b=await L.chromium.launch();const errs=[];
  async function dev(nome,opts){const c=await b.newContext(opts);const P=await c.newPage();
   P.on('pageerror',e=>errs.push(nome+' '+e.message));P.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR|ERR_CONNECTION|firestore|Firebase|identitytoolkit|WebChannel/i.test(m.text()))errs.push(nome+' console: '+m.text())});P.on('dialog',d=>d.accept());return P}

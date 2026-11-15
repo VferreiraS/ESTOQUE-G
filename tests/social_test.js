@@ -10,7 +10,7 @@ async function verifyAll(){const r=await j(`${AU}/emulator/v1/projects/${P}/oobC
  await fetch(`${AU}/identitytoolkit.googleapis.com/v1/projects/${P}/accounts:batchCreate`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer owner'},body:JSON.stringify({users:[{localId:VUID,email:gEmail,rawPassword:derive(gl,'1234')}]})});
  const A=await (await b.newContext({viewport:{width:1440,height:900}})).newPage();const B=await (await b.newContext(L.devices['iPhone 13'])).newPage();
  [A,B].forEach(p=>{p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept())});
- await A.goto('http://localhost:8000/index.html?ntfy='+L.N);await A.waitForTimeout(2000);
+ await A.goto('http://localhost:8000/index.html');await A.waitForTimeout(2000);
  await A.click('#auth-create');await A.fill('#auth-screen input[name=store]','Loja '+gl);await A.fill('#auth-screen input[name=login]',gl);await A.fill('#auth-screen input[name=email]',gEmail);await A.fill('#auth-screen input[name=password]','1234');await A.fill('#auth-screen input[name=confirmation]','1234');await L.terms(A,'#auth-form');
  await A.click('#auth-form button[type=submit]');await A.waitForTimeout(2500);await A.fill('#recovery-last4',(await A.textContent('.recovery-code')).replace(/[^A-Z0-9]/gi,'').slice(-4));await A.click('#recovery-enter');await A.waitForTimeout(2000);await A.addStyleTag({content:'#alert-popup{display:none!important}'});
  await A.evaluate(async()=>{state.team=[{id:'ana',name:'Ana',role:'Repositora'}];state.corridors=[{id:'c7',number:'07',sector:'Mercearia',owner:'ana'},{id:'c9',number:'09',sector:'Bazar',owner:''},{id:'c10',number:'10',sector:'Limpeza',owner:''}];state.plans=[{id:'p1',title:'Plano de terça',date:iso(),activities:[{id:'a1',title:'Repor arroz no 07',owner:'Ana',notes:'',photos:[]}]}];await save();go('chat')});
@@ -26,11 +26,10 @@ async function verifyAll(){const r=await j(`${AU}/emulator/v1/projects/${P}/oobC
  // digitando
  await A.evaluate(()=>go('chat'));await B.evaluate(()=>go('chat'));await B.waitForTimeout(1500);await B.type('#chat-text','oi',{delay:80});
  ok(await until(A,()=>/digitando/.test((document.getElementById('chat-typing')||{}).textContent||''),null,15000),'gestor vê "Ana está digitando…"');await B.fill('#chat-text','');
- // menção com aviso pessoal
+ // menção (v148: aviso só com o app aberto)
  await A.fill('#chat-text','@An');ok(await until(A,()=>!document.getElementById('mention-box').hidden,null,5000),'sugestões de @menção');await A.click('#mention-box button');
  await A.type('#chat-text','pode conferir o 09?');await A.click('#chat-send');
  ok(await until(B,()=>!!document.querySelector('#chat-list .chat-msg.mentioned .mention'),null,20000),'aux vê a menção destacada');
- const lg=await (await fetch(L.N+'/_log')).json();ok(lg.some(x=>/^e99p-/.test(x.topic)&&/marcou você|conferir/.test(decodeURIComponent(x.message||''))),'aviso pessoal enviado (app fechado)');
  // reação e visto
  await B.evaluate(()=>{const m=[...document.querySelectorAll('#chat-list .chat-msg')].pop();return e99React(m.getAttribute('data-id'),'❤️',true)});
  ok(await until(A,()=>/❤️ 1/.test(([...document.querySelectorAll('#chat-list .chat-msg.mine')].pop().querySelector('.reacts')||{}).textContent||''),null,15000),'gestor vê a reação ❤️');
@@ -40,8 +39,8 @@ async function verifyAll(){const r=await j(`${AU}/emulator/v1/projects/${P}/oobC
  ok(await until(B,()=>{const p=document.getElementById('chat-pin');return p&&!p.hidden&&/conferir/.test(p.innerText)},null,15000),'mensagem fixada aparece para a equipe');
  // encaminhar atividade
  await A.evaluate(()=>e99Forward('act','p1','a1'));await A.waitForTimeout(600);ok(/📌 Atividade para @Ana: Repor arroz/.test(await A.inputValue('#chat-text')),'encaminhar atividade no chat');
- // avisos com app fechado na tela Conta
- await A.evaluate(()=>go('account'));ok(await until(A,()=>/e99p-[0-9a-f]{24}/.test((document.getElementById('push-topics')||{}).innerText||''),null,8000),'canais do ntfy na tela Conta');
+ // v148: sem avisos por app externo na tela Conta
+ await A.evaluate(()=>go('account'));await A.waitForTimeout(500);ok(await A.evaluate(()=>!document.getElementById('push-topics')),'sem canais de avisos externos na tela Conta');
  await A.evaluate(()=>go('corridors'));await A.waitForTimeout(500);ok(await A.evaluate(()=>!!document.querySelector('.cor-dist button:not([disabled])')),'botão distribuir corredores');
  ok(await B.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'sem rolagem lateral no iPhone');
  await B.evaluate(()=>go('chat'));await B.waitForTimeout(800);await B.locator('.chat-wrap').screenshot({path:require('os').tmpdir()+'/stok-social-iphone.png'});

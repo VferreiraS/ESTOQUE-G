@@ -1,4 +1,4 @@
-/* v89: segurança — reação do chat (S1), papel de gestor na nuvem e Administração (S3/S4/P18), freio de exclusões pelo ntfy (S5),
+/* v89: segurança — reação do chat (S1), papel de gestor na nuvem e Administração (S3/S4/P18), freio de exclusões pela equipe (S5),
    regras da fila de erros, correio e perfil (S7/S8/S13) e contraste do botão principal (P4). */
 const L=require('./lib.js');const {ok,until}=L;
 const P='gen-lang-client-0167474823',AU='http://127.0.0.1:9099',FS='http://127.0.0.1:8080',DOCS=`${FS}/v1/projects/${P}/databases/(default)/documents`;
@@ -52,21 +52,21 @@ const lum=c=>{const a=c.match(/\d+/g).slice(0,3).map(Number).map(v=>{v/=255;retu
  await A.evaluate(()=>{authSession.payload.role='auxiliar';go('admin')});await A.waitForTimeout(400);ok(await A.evaluate(()=>!document.querySelector('#view button.danger')),'auxiliar não vê botões de apagar');
  await A.evaluate(()=>{authSession.payload.role='estoque';go('home')});
 
- /* ---------- S5: alguém da equipe tenta apagar as NFs de todos pelo ntfy ---------- */
+ /* ---------- S5: alguém que só tem o código da equipe tenta apagar as NFs de todos (v148: a nuvem barra quem não tem papel) ---------- */
  await A.evaluate(async()=>{for(let i=2;i<=7;i++)state.nfs.push({id:'n'+i,number:'5000'+i,supplier:'Forn '+i,date:iso(),status:'Pendente',owner:'',notes:'',volumes:1});await save()});
  ok(await until(A,()=>syncStatus().pending===0,null,30000),'NFs enviadas para a equipe');
  const code=await A.evaluate(()=>e99Team.get().code);
  const X=await (await b.newContext(L.devices['iPhone 13'])).newPage();X.on('pageerror',e=>errs.push(e.message));X.on('dialog',d=>d.accept());
- await X.goto('http://localhost:8000/index.html?ntfy='+L.N);await X.waitForTimeout(1500);await L.signup(X,'sx'+T);await X.evaluate(()=>go('chat'));
+ await X.goto('http://localhost:8000/index.html');await X.evaluate(()=>localStorage.setItem('e99-test-nopapel','1'));await X.waitForTimeout(1500);await L.signup(X,'sx'+T);await X.evaluate(()=>go('chat'));
  await X.fill('#view form[onsubmit="chatJoin(event)"] input[name=code]',code);await X.fill('#view form[onsubmit="chatJoin(event)"] input[name=name]','Intruso');await X.click('#view form[onsubmit="chatJoin(event)"] button');
  ok(await until(X,()=>state.nfs.length>=7&&syncStatus().ready,null,90000),'intruso recebeu as NFs');
  await X.evaluate(async()=>{authSession.payload.role='gestor';state.nfs=[];await save()});
- ok(await until(X,()=>syncStatus().pending===0,null,30000),'intruso mandou as exclusões');
- await A.waitForTimeout(6000);ok(await A.evaluate(()=>state.nfs.length>=7),'gestor não perdeu as NFs (exclusão em massa barrada)');
- /* exclusão do próprio item continua valendo */
- await X.evaluate(async()=>{state.nfs=[{id:'nx',number:'777',supplier:'Meu',date:iso(),status:'Pendente',owner:'',notes:'',volumes:1}];await save()});
+ await X.waitForTimeout(8000);
+ await A.waitForTimeout(4000);ok(await A.evaluate(()=>state.nfs.length>=7),'gestor não perdeu as NFs (quem entrou só com o código não exclui na nuvem)');
+ /* NF nova do colega chega; excluir continua barrado para quem não tem papel confirmado */
+ await X.evaluate(async()=>{authSession.payload.role='estoque';state.nfs.push({id:'nx',number:'777',supplier:'Meu',date:iso(),status:'Pendente',owner:'',notes:'',volumes:1});await save()});
  ok(await until(A,()=>state.nfs.some(n=>n.id==='nx'),null,40000),'NF nova do colega chega');
- await X.evaluate(async()=>{state.nfs=[];await save()});ok(await until(A,()=>!state.nfs.some(n=>n.id==='nx'),null,40000),'colega apaga a própria NF');
+ await X.evaluate(async()=>{state.nfs=state.nfs.filter(n=>n.id!=='nx');await save()});await A.waitForTimeout(8000);ok(await A.evaluate(()=>state.nfs.some(n=>n.id==='nx')&&state.nfs.length>=8),'exclusão de quem não tem papel não chega ao gestor');
 
  /* ---------- P4: contraste do botão principal ---------- */
  const P2=await (await b.newContext(L.devices['iPhone 13'])).newPage();await P2.goto('http://localhost:8000/index.html');await P2.waitForTimeout(2500);

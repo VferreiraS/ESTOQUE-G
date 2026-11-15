@@ -2,7 +2,7 @@
    Recarregar a página não apaga; "Tentar de novo" envia uma vez só; "Descartar" apaga de vez; nada do texto fica em claro;
    outra conta do mesmo aparelho não vê; PC 1440×900 e iPhone 13. */
 const L=require('./lib.js');const {ok,until}=L;
-const FAIL=()=>{window.__f=window.fetch;window.fetch=function(u,o){if(o&&(o.method==='POST'||o.method==='PUT')&&/\/e99-[0-9a-f]{24}$/.test(String(u)))return Promise.resolve(new Response('x',{status:500}));return window.__f.apply(this,arguments)}};
+const FAIL=()=>{window.__c=window.__c||e99Loja.conn;e99Loja.conn=()=>null};/* v148: nuvem fora */
 const failedTxt=p=>p.evaluate(()=>[...document.querySelectorAll('#chat-list .chat-msg.failed .chat-txt')].map(x=>x.innerText));
 const sentCount=(p,t)=>p.evaluate(t=>[...document.querySelectorAll('#chat-list .chat-msg[data-id] .chat-txt')].filter(x=>x.innerText===t).length,t);
 async function rawOutbox(p){return p.evaluate(()=>new Promise(res=>{const r=indexedDB.open('estoque99-chat-out',1);r.onupgradeneeded=()=>r.result.createObjectStore('out');r.onsuccess=()=>{const db=r.result;const tx=db.transaction('out','readonly');const q=tx.objectStore('out').getAll();const k=tx.objectStore('out').getAllKeys();tx.oncomplete=()=>{db.close();res({vals:JSON.stringify(q.result),keys:k.result})}};r.onerror=()=>res({vals:'',keys:[]})}))}
@@ -11,14 +11,14 @@ async function relogin(p,l){await p.reload();await p.waitForTimeout(2500);if(!(a
  const A=await (await b.newContext({viewport:{width:1440,height:900}})).newPage();A.on('pageerror',e=>errs.push('PC '+e.message));A.on('dialog',d=>d.accept());
  const la='ob'+T;ok(await L.gestorWithTeam(A,la),'PC: gestor com equipe');const code=await A.evaluate(()=>e99Team.get().code);
  const B=await (await b.newContext(L.devices['iPhone 13'])).newPage();B.on('pageerror',e=>errs.push('iPhone '+e.message));B.on('dialog',d=>d.accept());
- await B.goto('http://localhost:8000/index.html?ntfy='+L.N);await B.waitForTimeout(2500);const lb='obb'+T;await L.signup(B,lb);await B.evaluate(c=>e99Team.join(c,'Ana'),code);await B.evaluate(()=>go('chat'));await B.waitForTimeout(1500);
+ await B.goto('http://localhost:8000/index.html');await B.waitForTimeout(2500);const lb='obb'+T;await L.signup(B,lb);await B.evaluate(c=>e99Team.join(c,'Ana'),code);await B.evaluate(()=>go('chat'));await B.waitForTimeout(1500);
  for(const [n,P,lg] of [['PC',A,la],['iPhone',B,lb]]){
   await P.evaluate(()=>go('chat'));await P.waitForTimeout(800);
   const t1='guardada '+n+' '+T,t2='descartar '+n+' '+T;
   await P.evaluate(FAIL);
   await P.fill('#chat-text',t1);await P.press('#chat-text','Enter');
-  ok(await until(P,t=>[...document.querySelectorAll('#chat-list .chat-msg.failed .chat-txt')].some(x=>x.innerText===t),t1,8000),n+': falha mostra "Não enviada"');
-  await P.fill('#chat-text',t2);await P.press('#chat-text','Enter');await until(P,t=>[...document.querySelectorAll('#chat-list .chat-msg.failed .chat-txt')].some(x=>x.innerText===t),t2,8000);
+  ok(await until(P,t=>[...document.querySelectorAll('#chat-list .chat-msg.failed .chat-txt')].some(x=>x.innerText===t),t1,12000),n+': falha mostra "Não enviada"');
+  await P.fill('#chat-text',t2);await P.press('#chat-text','Enter');await until(P,t=>[...document.querySelectorAll('#chat-list .chat-msg.failed .chat-txt')].some(x=>x.innerText===t),t2,12000);
   const raw=await rawOutbox(P);
   ok(raw.keys.length>=2,n+': as não enviadas ficam no IndexedDB do aparelho');
   ok(raw.vals&&!raw.vals.includes('guardada')&&!raw.vals.includes('descartar')&&!raw.vals.includes(T+''),n+': texto não fica em claro (cifrado com a chave da conta)');
@@ -41,7 +41,7 @@ async function relogin(p,l){await p.reload();await p.waitForTimeout(2500);if(!(a
  /* o outro aparelho recebeu a mensagem que foi enviada depois */
  ok(await until(A,t=>[...document.querySelectorAll('#chat-list .chat-msg[data-id] .chat-txt')].some(x=>x.innerText===t),'guardada iPhone '+T,15000),'PC recebe a mensagem que o iPhone enviou com Tentar de novo');
  /* recarregou durante o envio (ficou "Enviando…"): volta como não enviada */
- await A.evaluate(()=>{window.__f=window.fetch;window.fetch=function(u,o){if(o&&o.method==='POST'&&/\/e99-[0-9a-f]{24}$/.test(String(u)))return new Promise(()=>{});return window.__f.apply(this,arguments)}});
+ await A.evaluate(()=>{const c=e99Loja.conn();e99Loja.conn=()=>Object.assign({},c,{db:{batch:()=>({set(){},commit:()=>new Promise(()=>{})})}})});/* v148: gravação na nuvem que nunca responde */
  const t3='presa '+T;await A.fill('#chat-text',t3);await A.press('#chat-text','Enter');await A.waitForTimeout(800);
  await relogin(A,la);ok(await until(A,t=>[...document.querySelectorAll('#chat-list .chat-msg.failed .chat-txt')].some(x=>x.innerText===t),t3,8000),'PC: mensagem presa em "Enviando…" volta como não enviada depois de recarregar');
  /* outra conta do mesmo aparelho não vê as não enviadas */

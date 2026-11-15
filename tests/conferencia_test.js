@@ -1,11 +1,11 @@
 /* v96: conferência às cegas por câmera (Notas fiscais).
    A) câmera falsa do Chromium com um vídeo de etiqueta EAN-13 (leitor ZXing de verdade) no tamanho do iPhone 13;
    B) leitor falso (e99Conf.feed) para a máquina de estados quadro a quadro, sem permissão de câmera;
-   C) gestor + auxiliar pelo ntfy falso: offline e volta sem duplicar, papéis. */
+   C) gestor + auxiliar pela nuvem do emulador: offline e volta sem duplicar, papéis. */
 /* v97: D) etiqueta de PERTO (código maior que o retângulo, levemente borrado) com câmera que expõe foco/zoom/lanterna (getCapabilities simulado);
    E) duas câmeras (trocar câmera de verdade) e ajuda depois de 5 s sem leitura; F) PC e iPhone com/sem Efeitos e "menos movimento" (holograma não atrapalha a leitura). */
 const L=require('./lib.js');const {ok,until}=L;const fs=require('fs'),os=require('os'),path=require('path');
-const URL0='http://localhost:8000/index.html?ntfy='+L.N;
+const URL0='http://localhost:8000/index.html';
 /* ---------- vídeo y4m com EAN-13 (2 s com a etiqueta, 1,6 s sem: folga sobre o rearme de 1,2 s quando a máquina está carregada) ---------- */
 const LC=['0001101','0011001','0010011','0111101','0100011','0110001','0101111','0111011','0110111','0001011'],RC=LC.map(s=>s.replace(/./g,c=>c==='0'?'1':'0')),GC=RC.map(s=>s.split('').reverse().join(''));
 const PAR=['LLLLLL','LLGLGG','LLGGLG','LLGGGL','LGLLGG','LGGLLG','LGGGLL','LGLGLG','LGLGGL','LGGLGL'];
@@ -151,7 +151,7 @@ const st=p=>p.evaluate(()=>e99Conf.state());
  ok(await until(p,()=>!document.querySelector('.conf-banner')&&/Conferências por câmera \(1\)/.test(document.getElementById('conf-cta').textContent),null,4000),'sem aviso de interrompida; lista "Conferências por câmera (1)"');
  await c.close();
 
- /* ================= C) equipe: gestor + auxiliar pelo ntfy ================= */
+ /* ================= C) equipe: gestor + auxiliar pela nuvem ================= */
  const cA=await b.newContext();await cA.addInitScript(NO_CAM);const A=await cA.newPage();A.on('pageerror',e=>errs.push('GA '+e.message));A.on('dialog',d=>d.accept(d.defaultValue()));
  const cB=await b.newContext();await cB.addInitScript(NO_CAM);const B=await cB.newPage();B.on('pageerror',e=>errs.push('AB '+e.message));B.on('dialog',d=>d.accept(d.defaultValue()));
  ok(await L.gestorWithTeam(A,'confg'+Date.now().toString(36)),'gestor com equipe');const link=await L.makeInvite(A,'Ana');await L.auxAccept(B,link,null,'4321');

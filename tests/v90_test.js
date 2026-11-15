@@ -3,7 +3,7 @@
 const L=require('./lib.js');const {ok,until}=L;
 (async()=>{const b=await L.chromium.launch();const errs=[];const T=Date.now();
  const c=await b.newContext({...L.devices['iPhone 13']});const A=await c.newPage();A.on('pageerror',e=>errs.push(e.message));A.on('dialog',d=>d.accept());
- await A.goto('http://localhost:8000/index.html?ntfy='+L.N);await A.waitForTimeout(1500);
+ await A.goto('http://localhost:8000/index.html');await A.waitForTimeout(1500);
  /* P17: senha certa + dado salvo inválido não diz "Senha incorreta" e não apaga nada */
  const l='v9'+T;await L.signup(A,l);
  await A.evaluate(async()=>{const sk=authSession.storeKey;const raw=localStorage.getItem(sk);const rec=JSON.parse(raw);const pl=Object.assign({},authSession.payload,{store:'x'.repeat(200)});const r2=await authEncrypt(authSession.key,rec,pl);localStorage.setItem(sk,JSON.stringify(r2));window.__sk=sk});
@@ -14,7 +14,7 @@ const L=require('./lib.js');const {ok,until}=L;
  ok(!/Senha incorreta/.test(msg)&&/Nada foi apagado/.test(msg),'dado inválido tem mensagem própria');ok(await A.evaluate(s=>localStorage.getItem(window.__sk)===s,saved),'nada foi apagado');
  await A.evaluate(s=>localStorage.removeItem(window.__sk));
  /* conta nova para o resto */
- await A.goto('http://localhost:8000/index.html?ntfy='+L.N);await A.waitForTimeout(1500);await L.signup(A,'w'+l);
+ await A.goto('http://localhost:8000/index.html');await A.waitForTimeout(1500);await L.signup(A,'w'+l);
  /* P2/P3: 120 NFs → 50 por vez; busca espera e filtra */
  await A.evaluate(async()=>{for(let i=0;i<120;i++)state.nfs.push({id:'z'+i,number:String(10000+i),supplier:i===77?'Laticínios Especial':'Forn '+i,date:iso(),status:'Pendente',owner:'',notes:'',volumes:1});await save();go('nfs')});await A.waitForTimeout(800);
  ok(await A.evaluate(()=>document.querySelectorAll('#nf-results tbody tr').length===50),'mostra 50 NFs');

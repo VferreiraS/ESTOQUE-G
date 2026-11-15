@@ -15,7 +15,7 @@ const L=require('./lib.js');const {ok,until}=L;
    createBufferSource(){const s=super.createBufferSource(),st=s.start.bind(s);s.start=(...x)=>{if(s.buffer&&s.buffer.length===1)window.__ios.silent++;return st(...x)};return s}}
   window.AudioContext=F;window.webkitAudioContext=F});
  const A=await c.newPage();A.on('pageerror',e=>errs.push(e.message));A.on('dialog',d=>d.accept());
- await A.goto('http://localhost:8000/index.html?ntfy='+L.N);await A.waitForSelector('#auth-form input[name=login]');await A.waitForTimeout(1500);
+ await A.goto('http://localhost:8000/index.html');await A.waitForSelector('#auth-form input[name=login]');await A.waitForTimeout(1500);
  await A.evaluate(()=>{window.__calls=[];const p=playSiteSound;playSiteSound=function(k){window.__calls.push(k);return p.apply(this,arguments)}});
  ok(await A.evaluate(()=>!window.e99Music),'antes do toque: música desligada (o som de login ao abrir é conferido no v118_test)');
  const l='ios'+T;await L.signup(A,l);

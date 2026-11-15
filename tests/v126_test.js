@@ -7,7 +7,7 @@
    - sem erro de página nem de console (fora falha de rede). */
 const L=require('./lib.js');const {ok,until}=L;
 let PW;try{PW=require('playwright')}catch(e){PW=require('/opt/node22/lib/node_modules/playwright')}
-const U='http://localhost:8000/index.html?ntfy='+L.N;
+const U='http://localhost:8000/index.html';
 /* igual ao INIT do lib.js, mas SEM o marcador da limpeza */
 const INIT=()=>{try{sessionStorage.setItem('e99-intro','1');localStorage.setItem('e99-fb-emu','127.0.0.1:9099|127.0.0.1:8080');localStorage.setItem('e99-test-weak-pw','1');localStorage.setItem('e99-no-perm-step','1');localStorage.setItem('e99-no-cookie-note','1');localStorage.setItem('e99-test-autointro','1')}catch(e){}};
 const FBK='firebase:authUser:AIzaSyBy72TCxTESTE:[DEFAULT]',OTHER='firebase:authUser:AIzaOUTROAPP:[DEFAULT]';
@@ -28,7 +28,7 @@ const keys=()=>{const o={};for(let i=0;i<localStorage.length;i++){const k=localS
 (async()=>{const b=await PW.chromium.launch();const errs=[];const T=Date.now().toString(36);
 for(const [nome,opt] of [['PC',{viewport:{width:1440,height:900}}],['iPhone',PW.devices['iPhone 13']]]){
  const watch=(p)=>{p.on('pageerror',e=>errs.push(nome+' '+e.message));
-  p.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR|ERR_|ntfy|status of 4\d\d/i.test(m.text()))errs.push(nome+' console: '+m.text())})};
+  p.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR|ERR_|status of 4\d\d/i.test(m.text()))errs.push(nome+' console: '+m.text())})};
  // 1) aparelho novo (navegador sem nada): só o marcador, nada apagado, sem aviso
  const c0=await b.newContext(opt);await c0.addInitScript(()=>{try{localStorage.setItem('e99-test-autointro','1')}catch(e){}});const p0=await c0.newPage();watch(p0);await p0.goto(U);await ready(p0);
  let st=await p0.evaluate(()=>({mk:localStorage.getItem('stok-reset'),r:window.__e99Reset}));

@@ -43,7 +43,7 @@ async function oneConf(p,manual){await p.evaluate(()=>go('nfs'));await p.waitFor
   await P.evaluate(()=>[...document.querySelectorAll('#chat-list .chat-msg[data-id]')].find(m=>/apagar esta/.test(m.innerText)).querySelector('.chat-del-btn').click());
   ok(await until(P,()=>![...document.querySelectorAll('#chat-list .chat-msg')].some(m=>/apagar esta/.test(m.innerText))),nome+': apaga mensagem do chat');
   await P.reload();await P.waitForTimeout(1500);await L.login(P,'del'+nome+T);await P.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));await P.evaluate(()=>go('chat'));await P.waitForTimeout(4000);
-  ok(await P.evaluate(()=>![...document.querySelectorAll('#chat-list .chat-msg')].some(m=>/apagar esta/.test(m.innerText))),nome+': mensagem apagada não volta (ntfy reenviando)');
+  ok(await P.evaluate(()=>![...document.querySelectorAll('#chat-list .chat-msg')].some(m=>/apagar esta/.test(m.innerText))),nome+': mensagem apagada não volta (nuvem reenviando)');
   if(nome==='celular'){const r=await P.evaluate(()=>{const x=document.querySelector('#chat-list .chat-del-btn');return x?x.getBoundingClientRect().height:44});ok(r>=44||r===0,'celular: botão de apagar com toque ≥44 px')}
   /* auxiliar não vê Excluir */
   if(nome==='PC'){const lk=await L.makeInvite(P,'Aux Del');const X=await (await b.newContext({viewport:{width:1440,height:900}})).newPage();X.on('dialog',d=>d.accept());await L.auxAccept(X,lk,null,'3690');

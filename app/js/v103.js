@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 /* v103 (pedido do dono): excluir sem precisar abrir o editor. Usa o mesmo removeRecord (confirmação, limpa responsáveis, sync).
-   Auxiliar não vê (o sync não aceita exclusão de auxiliar pelo ntfy). */
+   Auxiliar não vê (a nuvem não aceita exclusão de auxiliar). */
 window.e99Del=async function(kind,id){if(!authSession||(window.isAux&&isAux())){notify('Só o gestor ou o estoque pode excluir.');return}if(['nf','corridor','person'].indexOf(kind)<0)return;
   var list=state[{nf:'nfs',corridor:'corridors',person:'team'}[kind]]||[];if(!list.some(function(x){return x.id===id}))return;editing={kind:kind,id:id};try{await removeRecord()}finally{editing=null}};
 function btn(kind,id,label){var b=document.createElement('button');b.type='button';b.className='danger e99-del';b.textContent='Excluir';b.setAttribute('aria-label','Excluir '+label);b.addEventListener('click',function(ev){ev.stopPropagation();e99Del(kind,id)});return b}

@@ -1,9 +1,10 @@
 
 (function(){
 'use strict';
-var NTFY='https://ntfy.sh';
-try{var o=new URLSearchParams(location.search).get('ntfy');if(o&&(location.hostname==='localhost'||location.hostname==='127.0.0.1'))NTFY=o.replace(/\/+$/,'')}catch(e){}
-var cfg=null,team=null,es=null,connected=false,mem={},sending=false,pendingInvite='',own={},audioURL={},rec=null;
+/* v148: o Chat da equipe vai pela nuvem da loja (lojas/{loja}/dados, classe 'eq'), sem outro serviço.
+   eq_m~{id}: mensagem (d = o mesmo 'E99:…' cifrado no aparelho com a chave do código da equipe) ou marcador 'E99D:…' de apagar para todos;
+   eq_a~{id}~{n}: pedaços do anexo (foto/áudio) já cifrado. Só o autor grava o seu documento (regras). O histórico local não mudou. */
+var cfg=null,team=null,unsub=null,connKey='',connected=false,mem={},sending=false,pendingInvite='',own={},audioURL={},rec=null;
 /* v106: rascunho (só na memória), envio pendente/com erro, rolagem presa no fim, separador de não lidas */
 var draft='',pend=null,failed=[],stuck=true,newCount=0,unreadFrom=null,unreadTo='',inChat=false,painted=null;
 /* convite: #equipe=CODIGO */
@@ -20,7 +21,7 @@ async function makeTeam(code){var n=norm(code);var h=new Uint8Array(await crypto
 async function enc(bytes){var iv=crypto.getRandomValues(new Uint8Array(12));var ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},team.key,bytes));var out=new Uint8Array(12+ct.length);out.set(iv);out.set(ct,12);return out}
 async function dec(bytes){bytes=new Uint8Array(bytes);return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes.slice(0,12)},team.key,bytes.slice(12)))}
 async function encMsg(obj){return 'E99:'+b64(await enc(authBytes(JSON.stringify(obj))))}
-async function decMsg(str){if(typeof str!=='string'||str.indexOf('E99:')!==0)return null;try{var o=JSON.parse(new TextDecoder().decode(await dec(un64(str.slice(4)))));if(!o||o.v!==1||typeof o.id!=='string'||!/^[a-zA-Z0-9_-]{1,60}$/.test(o.id))return null;return {id:o.id,from:String(o.from||'?').slice(0,60),at:String(o.at||''),text:String(o.text||'').slice(0,1000),img:!!o.img,audio:okAudio(o.audio),re:okRe(o.re)}}catch(e){return null}}
+async function decMsg(str){if(typeof str!=='string'||str.indexOf('E99:')!==0)return null;try{var o=JSON.parse(new TextDecoder().decode(await dec(un64(str.slice(4)))));if(!o||o.v!==1||typeof o.id!=='string'||!/^[a-zA-Z0-9_-]{1,60}$/.test(o.id))return null;return {id:o.id,from:String(o.from||'?').slice(0,60),at:String(o.at||''),text:String(o.text||'').slice(0,1000),img:!!o.img,audio:okAudio(o.audio),re:okRe(o.re),pn:Number.isInteger(o.pn)&&o.pn>0&&o.pn<=PARTS?o.pn:0}}catch(e){return null}}
 function okRe(r){if(!r||typeof r!=='object'||typeof r.id!=='string'||!/^[a-zA-Z0-9_-]{1,60}$/.test(r.id))return null;return {id:r.id,from:String(r.from||'?').slice(0,60),t:String(r.t||'').slice(0,140)}}
 function okAudio(a){if(!a||typeof a!=='object'||typeof a.mime!=='string'||!/^audio\/(mp4|webm|ogg|aac|mpeg|x-m4a)$/.test(a.mime)||!Number.isFinite(a.dur)||a.dur<0||a.dur>130)return null;return {mime:a.mime,dur:Math.round(a.dur)}}
 function mmss(s){s=Math.max(0,Math.round(s||0));return Math.floor(s/60)+':'+('0'+s%60).slice(-2)}
@@ -49,28 +50,35 @@ async function outLoad(){var p=oPre();if(!p)return [];var rows=[];try{rows=await
   out.sort(function(a,b){return a.at-b.at});return out}
 window.e99ChatOutbox=function(){return oPre()?oop('readonly',function(st){return st.getAll(IDBKeyRange.bound(oPre(),oPre()+'￿'))}).catch(function(){return []}):Promise.resolve([])};
 /* ---------- receber ---------- */
-function sinceKey(){return 'lojasg.estoque99.chat-since:'+team.topic}
 function readKey(){return 'lojasg.estoque99.chat-read:'+(authSession?authSession.storeKey:'-')+':'+(team?team.topic:'-')}
-function setStatus(on){connected=on;var s=document.getElementById('chat-status');if(s){s.textContent=on?'Conectado':'Reconectando…';s.classList.toggle('on',on)}}
-function connect(){disconnect();if(!team||typeof EventSource!=='function')return;var since=localStorage.getItem(sinceKey())||'12h';
-  es=new EventSource(NTFY+'/'+team.topic+'/sse?since='+encodeURIComponent(since));
-  var me1=es;es.onopen=function(){setStatus(true);retry=0};es.onerror=function(){setStatus(false);/* fechado de vez (erro HTTP): o navegador não tenta de novo sozinho */if(me1.readyState===2&&es===me1){clearTimeout(retryTimer);retryTimer=setTimeout(function(){if(es===me1)connect()},Math.min(60000,3000*Math.pow(2,retry++)))}};
-  es.onmessage=function(ev){var d;try{d=JSON.parse(ev.data)}catch(e){return}if(!d||d.event!=='message')return;receive(d)}}
-var retry=0,retryTimer=0;
-function revive(){if(team&&!document.hidden&&(!es||es.readyState===2)){retry=0;connect()}}
-addEventListener('online',revive);document.addEventListener('visibilitychange',revive);
-function disconnect(){clearTimeout(retryTimer);if(es){es.close();es=null}connected=false}
-async function receive(d){var t=team;if(!t)return;if(typeof d.message==='string'&&d.message.indexOf('E99D:')===0){await recvDel(d,t);return}var msg=await decMsg(d.message);if(!msg||t!==team)return;
-  if(d.time)try{var prev=+localStorage.getItem(sinceKey())||0;if(d.time>prev)localStorage.setItem(sinceKey(),String(d.time))}catch(e){}
-  if(delSet().indexOf(msg.id)>=0)return;
+function cx(){try{return window.e99Loja&&window.e99Loja.conn?window.e99Loja.conn():null}catch(e){return null}}
+function cxWhy(){var st='';try{st=window.e99Loja&&window.e99Loja.connState?window.e99Loja.connState():''}catch(e){}return st==='sem-acesso'?'Aguardando o gestor abrir o Stok uma vez':st==='sem-nuvem'?'Sem acesso à nuvem (peça ao gestor)':navigator.onLine===false?'Sem internet':'Conectando…'}
+function setStatus(on){connected=on;var s=document.getElementById('chat-status');if(s){s.textContent=on?'Conectado':cxWhy();s.classList.toggle('on',on)}}
+var PARTS=4,PART=800000,DAYS=14,rq=Promise.resolve();
+function connect(){disconnect();if(!team)return;var c=cx(),t=team;if(!c){setStatus(false);return}connKey=c.uid+'|'+c.loja;
+  var FP=c.FS.FieldPath.documentId(),from='eq_m~'+(Date.now()-DAYS*864e5).toString(36);
+  try{unsub=c.L().collection('dados').where(FP,'>=',from).where(FP,'<','eq_m~\uf8ff').onSnapshot(function(snap){if(t!==team)return;setStatus(navigator.onLine!==false);
+      snap.docChanges().forEach(function(ch){if(ch.type==='removed'||ch.doc.metadata.hasPendingWrites)return;var d=ch.doc;rq=rq.then(function(){return receive(d,t)}).catch(function(){})})},
+    function(){if(t!==team)return;unsub=null;connKey='';setStatus(false)})}catch(e){unsub=null;connKey='';setStatus(false)}}
+/* liga quando a nuvem da loja fica pronta, religa se a conta/loja mudar ou se a escuta caiu */
+function watch(){if(!team||!authSession)return;var c=cx();if(!c){if(!unsub)setStatus(false);return}if(!unsub||connKey!==c.uid+'|'+c.loja)connect()}
+setInterval(watch,2000);addEventListener('online',function(){setStatus(!!unsub);watch();});addEventListener('offline',function(){setStatus(false)});
+document.addEventListener('visibilitychange',function(){if(!document.hidden)watch()});
+function disconnect(){if(unsub){try{unsub()}catch(e){}unsub=null}connKey='';connected=false}
+function bcat(l){var n=0;l.forEach(function(x){n+=x.length});var o=new Uint8Array(n),k=0;l.forEach(function(x){o.set(x,k);k+=x.length});return o}
+async function receive(doc,t){if(!t||t!==team)return;var x=doc.data(),id=String(doc.id).slice(5);if(!x||x.c!=='eq'||!okId(id))return;
+  if(x.del){/* o autor apagou para todos: o documento ficou vazio na nuvem */if(delSet().indexOf(id)>=0)return;var had=await origOf(t,id);await dropLocal(t,id);if(had&&t===team){if(page==='chat'){await paint(false);window.e99ChatSay('Uma mensagem foi apagada por '+had.msg.from+'.')}badges()}return}
+  var d=String(x.d||'');if(d.indexOf('E99D:')===0){await recvDel(d,t,x);return}
+  var msg=await decMsg(d);if(!msg||msg.id!==id||t!==team)return;
+  if(delSet().indexOf(msg.id)>=0)return;var att=(msg.img||msg.audio)&&msg.pn;
   var key=t.topic+'|'+msg.id;var exists=await cop('msgs','readonly',function(st){return st.get(key)}).catch(function(){return null});
-  if(own[msg.id]){/* minha própria mensagem: quem envia já guarda; se a confirmação do envio se perdeu, guarda pelo eco */
-    if(!exists){await putMsg({topic:t.topic,id:msg.id,at:msg.at||new Date().toISOString(),payload:d.message,mine:true,hasImg:false,rx:Date.now()});if((msg.img||msg.audio)&&d.attachment&&d.attachment.url)await fetchImg(msg.id,d.attachment.url);if(page==='chat')paint(true)}return}
-  if(exists){if((msg.img||msg.audio)&&d.attachment&&d.attachment.url&&!exists.hasImg)fetchImg(msg.id,d.attachment.url);return}
-  await putMsg({topic:t.topic,id:msg.id,at:msg.at||new Date().toISOString(),payload:d.message,mine:false,hasImg:false,rx:Date.now()});
-  if((msg.img||msg.audio)&&d.attachment&&d.attachment.url)await fetchImg(msg.id,d.attachment.url);
+  if(own[msg.id]||x.by===connKey.split('|')[0]){/* minha própria mensagem: quem envia já guarda; se a confirmação do envio se perdeu (ou enviei de outro aparelho), guarda pelo eco */
+    if(!exists){await putMsg({topic:t.topic,id:msg.id,at:msg.at||new Date().toISOString(),payload:d,mine:true,hasImg:false,rx:Date.now()});if(att)await fetchAtt(msg.id,msg.pn);var fi=-1;failed.forEach(function(f,k){if(f.id===msg.id)fi=k});if(fi>=0){failed.splice(fi,1);outDel(msg.id)}if(page==='chat')paint(true)}return}
+  if(exists){if(att&&!exists.hasImg)fetchAtt(msg.id,msg.pn);return}
+  await putMsg({topic:t.topic,id:msg.id,at:msg.at||new Date().toISOString(),payload:d,mine:false,hasImg:false,rx:Date.now()});
+  if(att)await fetchAtt(msg.id,msg.pn);
   trim();if(page==='chat'&&!document.hidden){markRead();if(!stuck)newCount++;announce(msg);paint(false)}else{badges();notifyNew(msg)}}
-async function fetchImg(id,url){try{var r=await fetch(url);if(!r.ok)throw Error(r.status);var buf=await r.arrayBuffer();await putImg(id,buf);var rec=await cop('msgs','readonly',function(st){return st.get(team.topic+'|'+id)});if(rec){rec.hasImg=true;await putMsg(rec)}if(page==='chat')paint(false)}catch(e){}}
+async function fetchAtt(id,pn){try{var c=cx(),t=team;if(!c||!t)return;var l=[];for(var i=0;i<pn;i++){var s=await c.L().collection('dados').doc('eq_a~'+id+'~'+i).get();var x=s.exists&&s.data();if(!x||x.del||typeof x.d!=='string')throw Error('falta');l.push(un64(x.d))}if(t!==team)return;await putImg(id,bcat(l).buffer);var rec=await cop('msgs','readonly',function(st){return st.get(team.topic+'|'+id)});if(rec){rec.hasImg=true;await putMsg(rec)}if(page==='chat')paint(false)}catch(e){}}
 /* várias mensagens chegando juntas (ao reconectar) viram um único aviso e um único som */
 var nq=[],nTimer=0,nFirst=0;
 function notifyNew(m){nq.push(m);if(!nFirst)nFirst=Date.now();clearTimeout(nTimer);nTimer=setTimeout(function(){var l=nq;nq=[];nTimer=0;nFirst=0;try{if(typeof playSiteSound==='function')playSiteSound('tap')}catch(e){}
@@ -84,17 +92,25 @@ function markRead(){if(team)localStorage.setItem(readKey(),new Date(Date.now()+1
 function badges(){unread().then(function(n){document.querySelectorAll('[onclick="go(\'chat\')"]').forEach(function(b){var s=b.querySelector('.nav-unread');if(n>0){if(!s){s=document.createElement('span');s.className='nav-unread';b.appendChild(s)}s.textContent=n>99?'99+':String(n)}else if(s)s.remove()})})}
 /* ---------- enviar ---------- */
 function msgId(){return Date.now().toString(36)+'-'+b64(crypto.getRandomValues(new Uint8Array(6))).replace(/[^a-zA-Z0-9]/g,'').slice(0,8)}
-function failMsg(status){return status===429?'Limite grátis do ntfy.sh atingido nesta internet (250 mensagens por dia). Tente pelos dados móveis ou amanhã.':status===413?'Foto grande demais (máximo 2 MB).':'Não foi possível enviar ('+(status||'sem internet')+'). Tente de novo.'}
+function failMsg(code){code=String(code||'');return code==='grande'?'Arquivo grande demais para o chat. Envie uma foto menor ou um áudio mais curto.':code==='limite'?'Muitas mensagens em pouco tempo. Aguarde um minuto.':code==='sem-nuvem'?'O chat ainda não conectou à nuvem da loja. Tente de novo em instantes.':/permission-denied/.test(code)?'A nuvem recusou a mensagem (confira a data e a hora do aparelho). Tente de novo.':'Não foi possível enviar ('+(navigator.onLine===false?'sem internet':'sem resposta da nuvem')+'). Tente de novo.'}
+/* gravação na nuvem com prazo: sem resposta em 12 s vira "Não enviada" (se a rede voltar, a nuvem entrega sozinha e o eco tira da lista) */
+function wait(p,ms){return new Promise(function(res,rej){var t=setTimeout(function(){rej({code:'tempo'})},ms);p.then(function(v){clearTimeout(t);res(v)},function(e){clearTimeout(t);rej(e)})})}
+var sentAt=[];function rate(){var now=Date.now();sentAt=sentAt.filter(function(t){return now-t<60000});if(sentAt.length>=60)throw {code:'limite'};sentAt.push(now)}
+function eqDoc(c,docId,d,del){return {ref:c.L().collection('dados').doc(docId),data:{c:'eq',at:Date.now(),st:c.FS.FieldValue.serverTimestamp(),by:c.uid,cuid:c.uid,del:!!del,v:1,d:d}}}
+/* logo depois de entrar a nuvem pode ainda estar conectando: espera um pouco antes de dar "Não enviada" */
+async function cxWait(ms){var c=cx(),t0=Date.now();while(!c&&Date.now()-t0<ms){await new Promise(function(r){setTimeout(r,250)});c=cx()}return c}
+async function cloudSend(id,payload,bytes){var c=await cxWait(5000);if(!c)throw {code:'sem-nuvem'};rate();var b=c.db.batch(),w;
+  if(bytes){var s=b64(bytes),n=Math.ceil(s.length/PART);if(n>PARTS)throw {code:'grande'};for(var i=0;i<n;i++){w=eqDoc(c,'eq_a~'+id+'~'+i,s.slice(i*PART,(i+1)*PART));if(n>1)await wait(w.ref.set(w.data),20000);else b.set(w.ref,w.data)}}
+  w=eqDoc(c,'eq_m~'+id,payload);b.set(w.ref,w.data);await wait(b.commit(),12000)}
 window.chatSend=async function(text,photoData,audio,opts){if(!team||sending)return false;text=String(text||'').trim().slice(0,1000);if(!text&&!photoData&&!audio)return false;sending=true;var btn=document.getElementById('chat-send');if(btn)btn.disabled=true;
-  try{var oid=opts&&typeof opts.id==='string'&&/^[a-zA-Z0-9_-]{1,60}$/.test(opts.id)?opts.id:'';var obj={v:1,id:oid||msgId(),from:cfg.name,at:new Date().toISOString(),text:text,img:!!photoData};var sentRe=replyTo;if(sentRe)obj.re={id:sentRe.id,from:sentRe.from,t:sentRe.t};if(audio)obj.audio={mime:audio.mime,dur:Math.round(audio.dur)};own[obj.id]=1;var payload=await encMsg(obj);var r;
-    if(audio){var abytes=new Uint8Array(await audio.blob.arrayBuffer());var aenc=await enc(abytes);if(aenc.length>1900000){notify('Áudio grande demais. Grave mensagens mais curtas.');return false}
-      r=await fetch(NTFY+'/'+team.topic,{method:'PUT',headers:{'X-Message':payload,'X-Filename':'audio.bin'},body:aenc});if(r.ok){await putImg(obj.id,aenc.buffer);if(audio.url)audioURL[team.topic+'|'+obj.id]=audio.url}}
-    else if(photoData){var bytes=Uint8Array.from(atob(photoData.split(',')[1]),function(c){return c.charCodeAt(0)});var encd=await enc(bytes);
-      r=await fetch(NTFY+'/'+team.topic,{method:'PUT',headers:{'X-Message':payload,'X-Filename':'foto.bin'},body:encd});if(r.ok){await putImg(obj.id,encd.buffer)}}
-    else r=await fetch(NTFY+'/'+team.topic,{method:'POST',body:payload});
-    if(!r.ok){lastFail=failMsg(r.status);notify(lastFail);return false}
-    await putMsg({topic:team.topic,id:obj.id,at:obj.at,payload:payload,mine:true,hasImg:!!(photoData||audio)});if(sentRe&&replyTo===sentRe)window.chatReplyCancel();chatPing();markRead();if(page==='chat')paint(true);return true}
-  catch(e){lastFail=failMsg(0);notify(lastFail);return false}finally{sending=false;if(btn)btn.disabled=false}};
+  try{var oid=opts&&typeof opts.id==='string'&&/^[a-zA-Z0-9_-]{1,60}$/.test(opts.id)?opts.id:'';var obj={v:1,id:oid||msgId(),from:cfg.name,at:new Date().toISOString(),text:text,img:!!photoData};var sentRe=replyTo;if(sentRe)obj.re={id:sentRe.id,from:sentRe.from,t:sentRe.t};if(audio)obj.audio={mime:audio.mime,dur:Math.round(audio.dur)};own[obj.id]=1;var att=null;
+    if(audio){att=await enc(new Uint8Array(await audio.blob.arrayBuffer()));if(att.length>1900000){notify('Áudio grande demais. Grave mensagens mais curtas.');return false}}
+    else if(photoData){att=await enc(Uint8Array.from(atob(photoData.split(',')[1]),function(c){return c.charCodeAt(0)}))}
+    if(att){obj.pn=Math.ceil(Math.ceil(att.length/3)*4/PART);if(obj.pn>PARTS){lastFail=failMsg('grande');notify(lastFail);return false}}
+    var payload=await encMsg(obj);await cloudSend(obj.id,payload,att);
+    if(att){await putImg(obj.id,att.buffer);if(audio&&audio.url)audioURL[team.topic+'|'+obj.id]=audio.url}
+    await putMsg({topic:team.topic,id:obj.id,at:obj.at,payload:payload,mine:true,hasImg:!!att});if(sentRe&&replyTo===sentRe)window.chatReplyCancel();markRead();if(page==='chat')paint(true);return true}
+  catch(e){lastFail=failMsg(e&&e.code);notify(lastFail);return false}finally{sending=false;if(btn)btn.disabled=false}};
 var lastFail='';
 /* ---------- áudio ---------- */
 var MAXREC=120;
@@ -160,7 +176,7 @@ async function paint(scroll){var box=document.getElementById('chat-list');if(!bo
     snip[r.id]={from:m.from,t:m.text?m.text.slice(0,140):(m.img?'📷 Foto':m.audio?'🎤 Áudio':'')};
     var cont=!!(prev&&prev.from===m.from&&prev.mine===!!r.mine&&(new Date(m.at)-new Date(prev.at))<5*60000);prev={from:m.from,mine:!!r.mine,at:m.at};
     html+=bubble(r,m,cont)}
-  /* não duplica: a que já está no histórico (eco do ntfy ou envio que deu certo) sai da lista local */
+  /* não duplica: a que já está no histórico (eco da nuvem ou envio que deu certo) sai da lista local */
   failed=failed.filter(function(f){if(ids[f.id]){outDel(f.id);return false}return true});if(pend&&!ids[pend.id])html+=localBubble(pend,'pend');failed.forEach(function(f){html+=localBubble(f,'fail')});
   if(box!==painted){painted=box;box.__init=true}
   /* nada mudou: não refaz a lista (evita piscar fotos/áudios e travadinhas a cada sincronização) */
@@ -242,7 +258,7 @@ window.renderChat=function(){if(!cfg){return hero('Chat da equipe','')+'<div cla
 var replyTo=null,snip={};
 function replyBar(){var b=document.getElementById('chat-reply');if(!b)return;if(!replyTo){b.hidden=true;b.innerHTML='';return}b.hidden=false;
   b.innerHTML='<div><b>Respondendo a '+esc2(replyTo.from===cfg.name?'você':replyTo.from)+'</b><span>'+esc2(replyTo.t||'Mensagem')+'</span></div><button type="button" aria-label="Cancelar resposta" title="Cancelar resposta" onclick="chatReplyCancel()">✕</button>'}
-/* v103: apagar mensagem deste aparelho (fica anotada para não voltar quando o ntfy reenviar) */
+/* v103: apagar mensagem deste aparelho (fica anotada para não voltar quando a nuvem reenviar) */
 function delKey(){return 'lojasg.estoque99.chat-del:'+(team?team.topic:'-')}
 function delSet(){try{var o=JSON.parse(localStorage.getItem(delKey())||'[]');return Array.isArray(o)?o:[]}catch(e){return []}}
 window.chatDelete=async function(id){if(!team||typeof id!=='string'||!/^[a-zA-Z0-9_-]{1,60}$/.test(id))return;if(!confirm('Apagar esta mensagem deste aparelho? Quem já recebeu continua vendo.'))return;
@@ -255,23 +271,26 @@ window.chatDelete=async function(id){if(!team||typeof id!=='string'||!/^[a-zA-Z0
 function okId(x){return typeof x==='string'&&/^[a-zA-Z0-9_-]{1,60}$/.test(x)}
 /* gestor da equipe = quem criou a equipe (dono do código). Os outros aparelhos conferem pelo papel que a sincronização registrou (não auxiliar). */
 function iAmGestor(){return !!(cfg&&cfg.owner===true)}
+function papelOf(u){try{var c=cx();return c&&c.papeis&&u?c.papeis[u]||'':''}catch(e){return ''}}
 function gestorNames(){var out={};try{var m=window.syncMembers?window.syncMembers():{};Object.keys(m).forEach(function(k){var x=m[k];if(x&&x.role==='gestor'&&x.name)out[String(x.name).slice(0,60)]=1})}catch(e){}return out}
 async function origOf(t,id){var r=await cop('msgs','readonly',function(st){return st.get(t.topic+'|'+id)}).catch(function(){return null});if(!r)return null;var m=mem[t.topic+'|'+id]||await decMsg(r.payload);return m?{rec:r,msg:m}:null}
 async function dropLocal(t,id){var l;try{l=JSON.parse(localStorage.getItem('lojasg.estoque99.chat-del:'+t.topic)||'[]');if(!Array.isArray(l))l=[]}catch(e){l=[]}if(l.indexOf(id)<0)l.push(id);try{localStorage.setItem('lojasg.estoque99.chat-del:'+t.topic,JSON.stringify(l.slice(-500)))}catch(e){}
   var k=t.topic+'|'+id;delete mem[k];try{await cop('msgs','readwrite',function(st){return st.delete(k)})}catch(e){}try{await cop('imgs','readwrite',function(st){return st.delete(k)})}catch(e){}if(replyTo&&replyTo.id===id){replyTo=null;replyBar()}}
 /* quem pode: a minha mensagem (gravada como minha ou com o meu nome) ou qualquer uma se eu sou o gestor */
 window.e99CanDelAll=async function(id){if(!team||!cfg||!okId(id))return false;var o=await origOf(team,id);if(!o)return false;return !!(o.rec.mine||o.msg.from===cfg.name||iAmGestor())};
-async function recvDel(d,t){var o=null;try{o=JSON.parse(new TextDecoder().decode(await dec(un64(d.message.slice(5)))))}catch(e){return}
-  if(!o||o.v!==1||o.t!=='del'||!okId(o.id)||!okId(o.ref))return;if(d.time)try{var prev=+localStorage.getItem(sinceKey())||0;if(d.time>prev)localStorage.setItem(sinceKey(),String(d.time))}catch(e){}
+async function recvDel(d,t,x){var o=null;try{o=JSON.parse(new TextDecoder().decode(await dec(un64(d.slice(5)))))}catch(e){return}
+  if(!o||o.v!==1||o.t!=='del'||!okId(o.id)||!okId(o.ref))return;if(delSet().indexOf(o.ref)>=0)return;
   var from=String(o.from||'').slice(0,60),org=await origOf(t,o.ref);if(t!==team)return;
-  if(org){var allowed=org.msg.from===from||(o.g===1&&!!gestorNames()[from]);if(!allowed)return}
+  if(org){var allowed=org.msg.from===from||(o.g===1&&(papelOf(x&&x.by)==='gestor'||!!gestorNames()[from]));if(!allowed)return}
   /* sem a original neste aparelho: só anota para ela não aparecer se chegar depois */
   await dropLocal(t,o.ref);if(page==='chat'&&team===t){await paint(false);if(org)window.e99ChatSay('Uma mensagem foi apagada por '+from+'.')}badges()}
 window.chatDeleteAll=async function(id){if(!team||!cfg||!okId(id)||sending)return false;var t=team;if(!(await window.e99CanDelAll(id))){notify('Só quem enviou a mensagem ou o gestor pode apagar para todos.');return false}
-  if(!confirm('Apagar esta mensagem para todos da equipe? Quem ainda usa uma versão antiga do app continua vendo.'))return false;
-  var obj={v:1,t:'del',id:msgId(),ref:id,from:cfg.name,at:new Date().toISOString(),g:iAmGestor()?1:0},r;
-  try{r=await fetch(NTFY+'/'+t.topic,{method:'POST',body:'E99D:'+b64(await enc(authBytes(JSON.stringify(obj))))})}catch(e){r=null}
-  if(!r||!r.ok){notify(failMsg(r?r.status:0).replace('enviar','apagar para todos'));return false}
+  if(!confirm('Apagar esta mensagem para todos da equipe?'))return false;
+  var c=cx(),done=false,code='';if(!c){notify(failMsg('sem-nuvem').replace('enviar','apagar para todos'));return false}
+  /* a minha mensagem: esvazio o meu documento na nuvem (só o autor consegue); a de outra pessoa (gestor) ou antiga: marcador cifrado */
+  try{var w=eqDoc(c,'eq_m~'+id,'',true);await wait(w.ref.set(w.data),12000);done=true;var o0=await origOf(t,id);var pn=o0&&o0.msg.pn||0;for(var i=0;i<pn;i++){var wa=eqDoc(c,'eq_a~'+id+'~'+i,'',true);wa.ref.set(wa.data).catch(function(){})}}catch(e){code=e&&e.code||''}
+  if(!done){try{rate();var obj={v:1,t:'del',id:msgId(),ref:id,from:cfg.name,at:new Date().toISOString(),g:iAmGestor()?1:0};var w2=eqDoc(c,'eq_m~'+obj.id,'E99D:'+b64(await enc(authBytes(JSON.stringify(obj)))));await wait(w2.ref.set(w2.data),12000);done=true}catch(e){code=e&&e.code||''}}
+  if(!done){notify(failMsg(code).replace('enviar','apagar para todos'));return false}
   if(t!==team)return false;await dropLocal(t,id);await paint();badges();notify('Mensagem apagada para todos.');return true};
 window.chatReply=function(id){var s=snip[id];if(!s)return;replyTo={id:id,from:s.from,t:s.t};replyBar();var t=document.getElementById('chat-text');if(t)t.focus();try{if(navigator.vibrate)navigator.vibrate(12)}catch(e){}};
 window.chatReplyCancel=function(){var had=document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#chat-reply');replyTo=null;replyBar();if(had){var t=document.getElementById('chat-text');if(t)t.focus()}};window.e99ChatReplyTo=function(){return replyTo};window.e99ChatSnip=function(id){return snip[id]||null};
@@ -298,13 +317,9 @@ window.chatRetry=async function(id){var i=-1;failed.forEach(function(f,k){if(f.i
 window.chatDiscard=async function(id){failed=failed.filter(function(f){return f.id!==id});await outDel(id);await paint(false);var t=document.getElementById('chat-text');if(t)t.focus()};
 window.e99ChatFailed=function(){return failed.map(function(f){return {id:f.id,text:f.text}})};
 window.chatPhoto=async function(input){var f=input.files&&input.files[0];input.value='';if(!f)return;try{notify('Preparando foto…');var p=await compressPlanPhoto(f);var t=document.getElementById('chat-text');var cap=t?t.value:'';if(await window.chatSend(cap,p.data)&&t){t.value='';draft='';grow(t)}}catch(e){notify(e.message||'Não foi possível ler a foto.')}};
-async function alertTopic(code){var h=new Uint8Array(await crypto.subtle.digest('SHA-256',authBytes('avisos|'+norm(code))));return 'e99a-'+Array.from(h).map(function(x){return ('0'+x.toString(16)).slice(-2)}).join('').slice(0,24)}
-function siteURL(){return location.origin+location.pathname.replace(/(robo|index)\.html$/,'')}
-window.e99AlertPing=function(text,tags){if(!team||!team.atopic)return Promise.resolve(false);return fetch(NTFY+'/'+team.atopic,{method:'POST',headers:{'Title':'Estoque 99','Tags':tags||'bell','Click':siteURL()},body:String(text).slice(0,200)}).then(function(r){return r.ok}).catch(function(){return false})};
-function chatPing(){try{var k='lojasg.estoque99.chat-ping',last=+localStorage.getItem(k)||0;if(Date.now()-last<120000)return;localStorage.setItem(k,String(Date.now()))}catch(e){}window.e99AlertPing('Nova mensagem de '+cfg.name+' no chat da equipe','speech_balloon')}
-async function start(c){cancelRec();replyTo=null;if(!c||!cfg||c.code!==cfg.code){draft='';failed=[];pend=null}cfg=c;team=c?await makeTeam(c.code):null;if(team)team.atopic=await alertTopic(c.code);if(team){var t8=team;outLoad().then(function(l){if(team!==t8||!l.length)return;var have={};failed.forEach(function(f){have[f.id]=1});if(pend)have[pend.id]=1;l.forEach(function(f){if(!have[f.id])failed.push(f)});failed.sort(function(a,b){return (a.at||0)-(b.at||0)});if(page==='chat')paint(false)})}mem={};Object.keys(audioURL).forEach(function(k){URL.revokeObjectURL(audioURL[k])});audioURL={};if(team)connect();else disconnect();badges();listeners.forEach(function(fn){try{fn()}catch(e){}})}
+async function start(c){cancelRec();replyTo=null;if(!c||!cfg||c.code!==cfg.code){draft='';failed=[];pend=null}cfg=c;team=c?await makeTeam(c.code):null;if(team){var t8=team;outLoad().then(function(l){if(team!==t8||!l.length)return;var have={};failed.forEach(function(f){have[f.id]=1});if(pend)have[pend.id]=1;l.forEach(function(f){if(!have[f.id])failed.push(f)});failed.sort(function(a,b){return (a.at||0)-(b.at||0)});if(page==='chat')paint(false)})}mem={};Object.keys(audioURL).forEach(function(k){URL.revokeObjectURL(audioURL[k])});audioURL={};if(team)connect();else disconnect();badges();listeners.forEach(function(fn){try{fn()}catch(e){}})}
 var listeners=[];
-window.e99Team={get:function(){return cfg&&team?{code:cfg.code,name:cfg.name,owner:!!cfg.owner,team:cfg.team,sync:cfg.sync===true,replace:cfg.replace===true,topic:team.topic,atopic:team.atopic}:null},onChange:function(fn){listeners.push(fn)},ntfy:function(){return NTFY},
+window.e99Team={get:function(){return cfg&&team?{code:cfg.code,name:cfg.name,owner:!!cfg.owner,team:cfg.team,sync:cfg.sync===true,replace:cfg.replace===true,topic:team.topic}:null},onChange:function(fn){listeners.push(fn)},
   join:async function(code,name,o){var c={code:norm(code),name:String(name||'').slice(0,40),team:(o&&o.team)||'Equipe',owner:false,sync:true,replace:true};await saveCfg(c);await start(c)},
   close:async function(){if(!team)return;var tp=team.topic+'|';await outDelTopic(team.topic);function del(st){var r=st.openCursor();r.onsuccess=function(){var c=r.result;if(!c)return;if(String(c.key).indexOf(tp)===0)c.delete();c.continue()};return null}try{await cop('msgs','readwrite',del);await cop('imgs','readwrite',del)}catch(e){}await saveCfg(null);await start(null);try{render()}catch(e){}},
   setSync:async function(on,extra){if(!cfg)return;cfg.sync=!!on;if(extra)Object.assign(cfg,extra);await saveCfg(cfg);listeners.forEach(function(fn){try{fn()}catch(e){}})}};

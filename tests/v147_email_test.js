@@ -3,7 +3,7 @@
    criar conta pela tela, authCreate direto, tela obrigatória de e-mail (v105), ligar o e-mail à nuvem, link de acesso do gestor
    (e-mail de conta do aparelho do gestor e de outro link), ativação do link, "Trazer da nuvem" e recuperar pelo e-mail.
    A mesma conta pode salvar de novo o próprio e-mail e trazer a própria conta da nuvem. */
-const L=require('./lib.js');const {ok,until}=L;const URL0='http://localhost:8000/index.html?ntfy='+L.N;
+const L=require('./lib.js');const {ok,until}=L;const URL0='http://localhost:8000/index.html';
 const PRJ='gen-lang-client-0167474823',AU='http://127.0.0.1:9099';
 const IN_USE=/Este e-mail já está em uso pela conta @/;
 const weird=m=>'  '+m.toUpperCase()+'  ';

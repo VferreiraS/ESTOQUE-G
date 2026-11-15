@@ -34,7 +34,4 @@
 #mention-box[hidden]{display:none}
 #mention-box button{text-align:left;min-height:38px}
 .fwd-btn{min-height:0;padding:3px 10px;font-size:12.5px;border-radius:999px;margin-left:6px}
-.push-card{display:grid;gap:8px;padding:12px;border-radius:14px;border:1px solid var(--ds-line);background:rgba(255,42,31,.06)}
-.push-card code{font-size:12.5px;word-break:break-all}
-.push-card .row{display:flex;gap:8px;flex-wrap:wrap}
 .cor-dist{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}

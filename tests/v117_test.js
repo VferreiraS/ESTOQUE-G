@@ -9,7 +9,7 @@ const minOp=()=>{const v=document.getElementById('view');return Math.min(...[...
    if(nome==='pc'&&fx==='off')continue;
    const c=await b.newContext({...opts,reducedMotion:'no-preference'});await c.addInitScript(([t,f])=>{try{localStorage.setItem('lojasg.estoque99.ui-theme',t);localStorage.setItem('lojasg.estoque99.visual-effects',f);localStorage.removeItem('lojasg.estoque99.fx-pause')}catch(e){}},[t,fx]);
    const P=await c.newPage();P.on('pageerror',e=>{if(!/localStorage/.test(e.message))errs.push(nome+' '+e.message)});P.on('dialog',d=>d.accept());
-   await P.goto('http://localhost:8000/index.html?ntfy='+L.N);await P.waitForTimeout(1500);await L.signup(P,'v7'+nome[0]+t+fx+T);
+   await P.goto('http://localhost:8000/index.html');await P.waitForTimeout(1500);await L.signup(P,'v7'+nome[0]+t+fx+T);
    await P.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>{try{d.close()}catch(e){}});go('nfs')});await P.waitForTimeout(300);
    await P.evaluate(()=>{go('home');scrollTo(0,0)});await P.waitForTimeout(1600);
    const k=nome+' '+t+' Efeitos '+fx;

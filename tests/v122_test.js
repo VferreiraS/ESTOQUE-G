@@ -2,7 +2,7 @@
    aviso "ilha", relógio, selos/perfis, gráfico do Início, "O que mudou?" e Authenticator. Logo S e S da abertura continuam.
    Login, Início, NFs, conferência e chat funcionando no PC 1440×900 e no iPhone 13; dados antigos dessas funções apagados. */
 const L=require('./lib.js');const {ok,until}=L;
-const URL0='http://localhost:8000/index.html?ntfy='+L.N;
+const URL0='http://localhost:8000/index.html';
 const SEED=()=>{try{if(sessionStorage.getItem('seeded'))return;sessionStorage.setItem('seeded','1');['lojasg.estoque99.visual-effects','lojasg.estoque99.fx-pause','lojasg.estoque99.music','lojasg.estoque99.nv-seen:abc','lojasg.estoque99.verificados-login','lojasg.estoque99.profile-pub:abc','lojasg.estoque99.aux-profile:abc','lojasg.estoque99.totp:abc'].forEach(k=>localStorage.setItem(k,'1'));
   localStorage.setItem('lojasg.estoque99.chat:abc','fica');localStorage.setItem('lojasg.estoque99.ui-theme','violeta');const q=indexedDB.open('estoque99-profiles',1);q.onsuccess=()=>q.result.close()}catch(e){}};
 (async()=>{const b=await L.chromium.launch();const errs=[];

@@ -25,8 +25,9 @@ function sk(){return authSession?authSession.storeKey:''}
 function myEmail(){return sk()?(ls('lojasg.estoque99.cloud-email:'+sk())||''):''}
 function setMyEmail(v){if(sk())ls('lojasg.estoque99.cloud-email:'+sk(),v);try{window.e99MailIdx.set(v,authSession.record.login)}catch(x){}}
 async function derive(login,pw){return authCloudDerive(login,pw)}
-function topic(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(i)return i.topic;var t=window.e99Team&&window.e99Team.get();return t?t.topic:''}
-async function sid(){var t=topic();return t?(await sha('loja|'+t)).slice(0,32):''}
+/* v148: a loja vem sempre do código da equipe (mesmo tópico do sync), com a sincronização ligada ou não */
+async function topic(){var t=window.e99Team&&window.e99Team.get();if(!t||!t.code)return '';return 'e99s-'+(await sha('sync|'+authNormalizeCode(t.code))).slice(0,24)}
+async function sid(){var t=await topic();return t?(await sha('loja|'+t)).slice(0,32):''}
 function role(){var r=authSession&&authSession.payload.role;return r==='gestor'||r==='auxiliar'?r:'estoque'}
 function nome(){try{var t=window.e99Team&&window.e99Team.get();if(t&&t.name)return String(t.name).slice(0,40)}catch(x){}return String(authSession?authSession.record.login:'').slice(0,40)}
 function user(){return appP&&window.firebase&&firebase.apps.length?firebase.app().auth().currentUser:null}
@@ -34,9 +35,8 @@ function msg(x){var c=x&&x.code||'';return c==='auth/invalid-email'?'E-mail inv�
 function soft(x){var c=x&&x.code||'';return !c||c==='auth/network-request-failed'||c==='auth/internal-error'||c==='unavailable'}
 /* v99: "Sem internet" no PC com internet. Quando o Firebase dá falha de rede, testa cada serviço e diz qual está bloqueado
    (firewall da loja, antivírus que inspeciona HTTPS, bloqueador de anúncios, relógio do computador errado). */
-function netNtfy(){try{var o=new URLSearchParams(location.search).get('ntfy');if(o&&(location.hostname==='localhost'||location.hostname==='127.0.0.1'))return o.replace(/\/+$/,'')}catch(x){}return 'https://ntfy.sh'}
 async function probe(u){var ac=typeof AbortController==='function'?new AbortController():null,t=setTimeout(function(){if(ac)ac.abort()},8000);try{await fetch(u,{mode:'no-cors',cache:'no-store',signal:ac?ac.signal:undefined});return true}catch(x){return false}finally{clearTimeout(t)}}
-function netServices(){return [['login da nuvem (identitytoolkit.googleapis.com)','https://identitytoolkit.googleapis.com/v1/projects?key='+FB.apiKey],['banco da nuvem (firestore.googleapis.com)','https://firestore.googleapis.com/'],['arquivos do Firebase (www.gstatic.com)','https://www.gstatic.com/firebasejs/'+FBV+'/firebase-app-compat.js'],['equipe e chat (ntfy.sh)',netNtfy()+'/v1/health']]}
+function netServices(){return [['login da nuvem (identitytoolkit.googleapis.com)','https://identitytoolkit.googleapis.com/v1/projects?key='+FB.apiKey],['banco da nuvem, equipe e chat (firestore.googleapis.com)','https://firestore.googleapis.com/'],['arquivos do Firebase (www.gstatic.com)','https://www.gstatic.com/firebasejs/'+FBV+'/firebase-app-compat.js']]}
 /* v130: lista estruturada de cada serviço (passou/bloqueado), para o painel "Rede da loja / Antivírus" e para a mensagem clara no chat/sync. */
 window.e99NetList=async function(){var list=netServices();var r=await Promise.all(list.map(function(x){return probe(x[1])}));return list.map(function(x,i){return {name:x[0],ok:!!r[i]}})};
 window.e99NetWhy=async function(){if(navigator.onLine===false)return 'Este aparelho está sem internet. Confira o Wi-Fi ou o cabo e tente de novo.';
@@ -160,7 +160,7 @@ async function permStep(force){if(!authSession)return;var k='lojasg.estoque99.pe
   function row(key,icon,title,desc,st){var ok=st==='granted',bad=st==='denied'||st==='none';return '<div class="perm-row"><span><b>'+icon+' '+title+'</b><span class="small">'+desc+(bad?'<br>'+(st==='none'?'Este navegador não oferece este recurso'+(key==='notif'&&isIOS()&&!standalone()?': no iPhone, instale o app na Tela de Início (Compartilhar → Adicionar à Tela de Início) e abra por lá.':'.'):'Bloqueado. Libere nas configurações do navegador/aparelho para este site.'):'')+'</span></span>'+(ok?'<span class="perm-ok">✓ Ativo</span>':'<button type="button" class="primary" onclick="e99Perm(\''+key+'\')" '+(st==='none'?'disabled':'')+'>Permitir</button>')+'</div>'}
   d.innerHTML='<div class="cl-body"><h2>📲 Ativar no aparelho</h2><p>Para receber os avisos do estoque, ouvir os sons e ler códigos e fotos, permita estes recursos:</p>'
    +row('notif','🔔','Notificações','Chat, alertas e tarefas.',n)+row('sound','🔊','Som','Sons de aviso e de abertura.',snd)+row('camera','📷','Câmera','Fotos de ruptura e leitura de código de barras.',cam)
-   +(window.e99PushCardHTML?window.e99PushCardHTML():'')+'<button type="button" onclick="document.getElementById(\'perm-step\').close()">Pronto</button></div>';
+   +'<button type="button" onclick="document.getElementById(\'perm-step\').close()">Pronto</button></div>';
   if(!d.open)try{d.showModal()}catch(x){d.setAttribute('open','')}}
 window.e99PermStep=function(){permStep(true)};
 window.e99Perm=async function(key){try{
@@ -171,7 +171,7 @@ window.e99Perm=async function(key){try{
 /* tela Conta: nuvem e permissões */
 var raBefore=renderAccount;renderAccount=function(){var h=raBefore.apply(this,arguments),u=user(),em=myEmail();
   var box='<div class="panel help"><h2>☁️ Nuvem e e-mail</h2>'+(ls('lojasg.estoque99.pc-account:'+authSession.storeKey)?'<p>🖥️ Conta do PC do estoque: a nuvem usa um login interno'+(authSession.payload.email?' · e-mail de contato <b>'+e(authSession.payload.email)+'</b>':'')+'. Para recuperar, use o código de recuperação.</p>':u&&em&&u.email===em?'<p>Conectado como <b>'+e(u.email)+'</b> · '+(u.emailVerified?'<span class="perm-ok">e-mail confirmado ✓</span>':'confirmação pendente')+'</p>'+(u.emailVerified?'':'<button onclick="e99CloudVerify()">Reenviar e-mail de confirmação</button>'):'<p>Esta conta ainda não está ligada a um e-mail.</p><button class="primary" onclick="e99CloudOpen()">Vincular e-mail</button>'+(pcFree()?' <button onclick="e99MakePc()">🖥️ Conta do PC (nuvem com login interno)</button>':''))
-    +'<h2 style="margin-top:14px">📲 Permissões do aparelho</h2><p class="small">Notificações, som e câmera.</p><button onclick="e99PermStep()">Ativar no aparelho</button>'+(window.e99PushCardHTML?'<div style="margin-top:12px">'+window.e99PushCardHTML()+'</div>':'')+'</div>';
+    +'<h2 style="margin-top:14px">📲 Permissões do aparelho</h2><p class="small">Notificações, som e câmera.</p><button onclick="e99PermStep()">Ativar no aparelho</button>'+'</div>';
   return h.replace('<div class="grid2">','<div class="grid2">'+box)};
 window.e99CloudVerify=function(){var u=user();if(u)verify(u,true)};
 window.e99CloudOpen=function(){try{sessionStorage.removeItem('e99-cloud-later')}catch(x){}linkErr='';linkSoft=false;showLink()};

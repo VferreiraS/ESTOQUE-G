@@ -4,7 +4,7 @@
    Uso:  node scripts/verificar.js <uid> <s|raio> [STK-…] [--login <login>[,<outro>]]
          node scripts/verificar.js <uid> remover
    --login grava o(s) login(s) da conta no documento: aparelhos sem nuvem mostram o selo para perfis que chegam
-   só pelo ntfy quando o login bate (é só visual e só dentro da equipe). Sem --login, o campo login que já existe fica.
+   só pelo login quando bate (é só visual e só dentro da equipe). Sem --login, o campo login que já existe fica.
    Usa o login da CLI do Firebase deste computador (~/.config/configstore/firebase-tools.json). Nenhum segredo fica no repositório.
    Se o token tiver vencido, rode antes: npx -y firebase-tools@latest projects:list   (ele renova o token) */
 const fs=require('fs'),os=require('os'),path=require('path');

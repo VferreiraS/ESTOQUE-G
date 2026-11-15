@@ -1,13 +1,13 @@
 /* v138: conversas estilo WhatsApp — 1 a 1 e grupos cifrados de ponta a ponta. PC gestor + iPhone estoque + iPhone auxiliar, emulador. */
 const L=require('./lib.js');const {ok,until}=L;
-const URL0='http://localhost:8000/index.html?ntfy='+L.N;const PROJ='gen-lang-client-0167474823';
+const URL0='http://localhost:8000/index.html';const PROJ='gen-lang-client-0167474823';
 const FSU='http://127.0.0.1:8080/v1/projects/'+PROJ+'/databases/(default)/documents';
 const SHOTS=process.env.SHOTS||'';
 const STRICT=()=>{try{localStorage.setItem('e99-test-chatlist','1');localStorage.removeItem('e99-test-chatgeral');localStorage.setItem('e99-test-strict','1');localStorage.removeItem('e99-test-signup');localStorage.setItem('e99-test-strong','1')}catch(e){}};
 async function admin(path,body){const r=await fetch(FSU+path,{method:body?'PATCH':'GET',headers:{Authorization:'Bearer owner','Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});return r.json()}
 (async()=>{const b=await L.chromium.launch();const errs=[];
- async function dev(nome,opts){const c=await b.newContext(opts);await c.addInitScript(STRICT);await c.route(u=>u.host==='localhost:20130',r=>r.abort());const P=await c.newPage();
-  P.on('pageerror',e=>errs.push(nome+' '+e.message));P.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR|ERR_CONNECTION|ERR_FAILED|ntfy|EventSource|firestore|Firebase|identitytoolkit|WebChannel|permission/i.test(m.text()))errs.push(nome+' console: '+m.text())});P.on('dialog',d=>d.accept());return {c,P}}
+ async function dev(nome,opts){const c=await b.newContext(opts);await c.addInitScript(STRICT);const P=await c.newPage();
+  P.on('pageerror',e=>errs.push(nome+' '+e.message));P.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR|ERR_CONNECTION|ERR_FAILED|EventSource|firestore|Firebase|identitytoolkit|WebChannel|permission/i.test(m.text()))errs.push(nome+' console: '+m.text())});P.on('dialog',d=>d.accept());return {c,P}}
  const G=await dev('PC',{viewport:{width:1440,height:900}});const A=G.P;
  await A.goto(URL0);await until(A,()=>!!window.__e99Boot,null,8000);await A.waitForTimeout(500);await A.click('#auth-owner');await A.waitForTimeout(300);
  await A.fill('#auth-screen input[name=store]','Lojas G');await A.fill('#auth-screen input[name=email]',L.mail('vferreiras'));await A.fill('#auth-screen input[name=login]','vferreiras');await A.fill('#auth-screen input[name=password]','abc12345');await A.fill('#auth-screen input[name=confirmation]','abc12345');await L.terms(A,'#auth-form');

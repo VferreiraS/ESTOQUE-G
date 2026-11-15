@@ -13,7 +13,7 @@ const CONTRAST=()=>{const lum=c=>{const m=c.match(/[\d.]+/g).map(Number);const f
 (async()=>{const b=await L.chromium.launch();const errs=[];const T=Date.now();
  for(const [nome,opts] of [['pc',{viewport:{width:1440,height:900}}],['iphone',L.devices['iPhone 13']]]){
   const P=await (await b.newContext(opts)).newPage();P.on('pageerror',e=>errs.push(nome+' '+e.message));P.on('dialog',d=>d.accept());
-  await P.goto('http://localhost:8000/index.html?ntfy='+L.N);await P.waitForTimeout(1500);
+  await P.goto('http://localhost:8000/index.html');await P.waitForTimeout(1500);
   ok(await P.evaluate(()=>document.documentElement.getAttribute('data-e99-theme')==='lilas'),nome+': tema padrão é Lilás (já na tela de entrar)');
   await P.screenshot({path:path.join(OUT,nome+'-entrar-lilas.png')});
   await L.signup(P,'tema'+nome+T);
@@ -47,7 +47,7 @@ const CONTRAST=()=>{const lum=c=>{const m=c.match(/[\d.]+/g).map(Number);const f
  }
  /* menos movimento: nada de animação nova (o gráfico é estático) e o tema continua */
  const c=await b.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});const Q=await c.newPage();Q.on('pageerror',e=>errs.push('rm '+e.message));
- await Q.goto('http://localhost:8000/index.html?ntfy='+L.N);await Q.waitForTimeout(1200);await L.signup(Q,'temarm'+T);
+ await Q.goto('http://localhost:8000/index.html');await Q.waitForTimeout(1200);await L.signup(Q,'temarm'+T);
  await Q.evaluate(()=>{state.nfs=[{id:'a',number:'1',supplier:'X',date:new Date().toISOString().slice(0,10),status:'Pendente',owner:'',notes:'',volumes:1}];return save()});await Q.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>{try{d.close()}catch(e){}});go('home')});await Q.waitForTimeout(800);
  ok(await Q.evaluate(()=>!document.querySelector('.e99-trend')),'menos movimento: sem gráfico (v122)');
  ok(await Q.evaluate(()=>!['lilas','violeta','cinza'].some(t=>document.documentElement.outerHTML.includes('data-e99-theme="claro"'))),'só temas escuros (sem modo claro)');

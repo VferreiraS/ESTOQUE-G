@@ -78,5 +78,4 @@ html:root body #toast,html:root body .toast{border-color:rgba(var(--neon-rgb),.5
 @keyframes chat-flash{0%,60%{box-shadow:0 0 0 3px var(--neon)}100%{box-shadow:0 0 0 3px transparent}}
 .chat-msg .reacts button.me{border-color:var(--neon)!important;background:rgba(var(--neon-rgb),.16)!important}
 .chat-msg.mentioned{box-shadow:inset 3px 0 0 var(--neon)!important}
-.push-card{background:rgba(var(--neon-rgb),.05)!important}
 

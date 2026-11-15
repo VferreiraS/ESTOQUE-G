@@ -8,7 +8,7 @@ const waitGate=p=>until(p,()=>{const d=document.getElementById('email-gate');ret
 (async()=>{const b=await L.chromium.launch();const errs=[];const T=Date.now();
  for(const [nome,opts] of [['PC',{viewport:{width:1440,height:900}}],['celular',L.devices['iPhone 13']]]){
   const P=await (await b.newContext(opts)).newPage();P.on('pageerror',e=>errs.push(nome+' '+e.message));P.on('dialog',d=>d.accept());
-  await P.goto('http://localhost:8000/index.html?ntfy='+L.N);await P.waitForTimeout(1500);
+  await P.goto('http://localhost:8000/index.html');await P.waitForTimeout(1500);
   const l='adia'+nome+T,m=L.mail(l);await seed(P,l);await L.login(P,l,'1234');
   ok(await waitGate(P),nome+': conta antiga vê a tela do e-mail');
   const bt=await P.$('#email-gate button.eg-later');ok(!!bt&&/Agora não/.test(await bt.textContent()),nome+': botão "Agora não" existe');

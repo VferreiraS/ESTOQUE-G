@@ -4,7 +4,7 @@ const {chromium,devices,N,signup}=require('./lib');
  await ctx.addInitScript(()=>{window.__lt=[];window.__cls=0;try{new PerformanceObserver(l=>{for(const e of l.getEntries())window.__lt.push(e.duration)}).observe({type:'longtask',buffered:true});new PerformanceObserver(l=>{for(const e of l.getEntries())if(!e.hadRecentInput){window.__cls+=e.value;(window.__clsSrc=window.__clsSrc||[]).push(e.value.toFixed(3)+' '+(e.sources||[]).map(s=>s.node?((s.node.parentElement&&(s.node.parentElement.id||s.node.parentElement.className)||'')+'>'+(s.node.id||s.node.className||s.node.nodeName)):'?').join(','))}}).observe({type:'layout-shift',buffered:true})}catch(e){}});
  const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(String(e)));
  const cdp=await ctx.newCDPSession(p);await cdp.send('Emulation.setCPUThrottlingRate',{rate:4});
- const R={};const t0=Date.now();const BASE=process.env.BASE||'http://localhost:8000';await p.goto(BASE+'/index.html?ntfy='+N);
+ const R={};const t0=Date.now();const BASE=process.env.BASE||'http://localhost:8000';await p.goto(BASE+'/index.html');
  await p.waitForSelector('#auth-form input[name=login]',{state:'visible'});
  await p.waitForFunction(()=>{const b=document.querySelector('#auth-form input[name=login]');if(!b)return false;const r=b.getBoundingClientRect();const el=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return el&&(el===b||b.contains(el))});
  R.loginUsable=Date.now()-t0;

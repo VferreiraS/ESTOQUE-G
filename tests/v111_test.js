@@ -19,7 +19,7 @@ const vals=(p,sk)=>p.evaluate(sk=>({inv:localStorage.getItem('lojasg.estoque99.a
 (async()=>{const b=await L.chromium.launch();const errs=[];const T=Date.now();
  for(const [nome,opts] of [['PC',{viewport:{width:1440,height:900}}],['celular',L.devices['iPhone 13']]]){
   const c=await b.newContext(opts);await c.addInitScript(RAW);const P=await c.newPage();P.on('pageerror',e=>errs.push(nome+' '+e.message));P.on('dialog',d=>d.accept());
-  await P.goto('http://localhost:8000/index.html?ntfy='+L.N);await P.waitForTimeout(1500);
+  await P.goto('http://localhost:8000/index.html');await P.waitForTimeout(1500);
   /* dados de exemplo no formato antigo (em claro), em duas contas */
   const la='sela'+nome+T,lb='selb'+nome+T;await P.evaluate(()=>localStorage.removeItem('lojasg.estoque99.cloud-logins2'));
   const ska=await seed(P,la,'1234','A'),skb=await seed(P,lb,'1234','B');

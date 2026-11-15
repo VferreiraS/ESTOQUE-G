@@ -6,7 +6,7 @@ const L=require('./lib.js');const {ok,until}=L;
  const A=await (await b.newContext({viewport:{width:1440,height:900}})).newPage();const B=await (await b.newContext(L.devices['iPhone 13'])).newPage();
  [A,B].forEach((p,i)=>{p.on('pageerror',e=>errs.push((i?'iPhone ':'PC ')+e.message));p.on('dialog',d=>d.accept())});
  ok(await L.gestorWithTeam(A,'cm'+T),'PC: gestor com equipe');const code=await A.evaluate(()=>e99Team.get().code);
- await B.goto('http://localhost:8000/index.html?ntfy='+L.N);await B.waitForTimeout(2500);await L.signup(B,'cmb'+T);
+ await B.goto('http://localhost:8000/index.html');await B.waitForTimeout(2500);await L.signup(B,'cmb'+T);
  await B.evaluate(c=>e99Team.join(c,'Ana'),code);await B.evaluate(()=>{go('chat');scrollTo(0,0)});await B.waitForTimeout(800);
  const msgs=(p)=>p.evaluate(()=>[...document.querySelectorAll('#chat-list .chat-msg[data-id]')].map(m=>m.querySelector('.chat-txt')?m.querySelector('.chat-txt').innerText:''));
  const atEnd=(p)=>p.evaluate(()=>{const l=document.getElementById('chat-list');return l.scrollHeight-l.scrollTop-l.clientHeight<6});
@@ -50,14 +50,14 @@ const L=require('./lib.js');const {ok,until}=L;
  ok(await A.inputValue('#chat-text')==='rascunho importante','PC: rascunho fica ao sair e voltar para o chat');await A.fill('#chat-text','');
 
  /* erro de envio: "Não enviada" + Tentar de novo, sem duplicar */
- await A.evaluate(()=>{window.__f=window.fetch;window.fetch=function(u,o){if(o&&o.method==='POST'&&/\/e99-[0-9a-f]{24}$/.test(String(u)))return Promise.resolve(new Response('x',{status:500}));return window.__f.apply(this,arguments)}});
+ await A.evaluate(()=>{window.__c=e99Loja.conn;e99Loja.conn=()=>null});/* v148: nuvem fora */
  await A.fill('#chat-text','falhou da primeira vez');await A.press('#chat-text','Enter');
- ok(await until(A,()=>{const f=document.querySelector('#chat-list .chat-msg.failed');return f&&/Não enviada/.test(f.innerText)&&!!f.querySelector('.chat-retry')},null,8000),'PC: falha de envio mostra "Não enviada" com Tentar de novo');
+ ok(await until(A,()=>{const f=document.querySelector('#chat-list .chat-msg.failed');return f&&/Não enviada/.test(f.innerText)&&!!f.querySelector('.chat-retry')},null,12000),'PC: falha de envio mostra "Não enviada" com Tentar de novo');
  ok(await until(A,()=>/não enviada/i.test(document.getElementById('chat-ann').textContent),null,3000),'PC: falha avisada ao leitor de tela');
- await A.evaluate(()=>{window.fetch=window.__f});await A.click('#chat-list .chat-msg.failed .chat-retry');
+ await A.evaluate(()=>{e99Loja.conn=window.__c});await A.click('#chat-list .chat-msg.failed .chat-retry');
  ok(await until(A,()=>!document.querySelector('#chat-list .chat-msg.failed')&&[...document.querySelectorAll('#chat-list .chat-msg[data-id] .chat-txt')].filter(x=>x.innerText==='falhou da primeira vez').length===1,null,10000),'PC: Tentar de novo envia uma vez só');
  ok(await until(B,()=>[...document.querySelectorAll('#chat-list .chat-msg[data-id] .chat-txt')].filter(x=>x.innerText==='falhou da primeira vez').length===1,null,20000),'iPhone: recebe a mensagem reenviada uma vez só');
- await A.waitForTimeout(2500);ok((await msgs(A)).filter(x=>x==='falhou da primeira vez').length===1,'PC: eco do ntfy não duplica');
+ await A.waitForTimeout(2500);ok((await msgs(A)).filter(x=>x==='falhou da primeira vez').length===1,'PC: eco da nuvem não duplica');
 
  /* separador de mensagens novas + aviso para leitor de tela */
  await B.evaluate(()=>go('home'));await B.waitForTimeout(1600);await A.evaluate(async()=>{await chatSend('Não lida um');await chatSend('Não lida dois')});

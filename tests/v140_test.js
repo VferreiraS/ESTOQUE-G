@@ -3,7 +3,7 @@
    some nos limites da v124, formulário liberado, nenhum rAF/animação depois de terminar, "menos movimento" anima igual (v146),
    3 temas, 0 erro de console. */
 const L=require('./lib.js');const {ok,until}=L;const PORT=process.env.PORT||8000;
-const URL0='http://localhost:'+PORT+'/index.html?ntfy='+L.N;
+const URL0='http://localhost:'+PORT+'/index.html';
 /* conta rAF pedidos pela abertura depois de ela terminar: envolve requestAnimationFrame e marca a pilha */
 const SPY=()=>{const r0=window.requestAnimationFrame.bind(window);window.__rafIntro=0;window.__rafAfter=0;
   window.requestAnimationFrame=function(cb){const st=(new Error().stack)||'';if(/intro\.js/.test(st)){window.__rafIntro++;if(window.__e99IntroStats&&window.__e99IntroStats.done)window.__rafAfter++}return r0(cb)}};
@@ -16,7 +16,7 @@ const THEMES={lilas:[231,184,239],violeta:[198,255,52],cinza:[199,255,46]};
   for(const tema of Object.keys(THEMES)){
    const c=await b.newContext(opts);await c.addInitScript(SPY);await c.addInitScript((t)=>{try{localStorage.setItem('lojasg.estoque99.ui-theme',t);sessionStorage.removeItem('e99-intro')}catch(e){}window.__bg=[];const t0=performance.now();
      const id=setInterval(()=>{const i=document.getElementById('stok-intro');if(i)window.__bg.push({t:performance.now()-t0,bg:getComputedStyle(i).backgroundColor})},50);setTimeout(()=>clearInterval(id),8000)},tema);
-   const P=await c.newPage();const tag=nome+' '+tema;P.on('pageerror',e=>errs.push(tag+' '+e.message));P.on('console',m=>{if(m.type()==='error'&&!/Firebase|firestore|googleapis|ntfy|ERR_|net::/i.test(m.text()))errs.push(tag+' console: '+m.text())});P.on('dialog',d=>d.accept());
+   const P=await c.newPage();const tag=nome+' '+tema;P.on('pageerror',e=>errs.push(tag+' '+e.message));P.on('console',m=>{if(m.type()==='error'&&!/Firebase|firestore|googleapis|ERR_|net::/i.test(m.text()))errs.push(tag+' console: '+m.text())});P.on('dialog',d=>d.accept());
    const cdp=await c.newCDPSession(P);await cdp.send('Emulation.setCPUThrottlingRate',{rate:4});const t0=Date.now();await P.goto(URL0);
    ok(await until(P,()=>!!document.querySelector('#stok-intro canvas.si-canvas'),null,4000),tag+' (CPU 4x): abertura com canvas aparece');
    ok(await P.evaluate(()=>{const c=document.querySelector('#stok-intro canvas');return c.getAttribute('aria-hidden')==='true'&&getComputedStyle(document.getElementById('stok-intro')).pointerEvents==='none'}),tag+': canvas aria-hidden e abertura não bloqueia');

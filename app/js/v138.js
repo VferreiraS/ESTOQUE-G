@@ -98,7 +98,7 @@ var rcT=0;function receipts(){clearTimeout(rcT);rcT=setTimeout(async function(){
     var open=page==='chat'&&sub===c.cv&&!document.hidden;if(open)setLr(c.cv,mx);var r=R['rcpt_'+c.cv+'~'+me()],x=r&&r.x||{},dl=+x.dl||0,rd=+x.rd||0;
     var ndl=Math.max(dl,mx),nrd=open&&prefR()?Math.max(rd,mx):rd;if(ndl!==dl||nrd!==rd){try{await putX('rcpt','rcpt_'+c.cv+'~'+me(),{dl:ndl,rd:nrd})}catch(e){}}}navBadge()},400)}
 async function presence(force,ty){if(!cx())return;var now=Date.now();if(!force&&now-lastOn<60000)return;var r=R['pres_'+me()],x=r&&r.x||{};var on=prefP()?(force==='typ'?(+x.on||0):now):0;if(force!=='typ')lastOn=now;
-  try{await putX('pres','pres_'+me(),{on:on,ty:ty===undefined?typCv:ty,tt:ty?now:0})}catch(e){}}
+  try{await putX('pres','pres_'+me(),{on:on,ty:ty===undefined?typCv:ty,tt:ty?now:0})}catch(e){/* recusada (nuvem ainda abrindo): tenta de novo no próximo ciclo */if(force!=='typ')lastOn=0}}
 setInterval(function(){listen();if(!cx())return;if(!document.hidden)presence(false,typCv&&Date.now()-lastTyp<6000?typCv:'');if(page==='chat'&&sub&&sub!=='geral'){var s=document.getElementById('cv-sub');if(s)s.textContent=subtitle(sub)}prefRow()},2000);
 addEventListener('visibilitychange',function(){if(!document.hidden){presence(true);receipts()}});
 addEventListener('e99:perfil',function(){if(authSession&&page==='chat'&&sub!=='geral')refresh()});

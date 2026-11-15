@@ -1,13 +1,13 @@
-/* v136: dados da loja na nuvem — todas as contas veem o mesmo sem outro aparelho aberto. ntfy bloqueado em todos os aparelhos.
+/* v136: dados da loja na nuvem — todas as contas veem o mesmo sem outro aparelho aberto. serviço antigo bloqueado em todos os aparelhos.
    PC 1440×900 (gestor) + iPhone 13 (estoque) + iPhone 13 (auxiliar), emulador do Firebase. */
 const L=require('./lib.js');const {ok,until}=L;
-const URL0='http://localhost:8000/index.html?ntfy='+L.N;const PROJ='gen-lang-client-0167474823';
+const URL0='http://localhost:8000/index.html';const PROJ='gen-lang-client-0167474823';
 const FSU='http://127.0.0.1:8080/v1/projects/'+PROJ+'/databases/(default)/documents';
 const STRICT=()=>{try{localStorage.setItem('e99-test-strict','1');localStorage.removeItem('e99-test-signup');localStorage.setItem('e99-test-strong','1')}catch(e){}};
 async function admin(path,body){const r=await fetch(FSU+path,{method:body?'PATCH':'GET',headers:{Authorization:'Bearer owner','Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});return r.json()}
 (async()=>{const b=await L.chromium.launch();const errs=[];
- async function dev(nome,opts){const c=await b.newContext(opts);await c.addInitScript(STRICT);await c.route(u=>u.host==='localhost:20130',r=>r.abort());const P=await c.newPage();
-  P.on('pageerror',e=>errs.push(nome+' '+e.message));P.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR|ERR_CONNECTION|ERR_FAILED|ntfy|EventSource|firestore|Firebase|identitytoolkit|WebChannel|permission/i.test(m.text()))errs.push(nome+' console: '+m.text())});P.on('dialog',d=>d.accept());return {c,P}}
+ async function dev(nome,opts){const c=await b.newContext(opts);await c.addInitScript(STRICT);const P=await c.newPage();
+  P.on('pageerror',e=>errs.push(nome+' '+e.message));P.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR|ERR_CONNECTION|ERR_FAILED|EventSource|firestore|Firebase|identitytoolkit|WebChannel|permission/i.test(m.text()))errs.push(nome+' console: '+m.text())});P.on('dialog',d=>d.accept());return {c,P}}
  const G=await dev('PC',{viewport:{width:1440,height:900}});let A=G.P;
  await A.goto(URL0);await until(A,()=>!!window.__e99Boot,null,8000);await A.waitForTimeout(500);await A.click('#auth-owner');await A.waitForTimeout(300);
  await A.fill('#auth-screen input[name=store]','Lojas G');await A.fill('#auth-screen input[name=email]',L.mail('vferreiras'));await A.fill('#auth-screen input[name=login]','vferreiras');await A.fill('#auth-screen input[name=password]','abc12345');await A.fill('#auth-screen input[name=confirmation]','abc12345');await L.terms(A,'#auth-form');
@@ -18,7 +18,7 @@ async function admin(path,body){const r=await fetch(FSU+path,{method:body?'PATCH
  await A.evaluate(async()=>{state.team=[{id:'ana',name:'Ana',role:'Repositora'}];state.corridors=[{id:'c7',number:'07',sector:'Mercearia',owner:'ana'}];
   state.nfs=[{id:'n1',number:'48213',supplier:'Laticínios',date:iso(),status:'Pendente',owner:'ana',notes:'',volumes:3},{id:'n2',number:'55001',supplier:'Bebidas',date:iso(),status:'Pendente',owner:'',notes:'',volumes:1}];
   state.plans=[{id:'p1',title:'Plano de terça',date:iso(),activities:[{id:'a1',title:'Repor arroz no 07',owner:'Ana',notes:'',photos:[]}]}];await save()});
- ok(await until(A,()=>{const s=e99Loja.status();return s.status==='ok'&&s.seeded&&s.pend===0},null,40000),'PC: dados da loja enviados para a nuvem (ntfy bloqueado)');
+ ok(await until(A,()=>{const s=e99Loja.status();return s.status==='ok'&&s.seeded&&s.pend===0},null,40000),'PC: dados da loja enviados para a nuvem (serviço antigo bloqueado)');
  const raw=await admin('/lojas/'+await A.evaluate(()=>e99Loja.status().loja)+'/dados');
  ok(raw.documents&&raw.documents.length>=5&&!JSON.stringify(raw).includes('48213')&&!JSON.stringify(raw).includes('Laticínios'),'Nuvem: documentos só cifrados ('+(raw.documents||[]).length+')');
  async function link(nome,login,papel){await A.evaluate(()=>go('admin'));await A.waitForTimeout(400);await A.evaluate(()=>e99OpenAccCreate());await A.waitForTimeout(500);
@@ -32,7 +32,7 @@ async function admin(path,body){const r=await fetch(FSU+path,{method:body?'PATCH
   await B.fill('#aux-form input[name=email]',L.mail(nome));await B.fill('#aux-form input[name=password]',pw);await B.fill('#aux-form input[name=confirmation]',pw);await L.terms(B,'#aux-form');await B.click('#aux-form button[type=submit]');await B.waitForTimeout(3000);
   await B.fill('#recovery-last4',(await B.textContent('.recovery-code')).replace(/[^A-Z0-9]/gi,'').slice(-4));await B.click('#recovery-enter');await B.waitForTimeout(2500);await B.addStyleTag({content:'#alert-popup{display:none!important}'});return D}
  const E=await activate('iPhone estoque',lE,'bia12345x');const P=E.P;
- ok(await until(P,()=>state.nfs.some(n=>n.number==='48213')&&state.plans.some(p=>p.id==='p1')&&state.corridors.some(c=>c.id==='c7'),null,60000),'iPhone estoque: abriu sozinho (gestor fechado, sem ntfy) e vê NFs, plano e corredor');
+ ok(await until(P,()=>state.nfs.some(n=>n.number==='48213')&&state.plans.some(p=>p.id==='p1')&&state.corridors.some(c=>c.id==='c7'),null,60000),'iPhone estoque: abriu sozinho (gestor fechado, sem o serviço antigo) e vê NFs, plano e corredor');
  await P.evaluate(()=>go('home'));await P.waitForTimeout(600);ok(await P.evaluate(()=>/Dados da loja na nuvem/.test((document.getElementById('loja-note')||{}).textContent||'')),'iPhone estoque: Início diz "Dados da loja na nuvem · atualizado às"');
  await P.evaluate(async()=>{const n=state.nfs.find(x=>x.id==='n1');n.status='Conferido';await save()});
  ok(await until(P,()=>e99Loja.status().pend>0&&e99Loja.status().denied>0,null,20000),'iPhone estoque: antes do gestor confirmar o papel, a edição de NF alheia espera (nível auxiliar na nuvem)');

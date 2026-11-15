@@ -3,7 +3,7 @@
    pelo gestor, pedido forjado/de outro gestor, não-gestor não abre). PC 1440×900 (gestor) + iPhone 13 (auxiliar), emulador do Firebase.
    Prints: SHOTS=<pasta> node tests/v133_test.js */
 const L=require('./lib.js');const {ok,until}=L;const path=require('path');
-const URL0='http://localhost:8000/index.html?ntfy='+L.N;const SHOTS=process.env.SHOTS||'';
+const URL0='http://localhost:8000/index.html';const SHOTS=process.env.SHOTS||'';
 const STRICT=()=>{try{localStorage.setItem('e99-test-strict','1');localStorage.removeItem('e99-test-signup');localStorage.setItem('e99-test-strong','1')}catch(e){}};
 (async()=>{const b=await L.chromium.launch();const errs=[];
  async function dev(nome,opts){const c=await b.newContext(opts);await c.addInitScript(STRICT);const P=await c.newPage();

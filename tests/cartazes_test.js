@@ -5,7 +5,7 @@ const L=require('./lib.js');const {ok,until}=L;
  ok(await L.gestorWithTeam(A,'ct'+T),'A team'); // has Ana + corridor 07 + NF owner ana
  await A.evaluate(async()=>{state.corridors.push({id:'c4old',number:'4',sector:'Velho',owner:''});state.nfs[0].corridor='c4old';await save()});
  const code=await A.evaluate(()=>e99Team.get().code);
- await B.goto('http://localhost:8000/index.html?ntfy='+L.N);await B.waitForTimeout(2000);await L.signup(B,'cb'+T);await B.evaluate(async c=>{await e99Team.join(c,'Celular',{team:'Equipe'})},code);
+ await B.goto('http://localhost:8000/index.html');await B.waitForTimeout(2000);await L.signup(B,'cb'+T);await B.evaluate(async c=>{await e99Team.join(c,'Celular',{team:'Equipe'})},code);
  ok(await until(B,()=>syncStatus().ready&&syncStatus().connected,40000),'B joined');
  await A.evaluate(()=>go('corridors'));await A.waitForTimeout(500);ok(!!await A.$('.cartazes-btn'),'button in Corredores');
  await A.evaluate(()=>{const d=document.querySelector('.cartazes-btn').closest('details');if(d)d.open=true});await A.click('.cartazes-btn');await A.waitForTimeout(400);console.log((await A.textContent('#cartazes-dlg')).slice(0,160));

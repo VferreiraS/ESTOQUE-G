@@ -6,7 +6,7 @@
    - nenhuma conta é regravada por tentativa errada;
    - campo de login escondido nos formulários de troca de senha (gerenciador de senhas atualiza);
    - botão da abertura (v141: "Entrar"): destrava o áudio e toca o som uma vez; some; barra termina. */
-const L=require('./lib.js');const {ok,until}=L;const U='http://localhost:8000/index.html?ntfy='+L.N;
+const L=require('./lib.js');const {ok,until}=L;const U='http://localhost:8000/index.html';
 const IOS=()=>{const O=window.AudioContext,G=Object.getOwnPropertyDescriptor(BaseAudioContext.prototype,'state').get;
  class F extends O{constructor(o){super(o);this.__s=1}get state(){return this.__s?'suspended':G.call(this)}
   resume(){const a=navigator.userActivation&&navigator.userActivation.isActive;return new Promise(r=>setTimeout(()=>{if(a)this.__s=0;super.resume().then(r,r)},300))}}

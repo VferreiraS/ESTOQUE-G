@@ -3,7 +3,7 @@ async function resetPw(email,np){const r=await (await fetch(`${AU}/emulator/v1/p
 async function recover(A,email,cloud,pw){await A.click('#auth-forgot');await A.click('#mr-link');await A.fill('#mail-rec input[name=email]',email);await A.click('#mail-rec button.primary');await A.waitForSelector('#mail-rec input[name=cloud]');ok(await resetPw(email,cloud),'link de redefinição chegou ao e-mail');
  await A.fill('#mail-rec input[name=cloud]',cloud);await A.fill('#mail-rec input[name=password]',pw);await A.fill('#mail-rec input[name=confirmation]',pw);await A.click('#mail-rec button.primary')}
 (async()=>{const b=await L.chromium.launch();const errs=[];const A=await (await b.newContext({viewport:{width:1300,height:900}})).newPage();A.on('pageerror',e=>errs.push(e.message));A.on('dialog',d=>d.accept());
- const l='rc'+Date.now();await A.goto('http://localhost:8000/index.html?ntfy='+L.N);await A.waitForTimeout(1500);await L.signup(A,l);
+ const l='rc'+Date.now();await A.goto('http://localhost:8000/index.html');await A.waitForTimeout(1500);await L.signup(A,l);
  await A.evaluate(async()=>{state.team=[{id:'zz',name:'Marcador Secreto',role:'x'}];await save()});
  ok(await until(A,()=>!!(window.e99Cloud&&e99Cloud.user()),null,20000),'conta ligada à nuvem');const uid=await A.evaluate(()=>e99Cloud.user().uid),email=await A.evaluate(()=>e99Cloud.user().email);
  ok(await until(A,async(u)=>(await fetch('http://127.0.0.1:8080/v1/projects/gen-lang-client-0167474823/databases/(default)/documents/cofre/'+u,{headers:{Authorization:'Bearer owner'}})).status===200,uid,30000),'cofre guardado na nuvem');

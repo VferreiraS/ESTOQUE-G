@@ -1,7 +1,7 @@
 /* v132: (1) conferência × XML da NF-e; (2) busca geral; (3) histórico da nota; (4) planos que se repetem; (5) cabeçalho fixo das NFs no PC e datas dd/mm/aaaa;
    (6) Início com o que pede ação hoje. PC 1440×900 (gestor) + iPhone 13 (auxiliar); 0 erro de console. */
 const L=require('./lib.js');const {ok,until,signup}=L;const fs=require('fs'),path=require('path');
-const U='http://localhost:8000/index.html?ntfy='+L.N,FX=path.join(__dirname,'fixtures'),SHOTS=process.env.SHOTS||'';
+const U='http://localhost:8000/index.html',FX=path.join(__dirname,'fixtures'),SHOTS=process.env.SHOTS||'';
 const A=path.join(FX,'nfe-v131-a.xml');
 function watch(p,tag,errs){p.on('pageerror',e=>errs.push(tag+' '+e.message));p.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR|firestore|Firebase|identitytoolkit|WebChannel/i.test(m.text()))errs.push(tag+' console: '+m.text())});p.on('dialog',d=>d.accept())}
 async function pick(p,files){const [ch]=await Promise.all([p.waitForEvent('filechooser',{timeout:5000}),p.evaluate(()=>e99NfXmlPick())]);await ch.setFiles(files)}

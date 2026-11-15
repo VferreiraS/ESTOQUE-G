@@ -1,7 +1,7 @@
 /* v135: index.html dividido em app/css e app/js (mesma ordem, mesmo comportamento). PC 1440×900 + iPhone 13:
    nenhum arquivo app/* falha, 0 erro de console, entra e passa por todas as telas, abre sem internet depois da 1ª carga. */
 const L=require('./lib.js');const {ok,until,signup}=L;const fs=require('fs');
-const BASE=process.env.BASE||'http://localhost:8000';const U=BASE+'/index.html?ntfy='+L.N;
+const BASE=process.env.BASE||'http://localhost:8000';const U=BASE+'/index.html';
 const html=fs.readFileSync(__dirname+'/../index.html','utf8'),sw=fs.readFileSync(__dirname+'/../sw.js','utf8');
 const V=(html.match(/name="estoque99-version" content="(\d+)"/)||[])[1];
 const refs=[...html.matchAll(/(?:src|href)="(app\/(?:js|css)\/[^"?]+)\?v=(\d+)"/g)];

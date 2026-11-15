@@ -2,7 +2,7 @@
    Texto com *negrito* e sem marcas vindas do usuário; banner PNG 1080 px; folha com os dois botões; compartilhar com/sem arquivos;
    sem navigator.share abre wa.me; Copiar para o Outlook grava text/html; e-mail automático com o texto novo; 0 erro de console. */
 const L=require('./lib.js');const {ok,signup}=L;
-const BASE=process.env.BASE||'http://localhost:8000';const U=BASE+'/index.html?ntfy='+L.N;
+const BASE=process.env.BASE||'http://localhost:8000';const U=BASE+'/index.html';
 function watch(p,tag,errs){p.on('pageerror',e=>errs.push(tag+' '+e.message));p.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR|firestore|Firebase|identitytoolkit|WebChannel/i.test(m.text()))errs.push(tag+' console: '+m.text())});p.on('dialog',d=>d.accept())}
 (async()=>{const b=await L.chromium.launch();const errs=[];
 const ctx=await b.newContext({viewport:{width:1440,height:900}});

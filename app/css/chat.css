@@ -1,5 +1,5 @@
 
-/* Chat da equipe: mensagens criptografadas com o código da equipe, entregues pelo ntfy.sh. */
+/* Chat da equipe: mensagens criptografadas com o código da equipe, entregues pela nuvem da loja (Firebase), já cifradas. */
 .chat-wrap{display:grid;gap:12px}
 .chat-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
 .chat-head h2{margin:0;font-size:17px}

@@ -2,7 +2,7 @@
    1) leitor da conferência: zxing-wasm (principal) com ZXing JS de reserva; 2) "Importar XML da nota" (um ou vários, DOMParser nativo);
    3) Excel (.xlsx) gerado no aparelho; 0 erro de console; nada baixado de fora do próprio site. PC 1440×900 (gestor) + iPhone 13 (auxiliar). */
 const L=require('./lib.js');const {ok,until,signup}=L;const fs=require('fs'),path=require('path'),zlib=require('zlib'),cp=require('child_process');
-const U='http://localhost:8000/index.html?ntfy='+L.N,FX=path.join(__dirname,'fixtures'),SHOTS=process.env.SHOTS||'';
+const U='http://localhost:8000/index.html',FX=path.join(__dirname,'fixtures'),SHOTS=process.env.SHOTS||'';
 const A=path.join(FX,'nfe-v131-a.xml'),B=path.join(FX,'nfe-v131-b.xml'),BAD=path.join(FX,'nfe-v131-malformado.xml'),EVT=path.join(FX,'nfe-v131-evento.xml');
 function unzip(buf){const out={};let e=buf.length-22;while(e>=0&&buf.readUInt32LE(e)!==0x06054b50)e--;if(e<0)throw Error('sem EOCD');const n=buf.readUInt16LE(e+10);let o=buf.readUInt32LE(e+16);
   for(let i=0;i<n;i++){if(buf.readUInt32LE(o)!==0x02014b50)throw Error('central inválido');const m=buf.readUInt16LE(o+10),cs=buf.readUInt32LE(o+20),nl=buf.readUInt16LE(o+28),xl=buf.readUInt16LE(o+30),cl=buf.readUInt16LE(o+32),lo=buf.readUInt32LE(o+42),name=buf.slice(o+46,o+46+nl).toString();

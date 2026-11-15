@@ -1,7 +1,7 @@
 const L=require('./lib.js');const {ok,until}=L;
 (async()=>{const b=await L.chromium.launch();const errs=[];const C=await (await b.newContext({viewport:{width:1300,height:900}})).newPage(),A=await (await b.newContext(L.devices['iPhone 13'])).newPage(),B=await (await b.newContext(L.devices['iPhone 13'])).newPage();[A,B,C].forEach(p=>{p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept())});
  ok(await L.gestorWithTeam(C,'pc'+Date.now()),'PC cria a equipe');await C.evaluate(()=>{state.team=[];return save()});const code=await C.evaluate(()=>e99Team.get().code);
- await A.goto('http://localhost:8000/index.html?ntfy='+L.N);await A.waitForTimeout(1500);await L.signup(A,'cel'+Date.now());await A.evaluate(()=>go('chat'));
+ await A.goto('http://localhost:8000/index.html');await A.waitForTimeout(1500);await L.signup(A,'cel'+Date.now());await A.evaluate(()=>go('chat'));
  await A.fill('#view form[onsubmit="chatJoin(event)"] input[name=code]',code);await A.fill('#view form[onsubmit="chatJoin(event)"] input[name=name]','Vitor');await A.click('#view form[onsubmit="chatJoin(event)"] button');
  ok(await until(A,()=>!!(window.e99Team&&e99Team.get()),null,20000),'celular entrou na equipe');
  const link=await L.makeInvite(C,'Leonardo');await L.auxAccept(B,link,null,'4321');

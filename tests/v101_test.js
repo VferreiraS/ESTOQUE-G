@@ -7,16 +7,16 @@ async function seed(p,login,role){return p.evaluate(async([l,r])=>{const s=await
  const G=await (await b.newContext({viewport:{width:1300,height:900}})).newPage(),A=await (await b.newContext(L.devices['iPhone 13'])).newPage();[G,A].forEach(p=>{p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept())});
  /* ---------- A: Equipe ---------- */
  ok(await L.gestorWithTeam(G,'eq'+T),'dono com equipe');const code=await G.evaluate(()=>e99Team.get().code);
- await A.goto('http://localhost:8000/index.html?ntfy='+L.N);await A.waitForTimeout(1500);await L.signup(A,'thomaz'+T);await A.evaluate(()=>go('chat'));
+ await A.goto('http://localhost:8000/index.html');await A.waitForTimeout(1500);await L.signup(A,'thomaz'+T);await A.evaluate(()=>go('chat'));
  await A.fill('#view form[onsubmit="chatJoin(event)"] input[name=code]',code);await A.fill('#view form[onsubmit="chatJoin(event)"] input[name=name]','Thomaz');await A.click('#view form[onsubmit="chatJoin(event)"] button');
  ok(await until(A,()=>!!(window.e99Team&&e99Team.get()),null,20000),'Thomaz entrou na equipe pelo código');
- ok(await until(G,()=>{if(page!=='team')go('team');else render();return [...document.querySelectorAll('#view .cards .card.e99-acc h3')].some(h=>/Thomaz/.test(h.textContent))},null,90000),'Equipe do dono mostra a conta do Thomaz');
+ ok(await until(G,()=>{if(page!=='team')go('team');else render();return [...document.querySelectorAll('#view .cards .card h3')].some(h=>/Thomaz/.test(h.textContent))},null,90000),'Equipe do dono mostra a conta do Thomaz (v148: a conta confirmada na nuvem entra na Equipe)');
  ok(await G.evaluate(()=>[...document.querySelectorAll('#view .cards .card.e99-acc h3')].some(h=>/\(você\)/.test(h.textContent))),'Equipe mostra o próprio dono');
  ok(await G.evaluate(()=>{const n=[...document.querySelectorAll('#view .cards .card h3')].map(h=>h.textContent);return n.filter(x=>/^Ana/.test(x)).length===1&&n[n.length-1]==='TODOS'}),'sem repetir colaborador e TODOS no fim');
- ok(await G.evaluate(()=>!document.querySelector('#view .e99-acc-open')&&!!document.querySelector('#view .card.e99-acc .avatar')),'cartão só com nome e inicial (sem Ver perfil)');
+ ok(await G.evaluate(()=>!document.querySelector('#view .e99-acc-open')&&!!document.querySelector('#view .card.e99-acc .avatar')),'cartão da conta só com nome e inicial (sem Ver perfil)');
  /* ---------- B: conta do PC com 'gestor' que não é do dono ---------- */
  const P=await (await b.newContext({viewport:{width:1440,height:900}})).newPage();P.on('pageerror',e=>errs.push(e.message));P.on('dialog',d=>d.accept());
- await P.goto('http://localhost:8000/index.html?ntfy='+L.N);await P.waitForTimeout(1500);
+ await P.goto('http://localhost:8000/index.html');await P.waitForTimeout(1500);
  const pcLogin='pcgestor'+T;await seed(P,pcLogin,'gestor');await seed(P,'outra'+T,'estoque');await seed(P,'vferreiras','gestor');
  await L.login(P,pcLogin,'1234');await shut(P);ok(await P.evaluate(()=>!!authSession),'PC entra');
  ok(await P.evaluate(()=>authSession.payload.role==='estoque'),'PC: gestor antigo vira estoque ao entrar');

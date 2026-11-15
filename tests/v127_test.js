@@ -1,9 +1,9 @@
 /* v127: (A) Perfil de volta (foto, nome, cargo, sobre; sem selos) — salva, volta depois de entrar de novo, chega à equipe, texto escapado.
-   (B) Auxiliar cria NF e plano (chegam ao gestor), edita os seus; não exclui de outro, não abre Administração; apagar forjado pelo ntfy é barrado.
+   (B) Auxiliar cria NF e plano (chegam ao gestor), edita os seus; não exclui de outro, não abre Administração; apagar forjado na nuvem é barrado.
    (C) Contas só pelo gestor: sem "Criar conta" livre; gestor cria conta e gera UM link; o link ativa uma vez; reabrir não cria outra conta;
    link inválido tem mensagem clara; auxiliar não cria contas. PC 1440×900 (gestor) + iPhone 13 (auxiliar). */
 const L=require('./lib.js');const {ok,until}=L;const path=require('path');
-const URL0='http://localhost:8000/index.html?ntfy='+L.N;
+const URL0='http://localhost:8000/index.html';
 const STRICT=()=>{try{localStorage.setItem('e99-test-strict','1');localStorage.removeItem('e99-test-signup')}catch(e){}};
 const BAD='V<img src=x onerror=window.__xss=1>';
 (async()=>{const b=await L.chromium.launch();const errs=[];
@@ -29,7 +29,7 @@ const BAD='V<img src=x onerror=window.__xss=1>';
  await A.evaluate(async()=>{state.team=[{id:'ana',name:'Ana',role:'Repositora'}];state.nfs=[{id:'n1',number:'48213',supplier:'Laticínios',date:iso(),status:'Pendente',owner:'ana',notes:'',volumes:3}];
    state.plans=[{id:'p1',title:'Plano do gestor',date:iso(),activities:[{id:'a1',title:'Repor arroz',owner:'Ana',notes:'',photos:[]}]}];await save();go('chat')});
  await A.fill('#view form[onsubmit="chatCreate(event)"] input[name=name]','Vitor');await A.click('text=Criar equipe e gerar código');
- ok(await until(A,()=>syncStatus().ready&&syncStatus().pending===0&&syncStatus().connected),'PC: equipe criada e sincronizada');
+ ok(await until(A,()=>syncStatus().ready&&syncStatus().pending===0&&syncStatus().connected,null,60000),'PC: equipe criada e sincronizada');
  await A.evaluate(()=>go('admin'));await A.waitForTimeout(400);ok(await A.evaluate(()=>!!document.querySelector('#acc-create button.primary')),'PC: Administração tem "Criar conta e link"');
  await A.evaluate(()=>e99OpenAccCreate());await A.waitForTimeout(500);
  await A.fill('#aux-box input[name=name]','Ana');await A.fill('#aux-box input[name=login]','ana.teste');await A.selectOption('#aux-box select[name=papel]','auxiliar');
@@ -69,12 +69,12 @@ const BAD='V<img src=x onerror=window.__xss=1>';
  ok(await B.evaluate(()=>openPlan('p1')===false&&!planDraft),'iPhone: não edita plano do gestor');
  await B.evaluate(()=>planToggleDone('p1','a1'));await B.waitForTimeout(500);
  ok(await A.evaluate(()=>{}).then(()=>until(A,(x)=>state.nfs.some(n=>n.number==='77001'&&n.cby==='Ana')&&state.plans.some(p=>p.id===x&&p.cby==='Ana'),plA.id,30000)),'PC: NF e plano do auxiliar chegaram ao gestor');
- ok(await until(A,()=>{const p=state.plans.find(x=>x.id==='p1');return p&&p.activities[0].done===true},null,20000),'PC: atividade marcada pelo auxiliar chegou');
- /* auxiliar edita a própria NF; tentativa de mudar a do gestor e de apagar pelo ntfy */
+ ok(await until(A,()=>{const p=state.plans.find(x=>x.id==='p1');return p&&p.activities[0].done===true},null,60000),'PC: atividade marcada pelo auxiliar chegou');
+ /* auxiliar edita a própria NF; tentativa de mudar a do gestor e de apagar pela nuvem */
  await B.evaluate(id=>{openEditor('nf',id);const f=document.getElementById('editor');f.elements.supplier.value='Fornecedor editado';f.requestSubmit()},nfA.id);await B.waitForTimeout(1200);
  ok(await until(A,()=>state.nfs.some(n=>n.number==='77001'&&n.supplier==='Fornecedor editado'),null,20000),'PC: edição da NF do auxiliar chegou');
  ok(await B.evaluate(()=>{openEditor('nf','n1');return !document.getElementById('modal')||!document.getElementById('modal').open}),'iPhone: não abre para editar NF do gestor');
- await B.evaluate(async()=>{const n1=state.nfs.find(x=>x.id==='n1');await e99SyncSend('ops',{ops:[{c:'nfs',i:'n1',t:Date.now()+5e6,b:'Ana',x:Object.assign({},n1,{supplier:'HACK'})},{c:'nfs',i:'n1',t:Date.now()+6e6,b:'Ana',d:1},{c:'plans',i:'p1',t:Date.now()+6e6,b:'Ana',d:1}]})});
+ await B.evaluate(async()=>{const c=e99Loja.conn&&e99Loja.conn();if(!c)return;const n1=state.nfs.find(x=>x.id==='n1');for(const [id,o,del] of [['nfs_n1',{x:Object.assign({},n1,{supplier:'HACK'}),b:'Ana'},false],['nfs_n1',null,true],['plans_p1',null,true]]){try{await c.L().collection('dados').doc(id).set({c:id.split('_')[0],at:Date.now()+5e6,st:c.FS.FieldValue.serverTimestamp(),by:c.uid,cuid:c.uid,del:del,v:1,d:del?'':await c.seal(id,o)})}catch(e){}}});
  await A.waitForTimeout(4000);
  ok(await A.evaluate(()=>{const n=state.nfs.find(x=>x.id==='n1');return !!n&&n.supplier==='Laticínios'&&state.plans.some(p=>p.id==='p1')}),'PC: NF/plano do gestor não mudam nem somem com mensagem forjada do auxiliar');
  ok(await B.evaluate(()=>{e99Del('nf','n1');return state.nfs.some(x=>x.id==='n1')}),'iPhone: auxiliar não exclui NF de outra pessoa');

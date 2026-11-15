@@ -1,13 +1,13 @@
 /* v147: UM perfil por pessoa. Editar uma vez -> o mesmo nome, foto e cargo no chat da equipe, na conversa privada, na Equipe,
    no mural e na página da pessoa, nos dois aparelhos (PC gestor + iPhone 13 auxiliar, emulador). Só existe uma página "Ver perfil". */
 const L=require('./lib.js');const path=require('path');const {ok,until}=L;
-const URL0='http://localhost:8000/index.html?ntfy='+L.N;const PROJ='gen-lang-client-0167474823';
+const URL0='http://localhost:8000/index.html';const PROJ='gen-lang-client-0167474823';
 const FSU='http://127.0.0.1:8080/v1/projects/'+PROJ+'/databases/(default)/documents';
 const STRICT=()=>{try{localStorage.setItem('e99-test-strict','1');localStorage.removeItem('e99-test-signup');localStorage.setItem('e99-test-strong','1');localStorage.setItem('e99-test-chatlist','1')}catch(e){}};
 async function admin(p,body){const r=await fetch(FSU+p,{method:body?'PATCH':'GET',headers:{Authorization:'Bearer owner','Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});return r.json()}
 (async()=>{const b=await L.chromium.launch();const errs=[];
  async function dev(nome,opts){const c=await b.newContext(opts);await c.addInitScript(STRICT);const P=await c.newPage();
-  P.on('pageerror',e=>errs.push(nome+' '+e.message));P.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR|ERR_CONNECTION|ERR_FAILED|ntfy|EventSource|firestore|Firebase|identitytoolkit|WebChannel|permission/i.test(m.text()))errs.push(nome+' console: '+m.text())});P.on('dialog',d=>d.accept());return P}
+  P.on('pageerror',e=>errs.push(nome+' '+e.message));P.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR|ERR_CONNECTION|ERR_FAILED|EventSource|firestore|Firebase|identitytoolkit|WebChannel|permission/i.test(m.text()))errs.push(nome+' console: '+m.text())});P.on('dialog',d=>d.accept());return P}
  const A=await dev('PC',{viewport:{width:1440,height:900}});
  await A.goto(URL0);await until(A,()=>!!window.__e99Boot,null,8000);await A.waitForTimeout(500);await A.click('#auth-owner');await A.waitForTimeout(300);
  await A.fill('#auth-screen input[name=store]','Lojas G');await A.fill('#auth-screen input[name=email]',L.mail('vferreiras'));await A.fill('#auth-screen input[name=login]','vferreiras');await A.fill('#auth-screen input[name=password]','abc12345');await A.fill('#auth-screen input[name=confirmation]','abc12345');await L.terms(A,'#auth-form');
@@ -84,9 +84,9 @@ async function admin(p,body){const r=await fetch(FSU+p,{method:body?'PATCH':'GET
  ok(await until(A,()=>!!(state.perfil&&state.perfil.cover)&&!!document.querySelector('#sc-prof .sc-cover.img'),null,15000),'PC: capa gravada no perfil (dentro da conta)');
  const capa=await A.evaluate(()=>state.perfil.cover);
  ok(await until(Q,a=>{const p=e99Perfil({name:'Vitor'});return !!p&&p.cover===a[0]&&p.name===a[1]&&p.photo===a[2]},[capa,NOME,foto],30000),'iPhone: capa chega junto, nome e foto continuam os mesmos');
- /* sem nuvem: perfil que só veio pela equipe (ntfy) abre a mesma página */
- ok(await Q.evaluate(async()=>{await e99OnPerfil({dev:'abcdef123456',pat:Date.now(),login:'so.ntfy',papel:'estoque',ph:0,pt:{name:'Sem Nuvem <i>y</i>',cargo:'Repositor',bio:''}},'Semnuvem',async()=>null,e99SyncInfo().topic);await new Promise(r=>setTimeout(r,900));const p=e99Perfil({name:'Semnuvem'});if(!p||p.ref!=='d:abcdef123456'||p.uid)return false;openProfile(p.ref);await new Promise(r=>setTimeout(r,500));const s=document.getElementById('sc-prof');return page==='pessoa'&&!!s&&s.querySelector('h2').textContent==='Sem Nuvem <i>y</i>'&&!s.querySelector('h2 *')&&/Repositor/.test(s.textContent)&&![...s.querySelectorAll('button')].some(b=>/^Mensagem$/.test(b.textContent))}),'iPhone: perfil só da equipe (sem nuvem) usa a mesma página, escapado e sem "Mensagem"');
- /* perfil não dá papel; o meu perfil não é trocado por dado da rede */
- ok(await Q.evaluate(async()=>{const r0=authSession.payload.role;await e99OnPerfil({dev:'zzzzzz999999',pat:Date.now()+5000,login:authSession.record.login,papel:'gestor',ph:0,pt:{name:'Invasor',cargo:'',bio:''}},'Caio',async()=>null,e99SyncInfo().topic);await new Promise(r=>setTimeout(r,700));const p=e99Perfil('me');return authSession.payload.role===r0&&r0==='auxiliar'&&p.name==='Caio Lima'&&e99Perfil({name:'Caio'}).name==='Caio Lima'&&!labels.admin}),'iPhone: perfil forjado com o meu login é ignorado e não muda papel');
+ /* v148: perfil só pela nuvem (perfis_{uid}). Gravar o perfil de outra pessoa é recusado; perfil não dá papel. */
+ const forj=await Q.evaluate(async()=>{const r0=authSession.payload.role;const g=e99Perfil({name:'Vitor'});const c=e99Loja.conn();if(!c||!g||!g.uid)return 'sem-ref';const id='perfis_'+g.uid;
+   try{await c.L().collection('dados').doc(id).set({c:'perfis',at:Date.now(),st:c.FS.FieldValue.serverTimestamp(),by:c.uid,cuid:c.uid,del:false,v:1,d:await c.seal(id,{name:'Invasor',papel:'gestor'})});return 'gravou'}catch(e){return (authSession.payload.role===r0&&r0==='auxiliar'&&!labels.admin?'':'papel-mudou ')+e.code}});
+ ok(forj==='permission-denied','iPhone: gravar o perfil de outra pessoa na nuvem é recusado e não muda papel ('+forj+')');
  console.log(errs.length?'FAIL erros: '+errs.slice(0,5).join(' | '):'PASS sem erro de página/console');
  await b.close()})().catch(e=>{console.log('FAIL Error '+(e&&e.stack||e));process.exit(1)});

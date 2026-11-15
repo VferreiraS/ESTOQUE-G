@@ -59,11 +59,18 @@ async function ensure(){if(eBusy||!authSession||isG())return;var s=authSession,g
     if(authSession!==s||s.record!==rec)return;s.record.custody=cu;await save()}catch(x){try{console.warn('Stok custódia:',x&&x.message||x)}catch(y){}}finally{eBusy=false}}
 W.e99CustodyEnsure=ensure;
 W.e99CustodyState=function(){var s=authSession;if(!s)return null;var c=s.record.custody;return {gk:!!cust().gk,priv:!!cust().priv,ok:!!(c&&c.s===s.record.salt),k:c?c.k:''}};
-/* chave do gestor pela equipe: só a primeira, só de quem não é auxiliar (o link de acesso já traz a certa) */
-W.e99OnGkey=async function(o){try{if(!authSession||isG()||!o||o.r==='auxiliar'||cust().gk)return;if(!(await okPub(o.gk)))return;if(cust().gk)return;state.custody=Object.assign({},cust(),{gk:o.gk});await save();ensure()}catch(x){}};
-var gAt=0;function sendG(force){try{if(!isG()||!W.e99SyncInfo||!W.e99SyncInfo()||!W.e99SyncSend)return;var t=W.e99Team&&W.e99Team.get();if(!t||!t.owner)return;var lim=force?2*60000:3*3600000;if(Date.now()-gAt<lim)return;gAt=Date.now();
-  gPub().then(function(gk){if(gk)W.e99SyncSend('gkey',{gk:gk})}).catch(function(){})}catch(x){}}
-var hp=W.e99OnHello;W.e99OnHello=function(){try{if(hp)hp.apply(this,arguments)}catch(x){}sendG(true)};
+/* v148: chave do gestor pela nuvem da loja. O gestor grava eq_g~{uid} (só ele grava o próprio documento); os outros aparelhos
+   só aceitam de quem a nuvem confirma como gestor (papeis/{uid} ou membros/{uid} com papel gestor — as regras só deixam gravar
+   'gestor' para uid verificado). O link de acesso continua trazendo a chave certa. */
+function cnx(){try{return W.e99Loja&&W.e99Loja.conn?W.e99Loja.conn():null}catch(x){return null}}
+var gAt=0,gSeen=0;
+async function sendG(){try{var c=cnx();if(!c||!isG())return;var t=W.e99Team&&W.e99Team.get();if(!t||!t.owner||Date.now()-gAt<3*3600000)return;var gk=await gPub();if(!gk)return;gAt=Date.now();var id='eq_g~'+c.uid;
+  await c.L().collection('dados').doc(id).set({c:'eq',at:Date.now(),st:c.FS.FieldValue.serverTimestamp(),by:c.uid,cuid:c.uid,del:false,v:1,d:await c.seal(id,{gk:gk})})}catch(x){gAt=0}}
+async function readG(){try{var c=cnx();if(!c||!authSession||isG()||cust().gk||Date.now()-gSeen<60000)return;gSeen=Date.now();var FP=c.FS.FieldPath.documentId(),q=await c.L().collection('dados').where(FP,'>=','eq_g~').where(FP,'<','eq_g~\uf8ff').get(),docs=[];q.forEach(function(d){docs.push(d)});
+  for(var i=0;i<docs.length;i++){var x=docs[i].data()||{},u=docs[i].id.slice(5);if(x.del||x.cuid!==u||x.by!==u)continue;var ok=c.papeis[u]==='gestor';
+    if(!ok)try{var m=await c.L().collection('membros').doc(u).get();ok=m.exists&&(m.data()||{}).role==='gestor'}catch(e){}
+    if(!ok)continue;var o=await c.unseal(docs[i].id,x.d);if(!o||!(await okPub(o.gk))||cust().gk)continue;state.custody=Object.assign({},cust(),{gk:o.gk});await save();ensure();return}}catch(x){}}
+setInterval(function(){if(!authSession||document.hidden)return;if(isG())sendG();else readG()},15000);
 /* pedido (aparelho do usuário, sem entrar) */
 async function pedidoFor(login){login=authLoginName(String(login||'').replace(/^@+/,''));if(!login)throw Error('Digite o seu login.');var raw=localStorage.getItem(await authStorageKey(login));
   if(!raw)throw Error('Não há conta com este login neste aparelho. Faça o pedido no aparelho onde você usa o Stok.');var r;try{r=authCheckRecord(JSON.parse(raw))}catch(x){throw Error('A cópia da conta neste aparelho está danificada.')}

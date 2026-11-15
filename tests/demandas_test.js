@@ -1,4 +1,4 @@
-/* v143: demandas do estoque. PC 1440×900 gestor + iPhone 13 auxiliar (equipe pelo ntfy falso).
+/* v143: demandas do estoque. PC 1440×900 gestor + iPhone 13 auxiliar (equipe pela nuvem do emulador).
    Campo "Demanda" no editor do plano (Sem demanda + 7 fixas, na ordem), etiqueta na lista, atividade sem demanda igual,
    valor fora da lista descartado sem derrubar o plano (também no validatePlans da v142), cartão "Demandas do estoque" no Início, 0 erro. */
 const L=require('./lib.js');const {ok,until}=L;const {execSync}=require('child_process');const vm=require('vm');
@@ -9,7 +9,7 @@ async function newAct(p,title,dem,tap){await p.evaluate(()=>{openPlan()});await 
  await p.fill('#plan-editor .plan-edit-item textarea',title);if(dem)await p.selectOption('#plan-editor .e99-dem-sel',dem);
  if(tap)await p.tap('#plan-editor button[type=submit]');else await p.click('#plan-editor button[type=submit]');await p.waitForTimeout(800);return opts}
 (async()=>{const b=await L.chromium.launch();const errs=[];const T=Date.now().toString(36);
- const watch=(p,tag)=>{p.on('pageerror',e=>errs.push(tag+' '+e.message));p.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::|ERR_|ntfy|firebase|firestore|googleapis|status of 4\d\d/i.test(m.text()))errs.push(tag+' console: '+m.text())});p.on('dialog',d=>d.accept())};
+ const watch=(p,tag)=>{p.on('pageerror',e=>errs.push(tag+' '+e.message));p.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::|ERR_|firebase|firestore|googleapis|status of 4\d\d/i.test(m.text()))errs.push(tag+' console: '+m.text())});p.on('dialog',d=>d.accept())};
  const A=await b.newPage({viewport:{width:1440,height:900}});watch(A,'PC');
  const B=await b.newPage(L.devices['iPhone 13']);watch(B,'iPhone');
  ok(await L.gestorWithTeam(A,'demg'+T),'PC: gestor com equipe');

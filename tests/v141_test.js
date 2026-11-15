@@ -5,14 +5,14 @@
    - conta "Manter conectado" → recarregar: abertura na frente do Início; Enter no teclado abre o Início;
    - janela (showModal) aberta por baixo espera o toque; "menos movimento": quadro final parado + botão;
    - 0 erro de console. */
-const L=require('./lib.js');const {ok,until}=L;const U='http://localhost:8000/index.html?ntfy='+L.N;
+const L=require('./lib.js');const {ok,until}=L;const U='http://localhost:8000/index.html';
 const GATE=()=>{try{sessionStorage.removeItem('e99-intro');localStorage.setItem('e99-test-gate','1');localStorage.removeItem('e99-test-autointro')}catch(e){}};
 const SPY=()=>{const r0=window.requestAnimationFrame.bind(window);window.__rafAfter=0;
   window.requestAnimationFrame=function(cb){const st=(new Error().stack)||'';if(/intro\.js/.test(st)&&window.__e99IntroStats&&window.__e99IntroStats.done)window.__rafAfter++;return r0(cb)}};
 const SHOT=process.env.SHOT||'';
 (async()=>{const b=await L.chromium.launch();const errs=[];const T=Date.now().toString(36);
 for(const [nome,opt] of [['PC',{viewport:{width:1440,height:900}}],['iPhone',L.devices['iPhone 13']]]){
- const watch=(p,tag)=>{p.on('pageerror',e=>errs.push(tag+' '+e.message));p.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::|ERR_|ntfy|firebase|firestore|googleapis|status of 4\d\d/i.test(m.text()))errs.push(tag+' console: '+m.text())})};
+ const watch=(p,tag)=>{p.on('pageerror',e=>errs.push(tag+' '+e.message));p.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::|ERR_|firebase|firestore|googleapis|status of 4\d\d/i.test(m.text()))errs.push(tag+' console: '+m.text())})};
  const ctx=await b.newContext(opt);await ctx.addInitScript(GATE);await ctx.addInitScript(SPY);const p=await ctx.newPage();watch(p,nome);p.on('dialog',d=>d.accept());
  const t0=Date.now();await p.goto(U);
  ok(await until(p,()=>!!document.querySelector('#stok-intro #si-enter'),null,4000),nome+': abertura do app com o botão "Entrar"');

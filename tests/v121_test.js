@@ -3,8 +3,8 @@
    fina, nas cores do tema, avança por etapas, só libera o formulário quando o app carregou, limite de 6 s; som de abertura
    depois da barra (PC toca na hora; iPhone no primeiro toque); sem animação com Efeitos desligados / menos movimento.
    PC 1440×900 e iPhone 13. */
-const L=require('./lib.js');const {ok,until}=L;
-const URL0='http://localhost:8000/index.html?ntfy='+L.N;
+const L=require('./lib.js');const {ok,until}=L;L.shimOff=true;/* sem equipe: o apoio da nuvem dos testes fica desligado */
+const URL0='http://localhost:8000/index.html';
 /* grava o que a barra mostrou desde o início (antes de o teste conseguir olhar) */
 const REC=()=>{window.__bootRec={vals:[],seen:false,color:'',trans:'',shine:''};document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('e99-boot');const R=window.__bootRec;if(!b)return;
   R.seen=document.body.classList.contains('e99-booting');const i=b.firstElementChild,cs=getComputedStyle(i);R.color=cs.backgroundImage;R.trans=cs.transitionDuration;R.shine=getComputedStyle(i,'::after').display;R.h=b.getBoundingClientRect().height;

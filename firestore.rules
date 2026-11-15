@@ -47,7 +47,7 @@ rules_version = '2';
 // Coleção: verificados        Documento: {uid}
 //   Selo verificado. Só o administrador grava; qualquer um lê (aparelhos sem nuvem também).
 //   - tipo: 's'|'raio'   - stkId: string (opcional, ID STK-… da conta)
-//   - login: string (opcional; logins separados por vírgula — selo de perfis que chegam só pelo ntfy)
+//   - login: string (opcional; logins separados por vírgula — campo antigo, sem uso)
 //
 // Nenhum papel (role) gravado pelo cliente dá permissão nas regras.
 // ===============================================================
@@ -255,20 +255,26 @@ service cloud.firestore {
       return c in ['posts', 'comments', 'stories', 'perfis'];
     }
     // v138: conversas privadas/grupos (conteúdo cifrado de ponta a ponta). Só o autor grava o seu.
+    // v148: 'eq' = Chat da equipe pela nuvem (conteúdo cifrado no aparelho com a chave do código da equipe).
+    //   eq_m~{id}: mensagem ou marcador de apagar; eq_a~{id}~{n}: pedaço de anexo; eq_g~{uid}: chave pública do gestor (só ele);
+    //   eq_u~{convite}: link de acesso usado/cancelado — criado uma única vez (quem chega depois não é o autor e não altera).
     function isChat(c) {
-      return c in ['cv', 'msgs', 'pres', 'rcpt'];
+      return c in ['cv', 'msgs', 'pres', 'rcpt', 'eq'];
     }
     function chatDocOk(d, doc) {
       return (d.c != 'pres' || doc == 'pres_' + request.auth.uid) &&
         (d.c != 'rcpt' || doc.matches('^rcpt_[A-Za-z0-9]{1,40}~' + request.auth.uid + '$')) &&
         (d.c != 'msgs' || doc.matches('^msgs_[A-Za-z0-9]{1,40}~[A-Za-z0-9]{1,40}(~r~' + request.auth.uid + ')?$')) &&
-        (d.c != 'cv' || doc.matches('^cv_g[A-Za-z0-9]{1,40}$')) && d.d.size() <= 600000;
+        (d.c != 'cv' || doc.matches('^cv_g[A-Za-z0-9]{1,40}$')) &&
+        (d.c != 'eq' || doc.matches('^eq_m~[A-Za-z0-9_-]{1,60}$') || doc.matches('^eq_a~[A-Za-z0-9_-]{1,60}~[0-9]$') ||
+          doc == 'eq_g~' + request.auth.uid || doc.matches('^eq_u~[A-Za-z0-9_-]{1,60}$')) &&
+        (d.d.size() <= 600000 || (d.c == 'eq' && d.d.size() <= 800000));
     }
     function isValidDado(d, doc) {
       return d.keys().hasOnly(['c', 'at', 'st', 'by', 'cuid', 'del', 'v', 'd', 'slim']) &&
         d.keys().hasAll(['c', 'at', 'st', 'by', 'cuid', 'del', 'v', 'd']) &&
-        d.c in ['team', 'corridors', 'nfs', 'plans', 'confs', 'posts', 'comments', 'stories', 'perfis', 'cv', 'msgs', 'pres', 'rcpt'] &&
-        doc.matches('^(team|corridors|nfs|plans|confs|posts|comments|stories|perfis|cv|msgs|pres|rcpt)_[A-Za-z0-9_~-]{1,140}$') && doc.split('_')[0] == d.c &&
+        d.c in ['team', 'corridors', 'nfs', 'plans', 'confs', 'dresp', 'posts', 'comments', 'stories', 'perfis', 'cv', 'msgs', 'pres', 'rcpt', 'eq'] &&
+        doc.matches('^(team|corridors|nfs|plans|confs|dresp|posts|comments|stories|perfis|cv|msgs|pres|rcpt|eq)_[A-Za-z0-9_~-]{1,140}$') && doc.split('_')[0] == d.c &&
         d.at is int && d.at <= request.time.toMillis() + 60000 &&
         d.st == request.time && d.by == request.auth.uid && d.cuid is string &&
         d.del is bool && d.v == 1 && d.d is string && d.d.size() <= 900000 && (!d.del || d.d == '') &&

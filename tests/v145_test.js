@@ -3,7 +3,7 @@
    mudar status pela linha aberta, auxiliar sem Excluir e sem volumes, busca/filtros/"Mostrar mais", busca geral abre a nota,
    sem rolagem lateral, toques ≥44 px, contraste AA nos 3 temas, PC com a tabela de antes e 0 erro de console. Prints com SHOTS=pasta. */
 const L=require('./lib.js');const {ok,until}=L;const fs=require('fs');
-const U='http://localhost:8000/index.html?ntfy='+L.N;const SH=process.env.SHOTS||'';
+const U='http://localhost:8000/index.html';const SH=process.env.SHOTS||'';
 (async()=>{const b=await L.chromium.launch();const errs=[];
  async function dev(nome,opts){const c=await b.newContext(opts);const P=await c.newPage();
   P.on('pageerror',e=>errs.push(nome+' '+e.message));P.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR|ERR_CONNECTION|firestore|Firebase|identitytoolkit|WebChannel/i.test(m.text()))errs.push(nome+' console: '+m.text())});P.on('dialog',d=>d.accept(d.type()==='prompt'?'Faltou 1 caixa':undefined));return P}

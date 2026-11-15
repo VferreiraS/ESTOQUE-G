@@ -2,7 +2,7 @@
    e a animação de entrada consertada: no iPhone 13 com CPU 4x e no PC a abertura (S) e a barra terminam em ≤6 s, a abertura
    é opaca (não sobrepõe a tela de entrar), não fica pela metade e o formulário é liberado. */
 const L=require('./lib.js');const {ok,until}=L;const PORT=process.env.PORT||8000;
-const URL0='http://localhost:'+PORT+'/index.html?ntfy='+L.N;
+const URL0='http://localhost:'+PORT+'/index.html';
 const TL=()=>{try{sessionStorage.removeItem('e99-intro')}catch(e){}window.__tl=[];const t0=performance.now();
   const snap=()=>{const i=document.getElementById('stok-intro'),f=document.querySelector('#auth-screen form');
     window.__tl.push({t:performance.now()-t0,intro:!!i,bg:i?getComputedStyle(i).backgroundColor:'',lock:!!(document.body&&document.body.classList.contains('e99-booting')),pe:f?getComputedStyle(f).pointerEvents:''})};

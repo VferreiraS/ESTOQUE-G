@@ -1,5 +1,5 @@
 /* v142: conferência de volumes com coletor de dados (leitor Eyoyo no modo teclado HID: digita o código e manda Enter).
-   PC 1440×900 gestor + iPhone 13 auxiliar (equipe pelo ntfy falso). O coletor é simulado com page.keyboard.type(código,{delay:5}) + Enter:
+   PC 1440×900 gestor + iPhone 13 auxiliar (equipe pela nuvem do emulador). O coletor é simulado com page.keyboard.type(código,{delay:5}) + Enter:
    conta, repete, inválido não conta, sem Enter (tempo) conta, digitação lenta ignorada, desfazer, volume à mão não é capturado,
    pausar/continuar a interrompida no modo coletor, finalizar → relatório "Coletor" + .xlsx, auxiliar às cegas, sem câmera nem ZXing, 0 erro. */
 const L=require('./lib.js');const {ok,until}=L;const fs=require('fs');
@@ -11,7 +11,7 @@ const count=p=>p.evaluate(()=>{const c=document.getElementById('cf-count');retur
 const total=p=>p.evaluate(()=>e99Conf.state()?e99Conf.state().total:-1);
 async function scan(p,code,opt){await p.keyboard.type(code,{delay:5});if(!opt||opt.enter!==false)await p.keyboard.press('Enter');await p.waitForTimeout(350)}
 (async()=>{const b=await L.chromium.launch();const errs=[];const T=Date.now().toString(36);
- const watch=(p,tag)=>{p.on('pageerror',e=>errs.push(tag+' '+e.message));p.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::|ERR_|ntfy|firebase|firestore|googleapis|status of 4\d\d/i.test(m.text()))errs.push(tag+' console: '+m.text())});p.on('dialog',d=>d.accept(d.defaultValue()))};
+ const watch=(p,tag)=>{p.on('pageerror',e=>errs.push(tag+' '+e.message));p.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::|ERR_|firebase|firestore|googleapis|status of 4\d\d/i.test(m.text()))errs.push(tag+' console: '+m.text())});p.on('dialog',d=>d.accept(d.defaultValue()))};
  const cA=await b.newContext({viewport:{width:1440,height:900},acceptDownloads:true});await cA.addInitScript(SPY);const A=await cA.newPage();watch(A,'PC');
  const cB=await b.newContext(L.devices['iPhone 13']);await cB.addInitScript(SPY);const B=await cB.newPage();watch(B,'iPhone');
  ok(await L.gestorWithTeam(A,'colg'+T),'PC: gestor com equipe');

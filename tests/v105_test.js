@@ -11,7 +11,7 @@ async function fillFields(p,l,email){await p.fill('#auth-screen input[name=store
 (async()=>{const b=await L.chromium.launch();const errs=[];const T=Date.now();
  for(const [nome,opts] of [['PC',{viewport:{width:1440,height:900}}],['celular',L.devices['iPhone 13']]]){
   const P=await (await b.newContext(opts)).newPage();P.on('pageerror',e=>errs.push(nome+' '+e.message));P.on('dialog',d=>d.accept());
-  await P.goto('http://localhost:8000/index.html?ntfy='+L.N);await P.waitForTimeout(1500);
+  await P.goto('http://localhost:8000/index.html');await P.waitForTimeout(1500);
   /* 1) criar conta sem e-mail: o navegador barra (mensagem clara) e, mesmo sem a checagem do navegador, o app recusa */
   const l1='semmail'+nome+T;await fillSignup(P,l1,null);
   ok(await P.evaluate(()=>{const i=document.querySelector('#auth-screen input[name=email]');return !!i&&i.required&&!i.closest('label').hidden}),nome+': campo de e-mail obrigatório e visível');

@@ -36,27 +36,33 @@ var sub0=authSubmit;authSubmit=async function(ev){ownerNext=false;if(!testOpen()
 /* uso único do link de acesso */
 var USED='lojasg.estoque99.invite-used',remote={};
 function usedMap(){try{return JSON.parse(ls(USED)||'{}')||{}}catch(x){return {}}}
-window.e99InvMark=function(inv,login){if(!inv||!inv.inviteId)return;var m=usedMap();m[String(inv.inviteId).slice(0,40)]={login:String(login||inv.login||'').slice(0,80),at:Date.now()};var ks=Object.keys(m);if(ks.length>200)ks.slice(0,ks.length-200).forEach(function(k){delete m[k]});ls(USED,JSON.stringify(m))};
+window.e99InvMark=function(inv,login){if(!inv||!inv.inviteId)return;claim(inv,login);var m=usedMap();m[String(inv.inviteId).slice(0,40)]={login:String(login||inv.login||'').slice(0,80),at:Date.now()};var ks=Object.keys(m);if(ks.length>200)ks.slice(0,ks.length-200).forEach(function(k){delete m[k]});ls(USED,JSON.stringify(m))};
 window.e99InvUsed=function(inv){if(!inv)return '';var id=String(inv.inviteId||''),lg=authLoginName(inv.login||''),u=id?usedMap()[id]:null;
   var here=u||(lg&&authAccounts().some(function(a){return authLoginName(a.login)===lg}));
   if(here)return 'Este link de acesso já foi usado neste aparelho (conta @'+(u&&u.login||lg)+'). Entre com o seu login e a senha que você escolheu. Esqueceu? Use "Esqueci a senha".';
   if(id&&remote[id]==='rev')return 'Este link de acesso foi cancelado pelo gestor. Peça um novo link ao gestor.';
   if(id&&remote[id]==='used')return 'Este link de acesso já foi ativado em outro aparelho. Entre com o seu login e senha (ou traga a sua conta da nuvem). Se não foi você, avise o gestor.';
   return ''};
-window.e99InvCheck=async function(inv){if(!inv||!inv.code||!window.e99SyncPeek)return;var id=String(inv.inviteId||''),lg=authLoginName(inv.login||'');var l=[];try{l=await window.e99SyncPeek(inv.code,3500)}catch(x){}
-  l.forEach(function(o){if(!o||typeof o!=='object')return;
-    if(o.k==='member'&&((id&&o.inviteId===id&&o.event==='created')||(lg&&typeof o.login==='string'&&authLoginName(o.login)===lg)))remote[id]=remote[id]||'used';
-    if(o.k==='invused'&&o.r!=='auxiliar'&&id){if(Array.isArray(o.rev)&&o.rev.indexOf(id)>=0)remote[id]='rev';else if(Array.isArray(o.ids)&&o.ids.indexOf(id)>=0&&remote[id]!=='rev')remote[id]='used'}})};
-/* gestor: avisa a equipe quais links já foram ativados ou cancelados (o ntfy guarda 12 h; repete de tempos em tempos) */
-function invList(){if(!authSession)return [];try{return JSON.parse(localStorage.getItem('lojasg.estoque99.aux-invites:'+authSession.storeKey)||'[]')||[]}catch(x){return []}}
+/* v148: uso único entre aparelhos pela nuvem da loja. eq_u~{convite} só pode ser criado uma vez (regras: quem chega depois não grava por cima):
+   quem ativa o link cria o documento; o gestor cria o mesmo documento para cancelar um link ainda não usado. O aparelho novo entra
+   anônimo, prova o código da equipe (que veio no link) e lê esse documento e a lista de membros antes de ativar. */
+var UID=/^[A-Za-z0-9_-]{1,60}$/,peekC={};
+function lim(p,ms){return new Promise(function(res){var t=setTimeout(function(){res(null)},ms);Promise.resolve(p).then(function(v){clearTimeout(t);res(v)},function(){clearTimeout(t);res(null)})})}
+function peekOf(code){var k=String(code);if(!peekC[k]){peekC[k]=window.e99Loja&&window.e99Loja.peek?window.e99Loja.peek(code):Promise.reject();peekC[k].catch(function(){delete peekC[k]})}return peekC[k]}
+function uDoc(c,id,o){return c.seal('eq_u~'+id,o).then(function(d){return c.L().collection('dados').doc('eq_u~'+id).set({c:'eq',at:Date.now(),st:c.FS.FieldValue.serverTimestamp(),by:c.uid,cuid:c.uid,del:false,v:1,d:d})})}
+window.e99InvCheck=async function(inv){if(!inv||!inv.code)return;var id=String(inv.inviteId||''),lg=authLoginName(inv.login||'');if(!UID.test(id))return;
+  var c=await lim(peekOf(inv.code),7000);if(!c)return;
+  var d=await lim(c.L().collection('dados').doc('eq_u~'+id).get(),5000);
+  if(d&&d.exists){var x=d.data()||{},o=await c.unseal('eq_u~'+id,x.d);remote[id]=o&&o.rev?'rev':'used';return}
+  var q=await lim(c.L().collection('membros').get(),5000);if(q)q.forEach(function(m){var y=m.data()||{};if(m.id!==c.uid&&((y.inviteId&&y.inviteId===id)||(lg&&typeof y.login==='string'&&authLoginName(y.login)===lg)))remote[id]=remote[id]||'used'})};
+function claim(inv,login){try{var id=String(inv.inviteId||'');if(!UID.test(id)||!inv.code)return;lim(peekOf(inv.code),7000).then(function(c){if(c)uDoc(c,id,{login:String(login||inv.login||'').slice(0,80),at:Date.now()}).catch(function(){})})}catch(x){}}
 function revKey(){return 'lojasg.estoque99.invite-revoked:'+(authSession?authSession.storeKey:'')}
 function revList(){try{var a=JSON.parse(ls(revKey())||'[]');return Array.isArray(a)?a.filter(function(x){return typeof x==='string'}).slice(-100):[]}catch(x){return []}}
-var invAt=0;
-function sendInvused(force){try{if(!window.e99CanCreateAccounts()||!window.e99SyncInfo||!window.e99SyncInfo()||!window.e99SyncSend)return;if(!force&&Date.now()-invAt<3*3600000)return;
-  var mem=window.syncMembers?window.syncMembers():{},ms=Object.keys(mem).map(function(k){return mem[k]});
-  var used=invList().filter(function(x){return x&&x.inviteId&&ms.some(function(m){return m&&(m.inviteId===x.inviteId||(m.login&&x.login&&authLoginName(m.login)===authLoginName(x.login)))})}).map(function(x){return String(x.inviteId)}).slice(0,100),rev=revList();
-  if(!used.length&&!rev.length)return;invAt=Date.now();window.e99SyncSend('invused',{ids:used,rev:rev})}catch(x){}}
-window.e99InvRevoke=function(id){var a=revList();if(a.indexOf(id)<0)a.push(String(id).slice(0,40));ls(revKey(),JSON.stringify(a.slice(-100)));setTimeout(function(){sendInvused(true)},300)};
+function revDone(){try{return JSON.parse(ls(revKey()+':ok')||'[]')||[]}catch(x){return []}}
+/* gestor: cancela na nuvem os links ainda não usados (tenta de novo sozinho se estava sem internet) */
+function sendRev(){try{if(!authSession||!window.e99CanCreateAccounts||!window.e99CanCreateAccounts())return;var c=window.e99Loja&&window.e99Loja.conn&&window.e99Loja.conn();if(!c)return;var done=revDone();
+  revList().filter(function(id){return UID.test(id)&&done.indexOf(id)<0}).forEach(function(id){var ok=function(){var d=revDone();if(d.indexOf(id)<0)d.push(id);ls(revKey()+':ok',JSON.stringify(d.slice(-100)))};uDoc(c,id,{rev:1,at:Date.now()}).then(ok,function(e){if(/permission-denied/.test(e&&e.code||''))ok()})})}catch(x){}}
+window.e99InvRevoke=function(id){var a=revList();if(a.indexOf(id)<0)a.push(String(id).slice(0,40));ls(revKey(),JSON.stringify(a.slice(-100)));setTimeout(sendRev,300)};
 /* Administração: atalho para criar a conta e o link */
 function adminPanel(){if(page!=='admin'||!authSession||authSession.payload.role!=='gestor')return;var v=document.getElementById('view');if(!v||v.querySelector('#acc-create'))return;var t=window.e99Team&&window.e99Team.get();
   var d=document.createElement('div');d.className='panel help';d.id='acc-create';d.innerHTML='<h2>Criar conta e link de acesso</h2><p class="small" style="margin:0">Só você cria contas. Informe nome, login, papel (auxiliar ou estoque) e e-mail: o site gera um link de acesso pessoal. Quem abre o link só ativa essa conta e escolhe a própria senha; o link vale uma vez.</p>'+(t&&t.owner?'<button class="primary" type="button" onclick="e99OpenAccCreate()">Criar conta e link</button>':'<p class="small">Primeiro crie a equipe no Chat (Criar equipe e gerar código).</p><button type="button" onclick="go(\'chat\')">Abrir o Chat</button>');
@@ -96,7 +102,7 @@ function papelOf(){var r=authSession&&authSession.payload.role;return r==='auxil
 function papelTxt(p){return p==='auxiliar'?'Auxiliar':p==='gestor'?'Gestor':p==='estoque'?'Estoque':'Equipe'}
 function url(d){if(!d)return '';if(urls[d])return urls[d];try{var b=atob(d.split(',')[1]),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);urls[d]=URL.createObjectURL(new Blob([a],{type:'image/jpeg'}))}catch(x){urls[d]=''}return urls[d]}
 function initial(n){return e((String(n||'?').trim()[0]||'?').toUpperCase())}
-/* ===== v147: UM perfil por pessoa. window.e99Perfil(ref) junta as duas fontes (nuvem perfis_{uid} da v137 e o perfil da equipe pelo ntfy)
+/* ===== v147: UM perfil por pessoa. window.e99Perfil(ref) junta a nuvem perfis_{uid} (v137; desde a v148 a única via) e os perfis antigos guardados neste aparelho
    e é a única leitura usada pelo chat da equipe, conversas, Equipe, mural e página da pessoa. Vale o mais novo (at); empate = nuvem.
    ref: 'me' | uid | 'u:<uid>' | 'd:<aparelho>' | {uid}|{dev}|{login}|{name}. Só visual: nunca dá papel; o chamador passa tudo por esc(). */
 function LG(v){try{return authLoginName(String(v||''))}catch(x){return String(v||'').trim().toLowerCase()}}
@@ -133,26 +139,14 @@ window.e99PerfilAll=function(){if(typeof authSession==='undefined'||!authSession
 function avatar(p,name,cls){var u=p&&p.photo?url(p.photo):'';if(u)return '<img class="av '+(cls||'')+'" src="'+e(u)+'" alt="" decoding="async">';return '<span class="av '+(cls||'')+'" aria-hidden="true">'+initial(p&&p.name||name)+'</span>'}
 window.profAvatar=function(name,cls){return avatar(window.e99Perfil({name:name}),name,cls)};
 window.profChip=function(name){var p=window.e99Perfil({name:name}),show=p&&p.name||name;return '<button type="button" class="who prof-chip" data-ref="'+e(p?p.ref:'')+'" data-name="'+e(name)+'" aria-label="Ver perfil de '+e(show)+'">'+avatar(p,name,'av-s')+'<span>'+e(show)+'</span></button>'};
-document.addEventListener('click',function(ev){var b=ev.target&&ev.target.closest&&ev.target.closest('button.prof-chip,button.e99-prof-open');if(!b)return;ev.preventDefault();ev.stopPropagation();var k=b.getAttribute('data-ref')||'';if(!k){var p=window.e99Perfil({name:b.getAttribute('data-name')});k=p?p.ref:''}if(!k){notify('Essa pessoa ainda não mandou o perfil para a equipe.');return}window.openProfile(k)},true);
+document.addEventListener('click',function(ev){var b=ev.target&&ev.target.closest&&ev.target.closest('button.prof-chip,button.e99-prof-open');if(!b)return;ev.preventDefault();ev.stopPropagation();var k=b.getAttribute('data-ref')||'';if(!k){var p=window.e99Perfil({name:b.getAttribute('data-name')});k=p?p.ref:''}if(!k){notify('Essa pessoa ainda não tem perfil na equipe.');return}window.openProfile(k)},true);
 /* 'me' sem mais nada = editor do meu perfil; qualquer outra pessoa = a página única (rota pessoa) */
 window.openProfile=function(k){if(typeof k==='string'&&k!=='me'&&window.e99Pessoa){var p=window.e99Perfil(k);if(p&&!p.me){window.e99Pessoa(p.ref);return}}draft=null;go('profile')};
 window.e99ProfilesAll=function(){if(!authSession)return [];var me=mine(),out=[{key:'me',p:{name:me.name,user:'',cargo:me.cargo,names:[myName()]},role:authSession.payload.role,me:true}];
   window.e99PerfilAll().forEach(function(p){out.push({key:p.ref,p:{name:p.name,user:'',cargo:p.cargo,names:p.names.filter(function(x){return x!==p.name})},login:p.login,role:p.papel==='auxiliar'?'auxiliar':'gestor'})});return out};
-/* envio para a equipe */
-function pubKey(){return 'lojasg.estoque99.perfil-pub:'+(authSession?authSession.storeKey:'')}
-function lastPub(t){try{return (JSON.parse(ls(pubKey())||'{}')||{})[t]||0}catch(x){return 0}}
-var pubT=0,pubBusy=false;
-function publish(force){clearTimeout(pubT);pubT=setTimeout(async function(){var i=window.e99SyncInfo&&window.e99SyncInfo();if(!i||!authSession||!window.e99SyncSend||pubBusy)return;if(!force&&Date.now()-lastPub(i.topic)<2.5*3600000)return;pubBusy=true;
-  try{var p=mine();var ok=await window.e99SyncSend('perfil',{pat:p.at||1,login:String(authSession.record.login).slice(0,80),papel:papelOf(),ph:(p.photo||p.cover)?1:0,pt:{name:p.name,cargo:p.cargo,bio:p.bio}},(p.photo||p.cover)?clean0({photo:p.photo,cover:p.cover}):null);
-    if(ok){var o={};try{o=JSON.parse(ls(pubKey())||'{}')||{}}catch(x){}o[i.topic]=Date.now();ls(pubKey(),JSON.stringify(o))}}finally{pubBusy=false}},force?400:1500+Math.random()*3000)}
-window.e99OnPerfil=async function(o,who,getBody,t){if(!authSession||!o||typeof o.dev!=='string'||!/^[a-z0-9]{6,40}$/.test(o.dev))return;await load();if(t!==topic())return;
-  if(typeof o.login==='string'&&authLoginName(o.login)===authLoginName(authSession.record.login))return;
-  var pt=o.pt&&typeof o.pt==='object'?o.pt:{},cur=team[o.dev],at=Number(o.pat)||0;if(cur&&cur.at>at)return;if(cur&&cur.at===at&&(cur.photo||!o.ph))return;
-  var body=null;try{body=await getBody()}catch(x){}
-  var r=cleanRec({name:pt.name,chat:who,cargo:pt.cargo,bio:pt.bio,login:o.login,papel:o.papel,photo:body&&body.photo||'',cover:body&&body.cover||'',at:at});if(!r)return;if(!body&&cur&&o.ph){if(!r.photo)r.photo=cur.photo;if(!r.cover)r.cover=cur.cover||''}
-  team[o.dev]=r;persistTeam();refresh()};
-window.e99PerfilPublish=function(){publish(true)};
-var helloPrev=window.e99OnHello;window.e99OnHello=function(){try{if(helloPrev)helloPrev.apply(this,arguments)}catch(x){}var i=window.e99SyncInfo&&window.e99SyncInfo();if(i&&Date.now()-lastPub(i.topic)>2*60000)publish(true);sendInvused(false)};
+/* v148: o perfil vai para a equipe só pela nuvem (perfis_{uid}, v137.js) */
+window.e99PerfilPublish=function(){try{if(window.e99Social&&window.e99Social.pushPerfil)window.e99Social.pushPerfil(true)}catch(x){}};
+function publish(){window.e99PerfilPublish()}
 var refT=0;function refresh(){clearTimeout(refT);refT=setTimeout(function(){if(!authSession)return;
     if(page==='profile'||page==='team'||page==='pessoa'){var a=document.activeElement,busy=a&&a.closest&&(a.closest('#pf-form')||(a.closest('#sc-mural form,#st-new')&&a.value));if(!busy&&!document.getElementById('st-view')){var y=scrollY;render();scrollTo(0,y)}}
     try{dispatchEvent(new Event('e99:perfil'))}catch(x){}
@@ -188,6 +182,6 @@ function label(){if(!authSession)return;if(!labels.profile){var acc=labels.accou
 var r0=render;render=function(){if(authSession)label();if(page!=='profile')draft=null;var r=r0.apply(this,arguments);try{if(authSession){auxDeco();teamDeco();adminPanel()}}catch(x){}return r};
 var en0=authEnter;authEnter=function(){var r=en0.apply(this,arguments);try{label();loadedSk='';loadedT='';team={};draft=null;load();try{render()}catch(x){}}catch(x){}return r};
 var lo0=authLogout;authLogout=async function(){var r=await lo0.apply(this,arguments);if(!authSession){team={};loadedSk='';loadedT='';draft=null;try{delete labels.profile;delete icons.profile}catch(x){}}return r};
-setInterval(function(){if(!authSession||document.hidden)return;load();var i=window.e99SyncInfo&&window.e99SyncInfo();if(i&&Date.now()-lastPub(i.topic)>2.5*3600000)publish(false);sendInvused(false)},15000);
+setInterval(function(){if(!authSession||document.hidden)return;load();sendRev()},15000);
 if(typeof authSession!=='undefined'&&authSession){label();load()}
 })();

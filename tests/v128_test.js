@@ -3,7 +3,7 @@
    sem emoji usado como ícone em menus, botões e títulos, toques ≥44 px no celular e 0 erro de console.
    Pontos arrumados: plural certo, textos sem jargão, ícones SVG, estados vazios com ação, janela centralizada no iPhone. */
 const L=require('./lib.js');const {ok,until}=L;
-const URL0='http://localhost:8000/index.html?ntfy='+L.N;
+const URL0='http://localhost:8000/index.html';
 (async()=>{const b=await L.chromium.launch();const errs=[];
  async function dev(nome,opts,init){const c=await b.newContext(opts);if(init)await c.addInitScript(init);const P=await c.newPage();
   P.on('pageerror',e=>errs.push(nome+' '+e.message));P.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR|ERR_CONNECTION|firestore|Firebase|identitytoolkit|WebChannel/i.test(m.text()))errs.push(nome+' console: '+m.text())});P.on('dialog',d=>d.accept());return P}

@@ -1,7 +1,7 @@
 
 /* v96: conferência às cegas por câmera.
    Verdade local = IndexedDB "estoque99-conf" (cada registro cifrado com AES-GCM com a chave confKey guardada no estado cifrado da conta).
-   Equipe = state.confs (cópia compacta) gravada só em pontos de controle (20 leituras, 60 s, pausar, finalizar, voltar a rede) → save() → sync (ntfy).
+   Equipe = state.confs (cópia compacta) gravada só em pontos de controle (20 leituras, 60 s, pausar, finalizar, voltar a rede) → save() → sync (nuvem da loja).
    Máquina de estados: ARMADO → mesmo código 2× em ≤600 ms → grava → +1 → TRAVADO → rearme (toque em "Próxima caixa" ou, opcional, 1,2 s sem código).
    A tela de contagem nunca lê state.nfs (às cegas). Tudo que vem de código lido entra por esc()/textContent. */
 (function(){
@@ -263,7 +263,7 @@ async function finish(){if(!S||S.status==='finalizada')return;if(!confirm('Final
   stopCam();S.status='finalizada';S.end=nowIso();try{await putMeta()}catch(e){}await checkpoint('fim');release();var id=S.id;showReport(id);say('Conferência '+S.n+' finalizada: '+valid().length+' volume(s).');try{window.e99PowerUp&&window.e99PowerUp()}catch(e){}}
 
 /* v98: descartar = apaga a sessão e as leituras do aparelho, sem relatório. Na equipe fica só um marcador "cancelada" sem leituras
-   (o sync não aceita apagar pelo ntfy; o aparelho dono pode atualizar, então as cópias dos outros também perdem as leituras). */
+   (o sync não aceita apagar conferência; o aparelho dono pode atualizar, então as cópias dos outros também perdem as leituras). */
 async function discard(){if(!S||S.status==='finalizada')return;if(S.dev!==meDev()||S.acct!==acct()){say('Só quem fez a conferência, neste aparelho, pode descartar.');return}
   if(!confirm('Descartar a conferência '+S.n+' ('+valid().length+' volume(s))? As leituras serão apagadas e não haverá relatório. Não dá para desfazer.'))return;
   var id=S.id,n=S.n,c=compact(S);stopCam();clearInterval(tickT);tickT=0;S=null;M.st='off';M.ask=null;release();

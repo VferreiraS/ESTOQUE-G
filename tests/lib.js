@@ -2,9 +2,25 @@ let PW;try{PW=require('playwright')}catch(e){PW=require('/opt/node22/lib/node_mo
 /* todo navegador de teste usa o emulador do Firebase e não mostra o passo de permissões */
 /* v126: aparelho de teste já está na época da limpeza geral (senão a 1ª abertura apagaria o que o teste semeou) */
 const INIT=()=>{try{localStorage.setItem('stok-reset','r126');sessionStorage.setItem('e99-intro','1');localStorage.setItem('e99-fb-emu','127.0.0.1:9099|127.0.0.1:8080');if(localStorage.getItem('e99-test-strong'))localStorage.removeItem('e99-test-weak-pw');else localStorage.setItem('e99-test-weak-pw','1');/* v127: contas só pelo gestor; nos testes antigos (localhost) a criação livre continua ligada. tests/v127_test.js liga e99-test-strict. */if(localStorage.getItem('e99-test-strict'))localStorage.removeItem('e99-test-signup');else localStorage.setItem('e99-test-signup','1');/* v138: testes antigos abrem direto o chat da equipe; v138_test liga e99-test-chatlist */if(localStorage.getItem('e99-test-chatlist'))localStorage.removeItem('e99-test-chatgeral');else localStorage.setItem('e99-test-chatgeral','1');/* v141: a abertura do app espera o toque em "Entrar"; nos testes antigos some sozinha. tests/v141_test.js liga e99-test-gate. */if(localStorage.getItem('e99-test-gate'))localStorage.removeItem('e99-test-autointro');else localStorage.setItem('e99-test-autointro','1');if(!localStorage.getItem('e99-test-perm'))localStorage.setItem('e99-no-perm-step','1');if(!localStorage.getItem('e99-test-note'))localStorage.setItem('e99-no-cookie-note','1')}catch(e){}};
-const chromium={launch:async(o)=>{const b=await PW.chromium.launch(o);const nc=b.newContext.bind(b);b.newContext=async(opts)=>{const c=await nc(opts);await c.addInitScript(INIT);return c};const np=b.newPage.bind(b);b.newPage=async(opts)=>{const c=await b.newContext(opts);return c.newPage()};return b}};
+/* v148: a equipe só existe pela nuvem. Na vida real o gestor verificado abre a loja (acesso/_raiz) e confirma os papéis (papeis/{uid}).
+   Nos testes antigos o dono da equipe é uma conta comum; este apoio faz no EMULADOR, com o token de administrador, o que o gestor
+   verificado faria (abre a loja e dá o papel de cada conta). As regras não mudam e continuam testadas em rules_v136_test, v136, v139 e v148
+   (que ligam e99-test-strict e usam o fluxo real). No modo estrito o dono (login vferreiras) é marcado como verificado, como o dono real. Conta com e99-test-nopapel fica sem papel (como quem entrou só com o código). */
+const FSU='http://127.0.0.1:8080/v1/projects/gen-lang-client-0167474823/databases/(default)/documents';
+async function fsAdmin(path,body){const r=await fetch(FSU+path,{method:body?'PATCH':'GET',headers:{Authorization:'Bearer owner','Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});return r.json()}
+const SEEDED={};
+/* testes de som no iPhone ligam L.shimOff (no Playwright cada evaluate conta como toque) */
+function shim(p){let busy=false;const t=setInterval(async()=>{if(busy||module.exports.shimOff)return;if(p.isClosed()){clearInterval(t);return}busy=true;try{
+   const x=await p.evaluate(async()=>{try{if(localStorage.getItem('e99-test-strict')&&typeof authSession!=='undefined'&&authSession&&authSession.record.login==='vferreiras'&&window.e99Cloud&&e99Cloud.user()&&!e99Cloud.user().isAnonymous)return {dono:e99Cloud.user().uid};if(localStorage.getItem('e99-test-strict')||typeof authSession==='undefined'||!authSession||!window.e99Cloud||!e99Cloud.user()||!window.e99Team||!e99Team.get()||!window.e99Loja)return null;
+     const t=e99Team.get(),loja=await e99Cloud.sid();if(!loja)return null;const k=await crypto.subtle.importKey('raw',authBytes(authNormalizeCode(t.code)),'HKDF',false,['deriveBits']);
+     const pv=Array.from(new Uint8Array(await crypto.subtle.deriveBits({name:'HKDF',hash:'SHA-256',salt:authBytes('e99-prova'),info:authBytes('stok-loja')},k,256)),b=>('0'+b.toString(16)).slice(-2)).join('');
+     return {loja,pv,uid:e99Cloud.user().uid,role:authSession.payload.role==='auxiliar'?'auxiliar':t.owner?'gestor':'estoque',st:e99Loja.connState(),nopapel:!!localStorage.getItem('e99-test-nopapel')}}catch(e){return null}});
+   if(x&&x.dono){if(!SEEDED['v'+x.dono]){SEEDED['v'+x.dono]=1;await fsAdmin('/verificados/'+x.dono,{fields:{tipo:{stringValue:'s'}}});await p.evaluate(()=>{try{e99Loja.start()}catch(e){}})}}
+   else if(x){let novo=false;if(!SEEDED[x.loja]){SEEDED[x.loja]=1;await fsAdmin('/lojas/'+x.loja+'/acesso/_raiz',{fields:{prova:{stringValue:x.pv}}});novo=true}
+     const k=x.loja+'|'+x.uid+'|'+x.role;if(!x.nopapel&&!SEEDED[k]){SEEDED[k]=1;await fsAdmin('/lojas/'+x.loja+'/papeis/'+x.uid,{fields:{role:{stringValue:x.role},at:{integerValue:String(Date.now())}}});novo=true}
+     if(novo||x.st==='sem-acesso')await p.evaluate(()=>{try{e99Loja.start()}catch(e){}})}}catch(e){}busy=false},700);if(t.unref)t.unref()}
+const chromium={launch:async(o)=>{const b=await PW.chromium.launch(o);const nc=b.newContext.bind(b);b.newContext=async(opts)=>{const c=await nc(opts);await c.addInitScript(INIT);c.on('page',shim);return c};const np=b.newPage.bind(b);b.newPage=async(opts)=>{const c=await b.newContext(opts);return c.newPage()};return b}};
 let EMN=0;const RUN=Date.now().toString(36);const mail=(l)=>String(l).toLowerCase().replace(/[^a-z0-9]/g,'')+'.'+RUN+(++EMN)+'@teste.com';
-const N='http://localhost:20130';
 /* marca "Li e aceito a Política de privacidade e os Termos de uso" quando a caixa existir */
 async function terms(p,form){const b=await p.$((form||'')+' input[name=lgpdok]');if(b&&!(await b.isChecked()))await b.check()}
 const ok=(c,m)=>console.log((c?'PASS ':'FAIL ')+m);
@@ -15,13 +31,13 @@ async function makeInvite(A,name,pin){await A.evaluate(()=>go('chat'));await A.w
  await A.evaluate(()=>{navigator.share=t=>{window.__inv=t.text;return Promise.resolve()}});await A.click('#aux-box button.primary');await A.waitForTimeout(2500);
  const text=await A.evaluate(()=>window.__inv);const link=text.match(/(http\S+#auxiliar=[A-Za-z0-9_-]+)/)[1];KEYS[link]=await A.evaluate(()=>{const k='lojasg.estoque99.aux-invites:'+authSession.storeKey;return JSON.parse(localStorage.getItem(k))[0].key});return link}
 const KEYS={};
-function inviteUrl(link){return link.replace('#','index.html?ntfy='+N+'#').replace('/index.htmlindex.html','/index.html')}
+function inviteUrl(link){return link.replace('#','index.html#').replace('/index.htmlindex.html','/index.html')}
 async function auxAccept(B,link,pin,pw){await B.goto('about:blank');await B.goto(inviteUrl(link));await B.waitForTimeout(2500);if(await B.$('#aux-form input[name=pin]')){await B.fill('#aux-form input[name=pin]',KEYS[link]||pin);await B.click('#aux-form button[type=submit]')}await B.waitForSelector('#aux-form input[name=password]',{timeout:15000}).catch(()=>{});await B.waitForTimeout(500);
  if(await B.$('#aux-form input[name=email]')&&!(await B.inputValue('#aux-form input[name=email]')))await B.fill('#aux-form input[name=email]',mail('aux'));await B.fill('#aux-form input[name=password]',pw);await B.fill('#aux-form input[name=confirmation]',pw);await terms(B,'#aux-form');await B.click('#aux-form button[type=submit]');await B.waitForTimeout(3000);
  await B.fill('#recovery-last4',(await B.textContent('.recovery-code')).replace(/[^A-Z0-9]/gi,'').slice(-4));await B.click('#recovery-enter');await B.waitForTimeout(2500);await B.addStyleTag({content:'#alert-popup{display:none!important}'})}
-async function gestorWithTeam(A,l){await A.goto('http://localhost:8000/index.html?ntfy='+N);await A.waitForTimeout(2500);await signup(A,l);
+async function gestorWithTeam(A,l){await A.goto('http://localhost:8000/index.html');await A.waitForTimeout(2500);await signup(A,l);
  await A.evaluate(async()=>{state.team=[{id:'ana',name:'Ana',role:'Repositora'}];state.corridors=[{id:'c7',number:'07',sector:'Mercearia',owner:'ana'}];state.nfs=[{id:'n1',number:'48213',supplier:'Laticínios',date:iso(),status:'Pendente',owner:'ana',notes:'',volumes:3}];
    state.plans=[{id:'p1',title:'Plano de terça',date:iso(),activities:[{id:'a1',title:'Repor arroz no 07',owner:'Ana',notes:'',photos:[]}]}];await save();go('chat')});
  await A.fill('#view form[onsubmit="chatCreate(event)"] input[name=name]','Vitor');await A.click('text=Criar equipe e gerar código');
  return until(A,()=>syncStatus().ready&&syncStatus().pending===0&&syncStatus().connected)}
-module.exports={terms,mail,chromium,devices,N,ok,signup,login,until,makeInvite,inviteUrl,auxAccept,gestorWithTeam};
+module.exports={terms,mail,chromium,devices,fsAdmin,ok,signup,login,until,makeInvite,inviteUrl,auxAccept,gestorWithTeam};

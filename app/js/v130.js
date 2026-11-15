@@ -7,7 +7,7 @@ W.e99NetFail=function(rec,done){try{if(navigator.onLine===false||typeof W.e99Net
 function retryChat(){try{if(navigator.onLine===false||typeof W.chatRetry!=='function')return;var f=typeof W.e99ChatFailed==='function'?W.e99ChatFailed():[];f.forEach(function(x){try{W.chatRetry(x.id)}catch(e){}})}catch(e){}}
 W.addEventListener('online',function(){setTimeout(retryChat,1200)});
 /* ---------- B: painel "Rede da loja / Antivírus" (na aba Dados) ---------- */
-var HOSTS='vferreiras.github.io\nntfy.sh\nidentitytoolkit.googleapis.com\nfirestore.googleapis.com\nwww.gstatic.com';
+var HOSTS='vferreiras.github.io\nidentitytoolkit.googleapis.com\nfirestore.googleapis.com\nwww.gstatic.com';
 function panel(){var d=D.createElement('div');d.className='panel help';d.id='net-panel';
   d.innerHTML='<h2>Rede da loja / Antivírus</h2>'
    +'<p class="small">Se aparecer "sem internet" mesmo com internet, em geral é o antivírus (ex.: Bitdefender) ou a rede/Wi-Fi da loja barrando o Stok. Isto não burla nada: só libera o app no seu próprio antivírus.</p>'

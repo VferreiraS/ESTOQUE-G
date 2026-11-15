@@ -17,7 +17,7 @@ function watchPage(p){
  const b=await L.chromium.launch();let p;
  try{
   const c=await b.newContext(L.devices['iPhone 13']);p=await c.newPage();watchPage(p);
-  await p.goto('http://localhost:8000/index.html?ntfy='+L.N);await p.waitForSelector('#auth-form');
+  await p.goto('http://localhost:8000/index.html');await p.waitForSelector('#auth-form');
   ok(!(await p.$('#stok-gate')),'nenhuma tela #stok-gate no login');
   ok(await p.evaluate(()=>typeof window.playStokIntro==='function'&&typeof window.replayEntrySplash==='function'),'callbacks públicos de intro preservados');
   await p.evaluate(()=>window.playStokIntro());await p.waitForSelector('#stok-intro');
@@ -44,7 +44,7 @@ function watchPage(p){
   await p.evaluate(()=>window.playStokIntro());ok(!!(await p.$('#stok-intro canvas.si-canvas')),'v122/v140: abertura com o S (canvas) sempre (sem preferência Efeitos)');
 
   const rc=await b.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});const rp=await rc.newPage();watchPage(rp);
-  await rp.goto('http://localhost:8000/index.html?ntfy='+L.N);await rp.waitForSelector('#auth-form');
+  await rp.goto('http://localhost:8000/index.html');await rp.waitForSelector('#auth-form');
   await rp.evaluate(()=>window.playStokIntro());await rp.waitForSelector('#stok-intro');
   ok(await rp.evaluate(()=>getComputedStyle(document.querySelector('.entry-splash')).display==='none'),'splash legado oculto por seletor computado com prefers-reduced-motion');
   ok(await rp.evaluate(()=>{const e=document.querySelector('#stok-intro');return !e.dataset.reducedMotion&&getComputedStyle(e.querySelector('.si-word')).animationName==='si-type'&&getComputedStyle(e.querySelector('.si-cap')).display!=='none'&&window.e99IntroRunning()}),'v146: com prefers-reduced-motion a abertura anima igual (decisão do dono)');
