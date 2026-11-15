@@ -17,6 +17,9 @@ body.dark .pn-period{background:rgba(255,255,255,.06);border:1px solid var(--k-l
 body.dark .pn-period button{border-radius:999px!important;color:rgba(255,255,255,.65)!important}
 body.dark .pn-period button[aria-pressed=true]{background:#fff!important;color:#0a0a0c!important}
 body.dark .nf-tabs{background:rgba(255,255,255,.05);border:1px solid var(--k-line);border-radius:999px;padding:4px;display:inline-flex;flex-wrap:wrap;gap:4px}
+/* v152: faixa de filtros das notas sem cortes — caixa do tamanho do conteúdo, canto que cabe nas pílulas quando quebra linha, sem traço de luz (v91) e sem rolagem que corta a 1ª pílula */
+body.dark #view .nf-tabs{box-sizing:border-box;max-width:100%;overflow:visible;border-image:none!important;border-bottom:1px solid var(--k-line);margin:0 0 12px;position:static}
+@media (max-width:900px){body.dark #view .nf-tabs{display:flex;width:100%;border-radius:26px;padding:4px}body.dark #view .nf-tabs button{flex:1 1 auto;justify-content:center;white-space:nowrap;margin:0}}
 body.dark .nf-tabs button{border-radius:999px!important}
 body.dark .nf-tabs button[aria-pressed=true]{background:#fff!important;color:#0a0a0c!important;border-color:#fff!important}
 /* botão de ação em pílula branca no destaque */

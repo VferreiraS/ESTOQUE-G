@@ -61,7 +61,7 @@ html:root body.dark #view button.primary,html:root body.dark #auth-screen button
 html:root body.dark #view .more-menu button.primary{box-shadow:none!important}
 
 /* ---------- Tron: linhas de circuito finas nos separadores ---------- */
-html:root body.dark aside .brand,html:root body.dark #auth-screen .brand,html:root body.dark #view .nf-tabs,html:root body.dark #prefs-panel .pref-row+.pref-row{border-image:linear-gradient(90deg,rgba(var(--neon-rgb),.8),rgba(var(--neon-rgb),.8) 36px,rgba(255,255,255,.16) 36px,rgba(255,255,255,.08) 70%,transparent) 1!important}
+html:root body.dark aside .brand,html:root body.dark #auth-screen .brand,html:root body.dark #prefs-panel .pref-row+.pref-row{border-image:linear-gradient(90deg,rgba(var(--neon-rgb),.8),rgba(var(--neon-rgb),.8) 36px,rgba(255,255,255,.16) 36px,rgba(255,255,255,.08) 70%,transparent) 1!important}
 html:root body.dark hr{border:0;height:1px;background:linear-gradient(90deg,rgba(var(--neon-rgb),.8),rgba(var(--neon-rgb),.8) 36px,rgba(255,255,255,.16) 36px,rgba(255,255,255,.08) 70%,transparent)}
 /* ---------- cores (v93): vermelho da marca nos destaques e nas linhas; botão #DB2318 com letra branca (4,9:1) ---------- */
 html:root body.dark button.primary,html:root body.dark .primary,html:root body.dark #view button.primary,html:root body.dark #auth-screen button.primary,html:root body.dark #view .toolbar button.primary,html:root body.dark .hero button.primary{background:var(--neon-btn)!important;background-image:none!important;border:1px solid var(--neon-btn)!important;color:var(--neon-ink)!important;font-weight:700}
