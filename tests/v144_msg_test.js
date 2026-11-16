@@ -20,16 +20,16 @@ ok(await p.evaluate(()=>typeof e99Msg==='object'&&typeof e99Msg.text==='function
 /* 1) texto */
 const t=await p.evaluate(()=>e99Msg.text(e99Msg.planPayload(state.plans[0])));
 const lines=t.split('\n');
-ok(/^\*Plano de ação · \d{2}\/\d{2}\/\d{4}\*$/.test(lines[0]),'título em *negrito* ('+lines[0]+')');
-ok(/^_Plano de terça · .+ · \d{2}\/\d{2}\/\d{4} às \d{2}:\d{2}_$/.test(lines[1]),'subtítulo com data e hora ('+lines[1]+')');
+ok(/^\*Plano de ação\*$/.test(lines[0]),'título em *negrito* ('+lines[0]+')');
+ok(/^_\d{2}\/\d{2}\/\d{4} · Plano de terça · .+ · gerado em \d{2}\/\d{2}\/\d{4} às \d{2}:\d{2}_$/.test(lines[1]),'subtítulo com data e hora ('+lines[1]+')');
 ok(lines.includes('──────────')&&lines[lines.length-1]==='Stok · Lojas G · Estoque 99','separador e rodapé "Stok · Lojas G · Estoque 99"');
-ok(/^\*Atividades \(0 de 1 feitas\)\*$/m.test(t)&&/^• \*1\. Repor arroz no 07\* — até 10:00$/m.test(t),'seção em negrito e linha com "•"');
-ok(/Responsável: Ana Souza/.test(t)&&/Orientações: Linha 1 Linha 2 ok/.test(t),'dados do usuário sem * _ ~ e sem quebra de linha');
+ok(/^\*Atividades \(0 de 1 feitas\)\*$/m.test(t)&&/^\*1\. Repor arroz no 07\* — até 10:00$/m.test(t),'seção em negrito e atividade em bloco');
+ok(/Responsável: Ana Souza/.test(t)&&/^Orientações: Linha 1\nLinha 2 ok$/m.test(t),'dados do usuário sem * _ ~ (quebras de linha do usuário mantidas)');
 ok(!/\*arroz\*|\*de\*|_2_|~ok~|\*Souza\*/.test(t),'nenhuma marca vinda do usuário sobra no texto');
 /* 1b) v143: atividade com demanda mostra a demanda e o responsável da demanda */
 const td=await p.evaluate(()=>{state.dresp=[{id:'d2',resp:'Thomaz *Lima*'}];const pl=JSON.parse(JSON.stringify(state.plans[0]));pl.activities[0].demanda='Quebras';pl.activities.push({id:'a2',title:'Separar',owner:'Ana',notes:'',photos:[],done:false,demanda:'Vencimentos'});return e99Msg.text(e99Msg.planPayload(pl))});
-ok(/^   Demanda: Quebras \(responsável da demanda: Thomaz Lima\)$/m.test(td),'plano com demanda: texto tem a demanda e o responsável da demanda');
-ok(/^   Demanda: Vencimentos$/m.test(td)&&!/\*Lima\*/.test(td),'demanda sem responsável aparece sozinha; sem * _ ~ do usuário');
+ok(/^Demanda: Quebras \(responsável: Thomaz Lima\)$/m.test(td),'plano com demanda: texto tem a demanda e o responsável da demanda');
+ok(/^Demanda: Vencimentos$/m.test(td)&&!/\*Lima\*/.test(td),'demanda sem responsável aparece sozinha; sem * _ ~ do usuário');
 await p.evaluate(()=>{state.dresp=[]});
 const plain=await p.evaluate(()=>e99Msg.text({title:'A *b*',sections:[{title:'S',lines:['x']}]},{plain:true}));
 ok(!/[*_]/.test(plain)&&/^A b\n/.test(plain),'versão sem marcas para e-mail');
@@ -92,7 +92,7 @@ await p.evaluate(()=>e99Msg.close());
 
 /* 7) relatório (Compartilhar ↗) e resumo da semana usam a folha */
 await p.evaluate(()=>openShareReport('nfs'));await p.waitForTimeout(200);
-ok(/^\*Notas fiscais · Pendentes\*/.test(await p.inputValue('#report-text'))&&/• \*1\. 48213\*/.test(await p.inputValue('#report-text'))&&!/_Serra_|~LTDA~/.test(await p.inputValue('#report-text')),'relatório: prévia com o texto novo');
+ok(/^\*Notas fiscais · Pendentes\*/.test(await p.inputValue('#report-text'))&&/^\*1\. 48213\*$/m.test(await p.inputValue('#report-text'))&&!/_Serra_|~LTDA~/.test(await p.inputValue('#report-text')),'relatório: prévia com o texto novo');
 await p.click('#report-dialog button.primary');await p.waitForTimeout(300);
 ok(await p.evaluate(()=>document.getElementById('e99-msg').open&&/Notas fiscais/.test(document.getElementById('e99m-text').textContent)),'relatório: "Enviar" abre a folha');
 await p.keyboard.press('Escape');await p.waitForTimeout(150);await p.evaluate(()=>{const d=document.getElementById('report-dialog');if(d.open)d.close()});
@@ -104,7 +104,7 @@ await p.evaluate(()=>{e99Msg.close();document.getElementById('wk-dlg').close()})
 /* 8) envio automático (FormSubmit): mesmo texto no corpo, destino igual */
 await p.evaluate(()=>{localStorage.setItem('lojasg.estoque99.email-reports:'+authSession.storeKey,JSON.stringify({enabled:true,to:'dono@teste.com',cc:'',times:['08:00']}));emailReportTest()});
 await p.waitForTimeout(1500);
-ok(posts.length===1&&typeof posts[0].Mensagem==='string'&&/^Relatório de teste\n/.test(posts[0].Mensagem)&&/• NF 48213 — Laticínios Serra LTDA · Pendente/.test(posts[0].Mensagem)&&!/\*/.test(posts[0].Mensagem)&&posts[0].Loja&&posts[0]['NF 48213'],'FormSubmit: corpo com o texto formatado (campos antigos mantidos)');
+ok(posts.length===1&&typeof posts[0].Mensagem==='string'&&/^Relatório de teste\n/.test(posts[0].Mensagem)&&/^NF 48213 — Laticínios Serra LTDA · Pendente$/m.test(posts[0].Mensagem)&&!/\*/.test(posts[0].Mensagem)&&posts[0].Loja&&posts[0]['NF 48213'],'FormSubmit: corpo com o texto formatado (campos antigos mantidos)');
 ok(Object.keys(posts[0]||{})[0]==='Mensagem','FormSubmit: texto formatado vem primeiro');
 const wf=await p.evaluate(()=>e99Week.fields(e99Week.data(e99Week.monday(iso()))));
 ok(/^Resumo da semana\n/.test(wf.Mensagem)&&wf.Semana&&wf['Divergências'],'resumo semanal: corpo com o texto formatado');

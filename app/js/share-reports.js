@@ -82,7 +82,7 @@ function buildReport(kind,group){
   var text=head+'\n\n'+body+'\n\n— Estoque 99';
   /* v144: texto formatado (e99Msg) com banner */
   var msg={title:title,subtitle:[store,built.extra].filter(Boolean).join(' · '),file:'estoque99-'+kind+'-'+group,subject:title+(store?' · '+store:''),
-    sections:[{title:'Total: '+built.rows.length,lines:built.rows.map(function(r,i){return {b:(i+1)+'. '+r[0],t:'',sub:[r.slice(1).map(function(v,j){return built.headers[j+1]+': '+(v===''||v==null?'—':v)}).join(' · ')]}})}]};
+    sections:[{title:'Total: '+built.rows.length,lines:built.rows.map(function(r,i){return {b:(i+1)+'. '+r[0],t:'',sub:r.slice(1).map(function(v,j){return built.headers[j+1]+': '+(v===''||v==null?'—':v)})}})}]};
   if(window.e99Msg)text=e99Msg.text(msg);
   return {kind:kind,group:group,title:title,store:store,stamp:stamp,headers:built.headers,rows:built.rows,text:text,msg:msg};
 }

@@ -3,26 +3,31 @@
    window.e99Msg.banner(payload)    → Promise<Blob PNG> 1080×420, cores do tema, logo do app (sem rede)
    window.e99Msg.preview(payload,o) → folha com o banner e o texto: Compartilhar (WhatsApp), Copiar para o Outlook, Abrir no e-mail
    payload = {title, subtitle?, when?, sections:[{title?, lines:[texto | {b, t?, sub:[texto]}]}], note?, subject?, file?}
-   Tudo o que vem do usuário passa por clean() (tira * _ ~ ` e quebras de linha) no texto e por esc() no DOM/HTML. */
+   Tudo o que vem do usuário passa por clean() (tira * _ ~ ` e quebras de linha) no texto e por esc() no DOM/HTML.
+   v153: linhas com sub viram blocos (título da linha, um campo por linha, linha em branco entre blocos); os campos (sub)
+   passam por cleanML(), que mantém as quebras de linha do próprio usuário (cada linha limpa; linhas vazias saem). */
 (function(){'use strict';var D=document,W=window;
 var FOOT='Stok · Lojas G · Estoque 99',SEP='──────────',LOGO='icons/icon-512-v123.png';
 function E(s){return (typeof esc==='function'?esc:function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})})(s)}
 function clean(v){return String(v==null?'':v).replace(/[*_~`]/g,'').replace(/[\r\n\u2028\u2029]+/g,' ').replace(/\s{2,}/g,' ').trim()}
+function cleanML(v){return String(v==null?'':v).replace(/\r\n?|[\u2028\u2029]/g,'\n').split('\n').map(clean).filter(Boolean).join('\n')}
 function two(n){return ('0'+n).slice(-2)}
 function stamp(d){d=d||new Date();return two(d.getDate())+'/'+two(d.getMonth()+1)+'/'+d.getFullYear()+' às '+two(d.getHours())+':'+two(d.getMinutes())}
 function norm(p){p=p&&typeof p==='object'?p:{};var secs=Array.isArray(p.sections)?p.sections:[];
   return {title:clean(p.title)||'Stok',subtitle:clean(p.subtitle),when:clean(p.when)||stamp(),note:clean(p.note),subject:clean(p.subject),file:String(p.file||'').replace(/[^a-z0-9-]/gi,'').slice(0,60),
     sections:secs.map(function(s){s=s||{};return {title:clean(s.title),lines:(Array.isArray(s.lines)?s.lines:[]).map(function(l){
-      if(l&&typeof l==='object')return {b:clean(l.b),t:clean(l.t),sub:(Array.isArray(l.sub)?l.sub:[]).map(clean).filter(Boolean)};var t=clean(l);return t?{b:'',t:t,sub:[]}:null}).filter(Boolean)}}).filter(function(s){return s.title||s.lines.length})}}
+      if(l&&typeof l==='object')return {b:clean(l.b),t:clean(l.t),sub:(Array.isArray(l.sub)?l.sub:[]).map(cleanML).filter(Boolean)};var t=clean(l);return t?{b:'',t:t,sub:[]}:null}).filter(Boolean)}}).filter(function(s){return s.title||s.lines.length})}}
 function subLine(n){return [n.subtitle,n.when].filter(Boolean).join(' · ')}
 /* opts.plain = sem marcas de negrito/itálico (corpo de e-mail) */
 function text(p,opts){var n=norm(p),pl=!!(opts&&opts.plain),B=function(s){return s?(pl?s:'*'+s+'*'):''},I=function(s){return s?(pl?s:'_'+s+'_'):''};
-  var out=[B(n.title),I(subLine(n)),SEP];
-  n.sections.forEach(function(s,i){if(i)out.push('');if(s.title)out.push(B(s.title));
+  var out=[B(n.title),I(subLine(n))];
+  n.sections.forEach(function(s){out.push('');if(s.title)out.push(B(s.title));
     if(!s.lines.length)out.push('• Nada por aqui.');
-    s.lines.forEach(function(l){out.push('• '+(l.b?B(l.b)+(l.t?' — '+l.t:''):l.t));l.sub.forEach(function(x){out.push('   '+x)})})});
+    s.lines.forEach(function(l,j){var head=l.b?B(l.b)+(l.t?' — '+l.t:''):l.t;
+      if(l.sub.length){if(j&&out[out.length-1]!=='')out.push('');if(j===0&&s.title)out.push('');out.push(head);l.sub.forEach(function(x){out.push(x)});if(j<s.lines.length-1)out.push('')}
+      else out.push('• '+head)})});
   if(n.note){out.push('');out.push(I(n.note))}
-  out.push(SEP);out.push(FOOT);return out.join('\n')}
+  out.push('');out.push(SEP);out.push(FOOT);return out.join('\n')}
 /* ---------- cores do tema (tokens do body) ---------- */
 function tok(name,def){try{var v=getComputedStyle(D.body||D.documentElement).getPropertyValue(name).trim();return v||def}catch(e){return def}}
 function solid(v,def){v=String(v||'').trim();return /^#[0-9a-f]{3,8}$/i.test(v)||/^rgba?\([\d\s.,%]+\)$/i.test(v)?v:def}
@@ -73,9 +78,11 @@ function html(p){var n=norm(p),th=theme(),F="font-family:-apple-system,'Segoe UI
    +'<div style="'+F+'font-size:26px;font-weight:700;color:#ffffff;line-height:1.15">'+E(n.title)+'</div>'
    +'<div style="'+F+'font-size:13px;color:#9a9aa3;margin-top:4px">'+E(subLine(n))+'</div>';
   n.sections.forEach(function(s){if(s.title)h+='<div style="'+F+'font-size:13px;font-weight:600;margin:20px 0 6px;color:#9a9aa3;border-top:1px solid #2a2a2f;padding-top:12px">'+E(s.title)+'</div>';
-    h+='<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">'+(s.lines.length?s.lines.map(function(l){return '<tr><td valign="top" width="30" style="padding:6px 0">'+CK+'</td><td style="'+F+'font-size:14px;color:#f2f2f5;padding:6px 0">'+(l.b?'<b style="color:#ffffff">'+E(l.b)+'</b>'+(l.t?' — '+E(l.t):''):E(l.t))+(l.sub.length?'<div style="color:#9a9aa3;font-size:13px">'+l.sub.map(E).join('<br>')+'</div>':'')+'</td></tr>'}).join(''):'<tr><td style="'+F+'font-size:14px;color:#9a9aa3;padding:6px 0">Nada por aqui.</td></tr>')+'</table>'});
+    h+='<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">'+(s.lines.length?s.lines.map(function(l){return '<tr><td valign="top" width="30" style="padding:'+(l.sub.length?'10px 0 10px':'6px 0')+'">'+CK+'</td><td style="'+F+'font-size:14px;color:#f2f2f5;padding:'+(l.sub.length?'10px 0 10px;border-bottom:1px solid #222227':'6px 0')+'">'+(l.b?'<b style="color:#ffffff">'+E(l.b)+'</b>'+(l.t?' — '+E(l.t):''):E(l.t))+(l.sub.length?l.sub.map(subHtml).join(''):'')+'</td></tr>'}).join(''):'<tr><td style="'+F+'font-size:14px;color:#9a9aa3;padding:6px 0">Nada por aqui.</td></tr>')+'</table>'});
   if(n.note)h+='<p style="'+F+'font-size:13px;color:#9a9aa3;font-style:italic;margin:16px 0 0">'+E(n.note)+'</p>';
   h+='<p style="'+F+'font-size:12px;color:#6f6f78;border-top:1px solid #2a2a2f;margin:20px 0 0;padding-top:10px">'+E(FOOT)+'</p></td></tr></table></td></tr></table>';return h}
+function subHtml(x){var m=/^([^:\n]{1,40}):\s*([\s\S]*)$/.exec(x),F="font-family:-apple-system,'Segoe UI',Calibri,Arial,sans-serif;";
+  return '<div style="'+F+'color:#c9c9d1;font-size:13px;line-height:1.45;margin-top:3px">'+(m?'<b style="color:#ffffff">'+E(m[1])+':</b> '+E(m[2]).replace(/\n/g,'<br>'):E(x).replace(/\n/g,'<br>'))+'</div>'}
 /* ---------- folha de prévia ---------- */
 var cur=null;
 function slug(n){return (n.file||n.title.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'mensagem')}
@@ -101,7 +108,7 @@ function preview(p,o){o=o||{};var n=norm(p),d=sheet(),t=text(p),from=o.from||D.a
   var img=D.getElementById('e99m-img'),wait=D.getElementById('e99m-wait'),sh=D.getElementById('e99m-share'),dl=D.getElementById('e99m-dl');
   img.removeAttribute('src');img.alt='';wait.hidden=false;wait.textContent='Preparando o banner…';sh.disabled=true;dl.hidden=!!navigator.share;
   var body=t.replace(/[*_]/g,'');if(body.length>1800)body=body.slice(0,1800)+'\n… (continua no Stok)';
-  D.getElementById('e99m-mail').href='mailto:?subject='+encodeURIComponent((n.subject||n.title+' · '+FOOT).slice(0,180))+'&body='+encodeURIComponent(body);
+  D.getElementById('e99m-mail').href='mailto:?subject='+encodeURIComponent((n.subject||n.title+' · '+FOOT).slice(0,180))+'&body='+encodeURIComponent(body.replace(/\r?\n/g,'\r\n'));
   if(!d.open){try{d.showModal()}catch(e){d.setAttribute('open','')}}
   try{sh.focus()}catch(e){}
   return banner(p).then(function(b){if(cur!==c)return;c.blob=b;try{c.file=new File([b],c.name,{type:'image/png'})}catch(e){c.file=b}c.url=URL.createObjectURL(b);img.src=c.url;img.alt='Banner: '+n.title;wait.hidden=true;sh.disabled=false;return b},
@@ -124,9 +131,10 @@ W.e99Msg={text:text,banner:banner,preview:preview,html:html,share:share,outlook:
 /* ===================== pontos de envio ===================== */
 /* Plano de ação: "Copiar para WhatsApp / Outlook" e "Compartilhar com fotos" abrem a folha (com as fotos junto no compartilhar) */
 function planPayload(p){var st=authSession&&authSession.payload?authSession.payload.store:'';var acts=p.activities||[];
-  return {title:'Plano de ação · '+(typeof date==='function'?date(p.date):p.date),subtitle:[p.title,st].filter(Boolean).join(' · '),file:'plano-'+p.date,subject:'Plano de ação · '+p.title,
+  var dt=typeof date==='function'?date(p.date):p.date;
+  return {title:'Plano de ação',subtitle:[dt,p.title,st].filter(Boolean).join(' · '),when:'gerado em '+stamp(),file:'plano-'+p.date,subject:'Plano de ação · '+dt+' · '+p.title,
     sections:[{title:'Atividades ('+acts.filter(function(a){return a.done}).length+' de '+acts.length+' feitas)',lines:acts.map(function(a,i){var sub=['Responsável: '+(a.owner||'A definir')];
-      if(a.demanda){var dr='';try{dr=typeof demResp==='function'?demResp(a.demanda):''}catch(e){}sub.push('Demanda: '+a.demanda+(dr?' (responsável da demanda: '+dr+')':''))}
+      if(a.demanda){var dr='';try{dr=typeof demResp==='function'?demResp(a.demanda):''}catch(e){}sub.push('Demanda: '+a.demanda+(dr?' (responsável: '+dr+')':''))}
       if(a.notes)sub.push('Orientações: '+a.notes);if(a.photos&&a.photos.length)sub.push('Fotos: '+a.photos.length+' (enviadas junto)');
       return {b:(i+1)+'. '+a.title,t:[a.time?'até '+a.time:'',a.done?'✓ feita':''].filter(Boolean).join(' · '),sub:sub}})}],
     note:'Se alguma atividade não for concluída, informe o motivo da pendência.'}}
