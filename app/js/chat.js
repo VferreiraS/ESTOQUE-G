@@ -82,6 +82,7 @@ async function fetchAtt(id,pn){try{var c=cx(),t=team;if(!c||!t)return;var l=[];f
 /* várias mensagens chegando juntas (ao reconectar) viram um único aviso e um único som */
 var nq=[],nTimer=0,nFirst=0;
 function notifyNew(m){nq.push(m);if(!nFirst)nFirst=Date.now();clearTimeout(nTimer);nTimer=setTimeout(function(){var l=nq;nq=[];nTimer=0;nFirst=0;try{if(typeof playSiteSound==='function')playSiteSound('tap')}catch(e){}
+  try{if(window.e99TitleAlert)window.e99TitleAlert(l.length)}catch(e){}
   if(!(document.hidden||page!=='chat')||!window.showSiteNotification)return;
   if(l.length>1){var who=[];l.forEach(function(x){if(who.indexOf(x.from)<0)who.push(x.from)});window.showSiteNotification('Chat · '+l.length+' novas mensagens','De '+who.slice(0,3).join(', ')+(who.length>3?'…':''),'estoque99-chat','chat');return}
   var m1=l[0];window.showSiteNotification('Chat · '+m1.from,m1.audio?'🎤 Áudio ('+mmss(m1.audio.dur)+')':m1.img&&!m1.text?'📷 Foto':String(m1.text||'').slice(0,140),'estoque99-chat','chat')},Date.now()-nFirst>4000?0:1500)}

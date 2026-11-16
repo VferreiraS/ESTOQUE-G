@@ -22,6 +22,6 @@ if(typeof window.e99ApplySeason==='function'){var as=window.e99ApplySeason;windo
 if(typeof window.e99LogoPaint==='function'){var lp=window.e99LogoPaint;window.e99LogoPaint=function(){var r=lp.apply(this,arguments);try{paint()}catch(e){}return r}}
 try{new MutationObserver(function(){setTimeout(paint,0)}).observe(H,{attributes:true,attributeFilter:['data-e99-theme']});new MutationObserver(function(ms){if(ms.some(function(m){var t=m.target;return t.tagName==='IMG'&&t.getAttribute('src')!==last&&t.matches('.logo img,img[data-e99-logo],img.entry-logo')}))paint()}).observe(D.documentElement,{attributes:true,attributeFilter:['src'],subtree:true,childList:false})}catch(e){}
 /* o tema do mês trocava o ícone da aba por um SVG: fica o ícone novo */
-function fav(){var l=D.querySelector('link[rel="icon"]');if(l&&l.getAttribute('href')!=='icons/favicon-v123.png'){l.setAttribute('type','image/png');l.setAttribute('href','icons/favicon-v123.png')}}
+function fav(){var l=D.querySelector('link[rel="icon"]');if(window.e99TitleState&&e99TitleState().on)return;if(l&&l.getAttribute('href')!=='icons/favicon-v123.png'){l.setAttribute('type','image/png');l.setAttribute('href','icons/favicon-v123.png')}}
 setInterval(fav,4000);paint();fav();setTimeout(paint,300);
 })();

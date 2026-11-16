@@ -104,7 +104,7 @@ addEventListener('visibilitychange',function(){if(!document.hidden){presence(tru
 addEventListener('e99:perfil',function(){if(authSession&&page==='chat'&&sub!=='geral')refresh()});
 /* ---------- tela ---------- */
 var rt=0;function refresh(){clearTimeout(rt);rt=setTimeout(function(){if(!authSession||page!=='chat'){navBadge();return}if(sub&&sub!=='geral'){paintMsgs();var s=document.getElementById('cv-sub');if(s)s.textContent=subtitle(sub);return}if(!sub)render()},120)}
-function navBadge(){var n=convs().reduce(function(a,c){return a+c.unread},0);document.querySelectorAll('[onclick="go(\'chat\')"]').forEach(function(b){var s=b.querySelector('.cv-unread');if(n>0){if(!s){s=document.createElement('span');s.className='cv-unread nav-unread';b.appendChild(s)}s.textContent=n>99?'99+':String(n)}else if(s)s.remove()})}
+var nbPrev=-1;function navBadge(){var n=convs().reduce(function(a,c){return a+c.unread},0);if(nbPrev>=0&&n>nbPrev){try{if(window.e99TitleAlert)window.e99TitleAlert(n-nbPrev)}catch(e){}}nbPrev=n;document.querySelectorAll('[onclick="go(\'chat\')"]').forEach(function(b){var s=b.querySelector('.cv-unread');if(n>0){if(!s){s=document.createElement('span');s.className='cv-unread nav-unread';b.appendChild(s)}s.textContent=n>99?'99+':String(n)}else if(s)s.remove()})}
 function listView(){var l=convs(),c=cx();
   var h=hero('Conversas','')+'<div class="panel cv-panel"><div class="row toolbar cv-tools"><button type="button" class="primary" onclick="e99Cv.newChat()">+ Nova conversa</button><button type="button" onclick="e99Cv.newChat(1)">Novo grupo</button></div>'
    +(c?'':'<p class="small cv-note">Ligue o e-mail (nuvem) em Minha conta para conversar em particular e em grupos. O chat da equipe funciona sem isso.</p>')

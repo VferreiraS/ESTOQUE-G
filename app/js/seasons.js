@@ -23,7 +23,7 @@ function applySeason(){
   var btn=document.getElementById('season-toggle');
   if(btn){var bt=s?'Tema do mês: '+s.name.toLowerCase():'Tema do mês: desligado';if(btn.textContent!==bt)btn.textContent=bt;if(btn.getAttribute('aria-pressed')!==String(!!s))btn.setAttribute('aria-pressed',String(!!s))}
   var link=document.querySelector('link[rel=icon]');
-  if(link){if(!link.dataset.orig)link.dataset.orig=link.getAttribute('href');var lt=s?'image/svg+xml':'image/png',lh=s?svgUri(logoSvg(s)):link.dataset.orig;if(link.getAttribute('type')!==lt)link.setAttribute('type',lt);if(link.getAttribute('href')!==lh)link.setAttribute('href',lh)}
+  if(link&&!(window.e99TitleState&&window.e99TitleState().on)){if(!link.dataset.orig)link.dataset.orig=link.getAttribute('href');var lt=s?'image/svg+xml':'image/png',lh=s?svgUri(logoSvg(s)):link.dataset.orig;if(link.getAttribute('type')!==lt)link.setAttribute('type',lt);if(link.getAttribute('href')!==lh)link.setAttribute('href',lh)}
   document.querySelectorAll('.logo img').forEach(function(img){
     if(!img.dataset.orig)img.dataset.orig=img.getAttribute('src');
     var want=s?svgUri(logoSvg(s)):img.dataset.orig;
