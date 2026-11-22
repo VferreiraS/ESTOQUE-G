@@ -1,0 +1,11 @@
+/* v157: botão "‹ Voltar" no topo das telas de segundo nível (usa as cores do tema ativo) */
+.e99-backbar{display:flex;align-items:center;margin:0 0 10px;max-width:100%}
+.e99-back{display:inline-flex;align-items:center;gap:6px;min-height:44px;min-width:44px;padding:0 18px 0 12px;border-radius:999px;
+  background:var(--ds-surface,rgba(255,255,255,.06));color:var(--ds-ink,#f4f4f6);border:1px solid var(--ds-line,rgba(255,255,255,.14));
+  font:inherit;font-size:15px;font-weight:600;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .15s ease,background-color .15s ease}
+.e99-back-ic{font-size:24px;line-height:1;margin-top:-2px;color:var(--ds-accent,var(--neon,#FF2A1F))}
+.e99-back:hover{border-color:var(--ds-accent,var(--neon,#FF2A1F))}
+.e99-back:active{background:var(--ds-accent-soft,rgba(255,42,31,.12))}
+.e99-back:focus-visible{outline:3px solid var(--neon,#FF2A1F);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.e99-back{transition:none}}
+@media print{.e99-backbar{display:none}}
