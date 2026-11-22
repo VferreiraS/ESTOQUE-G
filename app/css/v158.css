@@ -1,0 +1,6 @@
+/* v158: relatório para todas as contas do app (Alertas → Relatório por e-mail) */
+#email-panel .e99all{display:grid;gap:6px;margin:10px 0 4px;padding-top:10px;border-top:1px solid var(--line,rgba(255,255,255,.12))}
+#email-panel .e99all-list{list-style:none;margin:0;padding:0;display:grid;gap:4px;max-height:220px;overflow:auto;font-size:13px;overflow-wrap:anywhere}
+#email-panel .e99all-list li{padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.04)}
+#email-panel .e99all-mail{font-weight:600}
+#email-panel #e99all-send{min-height:44px}
