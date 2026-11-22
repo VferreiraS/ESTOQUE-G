@@ -1,7 +1,8 @@
 /* v144 · Mensagens mais bonitas para WhatsApp e Outlook.
    window.e99Msg.text(payload)      → texto para o WhatsApp (*negrito*, seções com "•", separador e rodapé)
    window.e99Msg.banner(payload)    → Promise<Blob PNG> 1080×420, cores do tema, logo do app (sem rede)
-   window.e99Msg.preview(payload,o) → folha com o banner e o texto: Compartilhar (WhatsApp), Copiar para o Outlook, Abrir no e-mail
+   window.e99Msg.preview(payload,o) → folha com o banner e o texto: Compartilhar (WhatsApp), Copiar para o Outlook, Abrir no e-mail, Imprimir (v156)
+   window.e99Msg.print(payload) / printText(título,texto) → v156: folha branca para papel (window.open; reserva em iframe), tudo por esc()
    payload = {title, subtitle?, when?, sections:[{title?, lines:[texto | {b, t?, sub:[texto]}]}], note?, subject?, file?}
    Tudo o que vem do usuário passa por clean() (tira * _ ~ ` e quebras de linha) no texto e por esc() no DOM/HTML.
    v153: linhas com sub viram blocos (título da linha, um campo por linha, linha em branco entre blocos); os campos (sub)
@@ -83,6 +84,35 @@ function html(p){var n=norm(p),th=theme(),F="font-family:-apple-system,'Segoe UI
   h+='<p style="'+F+'font-size:12px;color:#6f6f78;border-top:1px solid #2a2a2f;margin:20px 0 0;padding-top:10px">'+E(FOOT)+'</p></td></tr></table></td></tr></table>';return h}
 function subHtml(x){var m=/^([^:\n]{1,40}):\s*([\s\S]*)$/.exec(x),F="font-family:-apple-system,'Segoe UI',Calibri,Arial,sans-serif;";
   return '<div style="'+F+'color:#c9c9d1;font-size:13px;line-height:1.45;margin-top:3px">'+(m?'<b style="color:#ffffff">'+E(m[1])+':</b> '+E(m[2]).replace(/\n/g,'<br>'):E(x).replace(/\n/g,'<br>'))+'</div>'}
+/* ---------- v156: imprimir (folha branca para papel, sem botões nem fundo escuro) ---------- */
+var PCSS='*{box-sizing:border-box}html,body{background:#fff}body{font:14px/1.45 -apple-system,"Segoe UI",system-ui,Arial,sans-serif;color:#111;margin:28px;max-width:780px}'
+ +'.ph{display:flex;align-items:center;gap:14px;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:16px}.ph img{width:44px;height:44px;border-radius:11px}'
+ +'.brand{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#555}h1{font-size:22px;margin:2px 0 0}.meta{color:#555;font-size:13px;margin-top:2px}'
+ +'h2{font-size:15px;margin:20px 0 8px;padding-bottom:4px;border-bottom:1px solid #ccc}.blk{padding:8px 0 10px;border-bottom:1px solid #e3e3e3;break-inside:avoid;page-break-inside:avoid}'
+ +'.blk b.t{font-size:15px}.blk .f{margin-top:3px;color:#222;white-space:pre-wrap}.blk .f b{color:#000}ul{margin:0;padding-left:20px}li{margin:3px 0}'
+ +'.note{font-style:italic;color:#444;margin-top:16px}.foot{margin-top:24px;padding-top:8px;border-top:1px solid #ccc;font-size:11px;color:#666}'
+ +'pre.txt{white-space:pre-wrap;font:inherit;margin:0}@media print{body{margin:14mm;max-width:none}}';
+function pdoc(title,inner){var lg='';try{lg=new URL(LOGO,location.href).href}catch(e){}
+  return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+E(title)+'</title><style>'+PCSS+'</style></head><body>'
+   +'<div class="ph">'+(lg?'<img src="'+E(lg)+'" alt="">':'')+'<div><div class="brand">'+E(FOOT)+'</div><h1>'+E(title)+'</h1>'+inner.meta+'</div></div>'+inner.body+'<div class="foot">'+E(FOOT)+' · impresso em '+E(stamp())+'</div></body></html>'}
+function printHtml(p){var n=norm(p),b='';
+  n.sections.forEach(function(s){if(s.title)b+='<h2>'+E(s.title)+'</h2>';var plain=s.lines.filter(function(l){return !l.sub.length});
+    s.lines.forEach(function(l){if(!l.sub.length)return;b+='<div class="blk"><b class="t">'+E(l.b||l.t)+'</b>'+(l.b&&l.t?' — '+E(l.t):'')
+      +l.sub.map(function(x){var m=/^([^:\n]{1,40}):\s*([\s\S]*)$/.exec(x);return '<div class="f">'+(m?'<b>'+E(m[1])+':</b> '+E(m[2]):E(x))+'</div>'}).join('')+'</div>'});
+    if(plain.length)b+='<ul>'+plain.map(function(l){return '<li>'+(l.b?'<b>'+E(l.b)+'</b>'+(l.t?' — '+E(l.t):''):E(l.t))+'</li>'}).join('')+'</ul>';
+    if(!s.lines.length)b+='<p>Nada por aqui.</p>'});
+  if(n.note)b+='<p class="note">'+E(n.note)+'</p>';
+  return pdoc(n.title,{meta:'<div class="meta">'+E(subLine(n))+'</div>',body:b})}
+/* texto livre (já pronto para copiar): mantém as quebras de linha, sem marcas do WhatsApp */
+function printTextHtml(title,t){t=String(t==null?'':t).replace(/\r\n?/g,'\n').replace(/[*_~`]/g,'');return pdoc(clean(title)||'Stok',{meta:'',body:'<pre class="txt">'+E(t)+'</pre>'})}
+function printDoc(html){var w=null;try{w=W.open('','_blank')}catch(e){}
+  if(w){try{w.document.open();w.document.write(html);w.document.close();setTimeout(function(){try{w.focus();w.print()}catch(e){}},300);if(typeof notify==='function')notify('Na janela de impressão, escolha a impressora ou "Salvar como PDF".');return true}catch(e){}}
+  var f=D.createElement('iframe');f.setAttribute('aria-hidden','true');f.className='e99-print-frame';f.style.cssText='position:fixed;width:0;height:0;border:0;right:0;bottom:0';D.body.appendChild(f);
+  var fd=f.contentDocument;fd.open();fd.write(html);fd.close();
+  setTimeout(function(){try{f.contentWindow.focus();f.contentWindow.print()}catch(e){if(typeof notify==='function')notify('Não deu para imprimir aqui.')}setTimeout(function(){f.remove()},60000)},300);
+  if(typeof notify==='function')notify('Na janela de impressão, escolha a impressora ou "Salvar como PDF".');return true}
+function print(p){return printDoc(printHtml(p))}
+function printText(title,t){return printDoc(printTextHtml(title,t))}
 /* ---------- folha de prévia ---------- */
 var cur=null;
 function slug(n){return (n.file||n.title.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'mensagem')}
@@ -96,6 +126,7 @@ function sheet(){var d=D.getElementById('e99-msg');if(d)return d;d=D.createEleme
    +'<div class="e99m-actions"><button type="button" class="primary" id="e99m-share" onclick="e99Msg.share()" disabled>Compartilhar (WhatsApp)</button>'
    +'<button type="button" id="e99m-outlook" onclick="e99Msg.outlook()">Copiar para o Outlook</button>'
    +'<button type="button" id="e99m-dl" onclick="e99Msg.download()" hidden>Baixar banner (PNG)</button>'
+   +'<button type="button" id="e99m-print" onclick="e99Msg.printCurrent()">Imprimir</button>'
    +'<a id="e99m-mail" class="e99m-mail" href="#">Abrir no e-mail</a></div></div>';
   d.addEventListener('close',function(){var c=cur;cur=null;if(c){if(c.url)try{URL.revokeObjectURL(c.url)}catch(e){}if(c.from&&c.from.isConnected&&c.from.focus)try{c.from.focus()}catch(e){}}});
   d.addEventListener('click',function(e){if(e.target===d)d.close()});
@@ -126,7 +157,8 @@ function outlook(){var c=cur;if(!c)return Promise.resolve(false);var plain=c.tex
   try{if(navigator.clipboard&&navigator.clipboard.write&&W.ClipboardItem){return navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([c.html],{type:'text/html'}),'text/plain':new Blob([plain],{type:'text/plain'})})]).then(function(){say('Copiado. Cole no corpo do e-mail no Outlook.');return true},function(){manual(c);return false})}}catch(e){}
   manual(c);return Promise.resolve(false)}
 function close(){var d=D.getElementById('e99-msg');if(d&&d.open)d.close()}
-W.e99Msg={text:text,banner:banner,preview:preview,html:html,share:share,outlook:outlook,download:download,close:close,clean:clean,current:function(){return cur?{text:cur.text,html:cur.html,ready:!!cur.blob,name:cur.name}:null}};
+function printCurrent(){var c=cur;if(!c)return false;return print(c.payload)}
+W.e99Msg={print:print,printHtml:printHtml,printText:printText,printTextHtml:printTextHtml,printDoc:printDoc,printCurrent:printCurrent,text:text,banner:banner,preview:preview,html:html,share:share,outlook:outlook,download:download,close:close,clean:clean,current:function(){return cur?{text:cur.text,html:cur.html,ready:!!cur.blob,name:cur.name}:null}};
 
 /* ===================== pontos de envio ===================== */
 /* Plano de ação: "Copiar para WhatsApp / Outlook" e "Compartilhar com fotos" abrem a folha (com as fotos junto no compartilhar) */

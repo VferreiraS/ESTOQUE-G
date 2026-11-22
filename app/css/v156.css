@@ -1,0 +1,18 @@
+/* v156: aviso de alterações da equipe (cápsula no topo) + lista "Alterações recentes" nos Alertas */
+#e99-alt{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 64px);z-index:9000;display:flex;justify-content:center;pointer-events:none;padding:0 16px}
+#e99-alt:empty{display:none}
+.e99-alt-pill{pointer-events:auto;display:flex;align-items:center;gap:10px;max-width:min(560px,100%);min-height:44px;padding:10px 18px;border-radius:999px;
+  background:rgba(16,16,20,.94);color:#f4f4f6;border:1px solid rgba(255,255,255,.14);box-shadow:0 10px 30px rgba(0,0,0,.45);font:inherit;font-size:15px;text-align:left;cursor:pointer;
+  animation:e99-alt-in .25s ease-out backwards}
+.e99-alt-pill:focus-visible{outline:3px solid var(--neon,#FF2A1F);outline-offset:2px}
+.e99-alt-dot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--neon,#FF2A1F);box-shadow:0 0 10px rgba(var(--neon-rgb,255,42,31),.6)}
+.e99-alt-txt{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+@keyframes e99-alt-in{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.e99-alt-pill{animation:none}}
+@media (max-width:900px){#e99-alt{top:calc(env(safe-area-inset-top,0px) + 60px)}.e99-alt-pill{font-size:14px}}
+@media print{#e99-alt{display:none}}
+#alt-recent .alt-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+#alt-recent .alt-item{display:flex;gap:12px;width:100%;min-height:44px;text-align:left;align-items:flex-start;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:inherit;font:inherit}
+#alt-recent .alt-when{flex:none;color:var(--muted,#9a9aa3);font-size:13px;font-variant-numeric:tabular-nums;min-width:118px}
+@media (max-width:600px){#alt-recent .alt-item{flex-direction:column;gap:2px}}
+#e99-msg #e99m-print{min-height:44px}

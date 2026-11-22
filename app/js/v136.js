@@ -48,12 +48,12 @@ async function start(){var my=++gen;stopListen();var t=team();
   var cc=cl();if(cc.loja!==loja){cc.loja=loja;cc.cursor=0;cc.seeded=false}
   if(!cc.seeded){try{await seed(my)}catch(e){if(my!==gen)return;status='erro';lastErr=e&&e.code||'';paint();return}}
   if(my!==gen)return;listen(my)}
-async function seed(my){var q=await L().collection('dados').get();if(my!==gen)return;var docs=[];q.forEach(function(d){docs.push(d)});await take(docs);
+async function seed(my){var q=await L().collection('dados').get();if(my!==gen)return;var docs=[];q.forEach(function(d){docs.push(d)});await take(docs,true);
   var s=sy(),cc=cl();if(!s.ready){s.ready=true;s.replace=false;try{K.dropDefaults()}catch(e){}}
   K.stamp();reconcile();cc.seeded=true;lastAt=Date.now();status='ok';await K.persist();K.render();paint();schedulePush(300)}
 function listen(my){var q=L().collection('dados').where('st','>',FS.Timestamp.fromMillis(cl().cursor||0)).orderBy('st');
-  unsubD=q.onSnapshot(function(snap){if(my!==gen)return;var docs=[];snap.docChanges().forEach(function(x){if(x.type!=='removed'&&!x.doc.metadata.hasPendingWrites)docs.push(x.doc)});
-    chain=chain.then(async function(){if(my!==gen)return;if(docs.length)await take(docs);if(!snap.metadata.fromCache){lastAt=Date.now();status='ok'}paint()}).catch(function(){})},
+  var warm=false;unsubD=q.onSnapshot(function(snap){if(my!==gen)return;var qq=!warm;if(!snap.metadata.fromCache)warm=true;var docs=[];snap.docChanges().forEach(function(x){if(x.type!=='removed'&&!x.doc.metadata.hasPendingWrites)docs.push(x.doc)});
+    chain=chain.then(async function(){if(my!==gen)return;if(docs.length)await take(docs,qq);if(!snap.metadata.fromCache){lastAt=Date.now();status='ok'}paint()}).catch(function(){})},
    function(e){if(my!==gen)return;status='erro';lastErr=e&&e.code||'';paint()})}
 /* ---------- receber ---------- */
 function auxCloud(op,x,who){if(op.d||AUXC.indexOf(op.c)<0)return null;if(op.c==='confs')return K.confOp(op,{r:'auxiliar',dev:op.x.dev});
@@ -61,14 +61,15 @@ function auxCloud(op,x,who){if(op.d||AUXC.indexOf(op.c)<0)return null;if(op.c===
   if(!cur)return Object.assign({},op,{x:Object.assign({},op.x,{cby:op.x.cby||who})});
   if(x.cuid!==x.by)return null;
   var nx=Object.assign({},op.x);['cby','cdev','clogin'].forEach(function(k){if(cur[k])nx[k]=cur[k]});return Object.assign({},op,{x:nx})}
-async function take(docs){var ops=[],cc=cl(),max=cc.cursor||0;
+/* v156: quiet = carga inicial (seed e 1ª resposta do servidor ao escutar): não vira aviso; u = uid de quem gravou */
+async function take(docs,quiet){var ops=[],cc=cl(),max=cc.cursor||0;
   for(var i=0;i<docs.length;i++){var d=docs[i],x=d.data();if(!x)continue;var st=x.st&&x.st.toMillis?x.st.toMillis():0;if(st>max)max=st;
     var id=d.id,p=id.indexOf('_'),c=id.slice(0,p),rest=id.slice(p+1);if(C.indexOf(c)<0||x.c!==c||!Number.isFinite(Number(x.at)))continue;
     cuids[id]=x.cuid;cloudAt[id]=Math.max(cloudAt[id]||0,Number(x.at));
     var f=rest.indexOf('~f~'),item=f<0?rest:rest.slice(0,f);if(!K.okId(item))continue;
     var pl=null;if(!x.del){pl=await unseal(id,x.d);if(!pl||!pl.x||typeof pl.x!=='object'||pl.x.id!==item)continue}
     var who=pl&&typeof pl.b==='string'&&pl.b?pl.b.slice(0,40):'Alguém';
-    var op={c:c,i:item,t:Number(x.at),b:who};if(x.del)op.d=1;else op.x=pl.x;
+    var op={c:c,i:item,t:Number(x.at),b:who,u:typeof x.by==='string'?x.by:''};if(quiet)op.q=1;if(x.del)op.d=1;else op.x=pl.x;
     if(f>=0){if(op.d||c!=='plans')continue;op=K.auxPlanOp(op);if(op){delete op.fix;ops.push(op)}continue}
     var role=x.by===uid?(K.amAux()?'auxiliar':'gestor'):(papeis[x.by]||'auxiliar');
     if(role==='auxiliar')op=auxCloud(op,x,who);else if(c==='confs'&&!op.d)op=K.confOp(op,{r:'gestor',dev:op.x.dev});

@@ -59,6 +59,8 @@ async function applyOps(ops,isSnap,who){var s=sy();ops=ops.filter(okOp).slice(0,
   ops.forEach(function(op){if(!newer(s.meta[op.c][op.i],op))return;var list=cand[op.c],idx=list.findIndex(function(x){return x&&x.id===op.i}),prev=idx>=0?list[idx]:null;if(op.d){if(idx<0){s.meta[op.c][op.i]=[op.t,op.b.slice(0,40),1,''];return}list.splice(idx,1)}else if(idx>=0)list[idx]=op.x;else list.push(op.x);changes.push({op:op,prev:prev})});
   var applied=[];if(changes.length){var v=commit(cand);if(v){finish(v,changes);applied=changes}else{/* uma a uma: guarda para depois as que dependem de algo que ainda não chegou */
       for(var i=0;i<changes.length;i++){var ch1=changes[i],c1={};C.forEach(function(c){c1[c]=arr(c).slice()});var l=c1[ch1.op.c],ix=l.findIndex(function(x){return x&&x.id===ch1.op.i});if(ch1.op.d){if(ix>=0)l.splice(ix,1)}else if(ix>=0)l[ix]=ch1.op.x;else l.push(ch1.op.x);var v1=commit(c1);if(v1){finish(v1,[ch1]);applied.push(ch1)}else defer(ch1.op)}}}
+  /* v156: avisa as alterações de outras pessoas (v156.js decide quem é "outra pessoa" e se é carga inicial) */
+  if(applied.length&&wasReady&&window.e99OnTeamChange)try{window.e99OnTeamChange(applied.slice())}catch(e){}
   if(applied.length&&deferred.length){var d=deferred.splice(0);d.forEach(function(x){x.tries=(x.tries||0)+1});var again=d.filter(function(x){return x.tries<=3});if(again.length){await applyOps(again,false,who);return}}
   if(isSnap&&!s.ready){s.ready=true;s.replace=false;dropDefaults();if(stamp())schedulePublish(500)}
   if(applied.length||isSnap)await persist();
