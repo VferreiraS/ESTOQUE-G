@@ -22,7 +22,7 @@ const TL=()=>{try{sessionStorage.removeItem('e99-intro')}catch(e){}window.__tl=[
   ok(await P.evaluate(()=>[...document.querySelectorAll('#auth-screen .auth-card *')].every(e=>+getComputedStyle(e).opacity>.98||e.closest('.auth-links,.legal-links')||getComputedStyle(e).display==='none'||e.matches('[hidden]'))),nome+': nada da tela de entrar apagado pela metade');
   await cdp.send('Emulation.setCPUThrottlingRate',{rate:1});
   ok(await P.evaluate(()=>{const i=document.querySelector('.logo img');return !!i&&/svg/.test(i.getAttribute('src'))&&decodeURIComponent(i.getAttribute('src')).includes('rx="22.5"')}),nome+': logo = ícone squircle com o S');
-  ok(await P.evaluate(()=>document.querySelector('link[rel="apple-touch-icon"]').getAttribute('href')==='icons/apple-touch-v123.png'),nome+': ícone do iPhone novo');
+  ok(await P.evaluate(()=>document.querySelector('link[rel="apple-touch-icon"]').getAttribute('href')==='icons/apple-touch-v159.png'),nome+': ícone do iPhone novo');
   await L.signup(P,'v123'+nome.replace(/\W/g,'').toLowerCase()+Date.now().toString(36));await P.waitForTimeout(1200);
   const r=await P.evaluate(()=>{const p=document.querySelector('#view .panel'),bt=document.querySelector('#view button.primary'),mb=document.getElementById('mobile-bottom'),cs=e=>e?getComputedStyle(e):null;
     return {card:p?parseFloat(cs(p).borderTopLeftRadius):0,btn:bt?parseFloat(cs(bt).borderTopLeftRadius):0,apple:document.documentElement.classList.contains('e99-apple'),font:getComputedStyle(document.body).fontFamily,

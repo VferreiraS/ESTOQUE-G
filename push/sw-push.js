@@ -6,7 +6,7 @@ self.addEventListener('push', e => {
   const body = ok[d.tipo] || 'Novidade no Stok';
   e.waitUntil(self.registration.showNotification('Stok', {
     body, tag: 'stok-' + (d.tipo || 'aviso'), renotify: true,
-    icon: 'icons/icon-192-v123.png', badge: 'icons/icon-192-v123.png', data: { tipo: d.tipo },
+    icon: 'icons/icon-192-v159.png', badge: 'icons/icon-192-v159.png', data: { tipo: d.tipo },
   }));
 });
 self.addEventListener('notificationclick', e => {

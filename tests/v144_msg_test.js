@@ -37,7 +37,7 @@ ok(!/[*_]/.test(plain)&&/^A b\n/.test(plain),'versão sem marcas para e-mail');
 /* 2) banner */
 const ban=await p.evaluate(async()=>{const bl=await e99Msg.banner({title:'Relatório *teste*',subtitle:'Loja'});const im=await createImageBitmap(bl);return {type:bl.type,w:im.width,h:im.height,size:bl.size}});
 ok(ban.type==='image/png'&&ban.w===1080&&ban.h>=380&&ban.h<=460&&ban.size>5000,'banner é PNG 1080 px de largura ('+JSON.stringify(ban)+')');
-const logoOk=await p.evaluate(async()=>{const r=await fetch('icons/icon-512-v123.png');return r.ok});ok(logoOk,'logo do app (icons/icon-512-v123.png) existe');
+const logoOk=await p.evaluate(async()=>{const r=await fetch('icons/icon-512-v159.png');return r.ok});ok(logoOk,'logo do app (icons/icon-512-v159.png) existe');
 
 /* 3) folha pelo plano */
 await p.evaluate(()=>go('plans'));await p.waitForTimeout(500);

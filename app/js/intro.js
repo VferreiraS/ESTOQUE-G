@@ -7,8 +7,9 @@
    v141 (pedido do dono: "não quero que o app abra enquanto não clicar no botão de entrar"): na abertura do app (a 1ª da
    sessão) a animação para no quadro final e a abertura fica na frente, sem prazo, até tocar em "Entrar" (destrava o áudio
    e toca o som de abertura uma vez). Enquanto isso o resto da página fica inerte e as janelas (showModal) esperam.
+   v159: o S final é o logo novo escolhido pelo dono (opção 1, "Prateleira"), tirado do caminho S_PATH (não da fonte).
    Falha segura: erro ao montar a abertura = ela sai. Testes antigos (localhost) usam e99-test-autointro=1: some sozinha. */
-var S_PATH='M42 14h30.5a7.5 7.5 0 0 1 0 15H42a3.5 3.5 0 0 0 0 7H58a21 21 0 0 1 0 42H27.5a7.5 7.5 0 0 1 0-15H58a6 6 0 0 0 0-12H42a18.5 18.5 0 0 1 0-37z';
+var S_PATH='M22 14h56v12H22zM22 14h12v40H22zM22 42h56v12H22zM66 42h12v44H66zM22 74h56v12H22zM46 30h10v10H46zM56 32h8v8h-8zM30 60h10v12H30z';
 var RED=[255,42,31],DUR=2.1,END=2800,END_R=950;
 var active=null,removeTimer=0,anim=null,held=false,inerted=[],mo=null,waitDlg=[],nativeSM=null,keyH=null,watch=0;
 function off(){return false}
@@ -22,19 +23,13 @@ function ease(t){return t<0?0:t>1?1:t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}
 function cl(t,a,b){return Math.min(1,Math.max(0,(t-a)/(b-a)))}
 function themeRgb(){try{var v=getComputedStyle(document.body).getPropertyValue('--neon-rgb').trim().split(',').map(Number);if(v.length===3&&v.every(function(n){return n>=0&&n<=255}))return v}catch(x){}return [231,184,239]}
 function headFont(){try{var f=getComputedStyle(document.body).getPropertyValue('--font-head').trim();if(f)return f}catch(x){}return "'Space Grotesk',system-ui,sans-serif"}
-/* fonte do S: espera no máximo 300 ms; sem fonte a tempo, usa a que estiver (ou o desenho do S da marca) */
-function fontReady(fam){var first=fam.split(',')[0].trim();return new Promise(function(res){var done=false,fin=function(ok){if(!done){done=true;res(ok)}};setTimeout(function(){fin(false)},300);
-  try{if(document.fonts&&document.fonts.load&&!/^-apple-system|^BlinkMacSystemFont|^system-ui/.test(first))document.fonts.load('700 120px '+first).then(function(l){fin(!!(l&&l.length))},function(){fin(false)});else fin(true)}catch(x){fin(false)}})}
 /* amostra o S numa grade: devolve os centros dos quadradinhos (até n) e o passo */
 function sampleS(sz,n,fam){var o=document.createElement('canvas');o.width=o.height=sz;var g=o.getContext('2d');if(!g)return null;g.fillStyle='#fff';
-  var useText=true;try{var fs=sz;g.font='700 '+fs+'px '+fam;var m=g.measureText('S'),h=(m.actualBoundingBoxAscent||0)+(m.actualBoundingBoxDescent||0);
-    if(h>0){fs=fs*sz*.94/h;g.font='700 '+fs+'px '+fam;m=g.measureText('S');var w=(m.actualBoundingBoxLeft||0)+(m.actualBoundingBoxRight||0);h=m.actualBoundingBoxAscent+m.actualBoundingBoxDescent;g.textAlign='left';g.textBaseline='alphabetic';g.fillText('S',(sz-w)/2+(m.actualBoundingBoxLeft||0),(sz-h)/2+m.actualBoundingBoxAscent)}
-    else{g.textAlign='center';g.textBaseline='middle';g.font='700 '+Math.round(sz*1.2)+'px '+fam;g.fillText('S',sz/2,sz/2)}}catch(x){useText=false}
+  /* v159: o S é o logo novo (opção 1, "Prateleira": três prateleiras, duas colunas e caixas), desenhado pelo caminho, sem fonte */
+  var useText=false;try{g.save();g.translate(sz*.5,sz*.5);var sc0=sz/76;g.scale(sc0,sc0);g.translate(-50,-50);g.fill(new Path2D(S_PATH));g.restore()}catch(x){return null}
   var d=g.getImageData(0,0,sz,sz).data;
   function pts(step){var r=[];for(var y=step/2;y<sz;y+=step)for(var x=step/2;x<sz;x+=step)if(d[((y|0)*sz+(x|0))*4+3]>128)r.push([x,y]);return r}
   var best=null,bestStep=0;for(var k=8;k<=48;k+=.5){var st=sz/k,p=pts(st);if(p.length<=n){best=p;bestStep=st}else break}
-  if(!best||best.length<30){/* sem fonte: o S da marca (desenho do ícone) */g.clearRect(0,0,sz,sz);try{g.save();g.translate(sz*.5,sz*.5);var sc=sz/68;g.scale(sc,sc);g.translate(-50,-46);g.fill(new Path2D(S_PATH));g.restore()}catch(x){return null}
-    d=g.getImageData(0,0,sz,sz).data;best=null;for(k=8;k<=48;k+=.5){st=sz/k;p=pts(st);if(p.length<=n){best=p;bestStep=st}else break}useText=false}
   if(!best||!best.length)return null;return {pts:best,step:bestStep,text:useText}}
 function start(d,cv,box,red){var W=innerWidth,H=innerHeight,dpr=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   var x=cv.getContext('2d');if(!x)return null;
@@ -49,7 +44,7 @@ function start(d,cv,box,red){var W=innerWidth,H=innerHeight,dpr=Math.min(2,windo
     var M=r.pts.length,ox=cx-Sh/2,oy=cy-Sh/2;step=r.step;stats.sPts=M;stats.font=r.text?fam:'desenho';
     /* cada quadradinho vai para o ponto do S mais "parecido" com a ordem da grade (linha a linha): o S se monta de cima para baixo */
     for(var i=0;i<N;i++){var p=r.pts[Math.floor(i*M/N)];P[i].sx=ox+p[0];P[i].sy=oy+p[1]}}
-  if(red)placeS();else fontReady(fam).then(placeS);
+  placeS();
   function frame(t,final){x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,W,H);
     var glow=.10+.16*cl(t,1.45,2.05),bg=x.createRadialGradient(cx,cy,0,cx,cy,Math.max(W,H)*.6);bg.addColorStop(0,'rgba('+col[0]+','+col[1]+','+col[2]+','+(glow*.6)+')');bg.addColorStop(.45,'rgba('+RED[0]+','+RED[1]+','+RED[2]+','+(glow*.35*cl(t,1.3,2))+')');bg.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=bg;x.fillRect(0,0,W,H);
     var fin=cl(t,0,.25),k2avg=ease(cl(t,1.25,2.05)),pass,i,p,k1,k2,dr,ax,ay,px,py,sz,rot,c0,c1,c2,a,co,si;

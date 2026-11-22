@@ -19,7 +19,7 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão:** 158 (`meta estoque99-version` + `CACHE` `estoque99-v158` no `sw.js` + `?v=158` nos arquivos `app/`), publicada em 22/11/2026 no GitHub Pages e no Firebase Hosting. Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
+- **Versão:** 159 (`meta estoque99-version` + `CACHE` `estoque99-v159` no `sw.js` + `?v=159` nos arquivos `app/`), publicada em 22/11/2026 no GitHub Pages e no Firebase Hosting. Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
@@ -29,7 +29,7 @@
 
 | Versão | O quê |
 |--------|--------|
-| v158 | **Relatório para todas as contas + vida no app** (pedidos do dono). **(A) Relatório** (`app/js/v158.js` + `app/css/v158.css`; `emailReportFields` exposto no `email-reports.js`): o Relatório por e-mail e o resumo semanal (v134) vão também para o e-mail de cada conta: a própria conta do gestor (`payload.email`) e as contas criadas por link (`aux-invites:`, papel do link conferido com `membros/` pelo `inviteId`; `membros/`, `perfis_*` e `state.team` não têm e-mail). Uma requisição FormSubmit por e-mail (sem `_cc`), 120 ms/1,5 s entre envios, até 30 por rodada; duplicados, inválidos e iguais ao destino/cópia ficam de fora; auxiliar recebe sem valores, sem conferências e corredores. Só o gestor envia, nos horários do envio automático e no resumo de segunda; marcador `lojasg.estoque99.rep-sent:<conta>:<rodada>`. Alertas → Relatório por e-mail: "Enviar também para todas as contas do app" (ligado), lista mascarada (`a***@…`), "Enviar agora para todas" com confirmação e resultado, aviso do e-mail de ativação do FormSubmit. Localhost só com `e99-test-allmail=1`. Teste `tests/v158_test.js`. **(B) Vida** (`app/js/v158-vida.js` + `app/css/v158-vida.css`): cor por área (`--area-*`: notas, plano, equipe, chat, painel, corredores, alertas) no menu, título, etiquetas e canto dos cartões (tira o `grayscale` do mono-grupo em stats/etiquetas/vazios); Início com saudação do dia, anéis (plano de hoje, notas conferidas 7 dias), resumo colorido e iniciais coloridas; animações curtas só transform/opacity (toque, ondulação, count-up, check que pula, entrada escalonada, troca de tela, barras) — nada infinito, aba oculta termina, "menos movimento" desliga; telas vazias com SVG próprio + botão. Teste `tests/v158_vida_test.js` (prints em `docs/prints/v158/`). **(C) Logo (não aplicado):** 3 opções em `scripts/logos.mjs` (`docs/logos/opcao-N.svg`, prints `docs/prints/v158/logo-opcao-*`); o dono escolhe e roda `node scripts/aplicar-logo.mjs <1|2|3>` numa versão própria (troca ícones PNG, S do menu/entrar e S_PATH da abertura). Exceção do dono à regra do S só para o logo. |
+| v159 | **Logo novo (opção 1, "Prateleira")** — escolha do dono; **exceção explícita dele à regra "preservar o S", só para o logo**. `node scripts/aplicar-logo.mjs 1 -v159` (o script ganhou sufixo opcional e renomeia também em `app/js/*` e `push/sw-push.js`): ícones PNG `icons/{icon-192,icon-512,icon-maskable,apple-touch,favicon}-v159.png` no manifest, `<link>`, `og:image`, pré-cache do `sw.js`, notificações (`notify.js`, `core.js`, `sw-push.js`), banner/folha impressa (`v144-msg.js` `LOGO`) e favicon fixo da v123 (`fav()`); o S (`S_PATH`) trocado em `intro.js`, `v123.js` (`e99LogoV123`, cores do tema), `v114-logo.js`, `seasons.js` (ícone do tema do mês) e SVG base64 do menu/entrar no `index.html`. Abertura: o S final vem sempre do caminho do logo (sem fonte; `stats.font='desenho'`), centrado; `fontReady` saiu. Ícones `-v123` antigos ficam no repositório (caches velhos). Teste `tests/v159_logo_test.js` (manifest/pré-cache, sem 404, abertura ≤2,8 s com CPU 4x, menu/entrar/tema do mês, banner, impressão, 0 erro); prints em `docs/prints/v159/`. |
 
 Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o site); o que vale no ar é o `index.html` + `sw.js` publicados.
 
@@ -58,7 +58,8 @@ Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o sit
 - v155: botão de clipe e Baixar no iPhone; antivírus do PC deixa baixar.
 - v156: imprimir no PC da loja (impressora real) e no iPhone (AirPrint); avisos de alteração no iPhone real (cápsula abaixo do topo) e aba piscando no PC.
 - v157: gesto de deslizar para voltar no iPhone (app da tela inicial) e botão voltar do Android; "‹ Voltar" no topo das telas.
-- v158: ativar o FormSubmit em cada e-mail de conta (1º envio); vida no iPhone real (fluidez, cores); escolher o logo (1, 2 ou 3).
+- v158: ativar o FormSubmit em cada e-mail de conta (1º envio); vida no iPhone real (fluidez, cores).
+- v159: logo novo no ícone da tela inicial do iPhone (reinstalar o atalho se o ícone antigo ficar) e na aba do PC; abertura com o S novo fluida no iPhone.
 
 ### Decisões pendentes do dono (v89 — não mudar sem perguntar)
 - **Chat (v106/v108):** desde a v108 a mensagem que falhou fica guardada (cifrada) no aparelho; no celular Enter continua enviando (não há Shift+Enter no teclado do celular); "Sair da equipe" foi para baixo do chat. Se o dono quiser guardar as não enviadas ou Enter = nova linha no celular, mudar no `chat-js`.
@@ -79,7 +80,7 @@ Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o sit
 - Selos: removidos na v122. **Perfil voltou na v127 sem selos** (foto/nome no chat e na Equipe, "Ver perfil").
 - **Contas só pelo gestor (v127):** ninguém cria conta pela tela de entrar; o gestor cria e manda um link de acesso de uso único.
 - **Auxiliar (v127):** cria NFs e planos, edita os que criou, usa o chat e o perfil; não exclui nada.
-- **Regra permanente de design:** em qualquer mudança de design, preservar os elementos com a letra S (logo, S de partículas do Início/login, S da abertura). Exceção do dono (v158): o logotipo pode ser trocado pela opção que ele escolher (`scripts/aplicar-logo.mjs`).
+- **Regra permanente de design:** em qualquer mudança de design, preservar o **logo vigente** (desde a v159: opção 1, "Prateleira" — S de prateleiras com caixas; menu, tela de entrar, ícones e S da abertura). Só o dono troca o logo (exceção dele na v158/v159, via `scripts/aplicar-logo.mjs`).
 - Quer que **qualquer mudança** seja comunicada ao Claude **automaticamente** via este arquivo.
 - Dados sensíveis ficam no aparelho; nuvem só com blob já cifrado quando houver.
 

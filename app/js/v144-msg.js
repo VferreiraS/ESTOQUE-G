@@ -8,7 +8,7 @@
    v153: linhas com sub viram blocos (título da linha, um campo por linha, linha em branco entre blocos); os campos (sub)
    passam por cleanML(), que mantém as quebras de linha do próprio usuário (cada linha limpa; linhas vazias saem). */
 (function(){'use strict';var D=document,W=window;
-var FOOT='Stok · Lojas G · Estoque 99',SEP='──────────',LOGO='icons/icon-512-v123.png';
+var FOOT='Stok · Lojas G · Estoque 99',SEP='──────────',LOGO='icons/icon-512-v159.png';
 function E(s){return (typeof esc==='function'?esc:function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})})(s)}
 function clean(v){return String(v==null?'':v).replace(/[*_~`]/g,'').replace(/[\r\n\u2028\u2029]+/g,' ').replace(/\s{2,}/g,' ').trim()}
 function cleanML(v){return String(v==null?'':v).replace(/\r\n?|[\u2028\u2029]/g,'\n').split('\n').map(clean).filter(Boolean).join('\n')}
