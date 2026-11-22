@@ -1,0 +1,14 @@
+/* v155: arquivos no chat (equipe e conversas) */
+.chat-file{display:flex;align-items:center;gap:10px;min-width:0;max-width:100%;margin:4px 0;padding:8px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05)}
+.chat-file .cf-ic{flex:0 0 auto;display:inline-grid;place-items:center;width:40px;height:40px;border-radius:10px;background:rgba(var(--neon-rgb,200,160,210),.16);color:var(--neon,#E7B8EF)}
+.chat-file .cf-mid{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+.chat-file .cf-mid b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:650}
+.chat-file .cf-mid .small{opacity:.8}
+.chat-file.blk{opacity:.75;border-style:dashed}
+html body.dark .chat-file .cf-dl{flex:0 0 auto;min-height:44px;min-width:76px;padding:0 14px;border-radius:22px;font-weight:650}
+.chat-file .cf-wait{flex:0 0 auto}
+.cv-clip,html body.dark #view .cv-compose>.cv-clip{flex:0 0 auto;display:inline-grid;place-items:center;min-width:44px;width:44px;min-height:44px;padding:0;border-radius:22px}
+#cv-fprev .cv-prev{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#cv-fprev .chat-file{flex:1 1 220px}
+#cv-fprev .cv-prev>button{min-height:44px}
+@media (max-width:560px){.chat-file{max-width:min(100%,300px)}}

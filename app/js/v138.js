@@ -8,6 +8,7 @@
    msgs_{cv}~{id} e msgs_{cv}~{id}~r~{uid} (reação) com d='E2E:kv:…' (chave da conversa; a loja não lê),
    pres_{uid} (online/visto/digitando) e rcpt_{cv}~{uid} (entregue/lido). Só o autor grava o seu (regras). Nada dá papel; tudo por esc(). */
 var CH=['cv','msgs','pres','rcpt'],ONLINE=75e3,MAXPH=340000,PH=/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/,REACT=['👍','❤️','😂','😮','😢','🙏'],KP={name:'ECDH',namedCurve:'P-256'};
+var draftF=null,FPART=590000,FMAXK=6;/* v155: arquivo em pedaços msgs_{cv}~k{n}{id}, d='E2F:'+pedaço (aparelho antigo não reconhece e ignora) */
 var R={},M={},CV={},gen=0,unsub=null,ctxKey='',sub=null,rings={},dmK={},dmMap={},pubC={},fail={},draftPh='',replyTo='',lastOn=0,lastTyp=0,typCv='',myPriv=null,myPrivSrc='',rcAt={},started=false,geralN=0,urls={},menuId='';
 function E(v){return esc(v)}
 function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){return null}}
@@ -72,12 +73,13 @@ function listen(){var c=cx(),key=c?c.loja+'|'+c.uid:'';if(key===ctxKey)return;ct
 var building=null;
 async function build(){if(building)return building;building=(async function(){if(!cx())return;await people();
   for(var id in R){var r=R[id];if(r.c!=='msgs'||M[id])continue;var p=id.slice(5).split('~'),cv=p[0];
-    if(r.del){M[id]={del:true};continue}var o=await decMsg(cv,id,r.d);if(!o||typeof o!=='object')continue;
+    if(p.length===2&&/^k\d/.test(p[1]))continue;if(r.del){M[id]={del:true};continue}var o=await decMsg(cv,id,r.d);if(!o||typeof o!=='object')continue;
     if(p.length===4){if(REACT.indexOf(o.e)>=0)M[id]={re:1,e:o.e};continue}
-    M[id]={t:typeof o.t==='string'?o.t.slice(0,2000):'',ph:typeof o.ph==='string'&&PH.test(o.ph)&&o.ph.length<=MAXPH?o.ph:'',rp:typeof o.rp==='string'?o.rp.slice(0,40):''}}})().finally(function(){building=null});return building}
+    var fm=fileMeta(o.f);
+    M[id]={f:fm,t:o.ft===1&&fm?'':typeof o.t==='string'?o.t.slice(0,2000):'',ph:typeof o.ph==='string'&&PH.test(o.ph)&&o.ph.length<=MAXPH?o.ph:'',rp:typeof o.rp==='string'?o.rp.slice(0,40):''}}})().finally(function(){building=null});return building}
 /* ---------- consultas ---------- */
-function msgs(cv){var out=[];for(var id in R){var r=R[id];if(r.c!=='msgs'||id.indexOf('msgs_'+cv+'~')!==0)continue;var p=id.slice(5).split('~');if(p.length!==2)continue;var m=M[id];if(!m)continue;out.push({id:p[1],doc:id,at:r.at,u:r.cuid,del:!!m.del,t:m.t,ph:m.ph,rp:m.rp})}
-  (fail[cv]||[]).forEach(function(f){out.push({id:f.id,at:f.at,u:me(),t:f.t,ph:f.ph,rp:f.rp,st:f.st})});return out.sort(function(a,b){return a.at-b.at})}
+function msgs(cv){var out=[];for(var id in R){var r=R[id];if(r.c!=='msgs'||id.indexOf('msgs_'+cv+'~')!==0)continue;var p=id.slice(5).split('~');if(p.length!==2)continue;var m=M[id];if(!m)continue;out.push({id:p[1],doc:id,at:r.at,u:r.cuid,del:!!m.del,t:m.t,ph:m.ph,rp:m.rp,f:m.f})}
+  (fail[cv]||[]).forEach(function(f){out.push({id:f.id,at:f.at,u:me(),t:f.t,ph:f.ph,rp:f.rp,st:f.st,lf:f.file||null})});return out.sort(function(a,b){return a.at-b.at})}
 function reacts(cv,mid){var o={},pre='msgs_'+cv+'~'+mid+'~r~';for(var id in R){if(id.indexOf(pre)!==0)continue;var m=M[id];if(m&&m.re&&!R[id].del)o[m.e]=(o[m.e]||[]).concat(R[id].cuid)}return o}
 function members(cv){if(cv[0]==='d')return dmMap[cv]?[dmMap[cv]]:[];var g=CV[cv];return g?g.m.filter(function(u){return u!==me()}):[]}
 function convs(){var map={};for(var id in R){var r=R[id];if(r.c!=='msgs')continue;var cv=id.slice(5).split('~')[0];if(cv[0]==='d'&&dmMap[cv])map[cv]=1}
@@ -109,26 +111,26 @@ function listView(){var l=convs(),c=cx();
   var h=hero('Conversas','')+'<div class="panel cv-panel"><div class="row toolbar cv-tools"><button type="button" class="primary" onclick="e99Cv.newChat()">+ Nova conversa</button><button type="button" onclick="e99Cv.newChat(1)">Novo grupo</button></div>'
    +(c?'':'<p class="small cv-note">Ligue o e-mail (nuvem) em Minha conta para conversar em particular e em grupos. O chat da equipe funciona sem isso.</p>')
    +'<ul class="cv-list" role="list"><li><button type="button" class="cv-item" onclick="e99Cv.open(\'geral\')">'+av('','E')+'<span class="cv-mid"><b>Chat da equipe</b><span class="small">Toda a equipe</span></span><span class="cv-end">'+(geralN?'<span class="cv-badge" aria-label="'+geralN+' não lidas">'+geralN+'</span>':'')+'</span></button></li>'
-   +l.map(function(x){var last=x.last,pv=last?(last.del?'Mensagem apagada':(last.u===me()?'Você: ':(x.g?nm(last.u)+': ':''))+(last.t||(last.ph?'Foto':''))):(x.g?'Grupo criado':'');
+   +l.map(function(x){var last=x.last,pv=last?(last.del?'Mensagem apagada':(last.u===me()?'Você: ':(x.g?nm(last.u)+': ':''))+(last.t||(last.f?'Arquivo: '+last.f.n:last.lf?'Arquivo: '+last.lf.name:last.ph?'Foto':''))):(x.g?'Grupo criado':'');
      return '<li><button type="button" class="cv-item" data-cv="'+E(x.cv)+'" onclick="e99Cv.open(\''+E(x.cv)+'\')">'+av(x.uid,x.name,x.photo)+'<span class="cv-mid"><b>'+E(x.name)+'</b><span class="small cv-last">'+E(pv.slice(0,80))+'</span></span><span class="cv-end"><span class="small">'+E(when(x.at))+'</span>'+(x.unread?'<span class="cv-badge" aria-label="'+x.unread+' não lidas">'+x.unread+'</span>':'')+'</span></button></li>'}).join('')+'</ul></div>';
   if(window.e99ChatUnread)e99ChatUnread().then(function(n){if(n!==geralN){geralN=n;if(page==='chat'&&!sub)refresh()}}).catch(function(){});return h}
 function convView(cv){var g=CV[cv],name=cv[0]==='d'?nm(dmMap[cv]):g?g.nm:'Grupo';
   return '<div class="cv-wrap" data-open="'+E(cv)+'"><header class="cv-head"><button type="button" class="cv-back" aria-label="Voltar às conversas" onclick="e99Cv.list()">‹</button>'+(cv[0]==='d'&&dmMap[cv]?'<button type="button" class="cv-who" aria-label="Ver perfil de '+E(name)+'" onclick="e99Pessoa(\''+E(dmMap[cv])+'\')">'+av(dmMap[cv],name)+'</button>':av('',name,g&&g.ph))
    +'<span class="cv-mid"><b>'+E(name)+'</b><span id="cv-sub" class="small" aria-live="polite">'+E(subtitle(cv))+'</span></span>'+(g?'<button type="button" onclick="e99Cv.info()">Grupo</button>':'')+'</header>'
    +'<p class="small cv-e2e">'+(g&&g.m.indexOf(me())<0?'Você não participa mais deste grupo.':'Cifrada de ponta a ponta: só '+(g?'os membros':'vocês dois')+' leem.')+'</p><div id="cv-msgs" class="cv-msgs" role="log" aria-live="off" aria-label="Mensagens"></div><div id="cv-ann" class="chat-sr" role="status"></div>'
-   +'<div id="cv-rp"></div><div id="cv-phprev"></div><form class="cv-compose" onsubmit="e99Cv.send(event)"><label class="as-file cv-phbtn" aria-label="Enviar foto">Foto<input type="file" accept="image/*" onchange="e99Cv.photo(this)"></label>'
+   +'<div id="cv-rp"></div><div id="cv-phprev"></div><div id="cv-fprev"></div><form class="cv-compose" onsubmit="e99Cv.send(event)"><button type="button" class="cv-clip" aria-label="Enviar arquivo (PDF, planilha, documento…), até 2 MB" title="Enviar arquivo" onclick="this.nextElementSibling.click()">'+e99Arq.clip+'</button><input type="file" hidden tabindex="-1" onchange="e99Cv.file(this)"><label class="as-file cv-phbtn" aria-label="Enviar foto">Foto<input type="file" accept="image/*" onchange="e99Cv.photo(this)"></label>'
    +'<textarea name="t" rows="1" maxlength="2000" placeholder="Mensagem" aria-label="Mensagem" enterkeyhint="send" oninput="e99Cv.typing(this)" onkeydown="e99Cv.key(event)"></textarea><button class="primary" type="submit">Enviar</button></form></div>'}
 function bubble(cv,m){var mine=m.u===me(),g=cv[0]!=='d',rq=m.rp?msgs(cv).filter(function(x){return x.id===m.rp})[0]:null;
   var rx=m.del||m.st?{}:reacts(cv,m.id),rs=Object.keys(rx).map(function(e){return '<span class="cv-rx">'+E(e)+(rx[e].length>1?rx[e].length:'')+'</span>'}).join('');
   return '<div class="cv-b'+(mine?' mine':'')+'" data-mid="'+E(m.id)+'">'+(g&&!mine?'<span class="cv-from">'+E(nm(m.u))+'</span>':'')
-   +(m.del?'<i class="small">Mensagem apagada</i>':(rq?'<span class="cv-q">'+E(nm(rq.u))+': '+E(String(rq.del?'Mensagem apagada':rq.t||'Foto').slice(0,80))+'</span>':'')+(m.ph?'<img class="cv-img" src="'+E(img(m.ph))+'" alt="Foto">':'')+(m.t?'<span class="cv-t">'+E(m.t)+'</span>':''))
+   +(m.del?'<i class="small">Mensagem apagada</i>':(rq?'<span class="cv-q">'+E(nm(rq.u))+': '+E(String(rq.del?'Mensagem apagada':rq.t||(rq.f?'Arquivo':'Foto')).slice(0,80))+'</span>':'')+(m.ph?'<img class="cv-img" src="'+E(img(m.ph))+'" alt="Foto">':'')+(m.f?fileCard(m):m.lf?fileCard({f:{n:m.lf.name,s:m.lf.size}},true):'')+(m.t?'<span class="cv-t">'+E(m.t)+'</span>':''))
    +'<span class="cv-meta">'+E(hm(m.at))+(mine&&!m.del?' '+tick(m,cv):'')+'</span>'+(rs?'<span class="cv-rxs">'+rs+'</span>':'')
    +(m.st==='err'?'<span class="cv-fail">Não enviada. <button type="button" onclick="e99Cv.retry(\''+E(m.id)+'\')">Tentar de novo</button><button type="button" onclick="e99Cv.drop(\''+E(m.id)+'\')">Descartar</button></span>':'')
    +(!m.del&&!m.st?'<button type="button" class="cv-more" aria-label="Opções da mensagem" onclick="e99Cv.menu(\''+E(m.id)+'\')">⋯</button>':'')+'</div>'}
 function paintMsgs(){var box=document.getElementById('cv-msgs');if(!box||!sub)return;var l=msgs(sub),near=box.scrollHeight-box.scrollTop-box.clientHeight<80,first=!box.childElementCount;
   var last=box.getAttribute('data-last')||'',nl=l.length?l[l.length-1]:null;
   box.innerHTML=l.length?l.map(function(m){return bubble(sub,m)}).join(''):'<p class="small cv-empty">Nenhuma mensagem ainda.</p>';
-  if(nl&&nl.id!==last){box.setAttribute('data-last',nl.id);if(!first&&nl.u!==me()){var a=document.getElementById('cv-ann');if(a)a.textContent=nm(nl.u)+': '+(nl.t||'Foto')}}
+  if(nl&&nl.id!==last){box.setAttribute('data-last',nl.id);if(!first&&nl.u!==me()){var a=document.getElementById('cv-ann');if(a)a.textContent=nm(nl.u)+': '+(nl.t||(nl.f?'arquivo '+nl.f.n:'Foto'))}}
   if(first||near)box.scrollTop=box.scrollHeight;receipts()}
 var rc0=window.renderChat;
 window.renderChat=function(){if(!authSession)return '';if(sub==='geral'||!sub&&testGeral())return '<div class="cv-geralbar"><button type="button" class="cv-back" onclick="e99Cv.list()">‹ Conversas</button></div>'+rc0.apply(this,arguments);
@@ -143,9 +145,21 @@ function prefRow(){var pp=document.getElementById('prefs-panel');if(!pp||documen
 function shrink(file){return new Promise(function(res,rej){if(!file||file.size>20*1024*1024){rej(Error('A foto passa de 20 MB.'));return}var u=URL.createObjectURL(file),im=new Image();
   im.onload=function(){URL.revokeObjectURL(u);try{var c=document.createElement('canvas'),side=1280,d='';for(var a=0;a<7;a++){var s=Math.min(1,side/Math.max(im.naturalWidth,im.naturalHeight));c.width=Math.max(1,Math.round(im.naturalWidth*s));c.height=Math.max(1,Math.round(im.naturalHeight*s));var g=c.getContext('2d');g.fillStyle='#000';g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);d=c.toDataURL('image/jpeg',.8-a*.07);if(d.length<=MAXPH)break;side=Math.round(side*.8)}if(!PH.test(d)||d.length>MAXPH)throw Error('Esta imagem ainda está grande.');res(d)}catch(e){rej(e)}};im.onerror=function(){URL.revokeObjectURL(u);rej(Error('Formato de imagem não suportado.'))};im.src=u})}
 function showPh(){var p=document.getElementById('cv-phprev');if(p)p.innerHTML=draftPh?'<div class="cv-prev"><img src="'+E(img(draftPh))+'" alt="Foto escolhida"><button type="button" onclick="e99Cv.photoRm()">Tirar foto</button></div>':''}
-function showRp(){var p=document.getElementById('cv-rp');if(!p)return;var m=replyTo&&msgs(sub).filter(function(x){return x.id===replyTo})[0];p.innerHTML=m?'<div class="cv-prev">Respondendo a '+E(nm(m.u))+': '+E(String(m.t||'Foto').slice(0,60))+' <button type="button" onclick="e99Cv.reply(\'\')">Cancelar</button></div>':''}
+/* v155: arquivos */
+function fileMeta(f){var m=window.e99Arq&&e99Arq.okMeta(f);if(!m||!Number.isInteger(f.k)||f.k<1||f.k>FMAXK||!/^\d{1,6}$/.test(String(f.v)))return null;m.k=f.k;m.v=String(f.v);return m}
+function fileCard(m,local){var A=e99Arq,f=m.f,nm=E(f.n),lb=E(A.label(f.n,f.s));
+  return '<div class="chat-file cv-file'+(f.blk?' blk':'')+'" role="group" aria-label="Arquivo '+nm+', '+lb+'"><span class="cf-ic" aria-hidden="true">'+A.icon(f.n)+'</span><span class="cf-mid"><b>'+nm+'</b><span class="small">'+(f.blk?'Bloqueado por segurança (tipo de arquivo não permitido)':lb)+'</span></span>'
+   +(local||f.blk||m.del?'':'<button type="button" class="cf-dl" aria-label="Baixar arquivo '+nm+', '+lb+'" onclick="e99Cv.dl(\''+E(m.id)+'\')">Baixar</button>')+'</div>'}
+function showF(){var p=document.getElementById('cv-fprev');if(p)p.innerHTML=draftF?'<div class="cv-prev">'+fileCard({f:{n:draftF.name,s:draftF.size}},true)+'<button type="button" onclick="e99Cv.fileRm()">Tirar arquivo</button></div>':''}
+function chunkId(cv,mid,i){return 'msgs_'+cv+'~k'+i+mid}
+async function sendFile(cv,doc,mid,file){var kv=cv[0]==='d'?0:(CV[cv]&&CV[cv].kv||1);var k=await keyFor(cv,kv);if(!k)throw Error(cv[0]==='d'?'Esta pessoa ainda não abriu o Stok atualizado (sem chave).':'Você não tem a chave deste grupo.');
+  var iv=crypto.getRandomValues(new Uint8Array(12));var ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:authBytes(cx().loja+'|'+doc+'|'+kv+'|f')},k,file.bytes));var all=new Uint8Array(12+ct.length);all.set(iv);all.set(ct,12);
+  var s=authB64(all),n=Math.ceil(s.length/FPART);if(n>FMAXK)throw Error('Arquivo grande demais.');for(var i=0;i<n;i++)await put('msgs',chunkId(cv,mid,i),'E2F:'+s.slice(i*FPART,(i+1)*FPART),false);return {n:file.name,s:file.size,k:n,v:kv}}
+async function getFile(cv,m){var doc='msgs_'+cv+'~'+m.id,r0=R[doc];if(!r0||!m.f)throw Error('sem');var parts=[];for(var i=0;i<m.f.k;i++){var r=R[chunkId(cv,m.id,i)];if(!r||r.del||r.cuid!==r0.cuid||r.d.indexOf('E2F:')!==0)throw Error('falta');parts.push(r.d.slice(4))}
+  var b=authUn64(parts.join(''));var k=await keyFor(cv,m.f.v);if(!k)throw Error('chave');return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:b.slice(0,12),additionalData:authBytes(cx().loja+'|'+doc+'|'+m.f.v+'|f')},k,b.slice(12)))}
+function showRp(){var p=document.getElementById('cv-rp');if(!p)return;var m=replyTo&&msgs(sub).filter(function(x){return x.id===replyTo})[0];p.innerHTML=m?'<div class="cv-prev">Respondendo a '+E(nm(m.u))+': '+E(String(m.t||(m.f?'Arquivo':'Foto')).slice(0,60))+' <button type="button" onclick="e99Cv.reply(\'\')">Cancelar</button></div>':''}
 /* envio */
-async function sendOne(cv,f){var doc='msgs_'+cv+'~'+f.id;f.st='env';refresh();try{var d=await encMsg(cv,doc,{t:f.t,ph:f.ph,rp:f.rp});if(d.length>900000)throw Error('Mensagem grande demais.');await put('msgs',doc,d,false);await build();fail[cv]=(fail[cv]||[]).filter(function(x){return x!==f});return true}
+async function sendOne(cv,f){var doc='msgs_'+cv+'~'+f.id;f.st='env';refresh();try{var o={t:f.t,ph:f.ph,rp:f.rp};if(f.file){o.f=await sendFile(cv,doc,f.id,f.file);if(!f.t){o.t=e99Arq.fallback(f.file.name,f.file.size);o.ft=1}}var d=await encMsg(cv,doc,o);if(d.length>900000)throw Error('Mensagem grande demais.');await put('msgs',doc,d,false);await build();fail[cv]=(fail[cv]||[]).filter(function(x){return x!==f});return true}
   catch(e){f.st='err';f.err=e&&e.message||'erro';window.__e99CvLastErr=f.err;notify('Mensagem não enviada: '+f.err);return false}finally{refresh()}}
 setInterval(function(){if(!cx()||!navigator.onLine)return;Object.keys(fail).forEach(function(cv){(fail[cv]||[]).forEach(function(f){if(f.st==='err'&&!/chave|grande/.test(f.err||''))sendOne(cv,f)})})},60000);
 addEventListener('online',function(){Object.keys(fail).forEach(function(cv){(fail[cv]||[]).forEach(function(f){if(f.st==='err')sendOne(cv,f)})})});
@@ -181,14 +195,17 @@ window.e99Cv={
       +'<div class="row toolbar"><button type="button" onclick="this.closest(\'dialog\').close()">Fechar</button>'+(own?'<button class="primary" type="submit">Salvar</button>':'')+'</div></form>');gDraft={ph:''}},
   saveInfo:async function(ev){ev.preventDefault();var f=ev.target,add=[].slice.call(f.querySelectorAll('input[name=add]:checked')).map(function(i){return i.value});try{await editGroup(sub,{nm:f.elements.nm.value,add:add,ph:gDraft.ph||undefined});f.closest('dialog').close();render()}catch(e){notify(e.message)}},
   rm:async function(u){if(!confirm('Remover '+nm(u)+' do grupo? A chave do grupo será trocada e essa pessoa não lerá as próximas mensagens.'))return;try{await editGroup(sub,{rm:[u]});var d=document.getElementById('cv-info');if(d)d.close();render();notify('Removido do grupo.')}catch(e){notify(e.message)}},
-  send:async function(ev){if(ev)ev.preventDefault();var cv=sub;if(!cv||cv==='geral')return;var ta=document.querySelector('.cv-compose textarea'),t=String(ta&&ta.value||'').trim().slice(0,2000);if(!t&&!draftPh)return;
-    var f={id:rid('m'),at:Date.now(),t:t,ph:draftPh,rp:replyTo};if(ta){ta.value='';ta.style.height=''}draftPh='';replyTo='';showPh();showRp();(fail[cv]=fail[cv]||[]).push(f);if(typCv){typCv='';presence('typ','')}await sendOne(cv,f)},
+  send:async function(ev){if(ev)ev.preventDefault();var cv=sub;if(!cv||cv==='geral')return;var ta=document.querySelector('.cv-compose textarea'),t=String(ta&&ta.value||'').trim().slice(0,2000);if(!t&&!draftPh&&!draftF)return;
+    var f={id:rid('m'),at:Date.now(),t:t,ph:draftPh,rp:replyTo,file:draftF};if(ta){ta.value='';ta.style.height=''}draftPh='';draftF=null;showF();replyTo='';showPh();showRp();(fail[cv]=fail[cv]||[]).push(f);if(typCv){typCv='';presence('typ','')}await sendOne(cv,f)},
   retry:function(id){var f=(fail[sub]||[]).filter(function(x){return x.id===id})[0];if(f)sendOne(sub,f)},
   drop:function(id){fail[sub]=(fail[sub]||[]).filter(function(x){return x.id!==id});refresh()},
   key:function(e){if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();e99Cv.send()}},
   typing:function(ta){ta.style.height='';ta.style.height=Math.min(160,ta.scrollHeight)+'px';if(!sub||sub==='geral')return;var now=Date.now();if(!ta.value){if(typCv){typCv='';presence('typ','')}return}if(now-lastTyp>4000||typCv!==sub){lastTyp=now;typCv=sub;presence('typ',sub)}},
-  photo:async function(inp){var f=inp.files&&inp.files[0];inp.value='';if(!f)return;try{draftPh=await shrink(f);showPh()}catch(e){notify(e.message)}},
+  photo:async function(inp){var f=inp.files&&inp.files[0];inp.value='';if(!f)return;try{draftPh=await shrink(f);draftF=null;showF();showPh()}catch(e){notify(e.message)}},
   photoRm:function(){draftPh='';showPh()},
+  file:async function(inp){var fl=inp.files&&inp.files[0];inp.value='';if(!fl)return;var r=await e99Arq.read(fl);var a=document.getElementById('cv-ann');if(!r.ok){notify(r.err);if(a)a.textContent=r.err;return}draftF={name:r.name,mime:r.mime,size:r.size,bytes:r.bytes};draftPh='';showPh();showF();if(a)a.textContent='Arquivo '+r.name+' escolhido. Toque em Enviar.';var t=document.querySelector('.cv-compose textarea');if(t)t.focus()},
+  fileRm:function(){draftF=null;showF()},
+  dl:async function(id){var m=msgs(sub).filter(function(x){return x.id===id})[0];if(!m||!m.f)return;if(m.f.blk){notify('Este arquivo foi bloqueado por segurança.');return}try{var b=await getFile(sub,m);e99Arq.save(b,m.f.n);var a=document.getElementById('cv-ann');if(a)a.textContent='Baixando '+m.f.n+'.'}catch(e){notify('Arquivo indisponível. Peça para enviar de novo.')}},
   reply:function(id){replyTo=id||'';var d=document.getElementById('cv-menu');if(d&&d.open)d.close();showRp();var t=document.querySelector('.cv-compose textarea');if(t&&id)t.focus()},
   menu:function(id){var m=msgs(sub).filter(function(x){return x.id===id})[0];if(!m)return;menuId=id;var mine=m.u===me(),rx=reacts(sub,id);
     sheet('cv-menu','<form method="dialog"><h2>Mensagem</h2><div class="cv-rxrow" role="group" aria-label="Reagir">'+REACT.map(function(e,i){var on=(rx[e]||[]).indexOf(me())>=0;return '<button type="button" aria-pressed="'+on+'" aria-label="Reagir '+E(e)+'" onclick="e99Cv.react('+i+')">'+E(e)+'</button>'}).join('')+'</div>'
@@ -196,10 +213,10 @@ window.e99Cv={
   react:async function(i){var e=REACT[i],doc='msgs_'+sub+'~'+menuId+'~r~'+me(),cur=M[doc],on=cur&&cur.re&&cur.e===e&&!R[doc].del;var d=document.getElementById('cv-menu');if(d)d.close();
     try{if(on)await put('msgs',doc,'',true);else await put('msgs',doc,await encMsg(sub,doc,{e:e}),false);await build();refresh()}catch(x){notify('Não deu para reagir: '+(x.message||x))}},
   copy:function(){var m=msgs(sub).filter(function(x){return x.id===menuId})[0];try{navigator.clipboard.writeText(m.t)}catch(e){}var d=document.getElementById('cv-menu');if(d)d.close()},
-  delAll:async function(){var d=document.getElementById('cv-menu');if(d)d.close();if(!confirm('Apagar esta mensagem para todos?'))return;try{await put('msgs','msgs_'+sub+'~'+menuId,'',true);await build();refresh()}catch(e){notify('Não deu para apagar: '+(e.message||e))}},
+  delAll:async function(){var d=document.getElementById('cv-menu');if(d)d.close();if(!confirm('Apagar esta mensagem para todos?'))return;try{var mm=msgs(sub).filter(function(x){return x.id===menuId})[0];await put('msgs','msgs_'+sub+'~'+menuId,'',true);if(mm&&mm.f){for(var i=0;i<mm.f.k;i++)put('msgs',chunkId(sub,menuId,i),'E2F:',false).catch(function(){})}await build();refresh()}catch(e){notify('Não deu para apagar: '+(e.message||e))}},
   pref:function(k,on){ls('lojasg.estoque99.chat-'+k,on?null:'off');if(k==='presence')presence(true)},
   state:function(){return {ctx:!!cx(),started:started,pk:window.e99CvPk(),sub:sub,convs:convs().map(function(c){return {cv:c.cv,name:c.name,unread:c.unread,last:c.last&&(c.last.del?'':c.last.t)}}),err:window.__e99CvErr||''}},
-  msgs:function(cv){return msgs(cv||sub).map(function(m){return {id:m.id,u:m.u,t:m.t,del:m.del,st:m.st||''}})},
+  msgs:function(cv){return msgs(cv||sub).map(function(m){return {id:m.id,u:m.u,t:m.t,del:m.del,st:m.st||'',f:m.f?{n:m.f.n,s:m.f.s,k:m.f.k}:null}})},
   group:function(id){var g=CV[id];return g?{nm:g.nm,m:g.m.slice(),kv:g.kv,ow:g.ow}:null}
 };
 })();
