@@ -1,0 +1,11 @@
+/* v161 · animação do mouse (só PC; o JS só liga com mouse e tela > 900 px). Só transform/opacity, sem blur nem canvas. */
+#mfx-glow{position:fixed;left:0;top:0;width:440px;height:440px;margin:-220px 0 0 -220px;border-radius:50%;pointer-events:none;z-index:2147483000;opacity:0;
+  background:radial-gradient(circle at center,rgba(var(--neon-rgb,231,184,239),.13) 0%,rgba(var(--neon-rgb,231,184,239),.055) 32%,rgba(var(--neon-rgb,231,184,239),0) 62%);
+  transition:opacity .28s ease;will-change:transform,opacity;contain:strict}
+#mfx-glow.on{opacity:1}
+body.mfx-on .mfx-hot:not(:focus-visible){outline:1px solid rgba(var(--neon-rgb,231,184,239),.55);outline-offset:-1px}
+.mfx-rip-box{position:fixed;pointer-events:none;overflow:hidden;z-index:2147483001;contain:strict}
+.mfx-rip{position:absolute;border-radius:50%;background:rgba(var(--neon-rgb,231,184,239),.26);pointer-events:none;transform:scale(0);opacity:0}
+@media (prefers-reduced-motion:reduce){#mfx-glow,.mfx-rip-box{display:none!important}}
+@media (max-width:900px),(hover:none),(pointer:coarse){#mfx-glow,.mfx-rip-box{display:none!important}}
+@media print{#mfx-glow,.mfx-rip-box{display:none!important}}
