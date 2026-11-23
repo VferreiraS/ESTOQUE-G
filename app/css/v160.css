@@ -1,0 +1,45 @@
+/* v160: visualizador de imagens (tela cheia) e miniaturas das fotos do Plano */
+@media screen{
+/* miniaturas: quadrado 112 px, recorte (cover), fundo neutro do tema, grade que quebra linha */
+#view .plan-photos{display:flex!important;flex-wrap:wrap;gap:10px;margin-top:12px;grid-template-columns:none}
+#view .plan-photos figure{position:relative;margin:0;width:112px;max-width:none!important;flex:0 0 112px;display:block}
+#view .plan-photos img{display:block;width:112px!important;height:112px!important;max-width:none;object-fit:cover;border-radius:12px;
+  background:var(--ds-surface,rgba(255,255,255,.06))!important;border:1px solid var(--ds-line,rgba(255,255,255,.14));cursor:zoom-in}
+#view .plan-photos .ph-ic{position:absolute;right:4px;bottom:4px;width:36px;height:36px;min-width:0;min-height:0;padding:0;margin:0;
+  display:inline-flex;align-items:center;justify-content:center;border-radius:999px;font-size:0;line-height:0;
+  background:rgba(0,0,0,.62);color:#fff;border:1px solid rgba(255,255,255,.28)}
+#view .plan-photos .ph-rm{top:4px;bottom:auto}
+#view .plan-photos .ph-ic:focus-visible{outline:3px solid var(--neon,#FF2A1F);outline-offset:2px}
+.e99-iv-can{cursor:zoom-in}
+.e99-iv-can:focus-visible{outline:3px solid var(--neon,#FF2A1F);outline-offset:2px}
+}
+/* visualizador */
+html.e99-iv-on,html.e99-iv-on body{overflow:hidden}
+html:root body dialog#e99-img#e99-img,html:root body dialog#e99-img#e99-img[open]{position:fixed!important;inset:0!important;left:0!important;top:0!important;width:100vw!important;max-width:100vw!important;min-width:0!important;height:100vh!important;height:100dvh!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+  background:#050506!important;color:#f4f4f6;overflow:hidden!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;transform:none!important;animation:e99ivIn .16s ease-out}
+dialog#e99-img::backdrop{background:rgba(0,0,0,.92)}
+@keyframes e99ivIn{from{opacity:0}to{opacity:1}}
+#e99-img .iv-top{position:absolute;left:0;right:0;top:0;z-index:3;display:flex;align-items:center;gap:8px;
+  padding:calc(8px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) 8px calc(14px + env(safe-area-inset-left));
+  background:linear-gradient(rgba(0,0,0,.7),rgba(0,0,0,0))}
+#e99-img .iv-count{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+#e99-img .iv-sp{flex:1}
+#e99-img .iv-b{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;padding:0 12px;border-radius:999px;
+  background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.22);font:inherit;font-size:15px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background-color .15s ease}
+#e99-img .iv-x{width:44px;padding:0}
+#e99-img .iv-b:hover{background:rgba(255,255,255,.2)}
+#e99-img .iv-b:focus-visible{outline:3px solid var(--neon,#FF2A1F);outline-offset:2px}
+#e99-img .iv-b:disabled{opacity:.3;cursor:default}
+#e99-img .iv-stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+#e99-img .iv-im{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;transform-origin:center center;will-change:transform;cursor:zoom-in;-webkit-user-drag:none;background:none!important;border:0;border-radius:0;filter:none!important}
+#e99-img.zoomed .iv-im{cursor:grab}
+#e99-img .iv-nav{position:absolute;top:50%;z-index:3;width:48px;height:48px;padding:0;margin-top:-24px;display:none}
+#e99-img.multi .iv-nav{display:inline-flex}
+#e99-img .iv-prev{left:calc(10px + env(safe-area-inset-left))}
+#e99-img .iv-next{right:calc(10px + env(safe-area-inset-right))}
+#e99-img .iv-cap{position:absolute;left:0;right:0;bottom:0;z-index:2;margin:0;padding:18px 16px calc(12px + env(safe-area-inset-bottom));
+  font-size:14px;text-align:center;color:#e8e8ea;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.65));overflow-wrap:anywhere;pointer-events:none}
+#e99-img .iv-cap:empty{display:none}
+@media (max-width:520px){#e99-img .iv-t{display:none}#e99-img .iv-dl{width:44px;padding:0}#e99-img .iv-nav{width:44px;height:44px;margin-top:-22px;background:rgba(0,0,0,.45)}}
+@media (prefers-reduced-motion:reduce){html:root body dialog#e99-img#e99-img,html:root body dialog#e99-img#e99-img[open]{animation:none}#e99-img .iv-b{transition:none}}
+@media print{dialog#e99-img{display:none!important}}

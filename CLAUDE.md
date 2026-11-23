@@ -19,7 +19,7 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão:** 159 (`meta estoque99-version` + `CACHE` `estoque99-v159` no `sw.js` + `?v=159` nos arquivos `app/`), publicada em 22/11/2026 no GitHub Pages e no Firebase Hosting. Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
+- **Versão:** 160 (`meta estoque99-version` + `CACHE` `estoque99-v160` no `sw.js` + `?v=160` nos arquivos `app/`), publicada em 23/11/2026 no GitHub Pages e no Firebase Hosting. Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
@@ -29,7 +29,7 @@
 
 | Versão | O quê |
 |--------|--------|
-| v159 | **Logo novo (opção 1, "Prateleira")** — escolha do dono; **exceção explícita dele à regra "preservar o S", só para o logo**. `node scripts/aplicar-logo.mjs 1 -v159` (o script ganhou sufixo opcional e renomeia também em `app/js/*` e `push/sw-push.js`): ícones PNG `icons/{icon-192,icon-512,icon-maskable,apple-touch,favicon}-v159.png` no manifest, `<link>`, `og:image`, pré-cache do `sw.js`, notificações (`notify.js`, `core.js`, `sw-push.js`), banner/folha impressa (`v144-msg.js` `LOGO`) e favicon fixo da v123 (`fav()`); o S (`S_PATH`) trocado em `intro.js`, `v123.js` (`e99LogoV123`, cores do tema), `v114-logo.js`, `seasons.js` (ícone do tema do mês) e SVG base64 do menu/entrar no `index.html`. Abertura: o S final vem sempre do caminho do logo (sem fonte; `stats.font='desenho'`), centrado; `fontReady` saiu. Ícones `-v123` antigos ficam no repositório (caches velhos). Teste `tests/v159_logo_test.js` (manifest/pré-cache, sem 404, abertura ≤2,8 s com CPU 4x, menu/entrar/tema do mês, banner, impressão, 0 erro); prints em `docs/prints/v159/`. |
+| v160 | **Visualizador de imagens** (`app/js/v160-imagens.js` + `app/css/v160.css`): `window.e99Img.open(lista, índice)` — `<dialog>` modal em tela cheia escura, imagem inteira (`contain`), Fechar ✕ 44 px (Esc), Baixar (bytes da própria imagem; no Plano usa `downloadPlanPhoto`), contador "1/3", setas/teclado/deslizar, zoom com pinça, toque duplo e roda do mouse, arrastar ampliada; foco volta ao fechar; voltar do sistema/gesto (v157) fecha sem sair do app; "menos movimento" sem animação. Só `data:image/(jpeg|png|webp|gif)` ou `blob:` do app. Abre por toque/Enter (clique em captura no `document`) em: fotos do Plano (lista e editor), fotos do chat da equipe (substitui o `chat-img-view`), conversas (`.cv-img`), mural (`.sc-img`), foto/capa do perfil. Miniaturas do Plano: quadrado 112 px `cover`, fundo neutro do tema (sem o verde `#17251c`), "Baixar foto N"/"Remover foto" viraram ícones 36 px (`core.js`, `src` por `esc`). Teste `tests/v160_test.js` (prints em `docs/prints/v160/`). Animação do mouse fica para a v161 (outro agente). |
 
 Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o site); o que vale no ar é o `index.html` + `sw.js` publicados.
 
@@ -60,6 +60,7 @@ Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o sit
 - v157: gesto de deslizar para voltar no iPhone (app da tela inicial) e botão voltar do Android; "‹ Voltar" no topo das telas.
 - v158: ativar o FormSubmit em cada e-mail de conta (1º envio); vida no iPhone real (fluidez, cores).
 - v159: logo novo no ícone da tela inicial do iPhone (reinstalar o atalho se o ícone antigo ficar) e na aba do PC; abertura com o S novo fluida no iPhone.
+- v160: visualizador no iPhone real (pinça, toque duplo, deslizar, gesto de voltar fecha) e Baixar foto no Safari/app da tela inicial.
 
 ### Decisões pendentes do dono (v89 — não mudar sem perguntar)
 - **Chat (v106/v108):** desde a v108 a mensagem que falhou fica guardada (cifrada) no aparelho; no celular Enter continua enviando (não há Shift+Enter no teclado do celular); "Sair da equipe" foi para baixo do chat. Se o dono quiser guardar as não enviadas ou Enter = nova linha no celular, mudar no `chat-js`.
