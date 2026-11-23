@@ -19,7 +19,7 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão:** 161 (`meta estoque99-version` + `CACHE` `estoque99-v161` no `sw.js` + `?v=161` nos arquivos `app/`), publicada em 23/11/2026 no GitHub Pages e no Firebase Hosting. Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
+- **Versão:** 161 (`meta estoque99-version` + `CACHE` `estoque99-v161` no `sw.js` + `?v=161` nos arquivos `app/`), publicada em 23/11/2026 no GitHub Pages (Firebase Hosting ainda na versão anterior: deploy sem login neste ambiente; publicar com `firebase deploy --only hosting`). Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
