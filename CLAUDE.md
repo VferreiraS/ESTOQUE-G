@@ -62,7 +62,7 @@ Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o sit
 - v159: logo novo no ícone da tela inicial do iPhone (reinstalar o atalho se o ícone antigo ficar) e na aba do PC; abertura com o S novo fluida no iPhone.
 - v160: visualizador no iPhone real (pinça, toque duplo, deslizar, gesto de voltar fecha) e Baixar foto no Safari/app da tela inicial.
 - v161: animação do mouse no PC da loja (Chrome/Edge): brilho fluido, sem pesar; nada aparece no iPhone/tablet.
-- v162: auto-reparo no PC da loja e no iPhone real: ver em Dados → "Auto-reparo" o que foi reparado; nada piscando nem pulando; avisar o que repete para corrigir de vez.
+- v162 (Pages ok, Firebase Hosting pendente — sem login aqui): auto-reparo no PC da loja e no iPhone real: ver em Dados → "Auto-reparo" o que foi reparado; nada piscando nem pulando; avisar o que repete para corrigir de vez.
 
 ### Decisões pendentes do dono (v89 — não mudar sem perguntar)
 - **Chat (v106/v108):** desde a v108 a mensagem que falhou fica guardada (cifrada) no aparelho; no celular Enter continua enviando (não há Shift+Enter no teclado do celular); "Sair da equipe" foi para baixo do chat. Se o dono quiser guardar as não enviadas ou Enter = nova linha no celular, mudar no `chat-js`.
