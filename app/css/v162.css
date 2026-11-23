@@ -1,0 +1,10 @@
+/* v162 · Auto-reparo ao vivo: classes reversíveis aplicadas só pelo app/js/v162-reparo.js (data-e99-fix). Sem cores, sem animação. */
+.e99-fx-wrap{min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important;word-break:break-word!important}
+.e99-fx-ell{min-width:0!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.e99-fx-ib{display:inline-block!important;vertical-align:middle}
+.e99-fx-wide{max-width:100%!important;min-width:0!important;box-sizing:border-box!important;overflow-wrap:anywhere!important}
+.e99-fx-scroll{display:block!important;overflow-x:auto!important}
+.e99-fx-anim{animation:none!important;opacity:1!important}
+.e99-fx-tf{transform:none!important}
+.reparo-list{margin:6px 0 0;padding-left:18px;max-height:220px;overflow:auto}
+.reparo-list li{margin:2px 0;overflow-wrap:anywhere}
