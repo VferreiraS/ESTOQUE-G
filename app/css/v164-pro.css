@@ -1,0 +1,586 @@
+/* v164 · sistema de design profissional (pedido do dono: "aparência de empresa global"). Guia: docs/design-referencias.md.
+   Carregado por último. Os tokens --p-* ficam no :root (por tema). Os componentes ficam na camada @layer p164: as camadas antigas
+   usam !important sem camada, e um !important DENTRO de uma camada vence qualquer !important fora dela, sem guerra de especificidade.
+   Por isso só se declara aqui o que é do sistema (fonte, peso, entrelinha, raio, borda, sombra, superfície, cor de texto, altura de
+   controle). Nada de display/position/width: o leiaute, o auto-reparo (v162, classes e99-fx-*) e o comportamento continuam como estavam.
+   Não toca no logo (Prateleira), no S da abertura (#stok-intro) nem na conferência pela câmera. Só tema escuro. */
+
+/* ---------------- tokens ---------------- */
+:root{
+  /* tipografia: escala fechada de 7 tamanhos (o display vira 34 no celular), pesos 400/500/600 */
+  --p-font:'Inter',system-ui,'Segoe UI',Roboto,sans-serif;
+  --p-font-mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  --p-fs-cap:12px;--p-lh-cap:16px;--p-tr-cap:.02em;      /* etiqueta, chip, cabeçalho de tabela */
+  --p-fs-sm:13px;--p-lh-sm:18px;--p-tr-sm:0;             /* metadado, legenda, ajuda */
+  --p-fs-ui:15px;--p-lh-ui:20px;--p-tr-ui:-.005em;       /* botão, menu, lista, tabela */
+  --p-fs-body:16px;--p-lh-body:24px;--p-tr-body:-.011em; /* texto corrido e campos (16 evita o zoom do iPhone) */
+  --p-fs-title:22px;--p-lh-title:28px;--p-tr-title:-.017em; /* título de seção e de janela */
+  --p-fs-large:28px;--p-lh-large:34px;--p-tr-large:-.021em; /* título de tela, número em destaque */
+  --p-fs-display:40px;--p-lh-display:44px;--p-tr-display:-.025em; /* só o título do Início */
+  --p-w-regular:400;--p-w-medium:500;--p-w-semibold:600;
+  /* espaçamento: grade de 4/8 */
+  --p-s-1:4px;--p-s-2:8px;--p-s-3:12px;--p-s-4:16px;--p-s-5:24px;--p-s-6:32px;--p-s-8:48px;
+  /* raios: concêntricos (pequeno 8, controle 12, cartão 20, folha 28, pílula) */
+  --p-r-xs:8px;--p-r-ctl:12px;--p-r-card:20px;--p-r-sheet:28px;--p-r-pill:999px;
+  /* controles */
+  --p-h-ctl:44px;--p-h-ctl-sm:36px;
+  /* movimento: 3 durações, curvas suaves, sem mola */
+  --p-d-fast:120ms;--p-d-base:200ms;--p-d-slow:320ms;
+  --p-ease:cubic-bezier(.2,0,0,1);--p-ease-out:cubic-bezier(0,0,.2,1);--p-ease-in:cubic-bezier(.3,0,1,1);
+  /* elevação: sombra só no que flutua */
+  --p-shadow-pop:0 12px 32px rgba(0,0,0,.45),0 2px 6px rgba(0,0,0,.25);
+  --p-glass-blur:saturate(150%) blur(20px);
+  /* estados (iguais nos 3 temas; AA sobre as superfícies) */
+  --p-danger:#F2787A;--p-danger-rgb:242,120,122;--p-ok:#5CCB94;--p-ok-rgb:92,203,148;--p-warn:#F2BE5C;--p-warn-rgb:242,190,92;
+  --p-line:rgba(255,255,255,.08);--p-line-2:rgba(255,255,255,.14);
+}
+html.e99-apple{--p-font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Inter',system-ui,sans-serif}
+@media (max-width:760px){:root{--p-fs-display:34px;--p-lh-display:40px}}
+/* papéis de cor por tema: mesmos matizes de cada tema (v112), só as camadas de luminosidade são novas */
+html[data-e99-theme="lilas"]{--p-bg:#0B090D;--p-s1:#141017;--p-s2:#1B161F;--p-s3:#241D29;--p-t1:#F5EEF7;--p-t2:#B8A9BD;--p-t3:#958899;
+  --p-accent:#C79BD0;--p-accent-hover:#D9B3E1;--p-accent-ink:#1B0F1E;--p-accent-rgb:199,155,208;--p-accent-text:#E7B8EF;
+  --p-glow:radial-gradient(90vmax 60vmax at 90% -20%,rgba(92,44,98,.22),transparent 60%)}
+html[data-e99-theme="violeta"]{--p-bg:#000000;--p-s1:#0E0A15;--p-s2:#150F1F;--p-s3:#1E172B;--p-t1:#F4F2FA;--p-t2:#B3ABC6;--p-t3:#8F88A3;
+  --p-accent:#C6FF34;--p-accent-hover:#D6FF6A;--p-accent-ink:#0B0B0B;--p-accent-rgb:198,255,52;--p-accent-text:#C6FF34;
+  --p-glow:radial-gradient(90vmax 60vmax at 90% -20%,rgba(127,58,237,.20),transparent 60%)}
+html[data-e99-theme="cinza"]{--p-bg:#0A0A0A;--p-s1:#131415;--p-s2:#1A1B1D;--p-s3:#232528;--p-t1:#F7F7F1;--p-t2:#C9D0D6;--p-t3:#969DA4;
+  --p-accent:#C7FF2E;--p-accent-hover:#D7FF66;--p-accent-ink:#0A0A0A;--p-accent-rgb:199,255,46;--p-accent-text:#C7FF2E;
+  --p-glow:radial-gradient(90vmax 60vmax at 90% -20%,rgba(111,119,128,.14),transparent 60%)}
+
+@layer p164{
+/* ---------------- base ---------------- */
+html[data-e99-theme] body.dark{font-family:var(--p-font)!important;font-size:var(--p-fs-body);line-height:var(--p-lh-body);color:var(--p-t1)!important;
+  background:var(--p-glow),var(--p-bg)!important;background-attachment:fixed!important;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+/* família única (a Space Grotesk dos títulos sai: um só tipo, como Apple/Linear) */
+body.dark :where(.layout,#mobile-bottom,dialog,#auth-screen,#toast,.e99m-wrap,#e99-backbar) *{font-family:var(--p-font)!important}
+body.dark :where(.layout,dialog) :where(code,pre){font-family:var(--p-font-mono)!important}
+
+/* escala fechada: tudo começa em "ui" e cada papel ganha o seu passo */
+body.dark :where(.layout,#mobile-bottom,dialog,#auth-screen,#toast,.e99m-wrap,#e99-backbar,#alert-popup) *{
+  font-size:var(--p-fs-ui)!important;line-height:var(--p-lh-ui)!important;letter-spacing:var(--p-tr-ui)!important;font-weight:var(--p-w-regular)!important}
+/* texto corrido e campos */
+body.dark :is(.layout,dialog,#auth-screen) p,
+body.dark :is(.layout,dialog,#auth-screen) li,
+body.dark :is(.layout,dialog,#auth-screen) dd,
+body.dark :is(.layout,dialog,#auth-screen) blockquote,
+body.dark :is(.layout,dialog,#auth-screen) input,
+body.dark :is(.layout,dialog,#auth-screen) textarea,
+body.dark :is(.layout,dialog,#auth-screen) select,
+body.dark :is(.layout,dialog,#auth-screen) .subtitle,
+body.dark :is(.layout,dialog,#auth-screen) .chat-msg .txt,
+body.dark :is(.layout,dialog,#auth-screen) .chat-empty,
+body.dark #toast,
+body.dark :is(.layout,dialog) .card p,
+body.dark #view .vd-greet p{font-size:var(--p-fs-body)!important;line-height:var(--p-lh-body)!important;letter-spacing:var(--p-tr-body)!important}
+body.dark :is(.layout,dialog,#auth-screen) input,
+body.dark :is(.layout,dialog,#auth-screen) textarea,
+body.dark :is(.layout,dialog,#auth-screen) select{line-height:var(--p-lh-ui)!important}
+/* metadado */
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .small,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) small,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) p.small,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) li.small,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .small *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) time,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .act-meta,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .chat-status,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .chat-sub,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .chat-hint,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .chat-hint *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .pn-sub,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .pn-legend,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .pn-legend *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .pn-hrow,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .pn-hrow *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .legal-links,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .legal-links *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) footer,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) footer *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) #storage,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) #storage *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) #account-label,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) #account-label *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .lic-text,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .lic-text *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .net-hosts,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .e99all-list li,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .e99-pc,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .e99-pc *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .nf-pc,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .nf-pc *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) label,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .wk-pref,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .cv-pref,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .chat-check,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .vd-ring span:not(.vd-num),
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .stat span,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .stat small,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .pn-kpi span,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .pn-kpi small,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .e99-dem-field>span,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .sound-label,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) #mobile-bottom button,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) #mobile-bottom button *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .chat-msg .meta,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .chat-msg .meta *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .chat-msg .who,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .reacts,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .reacts *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .chat-day,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .chat-day *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) code{
+  font-size:var(--p-fs-sm)!important;line-height:var(--p-lh-sm)!important;letter-spacing:var(--p-tr-sm)!important}
+/* etiquetas, chips, cabeçalho de tabela */
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) th,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) th *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .badge,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .badge *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .pill,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .pill *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .chip,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .chip *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .nf-count,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .alert-count,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .eyebrow,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .hero-pill,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .hero-pill *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) kbd,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .e99-go-l,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .pn-xlab,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .pn-xlab *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .pn-ymax,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .pn-plot span,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .chat-kbd,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .tag,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .count,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom) .status-dot+span{
+  font-size:var(--p-fs-cap)!important;line-height:var(--p-lh-cap)!important;letter-spacing:var(--p-tr-cap)!important}
+/* títulos */
+body.dark :is(.layout,dialog,#auth-screen) h3,
+body.dark :is(.layout,dialog,#auth-screen) h4,
+body.dark :is(.layout,dialog,#auth-screen) summary,
+body.dark :is(.layout,dialog,#auth-screen) .card h2,
+body.dark :is(.layout,dialog,#auth-screen) .cards h2,
+body.dark :is(.layout,dialog,#auth-screen) .sector-heading h3,
+body.dark :is(.layout,dialog,#auth-screen) .formhead h3,
+body.dark :is(.layout,dialog,#auth-screen) legend{font-size:var(--p-fs-body)!important;line-height:var(--p-lh-body)!important;letter-spacing:var(--p-tr-body)!important}
+body.dark :is(.layout,dialog,#auth-screen) h2,
+body.dark :is(.layout,dialog,#auth-screen) #formtitle,
+body.dark :is(.layout,dialog,#auth-screen) .vd-greet h2,
+body.dark :is(.layout,dialog,#auth-screen) .vd-num,
+body.dark :is(.layout,dialog,#auth-screen) .pn-card h2,
+body.dark :is(.layout,dialog,#auth-screen) .panelhead h2,
+body.dark :is(.layout,dialog,#auth-screen) .chat-title h2,
+body.dark :is(.layout,dialog,#auth-screen) h2.vh,
+body.dark :is(.layout,dialog) .vd-num *{font-size:var(--p-fs-title)!important;line-height:var(--p-lh-title)!important;letter-spacing:var(--p-tr-title)!important}
+body.dark :is(.layout,dialog,#auth-screen) h1,
+body.dark :is(.layout,dialog,#auth-screen) h1 *,
+body.dark :is(.layout,dialog,#auth-screen) .hero h1,
+body.dark :is(.layout,dialog,#auth-screen) .hero h1 *,
+body.dark :is(.layout,dialog,#auth-screen) .auth-card h1,
+body.dark :is(.layout,dialog,#auth-screen) .stat strong,
+body.dark :is(.layout,dialog,#auth-screen) .pn-kpi strong,
+body.dark :is(.layout,dialog,#auth-screen) .big-num{font-size:var(--p-fs-large)!important;line-height:var(--p-lh-large)!important;letter-spacing:var(--p-tr-large)!important}
+body.dark #view .hero-home h1,
+body.dark #view .hero-home h1 *{font-size:var(--p-fs-display)!important;line-height:var(--p-lh-display)!important;letter-spacing:var(--p-tr-display)!important}
+/* ícone-texto da barra (24) fica do tamanho da linha */
+body.dark .e99-back .e99-back-ic{font-size:var(--p-fs-title)!important;line-height:1!important}
+/* pesos: 400 corpo, 500 controles, 600 títulos e ênfase */
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) button,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) summary,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .btn,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) a.btn,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) label,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) th,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) th *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .badge,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .pill,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .chip,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .nf-count,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .alert-count,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .e99-go-l,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .hero-pill,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) kbd,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) #mobile-bottom button *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .chat-msg .who{font-weight:var(--p-w-medium)!important}
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) h1,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) h1 *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) h2,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) h3,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) h4,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) b,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) strong,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .primary,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .primary *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .vd-num,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .vd-av,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .avatar,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .sc-av,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .bc-page,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .nav button.active,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .nav button.active *,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) legend,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .stat strong,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,#toast) .pn-kpi strong{font-weight:var(--p-w-semibold)!important}
+/* números alinhados */
+body.dark :is(.layout,dialog) td,
+body.dark :is(.layout,dialog) .stat strong,
+body.dark :is(.layout,dialog) .pn-kpi strong,
+body.dark :is(.layout,dialog) .vd-num,
+body.dark :is(.layout,dialog) .badge,
+body.dark :is(.layout,dialog) .nf-count,
+body.dark :is(.layout,dialog) .alert-count,
+body.dark :is(.layout,dialog) .count,
+body.dark :is(.layout,dialog) time,
+body.dark :is(.layout,dialog) .act-meta,
+body.dark :is(.layout,dialog) .pn-hrow b,
+body.dark :is(.layout,dialog) .chat-msg .meta,
+body.dark :is(.layout,dialog) input[type=number]{font-variant-numeric:tabular-nums!important}
+/* texto: três níveis */
+body.dark :is(.layout,dialog,#auth-screen) .small,
+body.dark :is(.layout,dialog,#auth-screen) small,
+body.dark :is(.layout,dialog,#auth-screen) p.small,
+body.dark :is(.layout,dialog,#auth-screen) .subtitle,
+body.dark :is(.layout,dialog,#auth-screen) .act-meta,
+body.dark :is(.layout,dialog,#auth-screen) .pn-sub,
+body.dark :is(.layout,dialog,#auth-screen) time,
+body.dark :is(.layout,dialog,#auth-screen) .chat-sub,
+body.dark :is(.layout,dialog,#auth-screen) .chat-hint,
+body.dark :is(.layout,dialog,#auth-screen) footer,
+body.dark :is(.layout,dialog,#auth-screen) .legal-links,
+body.dark :is(.layout,dialog,#auth-screen) #account-label,
+body.dark :is(.layout,dialog,#auth-screen) #storage,
+body.dark :is(.layout,dialog,#auth-screen) label>span.small,
+body.dark :is(.layout,dialog,#auth-screen) .e99-pc{color:var(--p-t2)!important}
+body.dark :is(.layout,dialog,#auth-screen) h1,
+body.dark :is(.layout,dialog,#auth-screen) h2,
+body.dark :is(.layout,dialog,#auth-screen) h3,
+body.dark :is(.layout,dialog,#auth-screen) .stat strong,
+body.dark :is(.layout,dialog,#auth-screen) .pn-kpi strong,
+body.dark :is(.layout,dialog,#auth-screen) .vd-greet h2,
+body.dark :is(.layout,dialog,#auth-screen) .bc-page{color:var(--p-t1)}
+body.dark #view .hero .accent-word{color:inherit}
+body.dark #view :is(.hero,.hero-home) *{text-shadow:none!important}
+body.dark :is(.layout,dialog,#auth-screen) input::placeholder,
+body.dark :is(.layout,dialog,#auth-screen) textarea::placeholder{color:var(--p-t3)!important;opacity:1!important;font-weight:var(--p-w-regular)!important}
+
+/* ---------------- superfícies: cartões sólidos, borda fina, sem sombra nem desfoque ---------------- */
+body.dark #view .panel,
+body.dark #view .card,
+body.dark #view .stat,
+body.dark #view .pn-card,
+body.dark #view .pn-kpi,
+body.dark #view .plan-card,
+body.dark #view .sync-box,
+body.dark #view .help,
+body.dark #view .vd-greet,
+body.dark #view .vd-ring,
+body.dark #view .hero:not(.hero-home):not(:has(> div > h1)),
+body.dark #view .e99-demandas,
+body.dark #view .e99-nfpanel,
+body.dark #view .conf-cta,
+body.dark #view .corridor-card,
+body.dark #view .sc-new,
+body.dark #view .empty,
+body.dark #view .vd-empty,
+body.dark #view .chat-wrap,
+body.dark :is(.layout,dialog) .camera-box,
+body.dark :is(.layout,dialog) .receipt-box,
+body.dark :is(.layout,dialog) .e99-hist,
+body.dark :is(.layout,dialog) .lic-full,
+body.dark :is(.layout,dialog) .net-hosts{
+  background:var(--p-s1)!important;background-image:none!important;border:1px solid var(--p-line)!important;box-shadow:none!important;border-radius:var(--p-r-card)!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+/* cartão dentro de cartão vira superfície 2 sem borda (no máx. dois níveis) */
+body.dark #view :is(.panel,.card,.pn-card,.sync-box,.chat-wrap,.plan-card) .panel,
+body.dark #view :is(.panel,.card,.pn-card,.sync-box,.chat-wrap,.plan-card) .card,
+body.dark #view :is(.panel,.card,.pn-card,.sync-box,.chat-wrap,.plan-card) .help,
+body.dark #view :is(.panel,.card,.pn-card,.sync-box,.chat-wrap,.plan-card) .sync-box,
+body.dark #view :is(.panel,.card,.pn-card,.sync-box,.chat-wrap,.plan-card) .e99all,
+body.dark #view :is(.panel,.card,.pn-card,.sync-box,.chat-wrap,.plan-card) .camera-box,
+body.dark #view :is(.panel,.card,.pn-card,.sync-box,.chat-wrap,.plan-card) .receipt-box,
+body.dark dialog .camera-box,
+body.dark dialog .receipt-box,
+body.dark dialog .e99-hist,
+body.dark dialog section.panel{background:var(--p-s2)!important;border-color:transparent!important;box-shadow:none!important;border-radius:var(--p-r-ctl)!important}
+body.dark #view .pref-row{background:transparent!important;border:0!important;border-top:1px solid var(--p-line)!important;border-radius:0!important;box-shadow:none!important}
+body.dark #view .panel>.help{background:transparent!important;border:0!important}
+/* o Início: o título fica sobre o fundo, sem caixa */
+body.dark #view .hero,
+body.dark #view .hero-home{background:transparent!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+/* título de tela: sem caixa vazia de 140 px acima (o título fica junto do conteúdo) */
+body.dark #view .hero:not(.hero-home){min-height:0!important;margin-bottom:var(--p-s-5)!important}
+/* resumo: um número em destaque por cartão; a cor da área fica só no número (sem faixa colorida nem degradê) */
+body.dark #view .stats .stat,
+body.dark #view .stats .stat:first-child{background:var(--p-s1)!important;box-shadow:none!important}
+body.dark #view .stat .tilt-glare,
+body.dark #view .stat::before,
+body.dark #view .stat::after{display:none!important}
+body.dark[data-area] #view .panel,
+body.dark[data-area] #view .card,
+body.dark[data-area] #view .pn-card,
+body.dark[data-area] #view .plan-card{background-image:none!important}
+/* linhas de lista/atividade */
+body.dark #view .plan-activities>li,
+body.dark #view .e99all-list li,
+body.dark #view ol.plan-activities li{border-radius:var(--p-r-ctl)!important;box-shadow:none!important}
+body.dark #view .plan-activities>li{background:var(--p-s2)!important;border:1px solid transparent!important}
+
+/* ---------------- botões ---------------- */
+/* forma comum: controle de 44 px, raio 12 */
+body.dark :is(.layout,dialog,#auth-screen,#toast,.e99m-wrap) button:not(.nf-sum,.act-check,.sc-story,.mobilemenu,.chat-msg button,.reacts button,th button,.nav button,.cv-item,.chat-row,.e99-x,[role=tab],[role=switch],.pn-period button,.nf-tabs button,.bell-btn,.e99-search-btn,.to-top,#sound-control,#season-toggle,.e99-back,.cv-back,.e99m-x,.cf-ib,.cf-x,.vd-av,.stat,.e99-go,.link,.linklike,.e99-link,[class*="lic-"],.e99-dem-x,.x,.ph-dl,.ph-rm,.p-icon-only,.auth-link),
+body.dark :is(.layout,dialog,#auth-screen,#toast,.e99m-wrap) .btn:not(.nf-sum,.act-check,.sc-story,.mobilemenu,.chat-msg button,.reacts button,th button,.nav button,.cv-item,.chat-row,.e99-x,[role=tab],[role=switch],.pn-period button,.nf-tabs button,.bell-btn,.e99-search-btn,.to-top,#sound-control,#season-toggle,.e99-back,.cv-back,.e99m-x,.cf-ib,.cf-x,.vd-av,.stat,.e99-go,.link,.linklike,.e99-link,[class*="lic-"],.e99-dem-x,.x,.ph-dl,.ph-rm,.p-icon-only,.auth-link),
+body.dark :is(.layout,dialog,#auth-screen,#toast,.e99m-wrap) a.btn:not(.nf-sum,.act-check,.sc-story,.mobilemenu,.chat-msg button,.reacts button,th button,.nav button,.cv-item,.chat-row,.e99-x,[role=tab],[role=switch],.pn-period button,.nf-tabs button,.bell-btn,.e99-search-btn,.to-top,#sound-control,#season-toggle,.e99-back,.cv-back,.e99m-x,.cf-ib,.cf-x,.vd-av,.stat,.e99-go,.link,.linklike,.e99-link,[class*="lic-"],.e99-dem-x,.x,.ph-dl,.ph-rm,.p-icon-only,.auth-link),
+body.dark :is(.layout,dialog,#auth-screen,#toast,.e99m-wrap) summary.btn:not(.nf-sum,.act-check,.sc-story,.mobilemenu,.chat-msg button,.reacts button,th button,.nav button,.cv-item,.chat-row,.e99-x,[role=tab],[role=switch],.pn-period button,.nf-tabs button,.bell-btn,.e99-search-btn,.to-top,#sound-control,#season-toggle,.e99-back,.cv-back,.e99m-x,.cf-ib,.cf-x,.vd-av,.stat,.e99-go,.link,.linklike,.e99-link,[class*="lic-"],.e99-dem-x,.x,.ph-dl,.ph-rm,.p-icon-only,.auth-link),
+body.dark :is(.layout,dialog,#auth-screen,#toast,.e99m-wrap) .more-actions>summary:not(.nf-sum,.act-check,.sc-story,.mobilemenu,.chat-msg button,.reacts button,th button,.nav button,.cv-item,.chat-row,.e99-x,[role=tab],[role=switch],.pn-period button,.nf-tabs button,.bell-btn,.e99-search-btn,.to-top,#sound-control,#season-toggle,.e99-back,.cv-back,.e99m-x,.cf-ib,.cf-x,.vd-av,.stat,.e99-go,.link,.linklike,.e99-link,[class*="lic-"],.e99-dem-x,.x,.ph-dl,.ph-rm,.p-icon-only,.auth-link),
+body.dark :is(.layout,dialog,#auth-screen,#toast,.e99m-wrap) label.as-file:not(.nf-sum,.act-check,.sc-story,.mobilemenu,.chat-msg button,.reacts button,th button,.nav button,.cv-item,.chat-row,.e99-x,[role=tab],[role=switch],.pn-period button,.nf-tabs button,.bell-btn,.e99-search-btn,.to-top,#sound-control,#season-toggle,.e99-back,.cv-back,.e99m-x,.cf-ib,.cf-x,.vd-av,.stat,.e99-go,.link,.linklike,.e99-link,[class*="lic-"],.e99-dem-x,.x,.ph-dl,.ph-rm,.p-icon-only,.auth-link){
+  border-radius:var(--p-r-ctl)!important;min-height:var(--p-h-ctl)!important;box-shadow:none!important;background-image:none!important}
+@media (prefers-reduced-motion:no-preference){body.dark :is(#view,dialog,#auth-screen,.e99m-wrap) button{transition:background-color var(--p-d-fast) var(--p-ease),border-color var(--p-d-fast) var(--p-ease),color var(--p-d-fast) var(--p-ease),transform var(--p-d-fast) var(--p-ease)}}
+/* secundário (padrão) */
+body.dark :is(#view,dialog,#auth-screen,.e99m-wrap) button:not(.primary,.danger,.p-ghost,.nf-sum,.act-check,.sc-story,.chat-msg button,.reacts button,th button,.cv-item,.chat-row,.e99-x,[role=tab],[role=switch],.pn-period button,.nf-tabs button,.chat-ico,.e99-back,.cv-back,.e99m-x,.cf-ib,.cf-x,.vd-av,.stat,.e99-go,.link,.linklike,.e99-link,[class*="lic-"],[aria-pressed="true"],.e99-dem-x,.x,.conf-go,.auth-link),
+body.dark :is(#view,dialog,#auth-screen,.e99m-wrap) .btn:not(.primary,.danger,.p-ghost,.nf-sum,.act-check,.sc-story,.chat-msg button,.reacts button,th button,.cv-item,.chat-row,.e99-x,[role=tab],[role=switch],.pn-period button,.nf-tabs button,.chat-ico,.e99-back,.cv-back,.e99m-x,.cf-ib,.cf-x,.vd-av,.stat,.e99-go,.link,.linklike,.e99-link,[class*="lic-"],[aria-pressed="true"],.e99-dem-x,.x,.conf-go,.auth-link),
+body.dark :is(#view,dialog,#auth-screen,.e99m-wrap) .more-actions>summary:not(.primary,.danger,.p-ghost,.nf-sum,.act-check,.sc-story,.chat-msg button,.reacts button,th button,.cv-item,.chat-row,.e99-x,[role=tab],[role=switch],.pn-period button,.nf-tabs button,.chat-ico,.e99-back,.cv-back,.e99m-x,.cf-ib,.cf-x,.vd-av,.stat,.e99-go,.link,.linklike,.e99-link,[class*="lic-"],[aria-pressed="true"],.e99-dem-x,.x,.conf-go,.auth-link),
+body.dark :is(#view,dialog,#auth-screen,.e99m-wrap) label.as-file:not(.primary,.danger,.p-ghost,.nf-sum,.act-check,.sc-story,.chat-msg button,.reacts button,th button,.cv-item,.chat-row,.e99-x,[role=tab],[role=switch],.pn-period button,.nf-tabs button,.chat-ico,.e99-back,.cv-back,.e99m-x,.cf-ib,.cf-x,.vd-av,.stat,.e99-go,.link,.linklike,.e99-link,[class*="lic-"],[aria-pressed="true"],.e99-dem-x,.x,.conf-go,.auth-link){
+  background-color:var(--p-s2)!important;border:1px solid var(--p-line)!important;color:var(--p-t1)!important}
+body.dark :is(#view,dialog,#auth-screen,.e99m-wrap) button:not(.primary,.danger,.nf-sum,.act-check,.chat-msg button,.reacts button,[aria-pressed="true"],.stat,.e99-go,.vd-av):hover,
+body.dark :is(#view,dialog,#auth-screen,.e99m-wrap) .btn:not(.primary,.danger,.nf-sum,.act-check,.chat-msg button,.reacts button,[aria-pressed="true"],.stat,.e99-go,.vd-av):hover,
+body.dark :is(#view,dialog,#auth-screen,.e99m-wrap) .more-actions>summary:not(.primary,.danger,.nf-sum,.act-check,.chat-msg button,.reacts button,[aria-pressed="true"],.stat,.e99-go,.vd-av):hover{background-color:var(--p-s3)!important;border-color:var(--p-line-2)!important}
+/* primário: o único que leva o acento */
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap,#toast) button.primary,
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap,#toast) .btn.primary,
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap,#toast) .primary:is(button,a),
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap,#toast) #conf-go,
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap,#toast) .chat-retry{
+  background:var(--p-accent)!important;border:1px solid var(--p-accent)!important;color:var(--p-accent-ink)!important;box-shadow:none!important}
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap,#toast) button.primary:hover,
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap,#toast) .btn.primary:hover,
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap,#toast) #conf-go:hover{background:var(--p-accent-hover)!important;border-color:var(--p-accent-hover)!important}
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap) :is(button.primary,.btn.primary,#conf-go) svg,
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap) :is(button.primary,.btn.primary,#conf-go) svg.ic{color:currentColor!important;stroke:currentColor!important}
+/* perigo */
+body.dark :is(#view,dialog,.e99m-wrap) button.danger,
+body.dark :is(#view,dialog,.e99m-wrap) .btn.danger{background:rgba(var(--p-danger-rgb),.10)!important;border:1px solid rgba(var(--p-danger-rgb),.32)!important;color:var(--p-danger)!important}
+body.dark :is(#view,dialog,.e99m-wrap) button.danger:hover,
+body.dark :is(#view,dialog,.e99m-wrap) .btn.danger:hover{background:rgba(var(--p-danger-rgb),.16)!important}
+/* fantasma: barra do topo, voltar */
+body.dark .layout header .account-tools button,
+body.dark .layout header .toolbar>button:not(.primary):not(.bell-btn):not(.e99-search-btn),
+body.dark :is(#view,dialog) .p-ghost{
+  background:transparent!important;border:1px solid transparent!important;color:var(--p-t2)!important;border-radius:var(--p-r-ctl)!important}
+body.dark .layout header .account-tools button:hover,
+body.dark .layout header .toolbar>button:not(.primary):not(.bell-btn):not(.e99-search-btn):hover,
+body.dark :is(#view,dialog) .p-ghost:hover{background:var(--p-s2)!important;color:var(--p-t1)!important}
+body.dark .e99-back,
+body.dark .cv-back{border-radius:var(--p-r-ctl)!important;background:transparent!important;border:1px solid transparent!important;box-shadow:none!important;color:var(--p-t1)!important}
+body.dark .e99-back:hover,
+body.dark .cv-back:hover{background:var(--p-s2)!important}
+/* botões de ícone redondos (buscar, sino, voltar ao topo, ícones do chat) */
+body.dark .bell-btn,
+body.dark .e99-search-btn,
+body.dark .to-top,
+body.dark #sound-control{border-radius:var(--p-r-pill)!important;background:var(--p-s2)!important;border:1px solid var(--p-line)!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+body.dark #view .chat-ico{border-radius:var(--p-r-ctl)!important;background:var(--p-s2)!important;border:1px solid var(--p-line)!important;box-shadow:none!important}
+body.dark .e99-search-btn kbd{border-radius:var(--p-r-xs)!important;background:var(--p-s3)!important;border:0!important;color:var(--p-t2)!important;box-shadow:none!important}
+/* segmentos (abas de filtro, período do painel, tema) */
+body.dark #view .nf-tabs,
+body.dark #view .pn-period{background:var(--p-s2)!important;border:0!important;box-shadow:none!important;border-radius:var(--p-r-ctl)!important;padding:var(--p-s-1)!important}
+body.dark #view :is(.nf-tabs,.pn-period) button{border-radius:var(--p-r-xs)!important;background:transparent!important;border:0!important;box-shadow:none!important;color:var(--p-t2)!important}
+body.dark #view :is(.nf-tabs,.pn-period) button[aria-pressed="true"],
+body.dark #view .nf-tabs button:is(.on,.active,[aria-selected="true"]){background:var(--p-s3)!important;color:var(--p-t1)!important;box-shadow:inset 0 0 0 1px var(--p-line-2)!important}
+body.dark #view [aria-pressed="true"]:is(button):not(.nf-tabs button,.pn-period button,.act-check,.nf-sum,.chat-ico,.reacts button){background:var(--p-s3)!important;color:var(--p-t1)!important;border:1px solid var(--p-line-2)!important;box-shadow:inset 0 0 0 1px rgba(var(--p-accent-rgb),.55)!important;border-radius:var(--p-r-ctl)!important}
+/* ícone dentro de botão: 18 px, cor do texto */
+body.dark :is(#view,dialog) button:not(.primary) svg.ic{opacity:.9}
+
+/* ---------------- campos ---------------- */
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap) input:not([type=checkbox],[type=radio],[type=range],[type=file],[type=color]),
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap) select,
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap) textarea{
+  background:var(--p-s2)!important;border:1px solid var(--p-line)!important;border-radius:var(--p-r-ctl)!important;color:var(--p-t1)!important;box-shadow:none!important;min-height:var(--p-h-ctl);
+}
+@media (prefers-reduced-motion:no-preference){body.dark :is(.layout,dialog,#auth-screen) input,
+body.dark :is(.layout,dialog,#auth-screen) select,
+body.dark :is(.layout,dialog,#auth-screen) textarea{transition:border-color var(--p-d-fast) var(--p-ease),box-shadow var(--p-d-fast) var(--p-ease)}}
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap) input:not([type=checkbox],[type=radio],[type=range],[type=file]):hover,
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap) select:hover,
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap) textarea:hover{border-color:var(--p-line-2)!important}
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap) input:not([type=checkbox],[type=radio],[type=range],[type=file]):focus,
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap) select:focus,
+body.dark :is(.layout,dialog,#auth-screen,.e99m-wrap) textarea:focus{border-color:rgba(var(--p-accent-rgb),.8)!important;box-shadow:0 0 0 3px rgba(var(--p-accent-rgb),.22)!important;outline:none!important}
+body.dark :is(.layout,dialog,#auth-screen) input[type=checkbox],
+body.dark :is(.layout,dialog,#auth-screen) input[type=radio]{accent-color:var(--p-accent)}
+body.dark :is(.layout,dialog,#auth-screen) label{color:var(--p-t2)}
+body.dark :is(.layout,dialog,#auth-screen) label input,
+body.dark :is(.layout,dialog,#auth-screen) label select,
+body.dark :is(.layout,dialog,#auth-screen) label textarea{font-weight:var(--p-w-regular)!important}
+
+/* ---------------- chips e etiquetas ---------------- */
+body.dark :is(.layout,dialog,#mobile-bottom) .badge,
+body.dark :is(.layout,dialog,#mobile-bottom) .pill,
+body.dark :is(.layout,dialog,#mobile-bottom) .chip,
+body.dark :is(.layout,dialog,#mobile-bottom) .nf-count,
+body.dark :is(.layout,dialog,#mobile-bottom) .alert-count,
+body.dark :is(.layout,dialog,#mobile-bottom) .hero-pill,
+body.dark :is(.layout,dialog,#mobile-bottom) .e99-go-l,
+body.dark :is(.layout,dialog,#mobile-bottom) .eyebrow.tag,
+body.dark :is(.layout,dialog,#mobile-bottom) .tag{border-radius:var(--p-r-pill)!important;box-shadow:none!important;background-image:none!important}
+body.dark #view .pill,
+body.dark #view .hero-pill,
+body.dark #view .e99-go-l{background:var(--p-s2)!important;border:1px solid var(--p-line)!important;color:var(--p-t2)!important}
+body.dark #view .hero-pill i{box-shadow:none!important}
+body.dark #view .eyebrow{color:var(--p-t2)!important;background:transparent!important;border:0!important;text-transform:uppercase}
+
+/* ---------------- tabelas e listas ---------------- */
+body.dark #view .hero,
+body.dark #view .hero-home{border-radius:var(--p-r-card)!important}
+body.dark :is(#view,dialog) th button,
+body.dark :is(#view,dialog) .sc-story.add,
+body.dark :is(#view,dialog) label.as-file input,
+body.dark :is(#view,dialog) input[type=file]{border-radius:var(--p-r-ctl)!important}
+body.dark #view tbody tr{border-radius:var(--p-r-ctl)!important}
+body.dark #view .sector-symbol{border-radius:var(--p-r-ctl)!important;box-shadow:none!important}
+body.dark #view .vd-bar i{border-radius:var(--p-r-pill)!important}
+body.dark #view table{border-collapse:separate;border-spacing:0}
+body.dark #view th{color:var(--p-t2)!important;text-transform:none!important;background:transparent!important;border-bottom:1px solid var(--p-line)!important}
+body.dark #view td{border-bottom:1px solid var(--p-line)!important;background-image:none!important}
+body.dark #view tr:last-child>td{border-bottom-color:transparent!important}
+body.dark #view .pn-track,
+body.dark #view .vd-bar,
+body.dark #view .progress{border-radius:var(--p-r-pill)!important;box-shadow:none!important}
+
+/* ---------------- janelas e folhas ---------------- */
+body.dark dialog:not(#conf-dlg):not(#stok-intro){background:var(--p-s1)!important;border:1px solid var(--p-line-2)!important;border-radius:var(--p-r-sheet)!important;box-shadow:var(--p-shadow-pop)!important;color:var(--p-t1)!important;background-image:none!important}
+body.dark dialog::backdrop{background:rgba(0,0,0,.55)!important;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+body.dark dialog .formhead{border-bottom:1px solid var(--p-line)!important;box-shadow:none!important;background:var(--p-s1)!important}
+body.dark dialog .formfoot{border-top:1px solid var(--p-line)!important;box-shadow:none!important;background:var(--p-s1)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+body.dark :is(dialog,.e99m-wrap) .e99-x:not(.primary),
+body.dark :is(dialog,.e99m-wrap) .e99m-x:not(.primary),
+body.dark :is(dialog,.e99m-wrap) .close:not(.primary),
+body.dark :is(dialog,.e99m-wrap) .x:not(.primary),
+body.dark :is(dialog,.e99m-wrap) [aria-label="Fechar"]:not(.primary){border-radius:var(--p-r-pill)!important;background:var(--p-s2)!important;border:1px solid var(--p-line)!important;box-shadow:none!important;color:var(--p-t1)!important}
+body.dark #view .more-menu,
+body.dark .e99m-wrap,
+body.dark #alert-popup{background:var(--p-s1)!important;border:1px solid var(--p-line-2)!important;border-radius:var(--p-r-card)!important;box-shadow:var(--p-shadow-pop)!important;background-image:none!important}
+body.dark #view .more-menu button{border-radius:var(--p-r-xs)!important;background:transparent!important;border:0!important}
+body.dark #view .more-menu button:hover{background:var(--p-s3)!important}
+
+/* ---------------- avisos (toast) ---------------- */
+body.dark #toast.toast,
+body.dark .toast{background:var(--p-s3)!important;color:var(--p-t1)!important;border:1px solid var(--p-line-2)!important;border-radius:var(--p-r-card)!important;box-shadow:var(--p-shadow-pop)!important;background-image:none!important}
+body.dark #view .notice,
+body.dark .layout .notice{border-radius:var(--p-r-ctl)!important;background:var(--p-s2)!important;border:1px solid var(--p-line)!important;box-shadow:none!important}
+
+/* ---------------- telas vazias ---------------- */
+body.dark #view .empty,
+body.dark #view .vd-empty{text-align:center}
+body.dark #view :is(.empty,.vd-empty) h3{color:var(--p-t1)!important}
+body.dark #view :is(.empty,.vd-empty) p{color:var(--p-t2)!important}
+body.dark #view .vd-art{color:var(--p-t3)!important}
+
+/* ---------------- menu lateral do PC ---------------- */
+body.dark .layout>aside{background:var(--p-s1)!important;background-image:none!important;border-right:1px solid var(--p-line)!important;box-shadow:none!important}
+body.dark .layout>aside .brand{border-bottom-color:var(--p-line)!important;box-shadow:none!important}
+body.dark .layout>aside .brand strong{letter-spacing:.08em!important}
+body.dark .layout>aside .brand small{color:var(--p-t2)!important;font-size:var(--p-fs-cap)!important;line-height:var(--p-lh-cap)!important;letter-spacing:.04em!important;white-space:nowrap}
+body.dark aside .nav button{border-radius:var(--p-r-ctl)!important;background:transparent!important;border:0!important;box-shadow:none!important;color:var(--p-t2)!important;min-height:var(--p-h-ctl)}
+body.dark aside .nav button:hover{background:var(--p-s2)!important;color:var(--p-t1)!important}
+body.dark aside .nav button.active,
+body.dark aside .nav button[aria-current="page"]{background:var(--p-s3)!important;color:var(--p-t1)!important;box-shadow:inset 3px 0 0 0 var(--area,var(--p-accent))!important}
+body.dark aside .nav button.active::after{opacity:0!important}
+body.dark aside .nav button[data-vd-area=""] svg.ic,
+body.dark aside .nav button:not([data-vd-area]) svg.ic,
+body.dark aside .nav button[data-vd-area=inicio] svg.ic{color:var(--p-t2);stroke:currentColor}
+body.dark aside .nav button.active[data-vd-area=inicio] svg.ic{color:var(--p-t1)}
+body.dark aside .visual-tools,
+body.dark aside .local{background:transparent!important;border:1px solid var(--p-line)!important;border-radius:var(--p-r-card)!important;box-shadow:none!important}
+body.dark aside .visual-tools,
+body.dark aside .visual-tools *:not(svg,svg *){font-size:var(--p-fs-sm)!important;line-height:var(--p-lh-sm)!important}
+body.dark aside .visual-tools button{background:transparent!important;border:0!important;box-shadow:none!important;color:var(--p-t2)!important;border-radius:var(--p-r-ctl)!important}
+
+/* ---------------- topo ---------------- */
+body.dark .layout main>header{background:color-mix(in srgb,var(--p-bg) 78%,transparent)!important;background-image:none!important;border-bottom:1px solid var(--p-line)!important;box-shadow:none!important;-webkit-backdrop-filter:var(--p-glass-blur)!important;backdrop-filter:var(--p-glass-blur)!important}
+body.dark .layout main>header #breadcrumb{color:var(--p-t2)!important}
+body.dark .layout main>header .bc-page{color:var(--p-t1)!important}
+
+/* ---------------- barra de baixo do celular ---------------- */
+body.dark #mobile-bottom{background:color-mix(in srgb,var(--p-s1) 82%,transparent)!important;background-image:none!important;border:1px solid var(--p-line-2)!important;box-shadow:var(--p-shadow-pop)!important;border-radius:var(--p-r-sheet)!important;
+  -webkit-backdrop-filter:var(--p-glass-blur)!important;backdrop-filter:var(--p-glass-blur)!important}
+body.dark #mobile-bottom button{border-radius:var(--p-r-card)!important;background:transparent!important;box-shadow:none!important;border:0!important;color:var(--p-t2)!important}
+body.dark #mobile-bottom button *{color:inherit!important}
+body.dark #mobile-bottom#mobile-bottom#mobile-bottom button:is(.active,[aria-current="page"]){background:transparent!important;box-shadow:none!important;color:var(--p-t1)!important;font-weight:700!important}
+body.dark #mobile-bottom button.active>span,
+body.dark #mobile-bottom button[aria-current="page"]>span{background:var(--p-s3)!important;box-shadow:none!important;border-radius:var(--p-r-pill)!important}
+/* exceção única à escala de pesos: o rótulo da aba ativa no celular (padrão da barra de abas do iOS; tests/v129) */
+body.dark #mobile-bottom#mobile-bottom#mobile-bottom button:is(.active,[aria-current="page"]) *{font-weight:700!important}
+body.dark #mobile-bottom button .lens,
+body.dark #mobile-bottom button .e99-lens,
+body.dark #mobile-bottom::before,
+body.dark #mobile-bottom::after,
+body.dark #mobile-bottom button::before,
+body.dark #mobile-bottom button::after{display:none!important}
+
+/* ---------------- chat ---------------- */
+body.dark #view .chat-body,
+body.dark #view #chat-list{background:var(--p-bg)!important;background-image:none!important;border:1px solid var(--p-line)!important;border-radius:var(--p-r-card)!important;box-shadow:none!important}
+body.dark #view .chat-msg{border-radius:var(--p-r-card) var(--p-r-card) var(--p-r-card) var(--p-r-xs)!important;background:var(--p-s2)!important;border:0!important;box-shadow:none!important}
+body.dark #view .chat-msg.mine{border-radius:var(--p-r-card) var(--p-r-card) var(--p-r-xs) var(--p-r-card)!important;background:var(--p-s3)!important;border:0!important;box-shadow:inset 0 0 0 1px rgba(var(--p-accent-rgb),.28)!important}
+body.dark #view .chat-day span,
+body.dark #view .chat-day{border-radius:var(--p-r-pill)!important;box-shadow:none!important}
+
+/* título da conversa: cabe na mesma linha do "Convidar" (título de barra, não de seção) */
+body.dark #view .chat-head{flex-wrap:nowrap!important}
+body.dark #view .chat-head>.chat-title{flex:1 1 auto!important;min-width:0!important}
+body.dark #view .chat-title h2{font-size:var(--p-fs-body)!important;line-height:var(--p-lh-body)!important;letter-spacing:var(--p-tr-body)!important}
+
+/* ---------------- avatares ---------------- */
+body.dark #view .vd-av,
+body.dark #view .avatar,
+body.dark #view .sc-av{box-shadow:0 0 0 2px var(--p-s1)!important}
+
+/* ---------------- ícones: um conjunto (24 px, traço 1,75, pontas redondas) ---------------- */
+body.dark svg.ic{fill:none!important;stroke:currentColor;stroke-width:1.75!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+body.dark :is(button,summary,a) svg.ic:not(.ic-end):not(.ic-lead){width:20px;height:20px}
+body.dark :is(.small,small,.chat-meta,td,.badge,.pill) svg.ic,
+body.dark svg.ic.ic-lead{width:16px!important;height:16px!important;vertical-align:-3px;margin-right:4px}
+body.dark .p-icon-only{display:inline-flex!important;align-items:center;justify-content:center}
+body.dark .p-icon-only>svg.ic{width:18px!important;height:18px!important;margin:0!important}
+
+/* ---------------- foco visível ---------------- */
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,.e99m-wrap) a:focus-visible,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,.e99m-wrap) button:focus-visible,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,.e99m-wrap) summary:focus-visible,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,.e99m-wrap) [tabindex]:focus-visible,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,.e99m-wrap) input:focus-visible,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,.e99m-wrap) select:focus-visible,
+body.dark :is(.layout,dialog,#auth-screen,#mobile-bottom,.e99m-wrap) textarea:focus-visible{outline:2px solid var(--p-accent-text)!important;outline-offset:2px!important}
+body.dark :is(.layout,dialog,#auth-screen) input:focus-visible,
+body.dark :is(.layout,dialog,#auth-screen) select:focus-visible,
+body.dark :is(.layout,dialog,#auth-screen) textarea:focus-visible{outline:none!important}
+
+/* ---------------- barra de rolagem ---------------- */
+html[data-e99-theme]{scrollbar-color:rgba(255,255,255,.18) transparent;scrollbar-width:thin}
+html[data-e99-theme] ::-webkit-scrollbar{width:10px;height:10px}
+html[data-e99-theme] ::-webkit-scrollbar-track{background:transparent}
+html[data-e99-theme] ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:999px;border:3px solid transparent;background-clip:padding-box}
+html[data-e99-theme] ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.26);background-clip:padding-box;border:3px solid transparent}
+
+/* ---------------- tela de entrar ---------------- */
+body.dark #auth-screen .auth-card{background:var(--p-s1)!important;background-image:none!important;border:1px solid var(--p-line)!important;border-radius:var(--p-r-sheet)!important;box-shadow:var(--p-shadow-pop)!important}
+
+body.dark #auth-screen .auth-link{background:transparent!important;border:0!important;box-shadow:none!important;color:var(--p-accent-text)!important;border-radius:var(--p-r-ctl)!important;min-height:var(--p-h-ctl)}
+body.dark #auth-screen .auth-link:hover{background:var(--p-s2)!important}
+body.dark #auth-screen p,
+body.dark #auth-screen h1,
+body.dark #auth-screen h1 *,
+body.dark #auth-screen .subtitle{text-shadow:none!important}
+/* painel que só agrupa cartões de plano: sem caixa (evita cartão dentro de cartão) */
+body.dark #view .panel:has(> .plan-card,> div > .plan-card){background:transparent!important;border:0!important}
+
+/* ---------------- movimento ---------------- */
+@media (prefers-reduced-motion:reduce){
+  body.dark :is(#view,dialog,#auth-screen,#mobile-bottom,aside) button,
+body.dark :is(#view,dialog,#auth-screen,#mobile-bottom,aside) input,
+body.dark :is(#view,dialog,#auth-screen,#mobile-bottom,aside) select,
+body.dark :is(#view,dialog,#auth-screen,#mobile-bottom,aside) textarea,
+body.dark :is(#view,dialog,#auth-screen,#mobile-bottom,aside) summary{transition:none!important}
+}
+}

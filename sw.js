@@ -1,6 +1,6 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
 const CACHE_PREFIX = 'estoque99-';
-const CACHE = 'estoque99-v163';
+const CACHE = 'estoque99-v164';
 const VERSION = (CACHE.match(/-v(\d+)$/) || [])[1] || '';
 /* v135: blocos do app (antes inline no index.html). A versão vai no endereço (?v=) para nunca misturar HTML novo com JS velho.
    Arquivo novo em app/ = acrescentar aqui e no index.html. */
@@ -151,7 +151,9 @@ const APP_FILES = [
   'app/js/v161-mouse.js',
   'app/css/v161-mouse.css',
   'app/js/v162-reparo.js',
-  'app/css/v162.css'
+  'app/css/v162.css',
+  'app/js/v164-icons.js',
+  'app/css/v164-pro.css'
 ];
 const CORE = [
   './index.html',
