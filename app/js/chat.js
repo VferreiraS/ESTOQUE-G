@@ -241,7 +241,7 @@ function setup(){var box=document.getElementById('chat-list');if(!box)return;var
   /* status da sincronização e contas dos auxiliares vão para baixo do campo de escrever: a conversa vem primeiro */
   if(ex)['sync-box','aux-box'].forEach(function(i){var d=document.getElementById(i);if(d&&d.closest('.chat-wrap')&&d.parentNode!==ex)ex.appendChild(d)});
   if(!box.__sc){box.__sc=1;box.addEventListener('scroll',onScroll,{passive:true});
-    if(window.ResizeObserver){var ro=new ResizeObserver(function(){if(!box.isConnected){ro.disconnect();return}settle(box);fit()});ro.observe(box);
+    if(window.ResizeObserver){var roR=0,ro=new ResizeObserver(function(){if(!box.isConnected){ro.disconnect();return}if(roR)return;roR=requestAnimationFrame(function(){roR=0;if(!box.isConnected)return;settle(box);fit()})});ro.observe(box);
       var cp=document.querySelector('.chat-compose');if(cp)ro.observe(cp);var hd=document.querySelector('.chat-head');if(hd)ro.observe(hd)}
     /* reações, "visto por" e fotos dos perfis entram depois: se estava no fim, continua no fim */
     var raf=0;new MutationObserver(function(){if(raf||!stuck)return;raf=requestAnimationFrame(function(){raf=0;if(stuck&&box.isConnected&&box.__h)box.scrollTop=box.scrollHeight})}).observe(box,{childList:true,subtree:true})}

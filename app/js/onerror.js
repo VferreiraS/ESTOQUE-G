@@ -1,2 +1,3 @@
-
-window.onerror=function(message,source,line){var box=document.getElementById('boot-status');if(box){box.style.display='block';box.className='notice boot-error';box.textContent='O sistema encontrou um erro. Envie uma foto deste aviso para correção.\nDetalhe: '+message+' · linha '+line;}return false;};
+/* v163: "ResizeObserver loop …" é aviso inofensivo do navegador: não mostra faixa nem registra. */
+window.onerror=function(message,source,line){if(/ResizeObserver loop (completed with undelivered notifications|limit exceeded)/i.test(String(message||'')))return true;var box=document.getElementById('boot-status');if(box){box.style.display='block';box.className='notice boot-error';box.textContent='O sistema encontrou um erro. Envie uma foto deste aviso para correção.\nDetalhe: '+message+' · linha '+line;}return false;};
+window.addEventListener('error',function(ev){if(ev&&/ResizeObserver loop (completed with undelivered notifications|limit exceeded)/i.test(String(ev.message||''))){try{ev.stopImmediatePropagation();ev.preventDefault()}catch(e){}}},true);

@@ -50,7 +50,7 @@ function mountAura(){var hero=D.querySelector('.hero-home');if(!hero)return;var 
   else if(c.parentNode!==hero)hero.insertBefore(c,hero.firstChild);
   var ctx=c.getContext('2d'),parts=[],t0=Date.now();
   function size(){var w=hero.clientWidth||300,h=hero.clientHeight||260,dpr=Math.min(2,W.devicePixelRatio||1);c.width=w*dpr;c.height=h*dpr;c.style.width=w+'px';c.style.height=h+'px';ctx.setTransform(dpr,0,0,dpr,0,0)}
-  size();var ro=W.ResizeObserver?new ResizeObserver(size):null;if(ro)ro.observe(hero);
+  size();var roR=0,ro=W.ResizeObserver?new ResizeObserver(function(){if(roR)return;roR=requestAnimationFrame(function(){roR=0;if(c.parentNode)size()})}):null;if(ro)ro.observe(hero);
   function spawn(w,h){parts.push({x:w*(.28+Math.random()*.44),y:h+8,vy:-(0.5+Math.random()*1.1),r:1+Math.random()*2.2,a:0,life:0,max:70+Math.random()*50})}
   function loop(){if(c.id!=='e99-aura'||!c.parentNode){auraRAF=0;return}
     if(!animeOn()){cancelAnimationFrame(auraRAF);auraRAF=0;c.remove();return}
