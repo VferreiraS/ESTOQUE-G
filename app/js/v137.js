@@ -129,7 +129,7 @@ function muralHTML(){if(!cx())return '<section id="sc-mural" class="sc"><div cla
   return '<section id="sc-mural" class="sc" aria-label="Mural da equipe">'+storiesHTML()
    +'<form class="panel sc-new" onsubmit="e99SocPost(event)"><h2>Mural da equipe</h2><textarea name="t" maxlength="1000" rows="3" placeholder="Compartilhe algo com a equipe" aria-label="Texto da publicação" oninput="e99SocDraft(this)">'+E(draft.t)+'</textarea>'
    +(draft.ph?'<div class="sc-prevbox"><img class="sc-prev" src="'+E(img(draft.ph))+'" alt="Prévia da foto"><button type="button" onclick="e99SocPhotoRm()">Tirar foto</button></div>':'')
-   +'<div class="row toolbar"><label class="as-file sc-file">Foto<input type="file" accept="image/*" onchange="e99SocPhoto(this)"></label><button class="primary" type="submit">Publicar</button></div></form>'
+   +'<div class="row toolbar"><label class="as-file sc-file">'+(window.e99Icon?e99Icon('image'):'')+'Foto<input type="file" accept="image/*" onchange="e99SocPhoto(this)"></label><button class="primary" type="submit">Publicar</button></div></form>'
    +(shown.length?shown.map(postHTML).join(''):'<p class="small">Nenhuma publicação ainda. Seja o primeiro.</p>')
    +(ps.length>limit?'<div class="toolbar"><button type="button" onclick="e99SocMore()">Mostrar mais</button></div>':'')+'</section>'}
 /* página da pessoa */
