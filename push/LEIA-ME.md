@@ -1,6 +1,6 @@
 # Avisos com o app fechado (Web Push) — para uma versão futura
 
-O que faz: manda "Nova nota fiscal", "Mensagem nova no chat" ou "Prazo vencendo" para o celular mesmo com o Stok fechado. Nenhum dado da nota sai do aparelho — só o tipo do aviso.
+O que faz: manda "Nova nota fiscal", "Mensagem nova no chat" ou "Prazo vencendo" para o celular mesmo com o StoK fechado. Nenhum dado da nota sai do aparelho — só o tipo do aviso.
 
 ## 1. Conta grátis na Cloudflare
 1. Abra https://dash.cloudflare.com/sign-up e crie a conta (não pede cartão).
@@ -21,6 +21,6 @@ Guarde a Private Key só num lugar seguro seu (gerenciador de senhas).
 ## 5. O que colar no app depois (pedir ao Claude)
 - Em `client.js`: `PUSH_URL` = endereço do passo 4 e `VAPID_PUBLIC` = a Public Key (pública, pode ficar no app).
 - `sw-push.js` vai no `sw.js`; `client.js` no `index.html` + um botão "Ligar avisos".
-- No iPhone só funciona com o Stok adicionado à Tela de Início (iOS 16.4 ou mais novo).
+- No iPhone só funciona com o StoK adicionado à Tela de Início (iOS 16.4 ou mais novo).
 
-Limites: só aceita pedidos do site do Stok; 30 por minuto por endereço; inscrições que o celular cancelou são apagadas sozinhas.
+Limites: só aceita pedidos do site do StoK; 30 por minuto por endereço; inscrições que o celular cancelou são apagadas sozinhas.

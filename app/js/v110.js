@@ -25,7 +25,7 @@ function dlg(){var d=D.getElementById('pw-upgrade');if(!d){d=D.createElement('di
 function fmt(t){try{return new Date(t).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'})}catch(x){return ''}}
 function paint(){var s=authSession;if(!s)return;var d=dlg(),f=forced(s);
   d.innerHTML='<form class="cl-body" novalidate onsubmit="e99PwUpgradeSave(event)"><h2 id="pu-title">🔒 Troque para uma senha mais forte</h2>'
-   +'<p>Sua senha ainda é só de números. Agora o Stok usa senhas com <b>pelo menos 8 caracteres, com letras e números</b> (ex.: <i>estoque2026</i>). Ela protege seus dados neste aparelho e na nuvem.</p>'
+   +'<p>Sua senha ainda é só de números. Agora o StoK usa senhas com <b>pelo menos 8 caracteres, com letras e números</b> (ex.: <i>estoque2026</i>). Ela protege seus dados neste aparelho e na nuvem.</p>'
    +(f?'<p class="pu-due"><b>A troca agora é obrigatória.</b> O prazo terminou em '+e(fmt(due(s)))+'.</p>':'<p class="small">Você pode deixar para depois até <b>'+e(fmt(due(s)))+'</b>. Depois disso a troca será obrigatória.</p>')
    +'<p class="small">Conta: <b>'+e(s.record.login)+'</b>. Ao trocar, um novo código de recuperação é criado (guarde-o).</p>'
    +'<input type="text" name="username" autocomplete="username" value="'+e(s.record.login)+'" readonly tabindex="-1" aria-hidden="true" class="e99-user-hint">'

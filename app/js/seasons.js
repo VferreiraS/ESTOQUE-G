@@ -32,7 +32,7 @@ function applySeason(){
 }
 window.e99ApplySeason=function(){try{applySeason()}catch(e){}};
 function refreshBrand(s){
-  var t=s?'LOJAS G · '+s.name.toUpperCase():'LOJAS G · ESTOQUE 99';document.querySelectorAll('aside .brand small').forEach(function(el){if(el.textContent!==t)el.textContent=t});
+  var t=s?s.name.toUpperCase():'ESTOQUE 99';document.querySelectorAll('aside .brand small').forEach(function(el){if(el.textContent!==t)el.textContent=t});
 }
 window.toggleSeason=function(){setPref(getPref()==='off'?'auto':'off');applySeason();if(typeof notify==='function')notify(getPref()==='off'?'Tema sazonal desligado.':'Tema sazonal ligado: cores e logo do mês.')};
 var pending=false;

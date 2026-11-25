@@ -1,4 +1,4 @@
-# Regras do projeto Stok · Estoque 99 (Lojas G)
+# Regras do projeto StoK · Estoque 99
 
 - Responda ao usuário em português do Brasil, curto e simples (ele lê no celular).
 - Trabalhe no branch `claude/mobile-desktop-compatibility-tkbd2w`. Não abra PR sem pedido.
@@ -19,7 +19,7 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão:** 165 (`meta estoque99-version` + `CACHE` `estoque99-v165` no `sw.js` + `?v=165` nos arquivos `app/`), publicada em 25/11/2026 no GitHub Pages (Firebase Hosting ainda na versão anterior: deploy sem login neste ambiente; publicar com `firebase deploy --only hosting`). Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
+- **Versão:** 166 (`meta estoque99-version` + `CACHE` `estoque99-v166` no `sw.js` + `?v=166` nos arquivos `app/`), publicada em 25/11/2026 no GitHub Pages (Firebase Hosting ainda na versão anterior: deploy sem login neste ambiente; publicar com `firebase deploy --only hosting`). Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
@@ -29,7 +29,7 @@
 
 | Versão | O quê |
 |--------|--------|
-| v165 | **Visual profissional tela por tela** (sobre os tokens `--p-*` da v164; ordem de carga no `index.html` e no `APP_FILES`: `v164-pro.css` → `v165-cores.css` → `v165-a/b/c/e.css`): **paleta** `app/css/v165-cores.css` (neutros tingidos, semânticas, áreas, gráficos do Painel, tokens de balão do chat; guia `docs/paleta.md`; banner do WhatsApp e HTML do Outlook com os tokens do tema em `app/js/v144-msg.js`); **A** `v165-a.css`/`v165-a.js` (Início, Painel, Alertas — vazio mantém a ilustração da v158 —, Minha conta, Dados); **B** `v165-b.css` (Notas e Plano: etiquetas suaves, linhas, ações, miniaturas 112/96 px, Conferência); **C** `v165-c.css` (entrar, navegação, Equipe, Corredores, Administração; ícones no mural e em Corredores por conta); **E** `v165-e.css` + `chat.js`/`v138.js`/`social.js` (chat estilo iMessage/WhatsApp: balões com cauda, contraste AA, horário ao lado, "Entregue"/"Lida por", grupo com nomes coloridos, campo com +, microfone/enviar, chips de data). Testes `tests/v165_{a,b,c,d,e}_test.js`; `v112_test` atualizado para o design da v164 (uma família, controles de 12 px; cores, contraste AA e tema escuro continuam conferidos). |
+| v166 | **Nome StoK no lugar de "Lojas G"** (pedido do dono; grafia **StoK**, S e K maiúsculos): nenhum texto do app diz "Lojas G" e o nome aparece como StoK — abertura (`StoK` / `ESTOQUE 99`; rótulo "StoK, Estoque 99…"), tela de entrar e menu (`StoK` + `ESTOQUE 99`; com o tema do mês, só o mês), etiqueta do Início, `<title>`, description, Open Graph, `apple-mobile-web-app-title`, manifest (`StoK · Estoque 99` / `StoK`), rodapé do `e99Msg` (`StoK · Estoque 99`: WhatsApp, Outlook, folha impressa; banner `STOK · ESTOQUE 99`), e-mails (conta nova, relatório, resumo semanal e diário, convite), avisos e ajuda, Privacidade/Termos (controlador "StoK — Estoque 99"), `robo.html`, `apps-script/*.gs` (só valem depois de colar de novo no Apps Script), README e `push/`. **Ficam (técnicos):** chaves `lojasg.estoque99.*`, `stok-reset`, ids/classes/funções (`#stok-intro`, `playStokIntro`), caches `estoque99-*`, e-mail 99.estoque@lojasg.com.br, repositório ESTOQUE-G, arquivo do banner `stok-*.png`, `console.warn('Stok …')`, comentários e o nome do PDF dos cartazes. Teste `tests/v166_nome_test.js` (PC + iPhone 13: abertura, tela de entrar, 13 telas, mensagens, e-mails, Privacidade/Termos, chaves); `tests/v158_test.js` desliga a animação do mouse (v161), que mexia o botão do convite e travava o clique do Playwright. |
 
 Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o site); o que vale no ar é o `index.html` + `sw.js` publicados.
 
@@ -66,6 +66,7 @@ Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o sit
 - v163: aba piscando no PC do dono (Windows com efeitos de animação desligados): usar Preferências → "Testar aba piscando"; janela atrás de outra e minimizada; faixa "ResizeObserver loop" não aparece mais no iPhone.
 - v164: visual novo (sistema de design) no PC da loja e no iPhone real nos 3 temas: textos legíveis, botões de 44 px, nada cortado; dizer o que ainda parece amador para a v165.
 - v165: visual novo tela por tela no iPhone e no PC da loja (3 temas); chat com balões no iPhone (cauda, "Lida por", teclado); cores da paleta nova (gráficos do Painel, banner do WhatsApp/Outlook).
+- v166: nome **StoK** no iPhone e no PC da loja (abertura, tela de entrar, menu, aba do navegador, WhatsApp/Outlook/impressão); no iPhone o nome do atalho da tela inicial só muda ao adicionar o atalho de novo; colar de novo os `apps-script/*.gs` no Apps Script para os e-mails e a planilha dizerem StoK.
 
 ### Decisões pendentes do dono (v89 — não mudar sem perguntar)
 - **Chat (v106/v108):** desde a v108 a mensagem que falhou fica guardada (cifrada) no aparelho; no celular Enter continua enviando (não há Shift+Enter no teclado do celular); "Sair da equipe" foi para baixo do chat. Se o dono quiser guardar as não enviadas ou Enter = nova linha no celular, mudar no `chat-js`.
@@ -88,6 +89,7 @@ Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o sit
 - **Auxiliar (v127):** cria NFs e planos, edita os que criou, usa o chat e o perfil; não exclui nada.
 - **Regra permanente de design:** em qualquer mudança de design, preservar o **logo vigente** (desde a v159: opção 1, "Prateleira" — S de prateleiras com caixas; menu, tela de entrar, ícones e S da abertura). Só o dono troca o logo (exceção dele na v158/v159, via `scripts/aplicar-logo.mjs`).
 - Quer o app com aparência profissional de empresa global; tokens `--p-*` em `app/css/v164-pro.css` (guia em `docs/design-referencias.md`), cores em `app/css/v165-cores.css` (guia em `docs/paleta.md`).
+- Nome do app: **StoK** (S e K maiúsculos). Não usar "Lojas G" em nenhum texto do app (desde a v166); chaves `lojasg.estoque99.*` e o e-mail @lojasg.com.br continuam (são técnicos).
 - Quer que **qualquer mudança** seja comunicada ao Claude **automaticamente** via este arquivo.
 - Dados sensíveis ficam no aparelho; nuvem só com blob já cifrado quando houver.
 

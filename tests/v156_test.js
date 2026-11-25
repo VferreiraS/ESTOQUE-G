@@ -24,7 +24,7 @@ function checkPrint(h,must){const bad=[];if(!h)return ['sem html'];if(/<button|<
  await A.evaluate(()=>go('plans'));await A.waitForTimeout(600);
  await A.click('.plan-card button:has-text("Imprimir")');await A.waitForTimeout(500);
  let h=await A.evaluate(()=>window.__ph[window.__ph.length-1]);
- let bad=checkPrint(h,['Plano de ação','1. Repor arroz no 07','<b>Responsável:</b> Ana','<b>Orientações:</b> Corredor 07\nPrateleira de cima','<b>Demanda:</b> Quebras','Stok · Lojas G · Estoque 99']);
+ let bad=checkPrint(h,['Plano de ação','1. Repor arroz no 07','<b>Responsável:</b> Ana','<b>Orientações:</b> Corredor 07\nPrateleira de cima','<b>Demanda:</b> Quebras','StoK · Estoque 99']);
  ok(!bad.length&&await A.evaluate(()=>window.__printed>=1),'PC: Imprimir no cartão do plano gera folha branca organizada'+(bad.length?' — '+bad.join(', '):''));
  /* folha de compartilhamento */
  await A.evaluate(()=>copyPlan('p1'));await A.waitForTimeout(500);
@@ -64,7 +64,7 @@ function checkPrint(h,must){const bad=[];if(!h)return ['sem html'];if(/<button|<
  ok(pill&&/Bia criou a NF 843114/.test(pill.t)&&pill.r==='status','PC: cápsula no topo "'+(pill&&pill.t)+'"');
  ok(await until(A,()=>e99TitleState().on&&e99TitleState().alts>=1,null,5000),'PC: aba pisca com a alteração');
  {const seen=new Set();for(let i=0;i<6;i++){seen.add(await A.evaluate(()=>document.title));await A.waitForTimeout(350)}
-  ok([...seen].some(t=>/^\(\d+\) Nova(s)? altera(ção|ções) · Stok$/.test(t))&&seen.has(orig),'PC: título alterna "'+[...seen].join(' | ')+'"')}
+  ok([...seen].some(t=>/^\(\d+\) Nova(s)? altera(ção|ções) · StoK$/.test(t))&&seen.has(orig),'PC: título alterna "'+[...seen].join(' | ')+'"')}
  await A.evaluate(()=>__setHidden(false));await A.waitForTimeout(800);ok(await A.evaluate(o=>!e99TitleState().on&&document.title===o,orig),'PC: ao voltar o foco o título volta');
  /* toque abre a tela */
  await A.evaluate(()=>{const p=document.querySelector('#e99-alt .e99-alt-pill');if(p)p.click()});await A.waitForTimeout(500);

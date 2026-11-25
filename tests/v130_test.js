@@ -7,7 +7,7 @@ const L=require('./lib.js');const {ok,until,signup}=L;const U='http://localhost:
  await p.goto(U);await p.waitForTimeout(2000);await signup(p,'gestor'+Date.now().toString(36));await p.waitForTimeout(800);
 
  /* A: e99NetFail refina a falha com e99NetWhy (clara, não "sem internet") */
- const refined=await p.evaluate(async()=>{window.e99NetWhy=async()=>'O antivírus ou a rede da loja está bloqueando o Stok: login da nuvem (identitytoolkit.googleapis.com). Libere o app no antivírus (ex.: Bitdefender).';
+ const refined=await p.evaluate(async()=>{window.e99NetWhy=async()=>'O antivírus ou a rede da loja está bloqueando o StoK: login da nuvem (identitytoolkit.googleapis.com). Libere o app no antivírus (ex.: Bitdefender).';
    return await new Promise(res=>{const rec={err:'Não foi possível enviar (sem internet). Tente de novo.'};window.e99NetFail(rec,function(m){res({err:rec.err,m:m})});setTimeout(()=>res({err:rec.err,m:null}),1500)})});
  ok(refined.m&&/identitytoolkit/.test(refined.err)&&/Bitdefender/.test(refined.err)&&!/sem internet/i.test(refined.err),'A: falha do chat vira mensagem clara do serviço bloqueado ('+(refined.err||'-').slice(0,40)+'…)');
 

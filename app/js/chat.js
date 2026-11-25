@@ -54,7 +54,7 @@ window.e99ChatOutbox=function(){return oPre()?oop('readonly',function(st){return
 /* ---------- receber ---------- */
 function readKey(){return 'lojasg.estoque99.chat-read:'+(authSession?authSession.storeKey:'-')+':'+(team?team.topic:'-')}
 function cx(){try{return window.e99Loja&&window.e99Loja.conn?window.e99Loja.conn():null}catch(e){return null}}
-function cxWhy(){var st='';try{st=window.e99Loja&&window.e99Loja.connState?window.e99Loja.connState():''}catch(e){}return st==='sem-acesso'?'Aguardando o gestor abrir o Stok uma vez':st==='sem-nuvem'?'Sem acesso à nuvem (peça ao gestor)':navigator.onLine===false?'Sem internet':'Conectando…'}
+function cxWhy(){var st='';try{st=window.e99Loja&&window.e99Loja.connState?window.e99Loja.connState():''}catch(e){}return st==='sem-acesso'?'Aguardando o gestor abrir o StoK uma vez':st==='sem-nuvem'?'Sem acesso à nuvem (peça ao gestor)':navigator.onLine===false?'Sem internet':'Conectando…'}
 function setStatus(on){connected=on;var s=document.getElementById('chat-status');if(s){s.textContent=on?'Conectado':cxWhy();s.classList.toggle('on',on)}}
 var PARTS=4,PART=800000,DAYS=14,rq=Promise.resolve();
 function connect(){disconnect();if(!team)return;var c=cx(),t=team;if(!c){setStatus(false);return}connKey=c.uid+'|'+c.loja;

@@ -102,7 +102,7 @@ function scheduleRender(){clearTimeout(renderTimer);renderTimer=setTimeout(funct
 function ago(t){if(!t)return '';var m=Math.round((Date.now()-t)/60000);return m<1?'agora':m<60?'há '+m+' min':'há '+Math.round(m/60)+' h'}
 function statusText(){if(!info||!info.sync)return '';var s=state&&state.sync,c=cloudSt()||{};if(lastErr)return lastErr;if(!chan)return 'Preparando a sincronização…';
   if(c.status==='sem-nuvem')return 'Sem acesso à nuvem da loja. Peça ao gestor para ativar o acesso automático ou ligue o e-mail.';
-  if(c.status==='sem-acesso')return 'Aguardando o gestor abrir o Stok uma vez para liberar os dados da loja.';
+  if(c.status==='sem-acesso')return 'Aguardando o gestor abrir o StoK uma vez para liberar os dados da loja.';
   if(s&&!s.ready)return 'Aguardando os dados da loja…';if(c.status==='erro')return 'Sincronização reconectando…';if(c.status!=='ok')return 'Preparando a sincronização…';
   if(c.pend)return 'Equipe sincronizada · enviando mudanças…';return 'Equipe sincronizada'+(c.lastAt?' · '+ago(c.lastAt):'')}
 var foot=null;function footEl(){if(foot&&document.contains(foot))return foot;foot=Array.from(document.querySelectorAll('footer span, span')).find(function(x){return /Sem sincronização entre aparelhos|Equipe sincronizada|Sincroniza|Aguardando os dados/.test(x.textContent)&&!x.closest('#view')})||null;return foot}

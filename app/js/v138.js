@@ -50,7 +50,7 @@ async function keyFor(cv,kv){if(cv[0]==='d'){var peer=dmMap[cv];if(!peer)return 
 async function ringOf(cv){var g=CV[cv];if(!g||!g.w||!g.w[me()])return null;var sig=g.at+'|'+g.w[me()];if(rings[cv]&&rings[cv].sig===sig)return rings[cv];
   var kk=await hk(g.ow,'gw|'+cx().loja+'|'+cv+'|'+me());if(!kk)return null;var raw=await unaes(kk,'gw|'+cv+'|'+me(),g.w[me()]);if(!raw||typeof raw!=='object')return null;
   var r={sig:sig,raw:raw,k:{}};for(var v in raw){if(/^\d{1,6}$/.test(v)&&typeof raw[v]==='string'){try{r.k[v]=await crypto.subtle.importKey('raw',authUn64(raw[v]),'AES-GCM',false,['encrypt','decrypt'])}catch(e){}}}rings[cv]=r;return r}
-async function encMsg(cv,docId,o){var kv=cv[0]==='d'?0:(CV[cv]&&CV[cv].kv||1);var k=await keyFor(cv,kv);if(!k)throw Error(cv[0]==='d'?'Esta pessoa ainda não abriu o Stok atualizado (sem chave).':'Você não tem a chave deste grupo.');return 'E2E:'+kv+':'+await aes(k,cx().loja+'|'+docId+'|'+kv,o)}
+async function encMsg(cv,docId,o){var kv=cv[0]==='d'?0:(CV[cv]&&CV[cv].kv||1);var k=await keyFor(cv,kv);if(!k)throw Error(cv[0]==='d'?'Esta pessoa ainda não abriu o StoK atualizado (sem chave).':'Você não tem a chave deste grupo.');return 'E2E:'+kv+':'+await aes(k,cx().loja+'|'+docId+'|'+kv,o)}
 async function decMsg(cv,docId,d){var m=/^E2E:(\d{1,6}):([A-Za-z0-9+/=]+)$/.exec(d||'');if(!m)return null;var k=await keyFor(cv,m[1]);if(!k)return null;return unaes(k,cx().loja+'|'+docId+'|'+m[1],m[2])}
 /* ---------- nuvem ---------- */
 async function put(c,docId,d,del){var k=cx();if(!k)throw Error('Ligue o e-mail (nuvem) para usar as conversas.');var cur=R[docId],at=Math.floor(Math.max(Date.now(),(cur&&cur.at||0)+1));
@@ -158,7 +158,7 @@ function fileCard(m,local){var A=e99Arq,f=m.f,nm=E(f.n),lb=E(A.label(f.n,f.s));
    +(local||f.blk||m.del?'':'<button type="button" class="cf-dl" aria-label="Baixar arquivo '+nm+', '+lb+'" onclick="e99Cv.dl(\''+E(m.id)+'\')">Baixar</button>')+'</div>'}
 function showF(){var p=document.getElementById('cv-fprev');if(p)p.innerHTML=draftF?'<div class="cv-prev">'+fileCard({f:{n:draftF.name,s:draftF.size}},true)+'<button type="button" onclick="e99Cv.fileRm()">Tirar arquivo</button></div>':''}
 function chunkId(cv,mid,i){return 'msgs_'+cv+'~k'+i+mid}
-async function sendFile(cv,doc,mid,file){var kv=cv[0]==='d'?0:(CV[cv]&&CV[cv].kv||1);var k=await keyFor(cv,kv);if(!k)throw Error(cv[0]==='d'?'Esta pessoa ainda não abriu o Stok atualizado (sem chave).':'Você não tem a chave deste grupo.');
+async function sendFile(cv,doc,mid,file){var kv=cv[0]==='d'?0:(CV[cv]&&CV[cv].kv||1);var k=await keyFor(cv,kv);if(!k)throw Error(cv[0]==='d'?'Esta pessoa ainda não abriu o StoK atualizado (sem chave).':'Você não tem a chave deste grupo.');
   var iv=crypto.getRandomValues(new Uint8Array(12));var ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:authBytes(cx().loja+'|'+doc+'|'+kv+'|f')},k,file.bytes));var all=new Uint8Array(12+ct.length);all.set(iv);all.set(ct,12);
   var s=authB64(all),n=Math.ceil(s.length/FPART);if(n>FMAXK)throw Error('Arquivo grande demais.');for(var i=0;i<n;i++)await put('msgs',chunkId(cv,mid,i),'E2F:'+s.slice(i*FPART,(i+1)*FPART),false);return {n:file.name,s:file.size,k:n,v:kv}}
 async function getFile(cv,m){var doc='msgs_'+cv+'~'+m.id,r0=R[doc];if(!r0||!m.f)throw Error('sem');var parts=[];for(var i=0;i<m.f.k;i++){var r=R[chunkId(cv,m.id,i)];if(!r||r.del||r.cuid!==r0.cuid||r.d.indexOf('E2F:')!==0)throw Error('falta');parts.push(r.d.slice(4))}
@@ -178,7 +178,7 @@ async function editGroup(id,ch){var g=CV[id];if(!g||g.ow!==me())throw Error('Só
   var w=await wrapAll(id,m,raw);await putX('cv','cv_'+id,{id:id,ow:me(),nm:ch.nm!==undefined?String(ch.nm).trim().slice(0,40)||'Grupo':g.nm,ph:ch.ph!==undefined?ch.ph:g.ph,m:m,kv:kv,w:w});rings={};await build();refresh()}
 /* folhas */
 function sheet(id,html){var d=document.getElementById(id);if(!d){d=document.createElement('dialog');d.id=id;d.className='cv-sheet';document.body.appendChild(d)}d.innerHTML=html;if(!d.open)d.showModal();return d}
-function personBtn(u,act){var p=pf(u)||{},n=pn(u);return '<button type="button" class="cv-item" onclick="'+act+'">'+av(u,n)+'<span class="cv-mid"><b>'+E(n||'Pessoa')+'</b><span class="small">'+E(p.lg?'@'+p.lg:'')+(p.pk?'':' · ainda sem o Stok atualizado')+'</span></span></button>'}
+function personBtn(u,act){var p=pf(u)||{},n=pn(u);return '<button type="button" class="cv-item" onclick="'+act+'">'+av(u,n)+'<span class="cv-mid"><b>'+E(n||'Pessoa')+'</b><span class="small">'+E(p.lg?'@'+p.lg:'')+(p.pk?'':' · ainda sem o StoK atualizado')+'</span></span></button>'}
 var gDraft={ph:''};
 window.e99Cv={
   filter:function(q,f){if(q!=null)cvQ=String(q);if(f)cvF=f;cvApply()},
@@ -186,7 +186,7 @@ window.e99Cv={
   list:function(){leave();sub=null;render();scrollTo(0,0)},
   dmTo:async function(uid){if(!/^[A-Za-z0-9]{1,128}$/.test(uid||'')||uid===me())return;if(!cx()){notify('Ligue o e-mail (nuvem) para conversar em particular.');return}await people();var id=dmMap['u:'+uid]||await dmId(uid);dmMap[id]=uid;dmMap['u:'+uid]=id;var d=document.getElementById('cv-new');if(d&&d.open)d.close();if(page!=='chat'){go('chat')}e99Cv.open(id)},
   newChat:async function(group){if(!cx()){notify('Ligue o e-mail (nuvem) em Minha conta para conversar em particular e em grupos.');return}var ps=await people();gDraft={ph:''};
-    sheet('cv-new','<form method="dialog" onsubmit="e99Cv.mkGroup(event)"><h2>'+(group?'Novo grupo':'Nova conversa')+'</h2>'+(ps.length?'':'<p class="small">Ninguém da equipe abriu o Stok com a nuvem ligada ainda.</p>')
+    sheet('cv-new','<form method="dialog" onsubmit="e99Cv.mkGroup(event)"><h2>'+(group?'Novo grupo':'Nova conversa')+'</h2>'+(ps.length?'':'<p class="small">Ninguém da equipe abriu o StoK com a nuvem ligada ainda.</p>')
       +(group?'<label>Nome do grupo<input name="nm" required maxlength="40"></label><label class="as-file">Foto do grupo (opcional)<input type="file" accept="image/*" onchange="e99Cv.gPhoto(this)"></label><fieldset class="cv-pick"><legend>Membros</legend>'+ps.map(function(u){var p=pf(u)||{};return '<label class="cv-pref"><input type="checkbox" name="m" value="'+E(u)+'"'+(p.pk?'':' disabled')+'> '+E(pn(u)||'Pessoa')+(p.lg?' (@'+E(p.lg)+')':'')+'</label>'}).join('')+'</fieldset>'
         :'<div class="cv-list">'+ps.map(function(u){return personBtn(u,"e99Cv.dmTo('"+E(u)+"')")}).join('')+'</div>')
       +'<div class="row toolbar"><button type="button" onclick="this.closest(\'dialog\').close()">Cancelar</button>'+(group?'<button class="primary" type="submit">Criar grupo</button>':'<button type="button" onclick="e99Cv.newChat(1)">Novo grupo</button>')+'</div></form>')},

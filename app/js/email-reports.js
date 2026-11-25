@@ -34,7 +34,7 @@ function buildFields(label){
  if(window.e99Msg){try{var msg={title:'Relatório '+label,subtitle:store,sections:[{title:'Resumo',lines:[f['Resumo']]},
    {title:'Notas a conferir ('+nfs.length+')',lines:nfs.slice(0,40).map(function(n){return {b:'NF '+n.number,t:(n.supplier||'—')+' · '+n.status,sub:['Chegada '+date(n.date)+' · '+(n.volumes||0)+' vol.'+(n.status==='Em divergência'&&n.notes?' · '+n.notes:'')]}})},
    {title:'A fazer hoje ('+pend.length+')',lines:pend.slice(0,40).map(function(x){return {b:x.a.title,t:(x.a.owner||'A definir')+(x.a.time?' · até '+x.a.time+(typeof actLate==='function'&&actLate(x.p,x.a)?' · ATRASADA':''):''),sub:[x.p.title]}})}],
-   note:total>80?'Há mais itens no Stok.':''};f=Object.assign({'Mensagem':e99Msg.text(msg,{plain:true})},f)}catch(e){}}
+   note:total>80?'Há mais itens no StoK.':''};f=Object.assign({'Mensagem':e99Msg.text(msg,{plain:true})},f)}catch(e){}}
  return f}
 async function post(to,fields){var r=await fetch('https://formsubmit.co/ajax/'+encodeURIComponent(to),{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(fields)});var data={};try{data=await r.json()}catch(e){}var ok=r.ok&&(data.success===true||data.success==='true');var msg=String(data.message||'');return {ok:ok,activation:/activat|confirm/i.test(msg),message:msg,status:r.status}}
 async function sendNow(label,slotId){

@@ -30,7 +30,7 @@ function mobile(){try{var ua=navigator.userAgent||'';if(/iPhone|iPad|iPod|Androi
 function desktop(){return !mobile()}
 function calm(){try{return W.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}}
 function away(){try{return D.hidden||!D.hasFocus()}catch(e){return !!D.hidden}}
-function msg(){if(!nm&&!na)return '(1) Teste do aviso · Stok';var k=nm?nm:na,c='('+(k>99?'99+':k)+') ';return c+(nm?(k>1?'Novas mensagens':'Nova mensagem'):(k>1?'Novas alterações':'Nova alteração'))+' · Stok'}
+function msg(){if(!nm&&!na)return '(1) Teste do aviso · StoK';var k=nm?nm:na,c='('+(k>99?'99+':k)+') ';return c+(nm?(k>1?'Novas mensagens':'Nova mensagem'):(k>1?'Novas alterações':'Nova alteração'))+' · StoK'}
 function tick(){if(!on)return;if(D.title!==lastSet&&D.title!==msg())base=D.title;flip=!flip;lastSet=flip?msg():base;D.title=lastSet;setIco(flip)}
 function worker(){if(wk||wkFail)return wk;try{if(!W.Worker||!W.Blob||!W.URL||!URL.createObjectURL)throw 0;
   var u=URL.createObjectURL(new Blob(['var t=0;onmessage=function(e){clearInterval(t);t=0;if(e.data)t=setInterval(function(){postMessage(1)},1000)}'],{type:'text/javascript'}));
@@ -50,7 +50,7 @@ W.e99TitleAlert=function(k,kind){
 W.e99TitleStop=stop;
 W.e99TitleState=function(){var l=link();return {on:on,n:n,msgs:nm,alts:na,test:nt,timer:!!timer,worker:timer===-1,base:base,icon:l?l.getAttribute('href'):'',red:!!icoRed&&!!l&&l.getAttribute('href')===icoRed,desktop:desktop(),calm:calm(),away:away()}};
 /* teste em Preferências: espera 3 s e dispara o aviso (mesmo se a pessoa não trocou de aba: aí pisca até clicar na página) */
-W.e99TitleTest=function(ms){if(!desktop())return false;clearTimeout(testT);testState='wait';prefRow(true);try{if(typeof notify==='function')notify('Troque de aba agora: em 3 segundos a aba do Stok pisca.')}catch(e){}
+W.e99TitleTest=function(ms){if(!desktop())return false;clearTimeout(testT);testState='wait';prefRow(true);try{if(typeof notify==='function')notify('Troque de aba agora: em 3 segundos a aba do StoK pisca.')}catch(e){}
   testT=setTimeout(function(){testT=0;testState='on';start(1,'test');prefRow(true)},ms==null?3000:ms);return true};
 function back(){if(D.hidden)return;if(D.hasFocus())stop()}
 D.addEventListener('visibilitychange',function(){if(!D.hidden){back();setTimeout(back,300)}});
@@ -60,10 +60,10 @@ W.addEventListener('focus',stop);
 function prefRow(force){var pp=D.getElementById('prefs-panel');if(!pp)return;var old=D.getElementById('pref-tab-row');if(!desktop()){if(old)old.remove();return}
   if(old&&!force&&old.getAttribute('data-st')===testState)return;if(old)old.remove();
   var r=D.createElement('div');r.className='pref-row';r.id='pref-tab-row';r.setAttribute('data-st',testState);
-  var info=testState==='wait'?'Troque de aba agora (ou abra outra janela por cima). Em 3 segundos a aba do Stok pisca.'
-    :testState==='on'?'A aba está piscando. Volte para o Stok para parar.'
+  var info=testState==='wait'?'Troque de aba agora (ou abra outra janela por cima). Em 3 segundos a aba do StoK pisca.'
+    :testState==='on'?'A aba está piscando. Volte para o StoK para parar.'
     :testState==='back'?'Funcionou? A aba piscou com a bolinha vermelha? Se não piscou, avise o gestor.'
-    :'A aba pisca (título e bolinha vermelha) quando chega mensagem ou alteração da equipe com o Stok em outra aba, minimizado ou atrás de outra janela.';
+    :'A aba pisca (título e bolinha vermelha) quando chega mensagem ou alteração da equipe com o StoK em outra aba, minimizado ou atrás de outra janela.';
   r.innerHTML='<span><b>Testar aba piscando</b><span class="small" id="pref-tab-info" role="status" aria-live="polite"></span></span>'
    +'<button type="button" id="pref-tab-btn" class="btn" onclick="e99TitleTest()"'+(testState==='wait'?' disabled':'')+'>Testar aba piscando</button>';
   r.querySelector('#pref-tab-info').textContent=info;pp.appendChild(r)}

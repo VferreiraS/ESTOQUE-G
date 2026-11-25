@@ -10,14 +10,14 @@ W.addEventListener('online',function(){setTimeout(retryChat,1200)});
 var HOSTS='vferreiras.github.io\nidentitytoolkit.googleapis.com\nfirestore.googleapis.com\nwww.gstatic.com';
 function panel(){var d=D.createElement('div');d.className='panel help';d.id='net-panel';
   d.innerHTML='<h2>Rede da loja / Antivírus</h2>'
-   +'<p class="small">Se aparecer "sem internet" mesmo com internet, em geral é o antivírus (ex.: Bitdefender) ou a rede/Wi-Fi da loja barrando o Stok. Isto não burla nada: só libera o app no seu próprio antivírus.</p>'
+   +'<p class="small">Se aparecer "sem internet" mesmo com internet, em geral é o antivírus (ex.: Bitdefender) ou a rede/Wi-Fi da loja barrando o StoK. Isto não burla nada: só libera o app no seu próprio antivírus.</p>'
    +'<p><b>Libere estes endereços</b> no antivírus e na rede:</p><div class="net-hosts">'+HOSTS+'</div>'
    +'<p style="margin-top:10px"><b>No Bitdefender</b> (passo a passo):</p>'
    +'<ol class="net-steps"><li>Abra o Bitdefender → <b>Proteção</b>.</li>'
    +'<li>Em <b>Antivírus</b> → <b>Exceções</b> (ou "Gerenciar exceções"), e também em <b>Prevenção contra ameaças online</b>.</li>'
    +'<li>Toque em <b>Adicionar exceção</b> e cole cada endereço acima (um por vez). Marque para liberar a navegação segura.</li>'
    +'<li>Se houver <b>Firewall</b>, permita o navegador que você usa (Chrome/Edge/Safari).</li>'
-   +'<li>Feche e abra o Stok de novo e toque em <b>Testar conexão</b>.</li></ol>'
+   +'<li>Feche e abra o StoK de novo e toque em <b>Testar conexão</b>.</li></ol>'
    +'<p class="small" style="margin-top:8px">Sem acesso ao antivírus? Peça ao TI da loja para liberar esses endereços, ou teste pelo roteador do celular (4G/5G) para confirmar.</p>'
    +'<button type="button" class="btn" id="net-test" onclick="e99NetTest()">Testar conexão</button>'
    +'<div id="net-result" aria-live="polite"></div>';return d}
@@ -25,8 +25,8 @@ W.e99NetTest=async function(){var box=D.getElementById('net-result');if(box)box.
   try{if(typeof W.e99NetList==='function'){var r=await W.e99NetList();var any=r.some(function(x){return !x.ok});
       var html='<ul>'+r.map(function(x){return '<li class="'+(x.ok?'ok':'bad')+'"><span aria-hidden="true">'+(x.ok?'✓':'✕')+'</span> '+x.name+' — '+(x.ok?'passou':'bloqueado')+'</li>'}).join('')+'</ul>';
       if(navigator.onLine===false)html+='<p class="msg bad">Este aparelho está sem internet. Confira o Wi-Fi ou o cabo.</p>';
-      else if(any)html+='<p class="msg bad">Algo está bloqueando o Stok. Libere no antivírus/rede os itens marcados como bloqueado.</p>';
-      else html+='<p class="msg ok">Tudo passou. A conexão com o Stok está liberada.</p>';
+      else if(any)html+='<p class="msg bad">Algo está bloqueando o StoK. Libere no antivírus/rede os itens marcados como bloqueado.</p>';
+      else html+='<p class="msg ok">Tudo passou. A conexão com o StoK está liberada.</p>';
       if(box)box.innerHTML=html;return}
     if(typeof W.e99NetWhy==='function'){var m=await W.e99NetWhy();if(box)box.innerHTML='<p class="msg">'+String(m).replace(/</g,'&lt;')+'</p>'}}
   catch(e){if(box)box.innerHTML='<p class="msg bad">Não foi possível testar agora. Tente de novo.</p>'}};

@@ -38,7 +38,7 @@ function sync(){try{
   var view=document.getElementById('view');
   if(s&&view&&typeof page==='string'){
     if(page==='account'&&!document.getElementById('legal-panel')){var acc=accepted(s.storeKey),w=document.createElement('div');w.className='grid2';
-      w.innerHTML='<div class="panel help" id="legal-panel"><h2>Privacidade e termos</h2><p>Veja como o Stok trata os seus dados e as regras de uso.</p><p>'+LINKS+'</p><p class="small">'+(acc&&acc.em?'Aceite registrado neste aparelho em '+new Date(acc.em).toLocaleDateString('pt-BR')+'.':'Este aparelho ainda não tem o registro do seu aceite.')+' O Stok não usa cookies de rastreamento nem anúncios.</p></div>';
+      w.innerHTML='<div class="panel help" id="legal-panel"><h2>Privacidade e termos</h2><p>Veja como o StoK trata os seus dados e as regras de uso.</p><p>'+LINKS+'</p><p class="small">'+(acc&&acc.em?'Aceite registrado neste aparelho em '+new Date(acc.em).toLocaleDateString('pt-BR')+'.':'Este aparelho ainda não tem o registro do seu aceite.')+' O StoK não usa cookies de rastreamento nem anúncios.</p></div>';
       view.appendChild(w)}
   }
 }catch(e){}}
@@ -66,7 +66,7 @@ function showNote(tries){if(get(NOTE)||document.getElementById('storage-note'))r
   noteOn=true;makeNote();placeNote()}
 function makeNote(){
   var n=document.createElement('section');n.id='storage-note';n.setAttribute('role','region');n.setAttribute('aria-label','Aviso sobre dados guardados no aparelho');
-  n.innerHTML='<p><b>Privacidade:</b> o Stok não usa cookies de rastreamento nem anúncios. Ele guarda neste aparelho só o necessário para funcionar (contas protegidas por senha, preferências e dados do estoque). Nuvem, chat e avisos usam serviços externos, explicados na '+link(PRIV,'Política de privacidade')+'.</p><div class="sn-actions"><button type="button">Entendi</button></div>';
+  n.innerHTML='<p><b>Privacidade:</b> o StoK não usa cookies de rastreamento nem anúncios. Ele guarda neste aparelho só o necessário para funcionar (contas protegidas por senha, preferências e dados do estoque). Nuvem, chat e avisos usam serviços externos, explicados na '+link(PRIV,'Política de privacidade')+'.</p><div class="sn-actions"><button type="button">Entendi</button></div>';
   n.querySelector('button').addEventListener('click',closeNote);document.body.appendChild(n);return n}
 document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(document.querySelector('dialog[open]'))return;
   var n=document.getElementById('storage-note');if(n){closeNote();return}

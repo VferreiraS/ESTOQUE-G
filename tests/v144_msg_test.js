@@ -22,7 +22,7 @@ const t=await p.evaluate(()=>e99Msg.text(e99Msg.planPayload(state.plans[0])));
 const lines=t.split('\n');
 ok(/^\*Plano de ação\*$/.test(lines[0]),'título em *negrito* ('+lines[0]+')');
 ok(/^_\d{2}\/\d{2}\/\d{4} · Plano de terça · .+ · gerado em \d{2}\/\d{2}\/\d{4} às \d{2}:\d{2}_$/.test(lines[1]),'subtítulo com data e hora ('+lines[1]+')');
-ok(lines.includes('──────────')&&lines[lines.length-1]==='Stok · Lojas G · Estoque 99','separador e rodapé "Stok · Lojas G · Estoque 99"');
+ok(lines.includes('──────────')&&lines[lines.length-1]==='StoK · Estoque 99','separador e rodapé "StoK · Estoque 99"');
 ok(/^\*Atividades \(0 de 1 feitas\)\*$/m.test(t)&&/^\*1\. Repor arroz no 07\* — até 10:00$/m.test(t),'seção em negrito e atividade em bloco');
 ok(/Responsável: Ana Souza/.test(t)&&/^Orientações: Linha 1\nLinha 2 ok$/m.test(t),'dados do usuário sem * _ ~ (quebras de linha do usuário mantidas)');
 ok(!/\*arroz\*|\*de\*|_2_|~ok~|\*Souza\*/.test(t),'nenhuma marca vinda do usuário sobra no texto');

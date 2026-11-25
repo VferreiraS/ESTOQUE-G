@@ -50,9 +50,9 @@ async function roStress(p,tag,ro,mobile){
  {const ro={n:0};const ctx=await b.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});await ctx.addInitScript(HID);const p=await ctx.newPage();watch(p,'PC-reduce',errs,ro);
   await p.goto(U);await p.waitForTimeout(2000);await L.signup(p,'ab'+T);await p.evaluate(()=>go('home'));await p.waitForTimeout(1500);
   ok(await p.evaluate(()=>matchMedia('(prefers-reduced-motion: reduce)').matches&&e99TitleState().desktop),'PC-reduce: menos movimento ligado e é computador');
-  await blink(p,'PC-reduce msg','msg','hidden',/^\(2\) Novas mensagens · Stok$/);
-  await blink(p,'PC-reduce alteração','alt','hidden',/^\(2\) Novas alterações · Stok$/);
-  await blink(p,'PC-reduce sem foco','msg','blur',/^\(2\) Novas mensagens · Stok$/);
+  await blink(p,'PC-reduce msg','msg','hidden',/^\(2\) Novas mensagens · StoK$/);
+  await blink(p,'PC-reduce alteração','alt','hidden',/^\(2\) Novas alterações · StoK$/);
+  await blink(p,'PC-reduce sem foco','msg','blur',/^\(2\) Novas mensagens · StoK$/);
   /* worker: relógio fora do main thread */
   await p.evaluate(()=>__setHidden(true));await p.evaluate(()=>e99TitleAlert(1));ok(await p.evaluate(()=>e99TitleState().worker),'PC-reduce: relógio do piscar vem do Worker');
   await p.evaluate(()=>__setHidden(false));await p.waitForTimeout(500);
@@ -66,7 +66,7 @@ async function roStress(p,tag,ro,mobile){
   ok(await p.evaluate(()=>/Troque de aba agora/.test(document.getElementById('pref-tab-info').textContent)),'PC: mostra "Troque de aba agora"');
   await p.evaluate(()=>__setHidden(true));
   ok(await until(p,()=>e99TitleState().on&&e99TitleState().test===1,null,5000),'PC: o teste dispara o aviso depois de ~3 s');
-  const s=await sample(p,2600);ok(s.ts.includes('(1) Teste do aviso · Stok')&&s.ts.length===2,'PC: teste alterna o título ('+s.ts.join(' | ')+')');
+  const s=await sample(p,2600);ok(s.ts.includes('(1) Teste do aviso · StoK')&&s.ts.length===2,'PC: teste alterna o título ('+s.ts.join(' | ')+')');
   await p.evaluate(()=>__setHidden(false));await p.waitForTimeout(800);
   ok(await p.evaluate(()=>/Funcionou\?/.test(document.getElementById('pref-tab-info').textContent)&&!e99TitleState().on),'PC: ao voltar mostra "Funcionou?" e para');
   const a=await snap(p);ok(a.t===o.t&&!a.i.startsWith('data:image/png')&&a.k===1,'PC: teste restaura título e ícone');
@@ -76,7 +76,7 @@ async function roStress(p,tag,ro,mobile){
  {const ro={n:0};const ctx=await b.newContext({viewport:{width:800,height:800}});await ctx.addInitScript(HID);const p=await ctx.newPage();watch(p,'PC-800',errs,ro);
   await p.goto(U);await p.waitForTimeout(2000);await L.signup(p,'ac'+T);await p.evaluate(()=>go('home'));await p.waitForTimeout(1200);
   ok(await p.evaluate(()=>matchMedia('(pointer:fine)').matches&&innerWidth<=900&&e99TitleState().desktop),'PC-800: janela estreita com mouse conta como computador');
-  await blink(p,'PC-800','msg','hidden',/^\(2\) Novas mensagens · Stok$/);
+  await blink(p,'PC-800','msg','hidden',/^\(2\) Novas mensagens · StoK$/);
   await ctx.close()}
  /* ===== iPhone 13 ===== */
  {const ro={n:0};const ctx=await b.newContext(L.devices['iPhone 13']);await ctx.addInitScript(HID);const p=await ctx.newPage();watch(p,'iPhone',errs,ro);

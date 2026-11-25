@@ -115,7 +115,7 @@ window.e99LojaAddMail=async function(ev){ev.preventDefault();var f=ev.target,em=
 function hhmm(t){var d=new Date(t);return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)}
 function noteHTML(){var t=team();if(!authSession||!t||!t.sync)return '';
   if(status==='sem-nuvem')return '<div class="panel help" id="loja-note"><h2>Peça ao gestor para ativar o acesso automático</h2><p>Esta conta não conseguiu entrar sozinha nos dados da loja (o acesso automático está desligado). Até lá, os dados e o chat da equipe ficam só neste aparelho. Se preferir, ligue o e-mail.</p><div class="row toolbar"><button type="button" onclick="e99CloudOpen&&e99CloudOpen()">Ligar o e-mail</button></div></div>';
-  if(status==='sem-acesso')return '<p class="small" id="loja-note">Dados da loja na nuvem: aguardando o gestor abrir o Stok uma vez com a nuvem ligada.</p>';
+  if(status==='sem-acesso')return '<p class="small" id="loja-note">Dados da loja na nuvem: aguardando o gestor abrir o StoK uma vez com a nuvem ligada.</p>';
   if(status!=='ok')return '';var n=(sy().cloudPend||[]).length;
   return '<p class="small" id="loja-note">Dados da loja na nuvem · atualizado às '+hhmm(lastAt||Date.now())+(n?' · '+n+(n===1?' mudança esperando':' mudanças esperando')+' internet':'')+'</p>'}
 var rd=render;render=function(){var r=rd.apply(this,arguments);try{if(authSession&&page==='home'&&!document.getElementById('loja-note')){var h=noteHTML(),hero=h&&document.querySelector('#view .hero');if(hero)hero.insertAdjacentHTML('afterend',h)}

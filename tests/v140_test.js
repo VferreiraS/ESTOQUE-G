@@ -25,7 +25,7 @@ const THEMES={lilas:[231,184,239],violeta:[198,255,52],cinza:[199,255,46]};
    ok(await until(P,()=>window.__e99IntroStats&&window.__e99IntroStats.done,null,5000),tag+': animação chega ao fim');
    const end=await P.evaluate(PIX,THEMES[tema]);ok(!!end&&end.red>300,tag+': S vermelho da marca no fim ('+(end&&end.red)+' pixels vermelhos)');
    const st=await P.evaluate(()=>window.__e99IntroStats);ok(st.n<=(nome==='PC'?360:260)&&st.sPts>100,tag+': '+st.n+' quadradinhos, '+st.sPts+' no S');
-   ok(await P.evaluate(()=>['.si-word','.si-tag','.si-sub'].map(s=>document.querySelector('#stok-intro '+s).textContent).join('|')==='Stok|Tudo no lugar.|LOJAS G · ESTOQUE 99'),tag+': textos do fim');
+   ok(await P.evaluate(()=>['.si-word','.si-tag','.si-sub'].map(s=>document.querySelector('#stok-intro '+s).textContent).join('|')==='StoK|Tudo no lugar.|ESTOQUE 99'),tag+': textos do fim');
    const r1=await P.evaluate(()=>window.__rafAfter);await P.waitForTimeout(400);
    ok(await P.evaluate(()=>window.__rafAfter===0&&!window.e99IntroRunning()&&window.__rafIntro>5),tag+': nenhum rAF da abertura depois de terminar ('+r1+')');
    ok(await until(P,()=>!document.getElementById('stok-intro')&&!!window.__e99Boot&&!document.body.classList.contains('e99-booting'),null,6500),tag+': abertura some e barra termina ('+(Date.now()-t0)+' ms)');

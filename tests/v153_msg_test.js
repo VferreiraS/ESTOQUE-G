@@ -33,7 +33,7 @@ const U='http://localhost:8000/index.html';const SH=process.env.SHOTS||'';
  ok(heads.length===6&&heads.slice(1).every(x=>L1[x[1]-1]===''),'6 atividades, cada uma depois de uma linha em branco');
  ok(L1.filter(l=>/^Responsável: /.test(l)).length===6&&L1.filter(l=>/^Demanda: /.test(l)).length===6,'Responsável e Demanda em linhas próprias nas 6');
  ok(!/\*tudo\*/.test(t)&&!/ {2,}/.test(t)&&!/^• /m.test(t),'"*" do usuário limpo, sem espaços repetidos, sem "•" nas atividades');
- ok(L1[L1.length-2]==='──────────'&&L1[L1.length-1]==='Stok · Lojas G · Estoque 99','rodapé depois do separador');
+ ok(L1[L1.length-2]==='──────────'&&L1[L1.length-1]==='StoK · Estoque 99','rodapé depois do separador');
  ok(t.length>600&&/Leves danos/.test(t),'conteúdo inteiro, sem corte');
 
  /* 2) Outlook: HTML e texto simples */

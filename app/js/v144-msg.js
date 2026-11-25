@@ -8,14 +8,14 @@
    v153: linhas com sub viram blocos (título da linha, um campo por linha, linha em branco entre blocos); os campos (sub)
    passam por cleanML(), que mantém as quebras de linha do próprio usuário (cada linha limpa; linhas vazias saem). */
 (function(){'use strict';var D=document,W=window;
-var FOOT='Stok · Lojas G · Estoque 99',SEP='──────────',LOGO='icons/icon-512-v159.png';
+var FOOT='StoK · Estoque 99',SEP='──────────',LOGO='icons/icon-512-v159.png';
 function E(s){return (typeof esc==='function'?esc:function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})})(s)}
 function clean(v){return String(v==null?'':v).replace(/[*_~`]/g,'').replace(/[\r\n\u2028\u2029]+/g,' ').replace(/\s{2,}/g,' ').trim()}
 function cleanML(v){return String(v==null?'':v).replace(/\r\n?|[\u2028\u2029]/g,'\n').split('\n').map(clean).filter(Boolean).join('\n')}
 function two(n){return ('0'+n).slice(-2)}
 function stamp(d){d=d||new Date();return two(d.getDate())+'/'+two(d.getMonth()+1)+'/'+d.getFullYear()+' às '+two(d.getHours())+':'+two(d.getMinutes())}
 function norm(p){p=p&&typeof p==='object'?p:{};var secs=Array.isArray(p.sections)?p.sections:[];
-  return {title:clean(p.title)||'Stok',subtitle:clean(p.subtitle),when:clean(p.when)||stamp(),note:clean(p.note),subject:clean(p.subject),file:String(p.file||'').replace(/[^a-z0-9-]/gi,'').slice(0,60),
+  return {title:clean(p.title)||'StoK',subtitle:clean(p.subtitle),when:clean(p.when)||stamp(),note:clean(p.note),subject:clean(p.subject),file:String(p.file||'').replace(/[^a-z0-9-]/gi,'').slice(0,60),
     sections:secs.map(function(s){s=s||{};return {title:clean(s.title),lines:(Array.isArray(s.lines)?s.lines:[]).map(function(l){
       if(l&&typeof l==='object')return {b:clean(l.b),t:clean(l.t),sub:(Array.isArray(l.sub)?l.sub:[]).map(cleanML).filter(Boolean)};var t=clean(l);return t?{b:'',t:t,sub:[]}:null}).filter(Boolean)}}).filter(function(s){return s.title||s.lines.length})}}
 function subLine(n){return [n.subtitle,n.when].filter(Boolean).join(' · ')}
@@ -62,7 +62,7 @@ function banner(p){var n=norm(p),th=theme(),Wd=1080,H=420;
     c.restore();c.strokeStyle='rgba(255,255,255,.14)';c.lineWidth=2;rr(c,L+1,Y+1,S-2,S-2,45);c.stroke();
     var X=L+S+52,MW=Wd-X-72;c.textAlign='left';c.textBaseline='alphabetic';
     /* cabeçalho em pílula */
-    c.font='700 22px '+th.body;var pt='STOK · LOJAS G · ESTOQUE 99',pw=c.measureText(pt).width+44;
+    c.font='700 22px '+th.body;var pt='STOK · ESTOQUE 99',pw=c.measureText(pt).width+44;
     rr(c,X,76,pw,44,22);c.fillStyle='rgba(255,255,255,.07)';c.fill();c.strokeStyle='rgba(255,255,255,.14)';c.lineWidth=1.5;rr(c,X+.75,76.75,pw-1.5,42.5,21);c.stroke();
     c.fillStyle=th.neon;c.fillText(pt,X+22,106);
     c.fillStyle=th.t1;c.font='700 58px '+th.font;var tl=fit(c,n.title,MW,2),y=190;tl.forEach(function(l){c.fillText(l,X,y);y+=64});
@@ -105,7 +105,7 @@ function printHtml(p){var n=norm(p),b='';
   if(n.note)b+='<p class="note">'+E(n.note)+'</p>';
   return pdoc(n.title,{meta:'<div class="meta">'+E(subLine(n))+'</div>',body:b})}
 /* texto livre (já pronto para copiar): mantém as quebras de linha, sem marcas do WhatsApp */
-function printTextHtml(title,t){t=String(t==null?'':t).replace(/\r\n?/g,'\n').replace(/[*_~`]/g,'');return pdoc(clean(title)||'Stok',{meta:'',body:'<pre class="txt">'+E(t)+'</pre>'})}
+function printTextHtml(title,t){t=String(t==null?'':t).replace(/\r\n?/g,'\n').replace(/[*_~`]/g,'');return pdoc(clean(title)||'StoK',{meta:'',body:'<pre class="txt">'+E(t)+'</pre>'})}
 function printDoc(html){var w=null;try{w=W.open('','_blank')}catch(e){}
   if(w){try{w.document.open();w.document.write(html);w.document.close();setTimeout(function(){try{w.focus();w.print()}catch(e){}},300);if(typeof notify==='function')notify('Na janela de impressão, escolha a impressora ou "Salvar como PDF".');return true}catch(e){}}
   var f=D.createElement('iframe');f.setAttribute('aria-hidden','true');f.className='e99-print-frame';f.style.cssText='position:fixed;width:0;height:0;border:0;right:0;bottom:0';D.body.appendChild(f);
@@ -139,7 +139,7 @@ function preview(p,o){o=o||{};var n=norm(p),d=sheet(),t=text(p),from=o.from||D.a
   D.getElementById('e99m-text').textContent=t;D.getElementById('e99m-manual').hidden=true;D.getElementById('e99m-status').textContent='';
   var img=D.getElementById('e99m-img'),wait=D.getElementById('e99m-wait'),sh=D.getElementById('e99m-share'),dl=D.getElementById('e99m-dl');
   img.removeAttribute('src');img.alt='';wait.hidden=false;wait.textContent='Preparando o banner…';sh.disabled=true;dl.hidden=!!navigator.share;
-  var body=t.replace(/[*_]/g,'');if(body.length>1800)body=body.slice(0,1800)+'\n… (continua no Stok)';
+  var body=t.replace(/[*_]/g,'');if(body.length>1800)body=body.slice(0,1800)+'\n… (continua no StoK)';
   D.getElementById('e99m-mail').href='mailto:?subject='+encodeURIComponent((n.subject||n.title+' · '+FOOT).slice(0,180))+'&body='+encodeURIComponent(body.replace(/\r?\n/g,'\r\n'));
   if(!d.open){try{d.showModal()}catch(e){d.setAttribute('open','')}}
   try{sh.focus()}catch(e){}

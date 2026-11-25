@@ -7,6 +7,8 @@ const L=require('./lib.js');const {ok,until}=L;
  A.on('pageerror',e=>errs.push('PC '+e.message));A.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::|favicon|firestore|Firebase|identitytoolkit|WebChannel/i.test(m.text()))errs.push('PC console '+m.text())});A.on('dialog',d=>d.accept());
  const posts=[];await A.route('https://formsubmit.co/**',async r=>{const to=decodeURIComponent(r.request().url().split('/ajax/')[1]||'');posts.push({to,f:JSON.parse(r.request().postData()||'{}')});await r.fulfill({status:200,contentType:'application/json',body:'{"success":"true"}'})});
  ok(await L.gestorWithTeam(A,'g158'+T),'PC: gestor com equipe');
+ /* v166: sem a animação do mouse (v161, testada no v161_mouse_test): no cartão alto do convite ela mexe o botão sob o cursor e o Playwright nunca o vê parado */
+ await A.evaluate(()=>{try{e99Mouse.set(false)}catch(e){}});
  await A.evaluate(()=>{authSession.payload.role='gestor';const o=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){if(/^mailto:/.test(this.href)){window.__mailto=(window.__mailto||0)+1;return}return o.call(this)};navigator.share=()=>Promise.resolve()});
  const E={ana:'ana.'+T+'@teste.com',bia:'bia.'+T+'@teste.com',caio:'caio.'+T+'@teste.com',duda:'duda.'+T+'@teste.com'};
  async function invite(name,email,papel){await A.evaluate(()=>{go('chat')});await A.waitForTimeout(500);await A.evaluate(()=>{const d=document.getElementById('aux-box');if(d)d.open=true});

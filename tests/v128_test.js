@@ -26,7 +26,7 @@ const URL0='http://localhost:8000/index.html';
   /* tela de entrar real (sem a criação livre dos testes antigos) */
   const S=await dev(dk+'-entrar',opts,()=>{try{localStorage.setItem('e99-test-strict','1');localStorage.removeItem('e99-test-signup')}catch(e){}});
   await S.goto(URL0);await until(S,()=>!!window.__e99Boot,null,8000);await S.waitForTimeout(800);
-  ok(await S.evaluate(()=>/Lojas G · Estoque 99/i.test(document.querySelector('#auth-screen .brand small').textContent)&&!/ACESSO LOCAL/i.test(document.getElementById('auth-screen').textContent)),dk+': marca da tela de entrar igual à da abertura (Lojas G · Estoque 99)');
+  ok(await S.evaluate(()=>/^\s*Estoque 99\s*$/i.test(document.querySelector('#auth-screen .brand small').textContent)&&document.querySelector('#auth-screen .brand strong').textContent==='StoK'&&!/lojas\s*g\b/i.test(document.getElementById('auth-screen').textContent)&&!/ACESSO LOCAL/i.test(document.getElementById('auth-screen').textContent)),dk+': marca da tela de entrar igual à da abertura (StoK · Estoque 99, sem Lojas G)');
   await S.click('#auth-owner');await S.waitForTimeout(300);ok(await S.evaluate(()=>/Primeiro acesso do dono/.test(document.querySelector('#auth-screen h1').textContent)),dk+': título do primeiro acesso diz o que é');
   await S.evaluate(()=>authSetMode('login'));await S.waitForTimeout(300);await S.fill('#auth-form input[name=login]','ninguem');await S.fill('#auth-form input[name=password]','errada123');await S.click('#auth-form button[type=submit]');await S.waitForTimeout(1500);
   ok(await S.evaluate(()=>{const e=document.querySelector('#auth-screen .auth-error');return !!e&&e.textContent.trim().length>0&&getComputedStyle(e).borderStyle!=='none'}),dk+': erro de entrar aparece como aviso (caixa)');

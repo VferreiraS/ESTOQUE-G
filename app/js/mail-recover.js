@@ -35,7 +35,7 @@ window.mrGo=async function(ev){ev.preventDefault();if(busy)return;var v=readForm
     authPasswordCheck(v.password,v.confirmation);var T9=window.e99CloudTry,w9=T9?T9.wait():0;if(w9)throw Error('Muitas tentativas neste aparelho. Espere '+w9+' min e tente de novo.');
     var u;try{u=(await c.auth.signInWithEmailAndPassword(email,String(v.cloud||''))).user;if(T9)T9.ok()}catch(x){if(T9&&x&&x.code!=='auth/network-request-failed')T9.fail();throw x}
     var vd=null,ud=null;try{vd=(await c.db.collection('cofre').doc(u.uid).get()).data()}catch(x){}try{ud=(await c.db.collection('usuarios').doc(u.uid).get()).data()}catch(x){}
-    var login=authLoginName((vd&&vd.login)||(ud&&ud.login)||'');if(!login)throw Error('Não encontrei uma conta do Stok ligada a este e-mail.');
+    var login=authLoginName((vd&&vd.login)||(ud&&ud.login)||'');if(!login)throw Error('Não encontrei uma conta do StoK ligada a este e-mail.');
     var storeKey=await authStorageKey(login),raw=localStorage.getItem(storeKey),record=raw?authCheckRecord(JSON.parse(raw)):null,newCode=authNewRecoveryCode();
     if(record&&authSession&&authSession.storeKey===storeKey&&authLoginName(authSession.record.login)===login){/* conta já aberta (Manter conectado): troca a senha sem perder nada */await authResetWithBits(record,raw,storeKey,authSession.payload,v.password,newCode,null);authShownCode=newCode}
     else if(record&&vd&&vd.salt===record.salt){var opened=await authOpenWithBits(record,authUn64(vd.bits));await authResetWithBits(record,raw,storeKey,opened.payload,v.password,newCode,null);authShownCode=newCode}

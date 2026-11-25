@@ -1,7 +1,7 @@
 {
-  "name": "Stok · Estoque 99 Lojas G",
-  "short_name": "Stok",
-  "description": "Notas fiscais, conferência por câmera, plano de ação, corredores, equipe e chat das Lojas G. Funciona sem internet.",
+  "name": "StoK · Estoque 99",
+  "short_name": "StoK",
+  "description": "Notas fiscais, conferência por câmera, plano de ação, corredores, equipe e chat do StoK. Funciona sem internet.",
   "lang": "pt-BR",
   "id": "./",
   "start_url": "./",

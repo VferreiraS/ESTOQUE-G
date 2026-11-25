@@ -42,7 +42,7 @@ function save(bytes,name){name=cleanName(name);if(blocked(name,'')){notify('Este
   var url=URL.createObjectURL(new Blob([bytes],{type:mimeOf(name)})),a=document.createElement('a');a.href=url;a.download=name;a.rel='noopener';a.style.display='none';document.body.appendChild(a);a.click();
   setTimeout(function(){a.remove();URL.revokeObjectURL(url)},30000);window.__e99LastDownload={name:name,size:bytes.length,at:Date.now()};return true}
 /* texto mostrado nos aparelhos anteriores à v155 (eles só leem o texto da mensagem) */
-function fallback(name,sz){return 'Arquivo: '+cleanName(name)+' ('+size(sz)+'). Atualize o Stok para baixar.'}
+function fallback(name,sz){return 'Arquivo: '+cleanName(name)+' ('+size(sz)+'). Atualize o StoK para baixar.'}
 function label(name,sz){return KLABEL[kind(name)]+' · '+size(sz)}
 window.e99Arq={MAX:MAX,BLOCK:BLOCK.slice(),read:read,okMeta:okMeta,save:save,size:size,kind:kind,label:label,icon:icon,clip:CLIP,cleanName:cleanName,blocked:blocked,mimeOf:mimeOf,fallback:fallback,ext:ext};
 })();

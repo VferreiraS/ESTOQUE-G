@@ -46,7 +46,7 @@ function recipients(){var out=[],seen={},info={dup:0,bad:0,skip:0};if(!authSessi
 function auxDaily(f){var g={};Object.keys(f).forEach(function(k){var v=String(f[k]);if(/valor|R\$/i.test(k)||/R\$\s*\d/.test(v))return;g[k]=f[k]});return g}
 function weekAux(d){var x=Object.assign({},d,{withVal:0,val:0,confs:[],cor:[]}),f=W.e99Week.fields(x);
   ['Valor das notas','Conferências por câmera','Corredores sem responsável','Mais detalhes'].forEach(function(k){delete f[k]});
-  if(W.e99Msg){try{var p=W.e99Week.payload(x);p.sections=p.sections.filter(function(s){return !/^(Conferências|Corredores)/.test(s.title)});p.note='Detalhes no Stok.';f['Mensagem']=W.e99Msg.text(p,{plain:true})}catch(e){}}
+  if(W.e99Msg){try{var p=W.e99Week.payload(x);p.sections=p.sections.filter(function(s){return !/^(Conferências|Corredores)/.test(s.title)});p.note='Detalhes no StoK.';f['Mensagem']=W.e99Msg.text(p,{plain:true})}catch(e){}}
   Object.keys(f).forEach(function(k){if(/R\$\s*\d/.test(String(f[k])))delete f[k]});return f}
 function builder(kind,label){var cache={};return function(papel){var a=papel==='auxiliar'?'aux':'full';if(cache[a])return cache[a];var f;
   if(kind==='semana'){var d=W.e99Week.data(addDaysK(W.e99Week.monday(iso()),-7));f=a==='aux'?weekAux(d):W.e99Week.fields(d)}

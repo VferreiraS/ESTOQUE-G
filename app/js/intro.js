@@ -1,8 +1,8 @@
 (function(){
 'use strict';
 /* v140: abertura "Do caos à ordem". Quadradinhos soltos na cor do tema se arrumam numa grade (prateleira), a linha do
-   scanner passa e a grade vira o S vermelho da marca feito de quadradinhos; depois "Stok", "Tudo no lugar." e
-   "Lojas G · Estoque 99". Um canvas só (aria-hidden), requestAnimationFrame até ~2,1 s e para; o canvas sai com a abertura.
+   scanner passa e a grade vira o S vermelho da marca feito de quadradinhos; depois "StoK", "Tudo no lugar." e
+   "Estoque 99". Um canvas só (aria-hidden), requestAnimationFrame até ~2,1 s e para; o canvas sai com a abertura.
    Contrato: fundo #000; aberturas depois do login (replayEntrySplash/authEnter) não bloqueiam e somem sozinhas.
    v141 (pedido do dono: "não quero que o app abra enquanto não clicar no botão de entrar"): na abertura do app (a 1ª da
    sessão) a animação para no quadro final e a abertura fica na frente, sem prazo, até tocar em "Entrar" (destrava o áudio
@@ -72,7 +72,7 @@ function start(d,cv,box,red){var W=innerWidth,H=innerHeight,dpr=Math.min(2,windo
 function testAuto(){try{return /^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&localStorage.getItem('e99-test-autointro')==='1'}catch(x){return false}}
 function show(first){if(off()||!document.body)return;var gate=first===true&&!testAuto();if(document.hidden&&!gate)return;if(active&&active.parentNode)return;clear();
   var red=reduced(),d=document.createElement('div');d.id='stok-intro';d.setAttribute('aria-hidden','true');if(red)d.setAttribute('data-reduced-motion','true');
-  d.innerHTML='<canvas class="si-canvas" aria-hidden="true"></canvas><div class="si-space"></div><div class="si-txt"><div class="si-cap">Cada caixa tem um lugar.</div><div class="si-word">Stok</div><div class="si-tag">Tudo no lugar.</div><div class="si-sub">LOJAS G · ESTOQUE 99</div></div>';
+  d.innerHTML='<canvas class="si-canvas" aria-hidden="true"></canvas><div class="si-space"></div><div class="si-txt"><div class="si-cap">Cada caixa tem um lugar.</div><div class="si-word">StoK</div><div class="si-tag">Tudo no lugar.</div><div class="si-sub">ESTOQUE 99</div></div>';
   if(gate){try{d.style.cssText='position:fixed;inset:0;z-index:100002;background:#000';document.body.appendChild(d);active=d;addEnter(d)}catch(x){held=false;try{d.remove()}catch(y){}active=null;return}}
   else{active=d;document.body.appendChild(d);d.classList.add('si-ending')}
   document.body.classList.add('stok-intro-active');
@@ -80,7 +80,7 @@ function show(first){if(off()||!document.body)return;var gate=first===true&&!tes
   try{anim=start(d,d.querySelector('canvas'),sp.getBoundingClientRect(),red)}catch(x){anim=null}
   if(!gate)removeTimer=setTimeout(clear,endMs())}
 /* v141: botão "Entrar" na abertura do app. A abertura fica até o toque; nada por baixo pode ser tocado nem focado. */
-function addEnter(d){d.classList.add('si-gate');d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.setAttribute('aria-label','Stok, Lojas G Estoque 99. Toque em Entrar para abrir o app.');d.removeAttribute('aria-hidden');
+function addEnter(d){d.classList.add('si-gate');d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.setAttribute('aria-label','StoK, Estoque 99. Toque em Entrar para abrir o app.');d.removeAttribute('aria-hidden');
   Array.prototype.forEach.call(d.children,function(c){c.setAttribute('aria-hidden','true')});
   var b=document.createElement('button');b.type='button';b.id='si-enter';b.className='si-enter';b.textContent='Entrar';
   b.style.cssText='position:absolute;left:50%;bottom:calc(36px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);min-height:52px;min-width:200px';d.appendChild(b);

@@ -37,7 +37,7 @@ const XLS=Buffer.from(Array.from({length:1500*1024},(_,i)=>(i*131+i%251)&255));/
  const card=(p,t)=>until(p,t=>[...document.querySelectorAll('#chat-list .chat-msg[data-id] .chat-file')].some(c=>c.querySelector('b').textContent===t&&!!c.querySelector('.cf-dl')),t,40000);
  const NM='relatorio _b_semana__b_.pdf';
  ok(await card(A,NM)&&await card(Q,NM),'Equipe: PDF aparece no PC e no iPhone com nome, tipo e Baixar');
- ok(await until(Q,()=>!document.querySelector('#chat-list .chat-file b *')&&[...document.querySelectorAll('#chat-list .chat-txt')].some(x=>x.innerText==='segue o relatório')&&![...document.querySelectorAll('#chat-list .chat-txt')].some(x=>/Atualize o Stok/.test(x.innerText)),null,15000),'Equipe: nome escapado, legenda junto, aviso para aparelho antigo escondido');
+ ok(await until(Q,()=>!document.querySelector('#chat-list .chat-file b *')&&[...document.querySelectorAll('#chat-list .chat-txt')].some(x=>x.innerText==='segue o relatório')&&![...document.querySelectorAll('#chat-list .chat-txt')].some(x=>/Atualize o Sto[kK]/.test(x.innerText)),null,15000),'Equipe: nome escapado, legenda junto, aviso para aparelho antigo escondido');
  ok(await until(Q,()=>{const c=[...document.querySelectorAll('#chat-list .chat-file')].pop();if(!c)return false;return /PDF · /.test(c.innerText)&&!!c.querySelector('svg')&&!c.closest('.chat-msg').querySelector('iframe,embed,object')},null,15000),'Equipe: ícone e tipo PDF, sem abrir o conteúdo na página');
  const dl=async(p,sel)=>{const [d]=await Promise.all([p.waitForEvent('download',{timeout:20000}),p.click(sel)]);return {name:d.suggestedFilename(),buf:fs.readFileSync(await d.path())}};
  const d1=await dl(Q,'#chat-list .chat-msg[data-id] .chat-file .cf-dl');

@@ -33,10 +33,10 @@ h3{margin:0 0 4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;c
 .op{flex:1;border-radius:16px;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}.op b{font-size:30px;color:#fff}.op small{color:#bbb}
 .t{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline}.t b{font-size:20px}.t span{color:${t.muted}}</style>
 <div class="g"><div class="t"><b>Opção ${n} · ${o.nome}</b><span>Tema ${t.nome} · ${o.ideia}</span></div>
-<div class="c"><h3>Ícone do app</h3><div class="home"><i></i><i></i><i></i><div class="me">${iconSvg(n, 120)}Stok</div><i></i><i></i></div></div>
-<div class="c"><h3>Menu</h3><div class="menu"><div class="brand">${mk(42)}<span><b>Stok</b><small>Lojas G · Estoque 99</small></span></div><div class="nav"><div class="a">Início</div><div>Notas fiscais</div><div>Plano de ação</div><div>Chat</div></div></div></div>
-<div class="c"><h3>Tela de entrar</h3><div class="auth">${mk(78)}<b style="font-size:22px">Stok</b><div class="in"></div><div class="in"></div><div class="bt">Entrar</div></div></div>
-<div class="c"><h3>Abertura</h3><div class="op">${mk(130)}<b>Stok</b><small>Tudo no lugar.</small></div></div></div>`;
+<div class="c"><h3>Ícone do app</h3><div class="home"><i></i><i></i><i></i><div class="me">${iconSvg(n, 120)}StoK</div><i></i><i></i></div></div>
+<div class="c"><h3>Menu</h3><div class="menu"><div class="brand">${mk(42)}<span><b>StoK</b><small>Estoque 99</small></span></div><div class="nav"><div class="a">Início</div><div>Notas fiscais</div><div>Plano de ação</div><div>Chat</div></div></div></div>
+<div class="c"><h3>Tela de entrar</h3><div class="auth">${mk(78)}<b style="font-size:22px">StoK</b><div class="in"></div><div class="in"></div><div class="bt">Entrar</div></div></div>
+<div class="c"><h3>Abertura</h3><div class="op">${mk(130)}<b>StoK</b><small>Tudo no lugar.</small></div></div></div>`;
     const f = `${out}/logo-opcao-${n}-${k}.png`; await shot(html, 1200, 420, f); files.push(f);
   }
 }

@@ -3,8 +3,8 @@ self.addEventListener('push', e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (_) {}
   const ok = { nf: 'Nova nota fiscal', chat: 'Mensagem nova no chat', prazo: 'Prazo vencendo' };
-  const body = ok[d.tipo] || 'Novidade no Stok';
-  e.waitUntil(self.registration.showNotification('Stok', {
+  const body = ok[d.tipo] || 'Novidade no StoK';
+  e.waitUntil(self.registration.showNotification('StoK', {
     body, tag: 'stok-' + (d.tipo || 'aviso'), renotify: true,
     icon: 'icons/icon-192-v159.png', badge: 'icons/icon-192-v159.png', data: { tipo: d.tipo },
   }));

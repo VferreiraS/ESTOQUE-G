@@ -10,7 +10,7 @@
   // Diz se dá para ligar os avisos aqui (no iPhone só no app da tela inicial, iOS 16.4+).
   window.e99PushPode = function () {
     if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return { ok: false, why: 'Este navegador não tem avisos.' };
-    if (isIOS() && !installed()) return { ok: false, why: 'No iPhone, adicione o Stok à Tela de Início e abra por lá.' };
+    if (isIOS() && !installed()) return { ok: false, why: 'No iPhone, adicione o StoK à Tela de Início e abra por lá.' };
     return { ok: true };
   };
   // Chamar só dentro de um toque (botão "Ligar avisos").

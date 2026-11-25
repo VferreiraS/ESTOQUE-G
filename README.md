@@ -1,6 +1,6 @@
-# Stok · Estoque 99 (Lojas G)
+# StoK · Estoque 99
 
-App web de estoque das Lojas G: notas fiscais, conferência de volumes pela câmera, plano de ação, corredores, equipe, alertas de prazo e chat da equipe.
+App web de estoque: notas fiscais, conferência de volumes pela câmera, plano de ação, corredores, equipe, alertas de prazo e chat da equipe.
 Funciona no **computador**, no **iPhone/iPad** e no **Android**, inclusive sem internet, e pode ser instalado na tela inicial.
 
 - **No ar:** https://vferreiras.github.io/ESTOQUE-G/

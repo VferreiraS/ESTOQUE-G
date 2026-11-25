@@ -4,9 +4,9 @@
 
 const ORIGENS = ['https://vferreiras.github.io', 'https://gen-lang-client-0167474823-295e1.web.app'];
 const TEXTOS = {
-  nf: { title: 'Stok', body: 'Nova nota fiscal' },
-  chat: { title: 'Stok', body: 'Mensagem nova no chat' },
-  prazo: { title: 'Stok', body: 'Prazo vencendo' },
+  nf: { title: 'StoK', body: 'Nova nota fiscal' },
+  chat: { title: 'StoK', body: 'Mensagem nova no chat' },
+  prazo: { title: 'StoK', body: 'Prazo vencendo' },
 };
 const LIMITE = 30, JANELA = 60000, MAX_SUBS = 200;
 const enc = new TextEncoder();

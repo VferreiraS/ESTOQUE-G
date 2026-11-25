@@ -1,14 +1,14 @@
 /**
- * Stok · Estoque 99 — recebe os dados do app e atualiza esta planilha.
+ * StoK · Estoque 99 — recebe os dados do app e atualiza esta planilha.
  *
  * Como usar (uma vez):
- * 1. Crie uma planilha nova no Google Sheets (ex.: "Stok · Estoque 99 — Lojas G").
+ * 1. Crie uma planilha nova no Google Sheets (ex.: "StoK · Estoque 99").
  * 2. Menu Extensões → Apps Script. Apague o que estiver lá e cole este arquivo inteiro.
  * 3. Troque COLE_AQUI_A_SENHA por uma senha só sua (8 caracteres ou mais) e salve.
  * 4. Implantar → Nova implantação → tipo "App da Web".
  *    Executar como: "Eu". Quem pode acessar: "Qualquer pessoa". Implantar e autorizar.
  * 5. Copie o "URL do app da Web" (termina em /exec).
- * 6. No app Stok: Dados e ajuda → Planilha no Google → cole o URL e a mesma senha → Salvar.
+ * 6. No app StoK: Dados e ajuda → Planilha no Google → cole o URL e a mesma senha → Salvar.
  *
  * O app manda uma cópia completa a cada mudança (no máximo a cada 2 minutos).
  * Cada aba é reescrita com os dados mais novos; a aba "Atualizado" guarda o histórico de envios.
@@ -52,7 +52,7 @@ function doPost(e) {
 }
 
 function doGet() {
-  return ContentService.createTextOutput('Stok: planilha ligada.');
+  return ContentService.createTextOutput('StoK: planilha ligada.');
 }
 
 /* Textos que começam com = + - @ virariam fórmula na planilha: entram como texto. */

@@ -111,7 +111,7 @@ function fields(d){var f={};f['Loja']=d.store;f['Semana']=label(d)+' (segunda a 
   f['Plano de ação']=d.acts?d.done+' de '+d.acts+' atividades feitas · '+d.late.length+' atrasadas':'Nenhum plano';
   if(d.late.length)f['Atrasadas']=d.late.slice(0,15).map(function(x){return x.title+' · '+x.owner+' · '+br(x.date)}).join('\n')+(d.late.length>15?'\n+ '+(d.late.length-15)+' no app':'');
   f['Corredores sem responsável']=d.cor.length?d.cor.slice(0,20).map(function(c){return c.number+(c.sector?' · '+c.sector:'')}).join('\n'):'Nenhum';
-  f['Mais detalhes']='Abra o Stok → Painel → Relatório da semana para salvar em PDF.';
+  f['Mais detalhes']='Abra o StoK → Painel → Relatório da semana para salvar em PDF.';
   f._subject=('Estoque 99 · Resumo da semana '+label(d)+' · '+d.store).slice(0,200);f._template='table';f._captcha='false';
   /* v144: o mesmo texto formatado das mensagens vem primeiro no corpo (campos de antes continuam) */
   if(W.e99Msg){try{f=Object.assign({'Mensagem':e99Msg.text(payload(d),{plain:true})},f)}catch(e){}}return f}
@@ -122,7 +122,7 @@ function payload(d){var sec=[];
   sec.push({title:'Conferências por câmera',lines:d.confs.length?[d.confs.length+' finalizadas · '+d.confs.reduce(function(a,c){return a+c.total},0)+' leituras · '+d.confs.filter(function(c){return c.bad}).length+' com falta ou sobra']:['Nenhuma']});
   sec.push({title:'Plano de ação',lines:(d.acts?[d.done+' de '+d.acts+' atividades feitas · '+d.late.length+' atrasadas']:['Nenhum plano']).concat(d.late.slice(0,15).map(function(x){return {b:x.title,t:x.owner+' · '+br(x.date)}}))});
   sec.push({title:'Corredores sem responsável ('+d.cor.length+')',lines:d.cor.length?d.cor.slice(0,20).map(function(c){return c.number+(c.sector?' · '+c.sector:'')}):['Nenhum']});
-  return {title:'Resumo da semana',subtitle:d.store+' · '+label(d),file:'resumo-semana-'+(wkMon||''),subject:'Resumo da semana '+label(d)+' · '+d.store,sections:sec,note:'Detalhes no Stok → Painel → Relatório da semana.'}}
+  return {title:'Resumo da semana',subtitle:d.store+' · '+label(d),file:'resumo-semana-'+(wkMon||''),subject:'Resumo da semana '+label(d)+' · '+d.store,sections:sec,note:'Detalhes no StoK → Painel → Relatório da semana.'}}
 function shareWeek(){if(!authSession||aux()||!W.e99Msg)return;e99Msg.preview(payload(weekData(wkMon||addDays(mondayOf(iso()),-7))),{heading:'Enviar resumo da semana'})}
 var busy=false;
 function local(){return /^(localhost|127\.0\.0\.1)$/.test(location.hostname)||location.protocol==='file:'}

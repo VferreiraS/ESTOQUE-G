@@ -1,16 +1,16 @@
 /**
- * Stok · Estoque 99 — envio de e-mail do relatório e da conta nova (substitui o FormSubmit).
+ * StoK · Estoque 99 — envio de e-mail do relatório e da conta nova (substitui o FormSubmit).
  *
  * PASSO A PASSO PARA O DONO (uma vez só):
  *  1. Abra https://script.google.com → Novo projeto → apague o que houver e cole este arquivo inteiro.
  *  2. Engrenagem "Configurações do projeto" → "Propriedades do script" → Adicionar:
  *       Nome: TOKEN_RELATORIO   Valor: uma senha longa inventada por você (ex.: 32 letras e números).
- *     (Esse token NUNCA vai para o GitHub. Guarde-o: ele será digitado no Stok.)
+ *     (Esse token NUNCA vai para o GitHub. Guarde-o: ele será digitado no StoK.)
  *  3. Botão "Implantar" → "Nova implantação" → tipo "App da Web".
  *       Executar como: Eu (sua conta).   Quem pode acessar: "Qualquer pessoa".
  *     Autorize o acesso ao Gmail quando o Google pedir.
  *  4. Copie a URL que termina em /exec.
- *  5. No Stok, em Avisos → Relatório por e-mail, cole a URL e o token (ficam cifrados no aparelho).
+ *  5. No StoK, em Avisos → Relatório por e-mail, cole a URL e o token (ficam cifrados no aparelho).
  *  Ao mudar este código: "Implantar" → "Gerenciar implantações" → editar → "Nova versão" (a URL continua a mesma).
  *
  * Recebe POST (formulário ou JSON) com os campos do app: Loja, Gerado em, Resumo, Situação, NF …, A fazer: …, Mais,
@@ -25,7 +25,7 @@ var MAX_VALOR = 1000;      // caracteres por campo
 var MAX_CORPO = 60000;     // caracteres do HTML final
 var MAX_PEDIDO = 100000;   // bytes do pedido recebido
 
-function doGet() { return resposta_({ ok: true, servico: 'Stok · e-mail' }); }
+function doGet() { return resposta_({ ok: true, servico: 'StoK · e-mail' }); }
 
 function doPost(e) {
   try {
@@ -37,7 +37,7 @@ function doPost(e) {
     var lista = ordenar_(campos);
     var html = montarHtml_(assunto, lista);
     if (html.length > MAX_CORPO) html = montarHtml_(assunto, lista.slice(0, 30).concat([['Mais', 'O e-mail ficou grande demais. Veja o restante no site.']]));
-    MailApp.sendEmail({ to: DESTINO, cc: COPIA, subject: assunto, htmlBody: html, body: montarTexto_(assunto, lista).slice(0, MAX_CORPO), name: 'Stok · Estoque 99' });
+    MailApp.sendEmail({ to: DESTINO, cc: COPIA, subject: assunto, htmlBody: html, body: montarTexto_(assunto, lista).slice(0, MAX_CORPO), name: 'StoK · Estoque 99' });
     return resposta_({ ok: true });
   } catch (err) {
     return resposta_({ ok: false, erro: 'falha ao enviar' });
@@ -134,17 +134,17 @@ function montarHtml_(assunto, lista) {
     '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%">' +
     '<tr><td style="padding:4px 0 14px 0;border-bottom:2px solid ' + C.red + '">' +
     '<span style="' + TITULO + 'font-size:34px;font-weight:700;color:' + C.red + ';vertical-align:middle">S</span>' +
-    '<span style="' + TITULO + 'font-size:20px;color:' + C.texto + ';vertical-align:middle;padding-left:8px">Stok · Estoque 99</span>' +
+    '<span style="' + TITULO + 'font-size:20px;color:' + C.texto + ';vertical-align:middle;padding-left:8px">StoK · Estoque 99</span>' +
     '<div style="' + CORPO + 'font-size:13px;color:' + C.sec + ';margin-top:4px">' + esc_(assunto) + '</div></td></tr>' +
     '<tr><td style="height:14px;line-height:14px;font-size:0">&nbsp;</td></tr>' + corpo +
-    '<tr><td style="' + CORPO + 'font-size:11px;color:' + C.sec + ';padding:14px 0 0 0;border-top:1px solid ' + C.borda + '">Enviado automaticamente pelo Stok · Lojas G.</td></tr>' +
+    '<tr><td style="' + CORPO + 'font-size:11px;color:' + C.sec + ';padding:14px 0 0 0;border-top:1px solid ' + C.borda + '">Enviado automaticamente pelo StoK.</td></tr>' +
     '</table></td></tr></table></body></html>';
 }
 
 function montarTexto_(assunto, lista) {
   var t = 'STOK · ESTOQUE 99\n' + assunto + '\n' + new Array(31).join('-') + '\n';
   lista.forEach(function (p) { t += p[0] + ': ' + p[1] + '\n'; });
-  return t + '\nEnviado automaticamente pelo Stok · Lojas G.\n';
+  return t + '\nEnviado automaticamente pelo StoK.\n';
 }
 
 function resposta_(obj) {

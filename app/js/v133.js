@@ -73,7 +73,7 @@ async function readG(){try{var c=cnx();if(!c||!authSession||isG()||cust().gk||Da
 setInterval(function(){if(!authSession||document.hidden)return;if(isG())sendG();else readG()},15000);
 /* pedido (aparelho do usuário, sem entrar) */
 async function pedidoFor(login){login=authLoginName(String(login||'').replace(/^@+/,''));if(!login)throw Error('Digite o seu login.');var raw=localStorage.getItem(await authStorageKey(login));
-  if(!raw)throw Error('Não há conta com este login neste aparelho. Faça o pedido no aparelho onde você usa o Stok.');var r;try{r=authCheckRecord(JSON.parse(raw))}catch(x){throw Error('A cópia da conta neste aparelho está danificada.')}
+  if(!raw)throw Error('Não há conta com este login neste aparelho. Faça o pedido no aparelho onde você usa o StoK.');var r;try{r=authCheckRecord(JSON.parse(raw))}catch(x){throw Error('A cópia da conta neste aparelho está danificada.')}
   var c=r.custody;if(!c||!c.env||c.s!==r.salt)throw Error('Esta conta ainda não tem a custódia do gestor neste aparelho (ela é criada quando você entra depois que o gestor libera). Use o código de recuperação ou o e-mail.');
   return 'STK-PEDIDO:'+b64u(authBytes(JSON.stringify({v:1,l:r.login,k:c.k,e:c.env.e,i:c.env.i,c:c.env.c})))}
 W.e99CustodyRequest=pedidoFor;
@@ -93,7 +93,7 @@ W.e99CustAsk=function(){var d=dlg('cust-ask');var lg='';try{var li=D.querySelect
 W.e99CustMake=async function(ev){ev.preventDefault();var err=D.getElementById('cust-ask-err'),out=D.getElementById('cust-ask-out');err.textContent='';out.innerHTML='';
   try{var p=await pedidoFor(readForm(ev.target).login);out.innerHTML='<label>Seu pedido (não serve para entrar; só o gestor abre)<textarea class="cust-out" id="cust-ask-text" readonly rows="5"></textarea></label><div class="toolbar"><button type="button" onclick="e99CustCopy()">Copiar pedido</button>'+(navigator.share?'<button type="button" onclick="e99CustShare()">Compartilhar</button>':'')+'</div>';D.getElementById('cust-ask-text').value=p}catch(x){err.textContent=x.message||'Não foi possível gerar o pedido.'}};
 W.e99CustCopy=function(){var t=D.getElementById('cust-ask-text');if(t)copy(t.value)};
-W.e99CustShare=function(){var t=D.getElementById('cust-ask-text');if(t&&navigator.share)navigator.share({title:'Pedido de senha · Stok',text:'Pedido para redefinir minha senha no Stok (Administração → Redefinir senha de um usuário): '+t.value}).catch(function(){})};
+W.e99CustShare=function(){var t=D.getElementById('cust-ask-text');if(t&&navigator.share)navigator.share({title:'Pedido de senha · StoK',text:'Pedido para redefinir minha senha no StoK (Administração → Redefinir senha de um usuário): '+t.value}).catch(function(){})};
 var raB=renderAuth;renderAuth=function(){var r=raB.apply(this,arguments);try{if(authMode==='recover'&&!authSession&&!authRecoveryShow&&!D.getElementById('cust-ask-box')){var card=D.querySelector('#auth-screen .auth-card');var f=D.getElementById('auth-form');
   if(card&&f){var b=D.createElement('div');b.id='cust-ask-box';b.innerHTML='<p class="small">Sem o código? O gestor da sua equipe pode te passar um código para redefinir a senha.</p><button type="button" onclick="e99CustAsk()">Pedir ao gestor</button>';f.after(b)}}}catch(x){}return r};
 /* tela do gestor: Administração → Redefinir senha de um usuário */

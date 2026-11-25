@@ -44,7 +44,7 @@ window.e99NetWhy=async function(){if(navigator.onLine===false)return 'Este apare
   var r=await Promise.all(list.map(function(x){return probe(x[1])})),bad=list.filter(function(x,i){return !r[i]}).map(function(x){return x[0]});
   if(!bad.length)return 'A nuvem não respondeu a tempo, mas este aparelho tem internet. Tente de novo em instantes.';
   if(bad.length===list.length)return 'Sem acesso à internet por este navegador. Se o computador tem internet, confira a data e a hora do Windows (relógio errado bloqueia sites seguros), o proxy da rede e o antivírus. Veja Dados · "Rede da loja / Antivírus".';
-  return 'O antivírus ou a rede da loja está bloqueando o Stok: '+bad.join(', ')+'. Libere o app no antivírus (ex.: Bitdefender) ou teste em outra rede (roteador do celular). Veja Dados · "Rede da loja / Antivírus".'};
+  return 'O antivírus ou a rede da loja está bloqueando o StoK: '+bad.join(', ')+'. Libere o app no antivírus (ex.: Bitdefender) ou teste em outra rede (roteador do celular). Veja Dados · "Rede da loja / Antivírus".'};
 
 /* guarda a senha digitada só na memória, por 10 minutos, para ligar a conta da nuvem logo depois do login */
 var decBefore=authDecrypt;authDecrypt=async function(record,password){var r=await decBefore.apply(this,arguments);if(record&&typeof password==='string')stash={login:authLoginName(record.login),pw:password,t:Date.now()};return r};
@@ -64,7 +64,7 @@ window.e99CloudTry={K:'lojasg.estoque99.cloud-tries',get:function(){try{return J
 async function link(email,pw){var s=authSession;if(!s)throw Error('Entre na conta.');email=String(email||'').replace(/\s+/g,'').toLowerCase();if(!EMAIL_RE.test(email)||email.length>120)throw Error('Digite um e-mail válido.');
   var c=await load(),d=await derive(s.record.login,pw),u=c.auth.currentUser;
   if(u&&u.email!==email){await c.auth.signOut();u=null}
-  if(!u){try{u=(await c.auth.createUserWithEmailAndPassword(email,d)).user}catch(x){if(x.code!=='auth/email-already-in-use')throw x;try{u=(await c.auth.signInWithEmailAndPassword(email,d)).user}catch(y){if(y.code==='auth/network-request-failed'||y.code==='auth/too-many-requests')throw y;throw Error('Este e-mail já está ligado a outra conta do Stok, com outra senha. Use a mesma senha daquela conta ou outro e-mail.')}}}
+  if(!u){try{u=(await c.auth.createUserWithEmailAndPassword(email,d)).user}catch(x){if(x.code!=='auth/email-already-in-use')throw x;try{u=(await c.auth.signInWithEmailAndPassword(email,d)).user}catch(y){if(y.code==='auth/network-request-failed'||y.code==='auth/too-many-requests')throw y;throw Error('Este e-mail já está ligado a outra conta do StoK, com outra senha. Use a mesma senha daquela conta ou outro e-mail.')}}}
   else if(!(await pwSame(s,(await sha(d)).slice(0,16)))){try{await u.updatePassword(d)}catch(x){}}
   if(authSession!==s)return;setMyEmail(email);await pwSet(s,(await sha(d)).slice(0,16));
   if(!u.emailVerified&&!/@pc\.stok-e99\.app$/.test(email))verify(u,false);await after(true,true)}
@@ -96,14 +96,14 @@ window.e99CloudMember=function(login){return cloudMem[authLoginName(String(login
 /* gestor: uma vez por dia prepara o resumo de cada auxiliar com e-mail confirmado; o robô envia */
 function day(){var d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')}
 async function daily(loja){var u=user();if(!u||!u.emailVerified||!loja||!authSession)return;var k='lojasg.estoque99.cloud-daily:'+loja;if(ls(k)===day())return;var c=await load(),list=Object.keys(cloudMem).map(function(l){return cloudMem[l]}).filter(function(m){return m.role==='auxiliar'&&m.verificado&&m.uid!==u.uid});
-  if(!list.length)return;var ok=0;for(var i=0;i<list.length;i++){var m=list[i];var t=summary(m.nome||'');try{await c.db.collection('correio').doc(loja+'_'+m.uid+'_'+day()).set({de:u.uid,para:m.uid,assunto:('Stok · seu resumo de '+new Date().toLocaleDateString('pt-BR')).slice(0,150),texto:t.slice(0,4000),tipo:'resumo',loja:loja,criado:Date.now()});ok++}catch(x){}}
+  if(!list.length)return;var ok=0;for(var i=0;i<list.length;i++){var m=list[i];var t=summary(m.nome||'');try{await c.db.collection('correio').doc(loja+'_'+m.uid+'_'+day()).set({de:u.uid,para:m.uid,assunto:('StoK · seu resumo de '+new Date().toLocaleDateString('pt-BR')).slice(0,150),texto:t.slice(0,4000),tipo:'resumo',loja:loja,criado:Date.now()});ok++}catch(x){}}
   if(ok)ls(k,day())}
 function summary(name){var n=normalText(name),p=(state.team||[]).find(function(x){return normalText(x.name)===n||normalText(x.id)===n})||null,id=p?normalText(p.id):'';
   function mine(o){o=normalText(o||'');return o==='todos'||(id&&o===id)}
   var cor=(state.corridors||[]).filter(function(c){return mine(c.owner)}).map(function(c){return '• Corredor '+(c.number||'')+(c.sector?' — '+c.sector:'')}).slice(0,20);
   var acts=[];(state.plans||[]).forEach(function(pl){(pl.activities||[]).forEach(function(a){if(!a.done&&a.title&&mine(a.owner))acts.push('• '+a.title+(pl.title?' ('+pl.title+')':''))})});
   var al=0;try{al=collectAlerts().length}catch(x){}
-  return 'Olá, '+(p?p.name:name)+'!\n\nResumo do Stok · '+(authSession.payload.store||'Estoque 99')+'\n\n'
+  return 'Olá, '+(p?p.name:name)+'!\n\nResumo do StoK · '+(authSession.payload.store||'Estoque 99')+'\n\n'
     +(acts.length?'Atividades em aberto ('+acts.length+'):\n'+acts.slice(0,25).join('\n'):'Nenhuma atividade em aberto para você. 👏')+'\n\n'
     +(cor.length?'Seus corredores:\n'+cor.join('\n')+'\n\n':'')+(al?'Alertas no estoque: '+al+'.\n\n':'')
     +'Abra o app: https://vferreiras.github.io/ESTOQUE-G/\n\nPara não receber estes e-mails, avise o gestor.'}
@@ -111,7 +111,7 @@ function summary(name){var n=normalText(name),p=(state.team||[]).find(function(x
 /* tela "Vincule seu e-mail" */
 function dlg(id){var d=document.getElementById(id);if(!d){d=document.createElement('dialog');d.id=id;document.body.appendChild(d);d.addEventListener('cancel',function(){try{sessionStorage.setItem('e99-cloud-later','1')}catch(x){}})}return d}
 function showLink(){if(!authSession||ls('lojasg.estoque99.pc-account:'+authSession.storeKey))return;/* v105: a tela obrigatória de e-mail vem antes */var eg=document.getElementById('email-gate');if(eg&&eg.open)return;/* v107: quem tocou em "Agora não" não recebe outro pedido de e-mail nesta sessão */if(window.e99EmailGateSkipped&&window.e99EmailGateSkipped())return;var d=dlg('cloud-link'),pw=freshPw(),em=myEmail();
-  d.innerHTML='<form class="cl-body" onsubmit="e99CloudLink(event)"><h2>📧 Vincule seu e-mail</h2><p>Agora cada conta do Stok fica guardada na nuvem com o e-mail da pessoa. Assim você recebe avisos e resumos por e-mail.</p>'
+  d.innerHTML='<form class="cl-body" onsubmit="e99CloudLink(event)"><h2>📧 Vincule seu e-mail</h2><p>Agora cada conta do StoK fica guardada na nuvem com o e-mail da pessoa. Assim você recebe avisos e resumos por e-mail.</p>'
    +'<label>Seu e-mail<input name="email" type="email" required maxlength="120" autocomplete="email" inputmode="email" value="'+e(em)+'" placeholder="voce@gmail.com"></label>'
    +(pw?'':'<label>Sua senha do app (a mesma do login)<input name="password" type="password" required autocapitalize="none" spellcheck="false" autocomplete="current-password"></label>')
    +(linkErr?'<p class="cl-err" role="alert">'+e(linkErr)+'</p>':'')

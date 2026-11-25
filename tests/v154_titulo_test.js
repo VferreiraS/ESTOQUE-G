@@ -25,7 +25,7 @@ const HID=()=>{window.__hid=false;Object.defineProperty(Document.prototype,'hidd
  ok(await until(A,()=>e99TitleState().on,null,30000),'PC: mensagem nova com a aba oculta liga o aviso');
  await until(A,()=>e99TitleState().red,null,5000);
  const seen=new Set(),icons=new Set();for(let i=0;i<8;i++){const s=await A.evaluate(()=>({t:document.title,i:document.querySelector('link[rel~="icon"]').getAttribute('href')}));seen.add(s.t);icons.add(s.i.slice(0,40));await A.waitForTimeout(350)}
- ok(seen.size===2&&seen.has(orig.t)&&[...seen].some(t=>/^\(\d+\) Nova(s)? mensage(m|ns) · Stok$/.test(t)),'PC: título alterna entre 2 valores ('+[...seen].join(' | ')+')');
+ ok(seen.size===2&&seen.has(orig.t)&&[...seen].some(t=>/^\(\d+\) Nova(s)? mensage(m|ns) · StoK$/.test(t)),'PC: título alterna entre 2 valores ('+[...seen].join(' | ')+')');
  ok(icons.size===2&&[...icons].some(x=>x.startsWith('data:image/png')),'PC: ícone alterna com a versão de bolinha vermelha ('+[...icons].join(' | ')+')');
  await A.waitForTimeout(4500);ok(await A.evaluate(()=>e99TitleState().on&&[0,1,2].length&&true),'PC: segue piscando após o ciclo do ícone da v123');
  {const ic=new Set();for(let i=0;i<6;i++){ic.add((await A.evaluate(()=>document.querySelector('link[rel~="icon"]').getAttribute('href'))).slice(0,30));await A.waitForTimeout(350)}ok(ic.size===2,'PC: ícone continua alternando depois de 4 s (v123 não sobrescreve)')}

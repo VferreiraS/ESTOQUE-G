@@ -17,7 +17,7 @@ async function send(item){
   var fields={'Estoque':item.store,'Login':item.login,'Tipo de conta':item.role,'Criada em':item.when,'Aparelho':item.device,
     _subject:'Estoque 99 · Nova conta: '+item.store,_template:'table',_captcha:'false'};fields['Total de contas (desde '+SINCE+')']=String(item.total||'?');
   /* v144: o mesmo texto formatado das mensagens vem primeiro no corpo (campos de antes continuam) */
-  if(window.e99Msg){try{fields=Object.assign({'Mensagem':e99Msg.text({title:'Nova conta no Stok',subtitle:item.store,when:item.when,sections:[{title:'Conta',lines:['Login: '+item.login,'Tipo: '+item.role,'Aparelho: '+item.device,'Total de contas: '+String(item.total||'?')]}]},{plain:true})},fields)}catch(e){}}
+  if(window.e99Msg){try{fields=Object.assign({'Mensagem':e99Msg.text({title:'Nova conta no StoK',subtitle:item.store,when:item.when,sections:[{title:'Conta',lines:['Login: '+item.login,'Tipo: '+item.role,'Aparelho: '+item.device,'Total de contas: '+String(item.total||'?')]}]},{plain:true})},fields)}catch(e){}}
   var r=await fetch('https://formsubmit.co/ajax/'+encodeURIComponent(OWNER),{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(fields)});
   if(!r.ok)throw Error('email '+r.status)}
 var flushing=false;
