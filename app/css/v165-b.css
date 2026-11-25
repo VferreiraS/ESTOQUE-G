@@ -2,10 +2,10 @@
    Só tokens de cor (--p-*, --area-*, color-mix sobre tokens); nenhum matiz novo. Camada p164 para vencer os !important antigos.
    Tokens novos (derivados de tokens existentes):
    --p-fs-count  contador da conferência (lido a um braço de distância no depósito; único número acima do display)
-   --p-soft-*    fundos de etiqueta semântica = cor do estado a 14% sobre transparente */
+   --p-soft-*    fundos de etiqueta semântica = cor do estado a 14% (rgba sobre os --p-*-rgb; color-mix vira color(srgb) e quebra leitores de rgb) */
 :root{--p-fs-count:72px;--p-lh-count:76px;
-  --p-soft-ok:color-mix(in srgb,var(--p-ok) 14%,transparent);--p-soft-danger:color-mix(in srgb,var(--p-danger) 14%,transparent);
-  --p-soft-warn:color-mix(in srgb,var(--p-warn) 14%,transparent);--p-soft-accent:color-mix(in srgb,var(--p-accent) 14%,transparent)}
+  --p-soft-ok:rgba(var(--p-ok-rgb),.14);--p-soft-danger:rgba(var(--p-danger-rgb),.14);
+  --p-soft-warn:rgba(var(--p-warn-rgb),.14);--p-soft-accent:rgba(var(--p-accent-rgb),.14)}
 @media (max-width:760px){:root{--p-fs-count:var(--p-fs-display)}}
 
 @layer p164{
