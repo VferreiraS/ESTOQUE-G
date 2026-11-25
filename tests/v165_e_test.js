@@ -49,9 +49,9 @@ function ratio(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min
  ok(await until(A,()=>/digitando/.test((document.getElementById('chat-typing')||{}).textContent||''),null,15000),'PC: indicador de digitando');await C.fill('#chat-text','');
  /* contraste AA nos 3 temas */
  for(const th of ['lilas','violeta','cinza']){await A.evaluate(t=>e99Theme.set(t),th);await A.waitForTimeout(300);
-  const c=await A.evaluate(()=>{const o=document.querySelector('#chat-list .chat-msg.mine'),i=document.querySelector('#chat-list .chat-msg:not(.mine)');const n=[...document.querySelectorAll('#chat-list .chat-msg:not(.mine)>.prof-chip span:last-child')];
+  const c=await A.evaluate(()=>{const cv=document.createElement('canvas');cv.width=cv.height=1;const g=cv.getContext('2d',{willReadFrequently:true});const rgb=v=>{g.clearRect(0,0,1,1);g.fillStyle='#000';g.fillStyle=v;g.fillRect(0,0,1,1);const d=g.getImageData(0,0,1,1).data;return 'rgb('+d[0]+','+d[1]+','+d[2]+')'};const gc=(e,k)=>rgb(getComputedStyle(e)[k]);const o=document.querySelector('#chat-list .chat-msg.mine'),i=document.querySelector('#chat-list .chat-msg:not(.mine)');const n=[...document.querySelectorAll('#chat-list .chat-msg:not(.mine)>.prof-chip span:last-child')];
    const bg=getComputedStyle(document.getElementById('chat-list')).backgroundColor;
-   return {o:[getComputedStyle(o.querySelector('.chat-txt')).color,getComputedStyle(o).backgroundColor],i:[getComputedStyle(i.querySelector('.chat-txt')).color,getComputedStyle(i).backgroundColor],n:n.map(x=>[getComputedStyle(x).color,getComputedStyle(x.closest('.chat-msg')).backgroundColor])}});
+   return {o:[gc(o.querySelector('.chat-txt'),'color'),gc(o,'backgroundColor')],i:[gc(i.querySelector('.chat-txt'),'color'),gc(i,'backgroundColor')],n:n.map(x=>[gc(x,'color'),gc(x.closest('.chat-msg'),'backgroundColor')])}});
   const ro=ratio(...c.o),ri=ratio(...c.i),rn=Math.min(...c.n.map(x=>ratio(...x)));
   ok(ro>=4.5&&ri>=4.5,th+': contraste AA do texto das bolhas (enviada '+ro.toFixed(1)+', recebida '+ri.toFixed(1)+')');ok(rn>=4.5,th+': contraste AA dos nomes coloridos (mín. '+rn.toFixed(1)+')');
   await A.screenshot({path:path.join(OUT,'grupo-pc-'+th+'.png')});
@@ -60,9 +60,9 @@ function ratio(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min
   await B.evaluate(()=>{const p=document.querySelector('#chat-form .chat-plus');p.click()});await B.waitForTimeout(200);await B.screenshot({path:path.join(OUT,'campo-mais-iphone-'+th+'.png')});await B.keyboard.press('Escape');
  }
  /* lista de conversas */
- await A.evaluate(()=>{if(window.e99Cv)e99Cv.list()});await A.waitForTimeout(600);
- const lv=await A.evaluate(()=>({q:!!document.getElementById('cv-q'),seg:document.querySelectorAll('.cv-seg button').length,av:(document.querySelector('.cv-list .cv-av')||{getBoundingClientRect:()=>({width:0})}).getBoundingClientRect().width}));
- ok(lv.q&&lv.seg===3&&Math.round(lv.av)===52,'PC: lista com busca, 3 filtros e avatar de 52 px');
+ await A.evaluate(()=>{localStorage.removeItem('e99-test-chatgeral');if(window.e99Cv)e99Cv.list()});await A.waitForTimeout(600);
+ const lv=await A.evaluate(()=>({w:[...document.querySelectorAll('.cv-list .cv-av')].map(a=>Math.round(a.getBoundingClientRect().width)).join(','),q:!!document.getElementById('cv-q'),seg:document.querySelectorAll('.cv-seg button').length,av:(document.querySelector('.cv-list .cv-av')||{getBoundingClientRect:()=>({width:0})}).getBoundingClientRect().width}));
+ ok(lv.q&&lv.seg===3&&Math.round(lv.av)===52,'PC: lista com busca, 3 filtros e avatar de 52 px ('+lv.w+')');
  await A.evaluate(()=>e99Cv.filter(null,'g'));ok(await A.evaluate(()=>[...document.querySelectorAll('.cv-list>li')].filter(li=>!li.hidden).every(li=>li.getAttribute('data-g')==='1')),'PC: filtro Grupos');await A.evaluate(()=>e99Cv.filter('',"all"));
  for(const th of ['lilas','violeta','cinza']){await A.evaluate(t=>e99Theme.set(t),th);await A.waitForTimeout(200);await A.screenshot({path:path.join(OUT,'lista-pc-'+th+'.png')})}
  ok(!errs.length,'0 erro de console'+(errs.length?': '+errs.slice(0,3).join(' | '):''));console.log('errors',errs);await b.close()})();
