@@ -129,9 +129,9 @@ body.dark #view .p-av{display:inline-grid;place-items:center;width:24px;height:2
 body.dark #view .p-act .fwd-btn{background:transparent!important;border-color:transparent!important;color:var(--p-t2)!important;padding:0 var(--p-s-2)!important}
 body.dark #view .p-act .fwd-btn:hover{background:var(--p-s2)!important;color:var(--p-t1)!important}
 body.dark #view .p-act .plan-notes{color:var(--p-t2)!important;margin:0!important}
-/* miniaturas: 72 px, raio de controle, sem borda */
+/* miniaturas: 112 px no PC e 96 px no celular (faixa 96–120 do v160), raio de controle, sem borda */
 body.dark #view .p-act .plan-photos{display:flex;flex-wrap:wrap;gap:var(--p-s-2)}
-body.dark #view .p-act .plan-photos img{width:72px!important;height:72px!important;object-fit:cover;border-radius:var(--p-r-ctl)!important;border:0!important;box-shadow:none!important}
+body.dark #view .p-act .plan-photos img{width:112px!important;height:112px!important;object-fit:cover;border-radius:var(--p-r-ctl)!important;border:0!important;box-shadow:none!important}
 body.dark #view .p-act .plan-photos figure{margin:0!important}
 /* ações do plano: primário + Imprimir + Mais ações */
 body.dark #view .p-plan-actions{display:flex!important;flex-wrap:wrap;gap:var(--p-s-2)!important;align-items:center}
@@ -139,5 +139,6 @@ body.dark #view .p-plan-actions .more-menu{right:auto;left:0}
 body.dark #view .p-more .more-menu button.danger{color:var(--p-danger)!important}
 body.dark #view .p-more .more-menu{background:var(--p-s2)!important;border:1px solid var(--p-line)!important;border-radius:var(--p-r-ctl)!important;box-shadow:var(--p-shadow-pop)!important}
 body.dark #view .p-more>summary{display:inline-flex;align-items:center;min-height:var(--p-h-ctl)}
-@media (max-width:760px){body.dark #view .p-plan-actions>.primary{flex:1 1 100%}}
+@media (max-width:760px){body.dark #view .p-plan-actions>.primary{flex:1 1 100%}
+  body.dark #view .p-act .plan-photos img{width:96px!important;height:96px!important}}
 }
