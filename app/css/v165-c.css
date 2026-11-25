@@ -1,0 +1,118 @@
+/* v165 · telas C: entrar, navegação (menu lateral, topo, barra de baixo, Voltar, "Mais"), Equipe (status, mural, cartões, perfil),
+   Corredores e Administração. Só tokens de cor (--p-*, --area-*, --sector-color do próprio cartão) e color-mix sobre eles.
+   Carregado depois do v164-pro.css; na camada p164 para vencer os !important antigos. Não toca no logo, no S nem na abertura (#stok-intro).
+   Token novo: --p-h-field (48 px, campo da tela de entrar: o pedido do dono para o login é campo de 48 px; os outros campos seguem 44). */
+:root{--p-h-field:48px}
+@layer p164{
+/* ---------------- tela de entrar: cartão estreito, um nível só, campos de 48, um primário, links discretos ---------------- */
+body.dark #auth-screen .auth-card{max-width:420px!important;padding:var(--p-s-6) var(--p-s-5)!important}
+body.dark #auth-screen .auth-card :is(form,.fields){background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;margin-left:0!important;margin-right:0!important;width:auto!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+body.dark #auth-screen .auth-card .fields{display:flex!important;flex-direction:column!important;gap:var(--p-s-4)!important}
+body.dark #auth-screen .auth-card label{color:var(--p-t2)!important;font-size:var(--p-fs-sm)!important;line-height:var(--p-lh-sm)!important;font-weight:var(--p-w-medium)!important}
+body.dark #auth-screen input:not([type=checkbox],[type=radio],[type=file]){min-height:var(--p-h-field)!important;margin-top:var(--p-s-2)!important;background:var(--p-s2)!important}
+body.dark #auth-screen .pw-toggle{min-height:var(--p-h-ctl-sm)!important;background:transparent!important;border:0!important;color:var(--p-t2)!important}
+body.dark #auth-screen .remember-check{display:flex!important;align-items:center!important;gap:var(--p-s-3)!important;min-height:var(--p-h-ctl)!important;color:var(--p-t1)!important;font-weight:var(--p-w-regular)!important}
+body.dark #auth-screen .remember-check input{width:20px;height:20px;margin:0!important}
+body.dark #auth-screen form button.primary{min-height:var(--p-h-field)!important;width:100%!important}
+body.dark #auth-screen .auth-links{margin-top:var(--p-s-3)!important;padding:0!important;gap:var(--p-s-2)!important}
+body.dark #auth-screen .auth-link{color:var(--p-t2)!important;padding:0 var(--p-s-3)!important}
+body.dark #auth-screen .auth-link:hover{color:var(--p-t1)!important}
+body.dark #auth-screen .auth-error:not(:empty){color:var(--p-danger)!important;background:color-mix(in srgb,var(--p-danger) 10%,transparent)!important;border:1px solid color-mix(in srgb,var(--p-danger) 32%,transparent)!important;border-radius:var(--p-r-ctl)!important;padding:var(--p-s-3) var(--p-s-4)!important}
+body.dark #auth-screen .brand{padding:0!important;margin-bottom:var(--p-s-5)!important}
+body.dark #auth-screen .auth-foot,body.dark #auth-screen .copyright{color:var(--p-t3)!important}
+@media (max-width:760px){body.dark #auth-screen .auth-card{padding:var(--p-s-5) var(--p-s-4)!important}}
+
+/* ---------------- menu lateral do PC: item ativo claro e discreto ---------------- */
+body.dark aside .nav{gap:2px!important}
+body.dark aside .nav button{padding:0 var(--p-s-3)!important;gap:var(--p-s-3)!important}
+body.dark aside .nav button.active,
+body.dark aside .nav button[aria-current="page"]{background:var(--p-s2)!important;color:var(--p-t1)!important;box-shadow:inset 3px 0 0 0 var(--p-accent)!important}
+
+/* ---------------- topo ---------------- */
+body.dark .layout main>header{gap:var(--p-s-3)!important}
+body.dark .layout main>header .toolbar{gap:var(--p-s-2)!important;align-items:center!important}
+body.dark .layout main>header #storage{color:var(--p-t3)!important}
+/* no PC a loja já está em "Conta"; o topo mostra só a tela atual (o texto continua no DOM) */
+@media (min-width:761px){body.dark .layout main>header .bc-store{display:none!important}}
+
+/* ---------------- barra de baixo: cápsula de vidro leve, aba ativa com pílula de acento suave ---------------- */
+body.dark #mobile-bottom button.active>span,
+body.dark #mobile-bottom button[aria-current="page"]>span{background:color-mix(in srgb,var(--p-accent) 18%,transparent)!important}
+body.dark #mobile-bottom button:not(.active):not([aria-current="page"]){color:var(--p-t2)!important}
+
+/* ---------------- "‹ Voltar": alinhado ao título, sem respiro sobrando ---------------- */
+body.dark #e99-backbar{margin:0 0 var(--p-s-2) calc(-1 * var(--p-s-3))!important;padding:0!important}
+body.dark .e99-back{min-height:var(--p-h-ctl)!important;padding:0 var(--p-s-3)!important;gap:var(--p-s-1)!important;color:var(--p-t2)!important}
+body.dark .e99-back:hover{color:var(--p-t1)!important}
+
+/* ---------------- "Mais" do celular: lista agrupada (uma caixa, linhas com separador) ---------------- */
+body.dark #view .mobile-options{padding:var(--p-s-1) 0!important;gap:0!important;display:flex!important;flex-direction:column!important}
+body.dark #view .mobile-options>button{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:inset 0 -1px 0 var(--p-line)!important;min-height:52px!important;padding:0 var(--p-s-4)!important;margin:0!important;justify-content:flex-start!important}
+body.dark #view .mobile-options>button:last-child{box-shadow:none!important}
+body.dark #view .mobile-options>button:hover{background:var(--p-s2)!important}
+
+/* ---------------- Equipe: status em círculos limpos ---------------- */
+body.dark #view .sc-stories{gap:var(--p-s-3)!important;padding:var(--p-s-1) 0 var(--p-s-4)!important}
+body.dark #view .sc-story{background:transparent!important;border:0!important;box-shadow:none!important;width:76px!important;min-width:76px!important;padding:0!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:var(--p-s-2)!important}
+body.dark #view .sc-story>span:last-child{font-size:var(--p-fs-cap)!important;line-height:var(--p-lh-cap)!important;color:var(--p-t2)!important;max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.dark #view .sc-story .sc-av{width:60px!important;height:60px!important;border-radius:50%!important;border:0!important;box-shadow:0 0 0 2px var(--p-bg),0 0 0 4px var(--p-line-2)!important}
+body.dark #view .sc-story.new .sc-av{box-shadow:0 0 0 2px var(--p-bg),0 0 0 4px var(--p-accent)!important}
+body.dark #view .sc-story.add .sc-av{box-shadow:0 0 0 2px var(--p-bg),0 0 0 4px var(--p-line-2)!important;outline:0!important}
+/* mural: compositor e publicações leves */
+body.dark #view .sc-new{padding:var(--p-s-4)!important}
+body.dark #view .sc-new h2{margin:0 0 var(--p-s-3)!important}
+body.dark #view .sc-new .toolbar{justify-content:space-between!important;align-items:center!important;margin-top:var(--p-s-3)!important;gap:var(--p-s-2)!important}
+/* campo de arquivo nativo ("Choose File") escondido: o rótulo vira botão secundário (o input continua lá, com o mesmo onchange) */
+body.dark #view label.as-file{position:relative!important;display:inline-flex!important;align-items:center!important;gap:var(--p-s-2)!important;padding:0 var(--p-s-4)!important;cursor:pointer;color:var(--p-t1)!important;font-size:var(--p-fs-ui)!important;font-weight:var(--p-w-medium)!important}
+body.dark #view label.as-file>input[type=file]{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;opacity:0!important;cursor:pointer;margin:0!important;padding:0!important;min-height:0!important}
+body.dark #view .sc-post{padding:var(--p-s-4)!important}
+body.dark #view .sc-post header{display:flex!important;align-items:center!important;gap:var(--p-s-3)!important}
+body.dark #view .sc-acts{display:flex!important;gap:var(--p-s-1)!important;border-top:1px solid var(--p-line)!important;padding-top:var(--p-s-2)!important;margin-top:var(--p-s-3)!important}
+body.dark #view .sc-acts button{background:transparent!important;border:0!important;color:var(--p-t2)!important}
+body.dark #view .sc-acts button[aria-pressed="true"]{color:var(--p-accent-text)!important;box-shadow:none!important}
+body.dark #view #sc-mural>p.small{text-align:center;padding:var(--p-s-5) var(--p-s-4)!important;border:1px dashed var(--p-line-2)!important;border-radius:var(--p-r-card)!important;color:var(--p-t2)!important}
+/* cartões de pessoas: avatar com anel fino, nome e cargo em duas linhas, ações discretas à direita */
+body.dark #view .cards>.card:not(.corridor-card) .cardtop{display:flex!important;align-items:center!important;gap:var(--p-s-1)!important;flex-wrap:nowrap!important}
+body.dark #view .cards>.card:not(.corridor-card) .cardtop>.avatar{margin-right:auto!important}
+body.dark #view .avatar,
+body.dark #view .pf-av,
+body.dark #view .sc-pav{box-shadow:0 0 0 2px var(--p-s1),0 0 0 3px var(--p-line-2)!important}
+body.dark #view .cards>.card:not(.corridor-card) h3{margin:var(--p-s-3) 0 0!important}
+body.dark #view .cards>.card:not(.corridor-card)>.small{margin:0 0 var(--p-s-2)!important}
+body.dark #view .cards>.card .cardtop>button:not(.danger),
+body.dark #view .corridor-card .cardtop>button:not(.danger){background:transparent!important;border-color:transparent!important;color:var(--p-t2)!important}
+body.dark #view .cards>.card .cardtop>button.danger{background:transparent!important;border-color:transparent!important}
+body.dark #view .cards>.card .cardtop>button:hover{background:var(--p-s2)!important;color:var(--p-t1)!important}
+body.dark #view .cards>.card .cardtop>button.danger:hover{background:color-mix(in srgb,var(--p-danger) 10%,transparent)!important;color:var(--p-danger)!important}
+body.dark #view .e99-prof-open{margin-top:var(--p-s-3)!important}
+/* perfil: números das conquistas alinhados */
+body.dark #view .sc-feats b{font-size:var(--p-fs-title)!important;line-height:var(--p-lh-title)!important;font-variant-numeric:tabular-nums}
+body.dark #view .sc-feats span{color:var(--p-t2)!important}
+
+/* ---------------- Corredores: nome do setor primeiro, ações embaixo, cor do setor só no símbolo ---------------- */
+body.dark #view .corridor-card{display:grid!important;grid-template-columns:1fr auto auto!important;align-content:start!important;column-gap:var(--p-s-1)!important;row-gap:var(--p-s-2)!important}
+body.dark #view .corridor-card>.cardtop{display:contents!important}
+body.dark #view .corridor-card .eyebrow{grid-column:1/-1;grid-row:2;margin:0!important;color:var(--p-t2)!important}
+body.dark #view .corridor-card>.sector-heading{grid-column:1/-1;grid-row:1;margin:0!important;display:flex!important;align-items:center!important;gap:var(--p-s-3)!important}
+body.dark #view .corridor-card>.small{grid-column:1/-1;grid-row:3;display:flex!important;align-items:center!important;gap:var(--p-s-2)!important;margin:0!important}
+body.dark #view .corridor-card .cardtop>button{grid-row:4;margin:var(--p-s-1) 0 0!important}
+body.dark #view .corridor-card .cardtop>button:not(.danger){grid-column:2}
+body.dark #view .corridor-card .cardtop>button.danger{grid-column:3;background:transparent!important;border-color:transparent!important}
+body.dark #view .corridor-card .sector-symbol{background:color-mix(in srgb,var(--sector-color,var(--p-s3)) 22%,var(--p-s2))!important;color:color-mix(in srgb,var(--sector-color,var(--p-t2)) 45%,var(--p-t1))!important;border:0!important}
+body.dark #view .corridor-card .fwd-btn{margin-left:auto!important;background:transparent!important;border:0!important;color:var(--p-t2)!important}
+body.dark #view .cor-dist{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:var(--p-s-4)!important}
+body.dark #view .cor-dist button.primary:disabled{background:var(--p-s2)!important;border-color:var(--p-line)!important;color:var(--p-t3)!important}
+
+/* ---------------- Administração: seções com ritmo de 16, uma ação primária, lista limpa ---------------- */
+body.dark #view:has(#acc-create)>.panel{margin:0 0 var(--p-s-4)!important;padding:var(--p-s-5)!important}
+body.dark #view:has(#acc-create)>.panel h2{margin:0 0 var(--p-s-2)!important}
+body.dark #view:has(#acc-create)>.panel>p{margin:0 0 var(--p-s-3)!important}
+body.dark #view:has(#acc-create)>.panel>button,
+body.dark #view:has(#acc-create)>.panel form{margin-top:var(--p-s-3)!important}
+body.dark #view #cust-admin button.primary{background:var(--p-s2)!important;border-color:var(--p-line)!important;color:var(--p-t1)!important}
+body.dark #view .admin-list{display:flex!important;flex-direction:column!important;gap:0!important;border:1px solid var(--p-line)!important;border-radius:var(--p-r-ctl)!important;overflow:hidden}
+body.dark #view .admin-account{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:var(--p-s-3)!important;padding:var(--p-s-3) var(--p-s-4)!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:inset 0 -1px 0 var(--p-line)!important;color:var(--p-t2)}
+body.dark #view .admin-account:last-child{box-shadow:none!important}
+body.dark #view .admin-account b{color:var(--p-t1)!important}
+body.dark #view .admin-account button.danger{background:transparent!important;border-color:transparent!important}
+}
