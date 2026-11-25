@@ -34,6 +34,7 @@ function tok(name,def){try{var v=getComputedStyle(D.body||D.documentElement).get
 function solid(v,def){v=String(v||'').trim();return /^#[0-9a-f]{3,8}$/i.test(v)||/^rgba?\([\d\s.,%]+\)$/i.test(v)?v:def}
 function theme(){var rgb=(tok('--neon-rgb','219,35,24').match(/\d+/g)||[219,35,24]).slice(0,3).join(',');
   return {bg:solid(tok('--e99-bg','#0B0B0D'),'#0B0B0D'),neon:solid(tok('--neon','#FF2A1F'),'#FF2A1F'),btn:solid(tok('--neon-btn','#DB2318'),'#DB2318'),hot:solid(tok('--neon-hot','#FF8A7A'),'#FF8A7A'),ink:solid(tok('--neon-ink','#FFFFFF'),'#FFFFFF'),rgb:rgb,
+    pbg:solid(tok('--p-bg','#0D0A0E'),'#0D0A0E'),s1:solid(tok('--p-s1','#171218'),'#171218'),s2:solid(tok('--p-s2','#1E1920'),'#1E1920'),s3:solid(tok('--p-s3','#28222A'),'#28222A'),s4:solid(tok('--p-s4','#332C35'),'#332C35'),t1:solid(tok('--p-t1','#F1EAF2'),'#F1EAF2'),t2:solid(tok('--p-t2','#C4B9C7'),'#C4B9C7'),t3:solid(tok('--p-t3','#A59AA7'),'#A59AA7'),
     font:tok('--font-head','')||"system-ui,-apple-system,'Segoe UI',sans-serif",body:tok('--font-text','')||"system-ui,-apple-system,'Segoe UI',sans-serif"}}
 /* ---------- banner PNG ---------- */
 var logoP=null;
@@ -45,10 +46,10 @@ function fit(c,s,max,lines){var words=String(s).split(' '),out=[],cur='';words.f
   return out.map(function(l){while(l.length>1&&c.measureText(l).width>max)l=l.slice(0,-2)+'…';return l})}
 function banner(p){var n=norm(p),th=theme(),Wd=1080,H=420;
   return logo().then(function(img){var cv=D.createElement('canvas');cv.width=Wd;cv.height=H;var c=cv.getContext('2d');
-    c.fillStyle='#0a0a0c';c.fillRect(0,0,Wd,H);
+    c.fillStyle=th.pbg;c.fillRect(0,0,Wd,H);
     /* cartão escuro arredondado, borda fina e brilho sutil no alto */
     var CX=24,CY=24,CW=Wd-48,CH=H-48;
-    var cg=c.createLinearGradient(0,CY,0,CY+CH);cg.addColorStop(0,'#16161a');cg.addColorStop(1,'#0c0c0e');
+    var cg=c.createLinearGradient(0,CY,0,CY+CH);cg.addColorStop(0,th.s2);cg.addColorStop(1,th.s1);
     rr(c,CX,CY,CW,CH,44);c.fillStyle=cg;c.fill();
     c.save();rr(c,CX,CY,CW,CH,44);c.clip();
     var g=c.createRadialGradient(Wd*.80,CY-30,10,Wd*.80,CY-30,Wd*.6);g.addColorStop(0,'rgba('+th.rgb+',.30)');g.addColorStop(1,'rgba('+th.rgb+',0)');c.fillStyle=g;c.fillRect(0,0,Wd,H);
@@ -57,33 +58,33 @@ function banner(p){var n=norm(p),th=theme(),Wd=1080,H=420;
     c.strokeStyle='rgba(255,255,255,.10)';c.lineWidth=2;rr(c,CX+1,CY+1,CW-2,CH-2,43);c.stroke();
     var L=72,S=200,Y=(H-S)/2;
     c.save();rr(c,L,Y,S,S,46);c.clip();
-    if(img){c.drawImage(img,L,Y,S,S)}else{c.fillStyle='#121216';c.fillRect(L,Y,S,S);c.fillStyle='#FF2A1F';c.font='800 160px '+th.font;c.textAlign='center';c.textBaseline='middle';c.fillText('S',L+S/2,Y+S/2+8)}
+    if(img){c.drawImage(img,L,Y,S,S)}else{c.fillStyle=th.s1;c.fillRect(L,Y,S,S);c.fillStyle='#FF2A1F';c.font='800 160px '+th.font;c.textAlign='center';c.textBaseline='middle';c.fillText('S',L+S/2,Y+S/2+8)}
     c.restore();c.strokeStyle='rgba(255,255,255,.14)';c.lineWidth=2;rr(c,L+1,Y+1,S-2,S-2,45);c.stroke();
     var X=L+S+52,MW=Wd-X-72;c.textAlign='left';c.textBaseline='alphabetic';
     /* cabeçalho em pílula */
     c.font='700 22px '+th.body;var pt='STOK · LOJAS G · ESTOQUE 99',pw=c.measureText(pt).width+44;
     rr(c,X,76,pw,44,22);c.fillStyle='rgba(255,255,255,.07)';c.fill();c.strokeStyle='rgba(255,255,255,.14)';c.lineWidth=1.5;rr(c,X+.75,76.75,pw-1.5,42.5,21);c.stroke();
     c.fillStyle=th.neon;c.fillText(pt,X+22,106);
-    c.fillStyle='#FFFFFF';c.font='700 58px '+th.font;var tl=fit(c,n.title,MW,2),y=190;tl.forEach(function(l){c.fillText(l,X,y);y+=64});
-    c.fillStyle='rgba(255,255,255,.62)';c.font='500 28px '+th.body;fit(c,subLine(n),MW,2).forEach(function(l){c.fillText(l,X,y+2);y+=38});
+    c.fillStyle=th.t1;c.font='700 58px '+th.font;var tl=fit(c,n.title,MW,2),y=190;tl.forEach(function(l){c.fillText(l,X,y);y+=64});
+    c.fillStyle=th.t2;c.font='500 28px '+th.body;fit(c,subLine(n),MW,2).forEach(function(l){c.fillText(l,X,y+2);y+=38});
     /* linha com check-circle */
     var ck=X;c.beginPath();c.arc(ck+13,H-84,13,0,Math.PI*2);c.strokeStyle=th.neon;c.lineWidth=2.5;c.stroke();
-    c.beginPath();c.moveTo(ck+7,H-84);c.lineTo(ck+11.5,H-79);c.lineTo(ck+20,H-90);c.strokeStyle='#fff';c.lineWidth=3;c.lineCap='round';c.lineJoin='round';c.stroke();
-    c.fillStyle='rgba(255,255,255,.62)';c.font='500 24px '+th.body;c.fillText('Tudo no lugar.',ck+36,H-75);
+    c.beginPath();c.moveTo(ck+7,H-84);c.lineTo(ck+11.5,H-79);c.lineTo(ck+20,H-90);c.strokeStyle=th.t1;c.lineWidth=3;c.lineCap='round';c.lineJoin='round';c.stroke();
+    c.fillStyle=th.t2;c.font='500 24px '+th.body;c.fillText('Tudo no lugar.',ck+36,H-75);
     return new Promise(function(res,rej){try{cv.toBlob(function(b){b?res(b):rej(Error('Não deu para gerar o banner.'))},'image/png')}catch(e){rej(e)}})})}
 /* ---------- HTML para o Outlook (estilos inline; sem imagem: o Outlook descarta data: ao colar) ---------- */
-function html(p){var n=norm(p),th=theme(),F="font-family:-apple-system,'Segoe UI',Calibri,Arial,sans-serif;",CK='<span style="display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border:1px solid '+E(th.neon)+';border-radius:9px;color:#ffffff;font-size:11px;margin-right:10px">&#10003;</span>';
-  var h='<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:#0a0a0c;max-width:640px"><tr><td style="padding:12px">'
-   +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;background:#121215;border:1px solid #2a2a2f;border-radius:22px"><tr><td style="padding:22px 24px">'
-   +'<div style="'+F+'margin:0 0 12px"><span style="display:inline-block;padding:6px 14px;border:1px solid #34343a;border-radius:999px;background:#1c1c20;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:'+E(th.neon)+'">'+E(FOOT)+'</span></div>'
-   +'<div style="'+F+'font-size:26px;font-weight:700;color:#ffffff;line-height:1.15">'+E(n.title)+'</div>'
-   +'<div style="'+F+'font-size:13px;color:#9a9aa3;margin-top:4px">'+E(subLine(n))+'</div>';
-  n.sections.forEach(function(s){if(s.title)h+='<div style="'+F+'font-size:13px;font-weight:600;margin:20px 0 6px;color:#9a9aa3;border-top:1px solid #2a2a2f;padding-top:12px">'+E(s.title)+'</div>';
-    h+='<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">'+(s.lines.length?s.lines.map(function(l){return '<tr><td valign="top" width="30" style="padding:'+(l.sub.length?'10px 0 10px':'6px 0')+'">'+CK+'</td><td style="'+F+'font-size:14px;color:#f2f2f5;padding:'+(l.sub.length?'10px 0 10px;border-bottom:1px solid #222227':'6px 0')+'">'+(l.b?'<b style="color:#ffffff">'+E(l.b)+'</b>'+(l.t?' — '+E(l.t):''):E(l.t))+(l.sub.length?l.sub.map(subHtml).join(''):'')+'</td></tr>'}).join(''):'<tr><td style="'+F+'font-size:14px;color:#9a9aa3;padding:6px 0">Nada por aqui.</td></tr>')+'</table>'});
-  if(n.note)h+='<p style="'+F+'font-size:13px;color:#9a9aa3;font-style:italic;margin:16px 0 0">'+E(n.note)+'</p>';
-  h+='<p style="'+F+'font-size:12px;color:#6f6f78;border-top:1px solid #2a2a2f;margin:20px 0 0;padding-top:10px">'+E(FOOT)+'</p></td></tr></table></td></tr></table>';return h}
-function subHtml(x){var m=/^([^:\n]{1,40}):\s*([\s\S]*)$/.exec(x),F="font-family:-apple-system,'Segoe UI',Calibri,Arial,sans-serif;";
-  return '<div style="'+F+'color:#c9c9d1;font-size:13px;line-height:1.45;margin-top:3px">'+(m?'<b style="color:#ffffff">'+E(m[1])+':</b> '+E(m[2]).replace(/\n/g,'<br>'):E(x).replace(/\n/g,'<br>'))+'</div>'}
+function html(p){var n=norm(p),th=theme(),F="font-family:-apple-system,'Segoe UI',Calibri,Arial,sans-serif;",CK='<span style="display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border:1px solid '+E(th.neon)+';border-radius:9px;color:'+E(th.t1)+';font-size:11px;margin-right:10px">&#10003;</span>';
+  var h='<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:'+E(th.pbg)+';max-width:640px"><tr><td style="padding:12px">'
+   +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;background:'+E(th.s1)+';border:1px solid '+E(th.s4)+';border-radius:22px"><tr><td style="padding:22px 24px">'
+   +'<div style="'+F+'margin:0 0 12px"><span style="display:inline-block;padding:6px 14px;border:1px solid '+E(th.s4)+';border-radius:999px;background:'+E(th.s2)+';font-size:11px;letter-spacing:1px;text-transform:uppercase;color:'+E(th.neon)+'">'+E(FOOT)+'</span></div>'
+   +'<div style="'+F+'font-size:26px;font-weight:700;color:'+E(th.t1)+';line-height:1.15">'+E(n.title)+'</div>'
+   +'<div style="'+F+'font-size:13px;color:'+E(th.t2)+';margin-top:4px">'+E(subLine(n))+'</div>';
+  n.sections.forEach(function(s){if(s.title)h+='<div style="'+F+'font-size:13px;font-weight:600;margin:20px 0 6px;color:'+E(th.t2)+';border-top:1px solid '+E(th.s4)+';padding-top:12px">'+E(s.title)+'</div>';
+    h+='<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">'+(s.lines.length?s.lines.map(function(l){return '<tr><td valign="top" width="30" style="padding:'+(l.sub.length?'10px 0 10px':'6px 0')+'">'+CK+'</td><td style="'+F+'font-size:14px;color:'+E(th.t1)+';padding:'+(l.sub.length?'10px 0 10px;border-bottom:1px solid '+E(th.s3)+'':'6px 0')+'">'+(l.b?'<b style="color:'+E(th.t1)+'">'+E(l.b)+'</b>'+(l.t?' — '+E(l.t):''):E(l.t))+(l.sub.length?l.sub.map(subHtml).join(''):'')+'</td></tr>'}).join(''):'<tr><td style="'+F+'font-size:14px;color:'+E(th.t2)+';padding:6px 0">Nada por aqui.</td></tr>')+'</table>'});
+  if(n.note)h+='<p style="'+F+'font-size:13px;color:'+E(th.t2)+';font-style:italic;margin:16px 0 0">'+E(n.note)+'</p>';
+  h+='<p style="'+F+'font-size:12px;color:'+E(th.t3)+';border-top:1px solid '+E(th.s4)+';margin:20px 0 0;padding-top:10px">'+E(FOOT)+'</p></td></tr></table></td></tr></table>';return h}
+function subHtml(x){var th=theme(),m=/^([^:\n]{1,40}):\s*([\s\S]*)$/.exec(x),F="font-family:-apple-system,'Segoe UI',Calibri,Arial,sans-serif;";
+  return '<div style="'+F+'color:'+E(th.t2)+';font-size:13px;line-height:1.45;margin-top:3px">'+(m?'<b style="color:'+E(th.t1)+'">'+E(m[1])+':</b> '+E(m[2]).replace(/\n/g,'<br>'):E(x).replace(/\n/g,'<br>'))+'</div>'}
 /* ---------- v156: imprimir (folha branca para papel, sem botões nem fundo escuro) ---------- */
 var PCSS='*{box-sizing:border-box}html,body{background:#fff}body{font:14px/1.45 -apple-system,"Segoe UI",system-ui,Arial,sans-serif;color:#111;margin:28px;max-width:780px}'
  +'.ph{display:flex;align-items:center;gap:14px;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:16px}.ph img{width:44px;height:44px;border-radius:11px}'

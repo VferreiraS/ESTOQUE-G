@@ -13,7 +13,7 @@ Só muda cor. Leiaute, tamanhos, logo Prateleira e o S da abertura ficam como es
 ## Regras
 1. **Neutros tingidos:** usam o matiz do tema com croma de 0,008 a 0,018. Fundo em 15 % de luminosidade. As superfícies s1 a s4 vão de 19 a 30,5 %. Texto 1 em 94,5 % (sem branco puro). Texto 2 em 80 % e texto 3 em 70 %.
 2. **Acento:** é o mesmo de cada tema (`--p-accent` = `--neon-btn`). Tem degraus hover/press, fundo suave de 10 % (`--p-accent-soft`) e borda de 28 % (`--p-accent-line`).
-3. **Acento secundário análogo** (`--p-accent-2`): Lilás usa 285° (lavanda, −35°). Violeta usa o próprio violeta 295° (o par complementar do tema com o lima). Cinza usa aço 240°.
+3. **Acento secundário análogo** (`--p-accent-2`): Lilás usa 285° (lavanda, −35°). Violeta usa o violeta do próprio tema, 295° (o segundo matiz que o tema já tem; não é um complementar novo). Cinza usa aço 240°.
 4. **Semânticas da mesma família:** todas têm luminosidade de 80 % e croma 0,11, com matiz ok 155°, atenção 80°, perigo 25° e informação 245°. A versão suave é o fundo de 12 % com borda de 30 %. O texto forte fica por cima.
 5. **Áreas:** as 7 cores da v158 viram uma família do tema. São tons do matiz do tema ±35° (no Violeta, a família do violeta; no Cinza, aço de croma baixo). No menu, só o item ativo leva a cor da área: os outros ícones ficam em texto 2 (um acento por tela).
 6. **Gráficos:** 5 cores com luminosidades bem diferentes (de 50 a 93 %), para se distinguirem também em escala de cinza e para quem tem daltonismo. A barra e o anel de progresso usam a cor da área sobre a superfície s3.
@@ -66,3 +66,5 @@ Neutros completos, `-rgb`, `-soft` e `-line` de cada cor: ver `app/css/v165-core
 - `.progress`, `.vd-bar`, `.vd-ring-bg` → s3.
 - `.chat-msg` e `.chat-msg.mine` → balões. `.chat-msg .who` → acento 2.
 - Ícones do menu que não estão ativos → t2.
+- Painel: `.pn-s1` → chart-1; `--pn-mid`/`--pn-light` → chart-2/chart-3; trilho e grade → s3/s2.
+- Banner do WhatsApp e HTML do Outlook (`app/js/v144-msg.js`): fundo, cartão, linhas e textos lidos dos tokens `--p-*` do tema ativo (a folha impressa continua branca, para papel).

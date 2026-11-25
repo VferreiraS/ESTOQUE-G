@@ -97,3 +97,7 @@ html[data-e99-theme] body.dark :is(aside .nav,#mobile-bottom) button[data-vd-are
 /* barra de rolagem e linhas com o matiz do tema */
 html[data-e99-theme]{scrollbar-color:var(--p-s4) transparent}
 }
+/* gráficos do Painel (painel.css usa --pn-*): séries 2 e 3 nas cores de gráfico do tema, trilho e grade nos neutros */
+html[data-e99-theme] body.dark{--pn-mid:var(--p-chart-2);--pn-light:var(--p-chart-3);--pn-track:var(--p-s3);--pn-grid:var(--p-s2)}
+html[data-e99-theme] body.dark #view .pn-plot{border-bottom-color:var(--p-s4)!important}
+html[data-e99-theme] body.dark #view .pn-s1{background:var(--p-chart-1)!important}
