@@ -1,0 +1,99 @@
+/* v165 · paleta harmônica ("Use cores que combinem"). Guia: docs/paleta.md. Gerado em OKLCH (scripts fora do git) e convertido para hex.
+   Carregado logo depois do v164-pro.css. Redefine só COR: neutros tingidos com o matiz do tema, acento com degraus tonais, um acento secundário
+   análogo, semânticas da mesma família (mesma luminosidade/croma), as cores por área da v158 viram uma família do tema (sem arco-íris),
+   5 cores de gráfico, balões e nomes do chat. Mantém o acento de cada tema (botão = --neon-btn), o logo Prateleira e o S da abertura. Só escuro. */
+html[data-e99-theme="lilas"],html[data-e99-theme="lilas"] body,html[data-e99-theme="lilas"] body.dark{
+  /* neutros (croma 0.014, matiz 320°) */
+  --p-bg:#0D0A0E;--p-s1:#171218;--p-s2:#1E1920;--p-s3:#28222A;--p-s4:#332C35;
+  --p-t1:#F1EAF2;--p-t2:#C4B9C7;--p-t3:#A59AA7;
+  --p-line:rgba(241,234,242,.09);--p-line-2:rgba(241,234,242,.16);
+  --ds-bg:#0D0A0E;--e99-bg:#0D0A0E;--ds-surface:#171218;--glass-card:#171218;--glass-solid:#171218;--ds-line:#332C35;--ds-ink:#F1EAF2;--ds-muted:#C4B9C7;--glass-edge:rgba(241,234,242,.09);
+  /* acento (o do tema) e degraus */
+  --p-accent:#C79BD0;--p-accent-hover:#D9B3E1;--p-accent-press:#B488BE;--p-accent-ink:#1B0F1E;--p-accent-rgb:199,155,208;--p-accent-text:#E7B8EF;
+  --p-accent-soft:rgba(199,155,208,.10);--p-accent-line:rgba(199,155,208,.28);
+  --p-accent-2:#B8B8ED;--p-accent-2-rgb:184,184,237;
+  /* semânticas: mesma luminosidade (80%) e croma (.11) */
+  --p-ok:#81D39F;--p-ok-rgb:129,211,159;--p-ok-soft:rgba(129,211,159,.12);--p-ok-line:rgba(129,211,159,.30);
+  --p-warn:#E3B667;--p-warn-rgb:227,182,103;--p-warn-soft:rgba(227,182,103,.12);--p-warn-line:rgba(227,182,103,.30);
+  --p-danger:#FDA19A;--p-danger-rgb:253,161,154;--p-danger-soft:rgba(253,161,154,.12);--p-danger-line:rgba(253,161,154,.30);
+  --p-info:#81C5FE;--p-info-rgb:129,197,254;--p-info-soft:rgba(129,197,254,.12);--p-info-line:rgba(129,197,254,.30);
+  /* áreas (v158): uma família do tema */
+  --area-notas:#B8B8ED;--area-notas-rgb:184,184,237;--area-plano:#E8B2CA;--area-plano-rgb:232,178,202;--area-equipe:#A4C0E4;--area-equipe-rgb:164,192,228;--area-chat:#E2BAEB;--area-chat-rgb:226,186,235;--area-painel:#BEA3DF;--area-painel-rgb:190,163,223;--area-corredores:#F6C2C1;--area-corredores-rgb:246,194,193;--area-alertas:#DCA2CE;--area-alertas-rgb:220,162,206;
+  /* gráficos (luminosidades diferentes: lê também sem cor) */
+  --p-chart-1:#C79CD1;--p-chart-2:#CCCCF8;--p-chart-3:#BA7295;--p-chart-4:#F7DAAA;--p-chart-5:#7DA4C0;
+  /* chat */
+  --p-bubble-out:#603E68;--p-bubble-out-ink:#F1EAF2;--p-bubble-in:#28222A;--p-bubble-in-ink:#F1EAF2;
+  --chat-name-1:#D7ACE0;--chat-name-2:#EEA7B6;--chat-name-3:#EBAE8D;--chat-name-4:#CFBE7E;--chat-name-5:#A1CC98;--chat-name-6:#7AD0C5;--chat-name-7:#82C8EA;--chat-name-8:#ADBAF5;
+}
+html[data-e99-theme="violeta"],html[data-e99-theme="violeta"] body,html[data-e99-theme="violeta"] body.dark{
+  /* neutros (croma 0.016, matiz 295°) */
+  --p-bg:#0B0A10;--p-s1:#14121A;--p-s2:#1B1A23;--p-s3:#25232D;--p-s4:#302D39;
+  --p-t1:#EDEBF6;--p-t2:#BEBBCD;--p-t3:#9F9CAD;
+  --p-line:rgba(237,235,246,.09);--p-line-2:rgba(237,235,246,.16);
+  --ds-bg:#0B0A10;--e99-bg:#0B0A10;--ds-surface:#14121A;--glass-card:#14121A;--glass-solid:#14121A;--ds-line:#302D39;--ds-ink:#EDEBF6;--ds-muted:#BEBBCD;--glass-edge:rgba(237,235,246,.09);
+  /* acento (o do tema) e degraus */
+  --p-accent:#C6FF34;--p-accent-hover:#D6FF6A;--p-accent-press:#B2E82A;--p-accent-ink:#0B0B0B;--p-accent-rgb:198,255,52;--p-accent-text:#C6FF34;
+  --p-accent-soft:rgba(198,255,52,.10);--p-accent-line:rgba(198,255,52,.28);
+  --p-accent-2:#AC8FF8;--p-accent-2-rgb:172,143,248;
+  /* semânticas: mesma luminosidade (80%) e croma (.11) */
+  --p-ok:#81D39F;--p-ok-rgb:129,211,159;--p-ok-soft:rgba(129,211,159,.12);--p-ok-line:rgba(129,211,159,.30);
+  --p-warn:#E3B667;--p-warn-rgb:227,182,103;--p-warn-soft:rgba(227,182,103,.12);--p-warn-line:rgba(227,182,103,.30);
+  --p-danger:#FDA19A;--p-danger-rgb:253,161,154;--p-danger-soft:rgba(253,161,154,.12);--p-danger-line:rgba(253,161,154,.30);
+  --p-info:#81C5FE;--p-info-rgb:129,197,254;--p-info-soft:rgba(129,197,254,.12);--p-info-line:rgba(129,197,254,.30);
+  /* áreas (v158): uma família do tema */
+  --area-notas:#B7A1F5;--area-notas-rgb:183,161,245;--area-plano:#ABB9FE;--area-plano-rgb:171,185,254;--area-equipe:#D2A2E8;--area-equipe-rgb:210,162,232;--area-chat:#CEC0FE;--area-chat-rgb:206,192,254;--area-painel:#9D98F2;--area-painel-rgb:157,152,242;--area-corredores:#DDC4FC;--area-corredores-rgb:221,196,252;--area-alertas:#E6A4E0;--area-alertas-rgb:230,164,224;
+  /* gráficos (luminosidades diferentes: lê também sem cor) */
+  --p-chart-1:#C9FD53;--p-chart-2:#9B7BE9;--p-chart-3:#C8B7FF;--p-chart-4:#7C54CD;--p-chart-5:#53C1C7;
+  /* chat */
+  --p-bubble-out:#693ABB;--p-bubble-out-ink:#EDEBF6;--p-bubble-in:#25232D;--p-bubble-in-ink:#EDEBF6;
+  --chat-name-1:#C1B3EF;--chat-name-2:#E4A9CF;--chat-name-3:#F0A9A2;--chat-name-4:#E1B581;--chat-name-5:#BCC585;--chat-name-6:#8DCFAB;--chat-name-7:#77CED8;--chat-name-8:#94C2F3;
+}
+html[data-e99-theme="cinza"],html[data-e99-theme="cinza"] body,html[data-e99-theme="cinza"] body.dark{
+  /* neutros (croma 0.008, matiz 240°) */
+  --p-bg:#090C0E;--p-s1:#111417;--p-s2:#171C1F;--p-s3:#202529;--p-s4:#2A3034;
+  --p-t1:#E9EEF1;--p-t2:#B7BFC5;--p-t3:#98A0A6;
+  --p-line:rgba(233,238,241,.09);--p-line-2:rgba(233,238,241,.16);
+  --ds-bg:#090C0E;--e99-bg:#090C0E;--ds-surface:#111417;--glass-card:#111417;--glass-solid:#111417;--ds-line:#2A3034;--ds-ink:#E9EEF1;--ds-muted:#B7BFC5;--glass-edge:rgba(233,238,241,.09);
+  /* acento (o do tema) e degraus */
+  --p-accent:#C7FF2E;--p-accent-hover:#D7FF66;--p-accent-press:#B3E829;--p-accent-ink:#0A0A0A;--p-accent-rgb:199,255,46;--p-accent-text:#C7FF2E;
+  --p-accent-soft:rgba(199,255,46,.10);--p-accent-line:rgba(199,255,46,.28);
+  --p-accent-2:#A7C2D5;--p-accent-2-rgb:167,194,213;
+  /* semânticas: mesma luminosidade (80%) e croma (.11) */
+  --p-ok:#81D39F;--p-ok-rgb:129,211,159;--p-ok-soft:rgba(129,211,159,.12);--p-ok-line:rgba(129,211,159,.30);
+  --p-warn:#E3B667;--p-warn-rgb:227,182,103;--p-warn-soft:rgba(227,182,103,.12);--p-warn-line:rgba(227,182,103,.30);
+  --p-danger:#FDA19A;--p-danger-rgb:253,161,154;--p-danger-soft:rgba(253,161,154,.12);--p-danger-line:rgba(253,161,154,.30);
+  --p-info:#81C5FE;--p-info-rgb:129,197,254;--p-info-soft:rgba(129,197,254,.12);--p-info-line:rgba(129,197,254,.30);
+  /* áreas (v158): uma família do tema */
+  --area-notas:#A4C2D8;--area-notas-rgb:164,194,216;--area-plano:#ADD2D9;--area-plano-rgb:173,210,217;--area-equipe:#A2BAD8;--area-equipe-rgb:162,186,216;--area-chat:#BAD6E2;--area-chat-rgb:186,214,226;--area-painel:#91AFC9;--area-painel-rgb:145,175,201;--area-corredores:#C2DEDF;--area-corredores-rgb:194,222,223;--area-alertas:#B1BDDF;--area-alertas-rgb:177,189,223;
+  /* gráficos (luminosidades diferentes: lê também sem cor) */
+  --p-chart-1:#C9FD53;--p-chart-2:#A7C2D5;--p-chart-3:#6B8BA2;--p-chart-4:#E8D89B;--p-chart-5:#4F6778;
+  /* chat */
+  --p-bubble-out:#394A56;--p-bubble-out-ink:#E9EEF1;--p-bubble-in:#202529;--p-bubble-in-ink:#E9EEF1;
+  --chat-name-1:#8BC6EF;--chat-name-2:#B7B7F3;--chat-name-3:#DEAAD8;--chat-name-4:#EFA8AC;--chat-name-5:#E7B186;--chat-name-6:#C5C180;--chat-name-7:#96CEA1;--chat-name-8:#77CFCF;
+}
+
+/* ---------- componentes: só cor, na camada p164 (vence os !important antigos sem guerra de especificidade) ---------- */
+@layer p164{
+/* nada de branco puro: títulos e números usam o texto 1 do tema */
+body.dark #view :is(.hero h1,.stat strong,.pn-kpi strong,h1,h2,h3){color:var(--p-t1)!important}
+body.dark #view .hero h1 .accent-word{color:inherit!important}
+/* status das notas: semânticas da família (fundo suave + texto forte) */
+body.dark #view .badge{box-shadow:none!important;background-image:none!important}
+body.dark #view .badge.Pendente{background:var(--p-warn-soft)!important;border:1px solid var(--p-warn-line)!important;color:var(--p-warn)!important}
+body.dark #view .badge.Em-conferência{background:var(--p-info-soft)!important;border:1px solid var(--p-info-line)!important;color:var(--p-info)!important}
+body.dark #view .badge.Conferido{background:var(--p-ok-soft)!important;border:1px solid var(--p-ok-line)!important;color:var(--p-ok)!important}
+body.dark #view .badge.Em-divergência{background:var(--p-danger-soft)!important;border:1px solid var(--p-danger-line)!important;color:var(--p-danger)!important}
+/* barras e anéis: acento + neutros */
+body.dark #view .progress{background:var(--p-s3)!important}
+body.dark #view .vd-ring-bg{stroke:var(--p-s3)!important}
+body.dark #view .vd-bar{background:var(--p-s3)!important}
+body.dark #view .vd-bar i{background:var(--area)!important}
+/* chat: balões e nomes */
+body.dark #view .chat-msg{background:var(--p-bubble-in)!important;color:var(--p-bubble-in-ink)!important}
+body.dark #view .chat-msg.mine{background:var(--p-bubble-out)!important;color:var(--p-bubble-out-ink)!important;box-shadow:none!important}
+body.dark #view .chat-msg .who{color:var(--p-accent-2)!important}
+/* menu: só o item ativo leva a cor da área; o resto fica neutro (um acento por tela) */
+html[data-e99-theme] body.dark :is(aside .nav,#mobile-bottom) button[data-vd-area]:not(.active):not([aria-current="page"]) svg.ic{color:var(--p-t2)!important;stroke:currentColor!important}
+/* barra de rolagem e linhas com o matiz do tema */
+html[data-e99-theme]{scrollbar-color:var(--p-s4) transparent}
+}
