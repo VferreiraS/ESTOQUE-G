@@ -1,0 +1,104 @@
+/* v165-a · telas Início, Painel, Alertas, Minha conta e Dados no padrão do sistema de design (v164).
+   Só tokens --p-* (cores, fontes, raios, espaços); nada de cor fixa. Escopo: #view[data-p165] (marcado por app/js/v165-a.js).
+   Fica na camada p164 para vencer os !important antigos sem guerra de especificidade. Só aparência: sem mudar lógica nem dados. */
+:root{
+  /* papéis que faltavam, derivados de tokens existentes (pro-d pode trocar os valores em v165-cores.css) */
+  --p-accent-soft:color-mix(in srgb,var(--p-accent) 14%,transparent);
+  --p-skel:color-mix(in srgb,var(--p-t1) 8%,transparent);
+  --p-skel-hi:color-mix(in srgb,var(--p-t1) 14%,transparent);
+  --p-ring-w:4px; /* anel fino (era 7) */
+}
+@layer p164{
+/* cabeçalho de página: título, subtítulo discreto, ações à direita (abaixo no celular) */
+body.dark #view[data-p165] .hero{display:flex!important;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:var(--p-s-3) var(--p-s-4);min-height:0!important;padding:0!important;margin:0 0 var(--p-s-5)!important}
+body.dark #view[data-p165] .hero h1{margin:0 0 var(--p-s-1)!important}
+body.dark #view[data-p165] .hero .subtitle{color:var(--p-t2)!important;margin:0!important}
+body.dark #view[data-p165="home"] .hero-home{padding-top:var(--p-s-4)!important}
+/* ritmo vertical: só a grade de 4/8 */
+body.dark #view[data-p165] :is(.panel,.pn-card,.card){padding:var(--p-s-5)!important}
+body.dark #view[data-p165] > :is(.panel,.grid2,.stats,.pn-kpis,.pn-grid,.cards,.vd-home,.pn-head,.pn-actions){margin:0 0 var(--p-s-4)!important}
+body.dark #view[data-p165] .grid2>.panel{margin:0!important}
+body.dark #view[data-p165] .grid2{gap:var(--p-s-4)!important}
+body.dark #view[data-p165] :is(.panel,.pn-card,.card) h2{margin:0 0 var(--p-s-2)!important}
+body.dark #view[data-p165] :is(.panel,.pn-card,.card) p{margin:0 0 var(--p-s-3)!important}
+body.dark #view[data-p165] :is(.panel,.pn-card,.card) .toolbar{gap:var(--p-s-2)!important;margin-top:var(--p-s-3)!important}
+/* um primário por tela: os demais viram secundários */
+body.dark #view[data-p165] button.primary:not(.p165-main){background:var(--p-s2)!important;color:var(--p-t1)!important;border:1px solid var(--p-line)!important;font-weight:var(--p-w-medium)!important}
+body.dark #view[data-p165] button.primary:not(.p165-main):hover{background:var(--p-s3)!important}
+/* Preferências: estado ligado com o texto no acento (sem botão cheio) */
+body.dark #view[data-p165] .pref-row .primary:not(.p165-main),
+body.dark #view[data-p165] #reparo-btn.primary{color:var(--p-accent-text)!important;border-color:var(--p-line-2)!important}
+body.dark #view[data-p165] .pref-row{padding:var(--p-s-3) 0!important;gap:var(--p-s-4)!important}
+
+/* ===== cartões de resumo: um número em destaque ===== */
+body.dark #view[data-p165] :is(.stat,.pn-kpi){display:flex!important;flex-direction:column;gap:var(--p-s-1);padding:var(--p-s-4) var(--p-s-5)!important}
+body.dark #view[data-p165] :is(.stat,.pn-kpi) strong{font-size:var(--p-fs-large)!important;line-height:var(--p-lh-large)!important;letter-spacing:var(--p-tr-large)!important;font-variant-numeric:tabular-nums!important;order:1}
+body.dark #view[data-p165] .stat strong{color:var(--p-t1)!important}
+body.dark #view[data-p165] .stat>span:not(.e99-go-l),
+body.dark #view[data-p165] .pn-kpi>span{order:0;margin:0!important;color:var(--p-t2)!important;font-size:var(--p-fs-sm)!important;font-weight:var(--p-w-medium)!important}
+body.dark #view[data-p165] :is(.stat,.pn-kpi) small{order:2;color:var(--p-t2)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.dark #view[data-p165] .stat .e99-go-l{order:3;align-self:flex-start;margin-top:auto!important;padding:var(--p-s-1) 0!important;background:transparent!important;border:0!important;color:var(--p-accent-text)!important;font-weight:var(--p-w-medium)!important}
+body.dark #view[data-p165] .stat.e99-zero strong{color:var(--p-t2)!important}
+/* anéis finos e suaves */
+body.dark #view[data-p165] .vd-ring-bg{stroke:var(--p-line-2)!important;stroke-width:var(--p-ring-w)!important}
+body.dark #view[data-p165] .vd-ring-fg{stroke-width:var(--p-ring-w)!important}
+body.dark #view[data-p165] .vd-ring i{color:var(--p-t2)!important}
+body.dark #view[data-p165] .vd-greet h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Demandas do estoque: linhas padronizadas */
+body.dark #view[data-p165] .e99-dem-list{padding:0!important;margin:0!important;list-style:none}
+body.dark #view[data-p165] .e99-dem-list>li{display:flex;align-items:center;justify-content:space-between;gap:var(--p-s-3);min-height:56px;padding:var(--p-s-1) 0!important;border-top:1px solid var(--p-line)}
+body.dark #view[data-p165] .e99-dem-list>li:first-child{border-top:0}
+body.dark #view[data-p165] .e99-dem-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.dark #view[data-p165] .e99-dem-field>span{color:var(--p-t2)!important}
+
+/* ===== Painel ===== */
+body.dark #view[data-p165] .pn-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--p-s-3)}
+body.dark #view[data-p165] .pn-tip{font-size:var(--p-fs-sm)!important;line-height:var(--p-lh-sm)!important;color:var(--p-t2)!important;margin:var(--p-s-3) 0 0!important}
+body.dark #view[data-p165] .pn-table summary{display:inline-flex;align-items:center;gap:var(--p-s-1);min-height:var(--p-h-ctl);font-size:var(--p-fs-ui)!important;color:var(--p-accent-text)!important;cursor:pointer}
+body.dark #view[data-p165] :is(.pn-xlab,.pn-ymax){color:var(--p-t2)!important}
+body.dark #view[data-p165] .pn-sup table{width:100%}
+body.dark #view[data-p165] .pn-sup :is(th,td){padding:var(--p-s-3)!important}
+body.dark #view[data-p165] .pn-sup :is(th,td):not(:first-child){text-align:right!important;font-variant-numeric:tabular-nums}
+body.dark #view[data-p165] .pn-sup th{font-size:var(--p-fs-cap)!important;line-height:var(--p-lh-cap)!important;color:var(--p-t2)!important}
+body.dark #view[data-p165] .pn-sup th button{background:transparent!important;border:0!important;color:inherit!important;padding:0!important;font:inherit!important}
+body.dark #view[data-p165] .pn-sup td:first-child button{display:block;width:100%;max-width:100%;text-align:left;background:transparent!important;border:0!important;padding:0!important;color:var(--p-t1)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.dark #view[data-p165] .pn-sup td:first-child{max-width:0;width:45%}
+
+/* ===== Alertas: lista em linhas ===== */
+body.dark #view[data-p165] .alert-item{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto;column-gap:var(--p-s-3);align-items:center;padding:var(--p-s-3) 0!important;border-bottom:1px solid var(--p-line)}
+body.dark #view[data-p165] .alert-item:last-child{border-bottom:0}
+body.dark #view[data-p165] .alert-item>.p165-ic{grid-column:1;grid-row:1/span 3;align-self:start}
+body.dark #view[data-p165] .alert-item>:is(b,p,div){grid-column:2;margin:0!important;min-width:0}
+body.dark #view[data-p165] .alert-item>b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.dark #view[data-p165] .alert-item>p.late{color:var(--p-danger)!important;font-size:var(--p-fs-ui)!important}
+body.dark #view[data-p165] .alert-item>button{grid-column:3;grid-row:1/span 3;margin:0!important}
+body.dark #view[data-p165] .p165-ic{display:inline-flex;align-items:center;justify-content:center;width:var(--p-h-ctl-sm);height:var(--p-h-ctl-sm);border-radius:var(--p-r-ctl);background:var(--p-s2);color:var(--p-t2)}
+body.dark #view[data-p165] .p165-ic.warn{color:var(--p-warn)}
+body.dark #view[data-p165] .p165-ic svg{width:20px;height:20px}
+
+/* ===== estado vazio: ícone, título, uma linha, uma ação ===== */
+body.dark #view[data-p165] .p165-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--p-s-2);padding:var(--p-s-5) var(--p-s-4)!important;background:transparent!important;border:0!important}
+body.dark #view[data-p165] .p165-empty .p165-ic{width:var(--p-h-ctl);height:var(--p-h-ctl);color:var(--p-t3)}
+body.dark #view[data-p165] .p165-empty h3{margin:0!important;font-size:var(--p-fs-body)!important;font-weight:var(--p-w-semibold)!important;color:var(--p-t1)!important}
+body.dark #view[data-p165] .p165-empty p{margin:0!important;color:var(--p-t2)!important;font-size:var(--p-fs-sm)!important;line-height:var(--p-lh-sm)!important}
+
+/* ===== esqueleto de carregamento ===== */
+body.dark #view .p165-skel{display:grid;gap:var(--p-s-2);padding:var(--p-s-2) 0}
+body.dark #view .p165-skel i{display:block;height:var(--p-s-3);border-radius:var(--p-r-pill);background:linear-gradient(90deg,var(--p-skel),var(--p-skel-hi),var(--p-skel));background-size:200% 100%;animation:p165sk 1.2s var(--p-ease) infinite}
+body.dark #view .p165-skel i:nth-child(2){width:80%}body.dark #view .p165-skel i:nth-child(3){width:60%}
+@media (prefers-reduced-motion:reduce){body.dark #view .p165-skel i{animation:none}}
+
+/* ===== Dados: zona de perigo no fim, endereços em mono ===== */
+body.dark #view[data-p165] .net-hosts{font-family:var(--p-font-mono)!important;padding:var(--p-s-3)!important;border-radius:var(--p-r-ctl)!important}
+body.dark #view[data-p165] .reset-panel{border-color:color-mix(in srgb,var(--p-danger) 35%,transparent)!important}
+body.dark #view[data-p165] .site-version{margin:0 0 var(--p-s-4)!important;color:var(--p-t2)!important}
+
+@media (max-width:760px){
+  body.dark #view[data-p165] :is(.panel,.pn-card,.card){padding:var(--p-s-4)!important}
+  body.dark #view[data-p165] .hero>.toolbar,body.dark #view[data-p165] .hero>button{width:100%}
+  body.dark #view[data-p165] .e99-dem-list>li{flex-direction:column;align-items:stretch;gap:var(--p-s-1);padding:var(--p-s-2) 0!important}
+  body.dark #view[data-p165] .alert-item{grid-template-columns:auto minmax(0,1fr)}
+  body.dark #view[data-p165] .alert-item>button{grid-column:2;grid-row:auto;justify-self:start;margin-top:var(--p-s-2)!important}
+}
+}
+@keyframes p165sk{0%{background-position:100% 0}100%{background-position:-100% 0}}
