@@ -33,7 +33,7 @@ async function verifyAll(){const r=await j(`${AU}/emulator/v1/projects/${P}/oobC
  // reação e visto
  await B.evaluate(()=>{const m=[...document.querySelectorAll('#chat-list .chat-msg')].pop();return e99React(m.getAttribute('data-id'),'❤️',true)});
  ok(await until(A,()=>/❤️ 1/.test(([...document.querySelectorAll('#chat-list .chat-msg.mine')].pop().querySelector('.reacts')||{}).textContent||''),null,15000),'gestor vê a reação ❤️');
- ok(await until(A,()=>/Visto por/.test(([...document.querySelectorAll('#chat-list .chat-msg.mine')].pop().querySelector('.seen-by')||{}).textContent||''),null,20000),'✓✓ Visto por');
+ ok(await until(A,()=>/Lida por/.test(([...document.querySelectorAll('#chat-list .chat-msg.mine')].pop().querySelector('.seen-by')||{}).textContent||''),null,20000),'Lida por (abaixo da última própria)');
  // fixar pelo menu (botão direito no PC)
  await A.click('#chat-list .chat-msg.mine >> nth=-1',{button:'right'});await A.click('#msg-menu [data-a=pin]');
  ok(await until(B,()=>{const p=document.getElementById('chat-pin');return p&&!p.hidden&&/conferir/.test(p.innerText)},null,15000),'mensagem fixada aparece para a equipe');

@@ -50,7 +50,7 @@ function decorateNow(){var box=document.getElementById('chat-list');if(!box)retu
     d.setAttribute('role','group');d.setAttribute('aria-label','Reações');var when=m.querySelector(':scope>.chat-meta')||m.querySelector('.when');if(when&&when.parentNode===m)m.insertBefore(d,when);else m.appendChild(d)});
   box.querySelectorAll('.seen-by').forEach(function(s){s.remove()});var mine=box.querySelectorAll('.chat-msg.mine[data-id]');var last=mine[mine.length-1];
   if(last){var at=last.getAttribute('data-at')||'';var who=Object.keys(readers).filter(function(u){return String(readers[u].at||'')>=at}).map(function(u){return readers[u].nome||'?'});
-    var s=document.createElement('span');s.className='seen-by';s.innerHTML=who.length?'<b aria-hidden="true">✓✓</b> Visto por '+e(who.slice(0,4).join(', '))+(who.length>4?' e mais '+(who.length-4):''):'✓ Enviada';last.appendChild(s)}
+    var s=document.createElement('span');s.className='seen-by';s.innerHTML=who.length?'Lida por '+e(who.slice(0,4).join(', '))+(who.length>4?' e mais '+(who.length-4):''):'Entregue';last.appendChild(s)}
   markRead(box)}
 async function markRead(box){if(page!=='chat'||document.hidden)return;var all=box.querySelectorAll('.chat-msg[data-at]');if(!all.length)return;var at=all[all.length-1].getAttribute('data-at');if(!at||at<=lastRead||Date.now()-lastReadAt<4000)return;
   var c=await cdb();if(!c)return;lastRead=at;lastReadAt=Date.now();try{await c.col('lidos').doc(c.uid).set({nome:myName(),at:String(at).slice(0,40)})}catch(x){}}

@@ -54,7 +54,7 @@ const FAKE=()=>{const vv=new EventTarget();let h=innerHeight,t=0;Object.definePr
  await B.focus('.cv-compose textarea');await B.evaluate(()=>__kb(true));await B.waitForTimeout(500);g=await geo('.cv-compose textarea');
  ok(g.top>=0&&g.bot<=420&&!g.navCover&&g.sy===0,'Conversa com teclado: campo acima do teclado ('+g.bot+'/420), página parada');
  ok(g.lov==='auto'&&g.los==='contain'&&g.lst<6,'Conversa: lista rola sozinha e mostra o fim ao focar');
- ok(await B.evaluate(()=>[...document.querySelectorAll('.cv-compose button,.cv-compose label,.cv-back')].every(e=>{const r=e.getBoundingClientRect();return r.height>=44})),'Conversa: toques ≥44 px');
+ ok(await B.evaluate(()=>[...document.querySelectorAll('.cv-compose button,.cv-compose label,.cv-back')].filter(e=>e.offsetParent).every(e=>{const r=e.getBoundingClientRect();return r.height>=44})),'Conversa: toques ≥44 px');
  await B.screenshot({path:process.env.SHOT2||'/tmp/v149-teclado-conversa.png'}).catch(()=>{});
  await B.evaluate(()=>{document.activeElement.blur();__kb(false);e99Cv.list()});await B.waitForTimeout(500);
  ok(await B.evaluate(()=>!document.body.classList.contains('e99-convo')&&!document.documentElement.classList.contains('e99-convo-lock')),'Lista de conversas: sai do modo conversa');

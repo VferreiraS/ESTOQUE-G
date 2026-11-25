@@ -158,7 +158,8 @@ const APP_FILES = [
   'app/js/v165-a.js',
   'app/css/v165-a.css',
   'app/css/v165-b.css',
-  'app/css/v165-c.css'
+  'app/css/v165-c.css',
+  'app/css/v165-e.css'
 ];
 const CORE = [
   './index.html',

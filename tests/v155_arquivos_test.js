@@ -30,8 +30,8 @@ const XLS=Buffer.from(Array.from({length:1500*1024},(_,i)=>(i*131+i%251)&255));/
  await openGeral(A);await openGeral(Q);
  ok(await until(Q,()=>/Conectado/.test(document.getElementById('chat-status').textContent),null,30000),'iPhone: chat da equipe conectado');
  /* ---------- chat da equipe ---------- */
- ok(await A.evaluate(()=>{const b=document.querySelector('.chat-clip');return !!b&&/arquivo/i.test(b.getAttribute('aria-label'))&&b.getBoundingClientRect().height>=44}),'PC: botão de anexo (clipe) com rótulo e 44 px');
- ok(await Q.evaluate(()=>{const b=document.querySelector('.chat-clip');const r=b&&b.getBoundingClientRect();return !!r&&r.height>=44&&r.width>=44}),'iPhone: botão de anexo com 44 px');
+ ok(await A.evaluate(()=>{document.querySelector('#chat-form .chat-plus').click();const b=document.querySelector('.chat-clip');return !!b&&/arquivo/i.test(b.getAttribute('aria-label'))&&b.getBoundingClientRect().height>=44}),'PC: botão de anexo (clipe) com rótulo e 44 px');
+ ok(await Q.evaluate(()=>{const p=document.querySelector('#chat-form .chat-plus');if(p.getAttribute('aria-expanded')!=='true')p.click();const b=document.querySelector('.chat-clip');const r=b&&b.getBoundingClientRect();return !!r&&r.height>=44&&r.width>=44}),'iPhone: botão de anexo com 44 px');
  await A.fill('#chat-text','segue o relatório');
  await A.setInputFiles('#chat-file-in',{name:'relatorio <b>semana</b>.pdf',mimeType:'application/pdf',buffer:PDF});
  const card=(p,t)=>until(p,t=>[...document.querySelectorAll('#chat-list .chat-msg[data-id] .chat-file')].some(c=>c.querySelector('b').textContent===t&&!!c.querySelector('.cf-dl')),t,40000);
@@ -70,7 +70,7 @@ const XLS=Buffer.from(Array.from({length:1500*1024},(_,i)=>(i*131+i%251)&255));/
  const uc=await Q.evaluate(()=>e99Loja.ctx().uid);
  ok(await until(A,u=>{const r=e99Social.S()['perfis_'+u];return !!(r&&r.x&&r.x.pk)},uc,40000),'Conversa: chave pública do auxiliar');
  await A.evaluate(u=>e99Cv.dmTo(u),uc);await A.waitForSelector('.cv-compose');
- ok(await A.evaluate(()=>{const b=document.querySelector('.cv-clip');return !!b&&b.getBoundingClientRect().height>=44}),'Conversa: botão de anexo 44 px');
+ ok(await A.evaluate(()=>{document.querySelector('.cv-compose .chat-plus').click();const b=document.querySelector('.cv-clip');return !!b&&b.getBoundingClientRect().height>=44}),'Conversa: botão de anexo 44 px');
  await A.setInputFiles('.cv-compose input[type=file]:not([accept])',{name:'Planilha estoque.xlsx',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',buffer:XLS});
  ok(await until(A,()=>/Planilha estoque\.xlsx/.test(document.getElementById('cv-fprev').innerText),null,5000),'Conversa: arquivo escolhido aparece antes de enviar');
  await A.click('.cv-compose button.primary');
