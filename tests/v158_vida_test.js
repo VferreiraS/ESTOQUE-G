@@ -1,4 +1,5 @@
-/* v158 · vida: cor por área, Início vivo (saudação, anéis, iniciais coloridas), animações leves (só transform/opacity, nada infinito),
+/* v165: menu neutro (só o ativo com a cor da área) e títulos no texto 1 — paleta da v165.
+   v158 · vida: cor por área, Início vivo (saudação, anéis, iniciais coloridas), animações leves (só transform/opacity, nada infinito),
    telas vazias ilustradas. 3 temas × PC 1440×900 e iPhone 13: contraste AA, sem rolagem lateral, toques ≥44 px, "menos movimento" sem animação,
    iPhone 13 com CPU 4x: troca de tela sem travar e, parado, nenhum recálculo de estilo (UpdateLayoutTree = 0). Prints 2x do Início em cada tema. */
 const L=require('./lib.js');const {ok}=L;const fs=require('fs'),path=require('path');
@@ -35,7 +36,7 @@ const HEX=h=>{h=h.trim().replace('#','');if(h.length===3)h=h.split('').map(c=>c+
    ok(/^(Bom dia|Boa tarde|Boa noite), \S+!$/.test(h.greet),dev+' '+th+': saudação do dia ('+h.greet+')');
    ok(h.rings.length===2&&h.rings[0].n==='67'&&h.rings[1].n==='33',dev+' '+th+': anéis do plano (67%) e das notas conferidas (33%) ('+h.rings.map(r=>r.n).join(',')+')');
    ok(h.avs.length===4&&new Set(h.avs.map(a=>a.bg)).size>=3&&h.avs.every(a=>CR(a.bg,a.c)>=4.5),dev+' '+th+': iniciais coloridas por pessoa com contraste AA');
-   ok(new Set(h.nav).size>=3,dev+' '+th+': ícones do menu com cor por área ('+new Set(h.nav).size+' cores)');
+   ok(h.nav.length>=3&&new Set(h.nav).size<=2,dev+' '+th+': v165: ícones do menu neutros, só o item ativo leva a cor da área ('+new Set(h.nav).size+' cores)');
    const card=HEX(h.card),bg=HEX(h.bg);const low=h.areas.map(a=>CR(HEX(a),card)).filter(c=>c<4.5);
    ok(!low.length&&CR(h.ink,card)>=4.5&&CR(h.muted,card)>=4.5&&CR(h.areas.length?HEX(h.areas[0]):bg,bg)>=4.5,dev+' '+th+': contraste AA (7 cores de área, título e texto sobre o cartão; mín. '+Math.min(...h.areas.map(a=>CR(HEX(a),card))).toFixed(1)+')');
    ok(h.stats.filter(Boolean).length>=3,dev+' '+th+': resumo do que pede ação colorido por área ('+h.stats.join(',')+')');
@@ -44,9 +45,9 @@ const HEX=h=>{h=h.trim().replace('#','');if(h.length===3)h=h.split('').map(c=>c+
   }
   /* todas as áreas: título com a cor da área, sem rolagem lateral, toques ≥44 px nos elementos novos */
   const ar=[];for(const pg of ['nfs','plans','team','corridors','alerts','chat','reports']){await p.evaluate(pg=>{go(pg);window.scrollTo(0,0)},pg);await p.waitForTimeout(450);
-    ar.push(await p.evaluate(pg=>{const a=document.body.dataset.area,h=document.querySelector('#view .hero h1 .accent-word,#view h2.vh');return {pg,a,c:h?getComputedStyle(h).color:'',want:getComputedStyle(document.body).getPropertyValue('--area-'+a).trim(),sw:document.documentElement.scrollWidth<=innerWidth}},pg))}
+    ar.push(await p.evaluate(pg=>{const a=document.body.dataset.area,h=document.querySelector('#view .hero h1 .accent-word,#view h2.vh');const t1=document.createElement('i');t1.style.color='var(--p-t1)';document.body.appendChild(t1);const t1c=getComputedStyle(t1).color;t1.remove();return {pg,a,t1:t1c,c:h?getComputedStyle(h).color:'',want:getComputedStyle(document.body).getPropertyValue('--area-'+a).trim(),sw:document.documentElement.scrollWidth<=innerWidth}},pg))}
   ok(ar.every(x=>x.sw),dev+': nenhuma área com rolagem lateral');
-  ok(ar.filter(x=>x.c&&x.c.replace(/\s/g,'')===HEX(x.want)).length>=4,dev+': títulos na cor da área ('+ar.map(x=>x.pg+':'+x.a).join(' ')+')');
+  ok(ar.filter(x=>x.a&&x.want&&x.c&&x.c===x.t1).length>=4,dev+': v165: títulos no texto 1 do tema, área marcada no body ('+ar.map(x=>x.pg+':'+x.a).join(' ')+')');
   await p.evaluate(()=>go('plans'));await p.waitForTimeout(500);
   ok(await p.evaluate(()=>{const b=document.querySelector('.plan-card .vd-bar i');return b&&/scaleX\(0\.66/.test(b.style.transform)}),dev+': barra de progresso no cartão do plano (2 de 3)');
   /* animações: rodam na troca de tela, só transform/opacity, e terminam (nada infinito) */

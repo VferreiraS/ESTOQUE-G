@@ -1,4 +1,5 @@
-/* v112: 3 temas escuros (Lilás padrão, Violeta + Lima, Cinza + Lima) e fontes novas (Space Grotesk nos títulos/números, Inter no texto).
+/* v164/v165: design profissional — uma família só (Inter/sistema), controles de 12 px; as checagens de cores, contraste AA e tema escuro continuam.
+   v112: 3 temas escuros (Lilás padrão, Violeta + Lima, Cinza + Lima) e fontes novas (Space Grotesk nos títulos/números, Inter no texto).
    Para cada tema, no PC 1440×900 e no iPhone 13: escolha em Preferências, cores (tokens), contraste AA do botão principal e do texto,
    fontes carregadas e usadas (título, relógio), fundo escuro, lembrado ao recarregar, gráfico do Início com dados, "menos movimento".
    Prints: SHOTS=<pasta> (padrão: pasta temporária). */
@@ -27,12 +28,12 @@ const CONTRAST=()=>{const lum=c=>{const m=c.match(/[\d.]+/g).map(Number);const f
    ok(await P.evaluate(t=>document.documentElement.getAttribute('data-e99-theme')===t&&document.querySelector('#pref-theme button[data-theme="'+t+'"]').getAttribute('aria-pressed')==='true',t),nome+' '+t+': tema aplicado e marcado');
    await P.evaluate(()=>go('home'));await P.waitForTimeout(900);await P.evaluate(()=>document.fonts.ready);
    const r=await P.evaluate(([t,e])=>{const cs=getComputedStyle(document.documentElement);const btn=document.querySelector('#view button.primary');const h=document.querySelector('#view h1, #view h2');const clk=document.querySelector('.e99-clock .clk-time');
-     return {neon:cs.getPropertyValue('--neon').trim().toUpperCase()===e.neon,btn:btn&&getComputedStyle(btn).backgroundColor===e.btn,pill:btn&&parseFloat(getComputedStyle(btn).borderTopLeftRadius)>=20,
-      head:h&&(document.documentElement.classList.contains('e99-apple')?/-apple-system/:/Space Grotesk/).test(getComputedStyle(h).fontFamily),body:(document.documentElement.classList.contains('e99-apple')?/-apple-system/:/Inter/).test(getComputedStyle(document.body).fontFamily),clock:!clk||/Space Grotesk/.test(getComputedStyle(clk).fontFamily),
-      loaded:document.documentElement.classList.contains('e99-apple')||document.fonts.check('600 20px "Space Grotesk"')&&document.fonts.check('400 16px Inter'),noOswald:!(h&&/Oswald/.test(getComputedStyle(h).fontFamily.split(',')[0])),
+     return {neon:cs.getPropertyValue('--neon').trim().toUpperCase()===e.neon,btn:btn&&getComputedStyle(btn).backgroundColor===e.btn,pill:btn&&parseFloat(getComputedStyle(btn).borderTopLeftRadius)>=12,
+      head:h&&(document.documentElement.classList.contains('e99-apple')?/-apple-system/:/Inter/).test(getComputedStyle(h).fontFamily),body:(document.documentElement.classList.contains('e99-apple')?/-apple-system/:/Inter/).test(getComputedStyle(document.body).fontFamily),clock:!clk||(document.documentElement.classList.contains('e99-apple')?/-apple-system/:/Inter/).test(getComputedStyle(clk).fontFamily),
+      loaded:document.documentElement.classList.contains('e99-apple')||document.fonts.check('600 20px Inter')&&document.fonts.check('400 16px Inter'),noOswald:!(h&&/Oswald/.test(getComputedStyle(h).fontFamily.split(',')[0])),
       radius:parseFloat(getComputedStyle(document.querySelector('#view .panel')).borderTopLeftRadius)>=20,dark:true}},[t,EXP[t]]);
-   ok(r.neon&&r.btn,nome+' '+t+': cores do tema (destaque e botão)');ok(r.pill&&r.radius,nome+' '+t+': botões em pílula e cartões arredondados');
-   ok(r.head&&r.body&&r.clock&&r.noOswald,nome+' '+t+': títulos e relógio em Space Grotesk, texto em Inter (sem Oswald)');ok(r.loaded,nome+' '+t+': fontes carregadas do próprio site');
+   ok(r.neon&&r.btn,nome+' '+t+': cores do tema (destaque e botão)');ok(r.pill&&r.radius,nome+' '+t+': botões e cartões arredondados (v164: controles 12 px, cartões 20 px)');
+   ok(r.head&&r.body&&r.clock&&r.noOswald,nome+' '+t+': v164: uma família só (Inter; Apple: fonte do sistema) em títulos, relógio e texto (sem Oswald)');ok(r.loaded,nome+' '+t+': fontes carregadas do próprio site');
    const c=await P.evaluate(CONTRAST);ok(c.btn>=4.5&&c.text>=4.5&&c.neon>=4.5&&c.muted>=4.5,nome+' '+t+': contraste AA (botão '+c.btn.toFixed(1)+', texto '+c.text.toFixed(1)+', destaque '+c.neon.toFixed(1)+', secundário '+c.muted.toFixed(1)+')');
    ok(await P.evaluate(()=>{const m=getComputedStyle(document.body).color.match(/\d+/g).map(Number);return m[0]>200&&m[1]>200&&m[2]>200}),nome+' '+t+': continua escuro (texto claro sobre fundo escuro)');
    await P.screenshot({path:path.join(OUT,nome+'-inicio-'+t+'.png')});

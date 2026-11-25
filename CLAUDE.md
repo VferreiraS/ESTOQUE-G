@@ -19,7 +19,7 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão:** 164 (`meta estoque99-version` + `CACHE` `estoque99-v164` no `sw.js` + `?v=164` nos arquivos `app/`), publicada em 24/11/2026 no GitHub Pages (Firebase Hosting ainda na versão anterior: deploy sem login neste ambiente; publicar com `firebase deploy --only hosting`). Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
+- **Versão:** 165 (`meta estoque99-version` + `CACHE` `estoque99-v165` no `sw.js` + `?v=165` nos arquivos `app/`), publicada em 25/11/2026 no GitHub Pages (Firebase Hosting ainda na versão anterior: deploy sem login neste ambiente; publicar com `firebase deploy --only hosting`). Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
@@ -29,7 +29,7 @@
 
 | Versão | O quê |
 |--------|--------|
-| v164 | **Sistema de design profissional** (pedido do dono: aparência de empresa global; guia `docs/design-referencias.md`, auditoria `docs/design-auditoria.md`): `app/css/v164-pro.css` carregado por **último** (index.html + `APP_FILES`) com tokens `--p-*` no `:root` por tema (escala fechada de 7 fontes 12/13/15/16/22/28/40 — 34 no celular; pesos 400/500/600, +700 só no rótulo da aba ativa do celular; grade 4/8; raios 8/12/20/28/pílula; controles de 44 px; movimento 120/200/320 ms; superfícies 1/2/3, texto 1/2/3, acento/perigo/sucesso/aviso nas cores dos 3 temas, sem mudar o matiz; AA). Componentes na camada `@layer p164` (um `!important` em camada vence os `!important` antigos sem guerra de especificidade; só fonte, peso, raio, borda, sombra, superfície, cor, altura de controle — nada de leiaute). Os `:is()` da ponta direita ficam expandidos (o Chrome indexa por classe; custo de estilo menor no iPhone). Uma família (Apple: fonte do sistema; demais: Inter), cartões sólidos sem sombra/desfoque, máx. 2 níveis, botões primário/secundário/fantasma/perigo, segmentos, folhas 28, toast, foco visível, barra de rolagem fina. `app/js/v164-icons.js`: `e99Icon(nome)` com ícones novos (close, check, chevron-*, search, send, mic, image, clip, info, warn, pin, user-plus, filter, sun) e troca ✕/×/✓/✅ de texto usados como ícone por SVG (não mexe em mensagens, reações, logo nem abertura). Teste `tests/v164_test.js` (3 temas × PC/iPhone). A v165 aplica tela por tela. |
+| v165 | **Visual profissional tela por tela** (sobre os tokens `--p-*` da v164; ordem de carga no `index.html` e no `APP_FILES`: `v164-pro.css` → `v165-cores.css` → `v165-a/b/c/e.css`): **paleta** `app/css/v165-cores.css` (neutros tingidos, semânticas, áreas, gráficos do Painel, tokens de balão do chat; guia `docs/paleta.md`; banner do WhatsApp e HTML do Outlook com os tokens do tema em `app/js/v144-msg.js`); **A** `v165-a.css`/`v165-a.js` (Início, Painel, Alertas — vazio mantém a ilustração da v158 —, Minha conta, Dados); **B** `v165-b.css` (Notas e Plano: etiquetas suaves, linhas, ações, miniaturas 112/96 px, Conferência); **C** `v165-c.css` (entrar, navegação, Equipe, Corredores, Administração; ícones no mural e em Corredores por conta); **E** `v165-e.css` + `chat.js`/`v138.js`/`social.js` (chat estilo iMessage/WhatsApp: balões com cauda, contraste AA, horário ao lado, "Entregue"/"Lida por", grupo com nomes coloridos, campo com +, microfone/enviar, chips de data). Testes `tests/v165_{a,b,c,d,e}_test.js`; `v112_test` atualizado para o design da v164 (uma família, controles de 12 px; cores, contraste AA e tema escuro continuam conferidos). |
 
 Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o site); o que vale no ar é o `index.html` + `sw.js` publicados.
 
@@ -65,6 +65,7 @@ Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o sit
 - v162: auto-reparo no PC da loja e no iPhone real: ver em Dados → "Auto-reparo" o que foi reparado; nada piscando nem pulando; avisar o que repete para corrigir de vez.
 - v163: aba piscando no PC do dono (Windows com efeitos de animação desligados): usar Preferências → "Testar aba piscando"; janela atrás de outra e minimizada; faixa "ResizeObserver loop" não aparece mais no iPhone.
 - v164: visual novo (sistema de design) no PC da loja e no iPhone real nos 3 temas: textos legíveis, botões de 44 px, nada cortado; dizer o que ainda parece amador para a v165.
+- v165: visual novo tela por tela no iPhone e no PC da loja (3 temas); chat com balões no iPhone (cauda, "Lida por", teclado); cores da paleta nova (gráficos do Painel, banner do WhatsApp/Outlook).
 
 ### Decisões pendentes do dono (v89 — não mudar sem perguntar)
 - **Chat (v106/v108):** desde a v108 a mensagem que falhou fica guardada (cifrada) no aparelho; no celular Enter continua enviando (não há Shift+Enter no teclado do celular); "Sair da equipe" foi para baixo do chat. Se o dono quiser guardar as não enviadas ou Enter = nova linha no celular, mudar no `chat-js`.
@@ -86,7 +87,7 @@ Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o sit
 - **Contas só pelo gestor (v127):** ninguém cria conta pela tela de entrar; o gestor cria e manda um link de acesso de uso único.
 - **Auxiliar (v127):** cria NFs e planos, edita os que criou, usa o chat e o perfil; não exclui nada.
 - **Regra permanente de design:** em qualquer mudança de design, preservar o **logo vigente** (desde a v159: opção 1, "Prateleira" — S de prateleiras com caixas; menu, tela de entrar, ícones e S da abertura). Só o dono troca o logo (exceção dele na v158/v159, via `scripts/aplicar-logo.mjs`).
-- Quer o app com aparência profissional de empresa global; tokens `--p-*` em `app/css/v164-pro.css` (guia em `docs/design-referencias.md`).
+- Quer o app com aparência profissional de empresa global; tokens `--p-*` em `app/css/v164-pro.css` (guia em `docs/design-referencias.md`), cores em `app/css/v165-cores.css` (guia em `docs/paleta.md`).
 - Quer que **qualquer mudança** seja comunicada ao Claude **automaticamente** via este arquivo.
 - Dados sensíveis ficam no aparelho; nuvem só com blob já cifrado quando houver.
 

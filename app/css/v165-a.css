@@ -101,4 +101,6 @@ body.dark #view[data-p165] .site-version{margin:0 0 var(--p-s-4)!important;color
   body.dark #view[data-p165] .alert-item>button{grid-column:2;grid-row:auto;justify-self:start;margin-top:var(--p-s-2)!important}
 }
 }
+/* v165: campo de login escondido do "Trocar senha" (v124) continua com 1 px — a borda/altura de controle da camada p164 o deixava com 3 px */
+@layer p164{body.dark :is(.layout,dialog,#auth-screen) input.e99-user-hint{position:absolute!important;width:1px!important;height:1px!important;min-height:0!important;padding:0!important;border:0!important;margin:0!important;opacity:0!important;pointer-events:none!important;overflow:hidden!important;clip:rect(0 0 0 0)!important}}
 @keyframes p165sk{0%{background-position:100% 0}100%{background-position:-100% 0}}

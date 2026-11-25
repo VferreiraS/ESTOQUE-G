@@ -2,7 +2,8 @@
    Só tokens (nada de hex fixo). Bolhas sem desfoque e sem content-visibility. Carregado depois do v164-pro.css. */
 :root{
   --p-bubble-out:var(--p-accent);
-  --p-bubble-out-text:var(--p-accent-ink);
+  /* integração v165: a paleta (v165-cores) põe o balão enviado num tom escuro do acento com texto claro (--p-bubble-out-ink) */
+  --p-bubble-out-text:var(--p-bubble-out-ink,var(--p-accent-ink));
   --p-bubble-in:var(--p-s3);
   --p-bubble-in-text:var(--p-t1);
   --p-bubble-r:20px;

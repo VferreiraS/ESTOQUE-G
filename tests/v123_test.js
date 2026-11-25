@@ -27,8 +27,8 @@ const TL=()=>{try{sessionStorage.removeItem('e99-intro')}catch(e){}window.__tl=[
   const r=await P.evaluate(()=>{const p=document.querySelector('#view .panel'),bt=document.querySelector('#view button.primary'),mb=document.getElementById('mobile-bottom'),cs=e=>e?getComputedStyle(e):null;
     return {card:p?parseFloat(cs(p).borderTopLeftRadius):0,btn:bt?parseFloat(cs(bt).borderTopLeftRadius):0,apple:document.documentElement.classList.contains('e99-apple'),font:getComputedStyle(document.body).fontFamily,
       mb:mb&&cs(mb).display!=='none'?{r:parseFloat(cs(mb).borderTopLeftRadius),l:mb.getBoundingClientRect().left,bf:cs(mb).backdropFilter||cs(mb).webkitBackdropFilter}:null,upper:p?cs(document.querySelector('#view h1')).textTransform:''}});
-  ok(r.card>=20&&r.btn>=20,nome+': cartões e botões arredondados ('+r.card+'/'+r.btn+' px)');ok(r.upper!=='uppercase',nome+': títulos sem caixa alta (estilo iOS)');
-  if(nome==='PC')ok(!r.apple,nome+': fora da Apple mantém Inter');else{ok(r.apple&&/-apple-system/.test(r.font),nome+': fonte do sistema da Apple');ok(r.mb&&r.mb.r>=40&&r.mb.l>=8&&/blur/.test(r.mb.bf),nome+': barra de abas flutuante em cápsula de vidro')}
+  ok(r.card>=20&&r.btn>=12,nome+': cartões e botões arredondados — v164: cartão 20, controle 12 px ('+r.card+'/'+r.btn+' px)');ok(r.upper!=='uppercase',nome+': títulos sem caixa alta (estilo iOS)');
+  if(nome==='PC')ok(!r.apple,nome+': fora da Apple mantém Inter');else{ok(r.apple&&/-apple-system/.test(r.font),nome+': fonte do sistema da Apple');ok(r.mb&&r.mb.r>=24&&r.mb.l>=8&&/blur/.test(r.mb.bf),nome+': barra de abas flutuante arredondada (v164: raio 28) com vidro')}
   ok(await P.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),nome+': sem rolagem lateral');
   await c.close()}
  ok(!errs.length,'sem erros de página'+(errs.length?': '+errs.join(' | '):''));
