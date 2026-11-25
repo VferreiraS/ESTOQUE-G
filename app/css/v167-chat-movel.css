@@ -1,0 +1,34 @@
+/* v167: chat do celular sem compressão (≤900 px; o PC não muda).
+   Causa: no chat da equipe sem o teclado o .chat-wrap é grade com coluna "auto"; o cabeçalho (título nowrap) e a linha "Sair da equipe"
+   empurravam a coluna para 418 px numa caixa de 322 px: cabeçalho, mensagens e campo saíam pela direita (microfone e balões cortados).
+   Além disso, cartão dentro de cartão (conteúdo 18 px + painel 16 px + borda + lista 6 px) deixava ~300 px para os balões.
+   Aqui: coluna minmax(0,1fr), filhos com min-width:0, painéis sem moldura no celular, subtítulo em uma linha, texto do balão 17 px.
+   Fica na camada p164 (as regras !important da v165-e também estão nela). */
+@layer p164{
+@media (max-width:900px){
+/* coluna da grade nunca maior que a tela */
+html body.dark #view .chat-wrap.chat-wrap{grid-template-columns:minmax(0,1fr)!important;min-width:0!important}
+html body.dark #view .chat-wrap.chat-wrap>*{min-width:0!important;max-width:100%!important}
+/* sem moldura dupla: o chat da equipe e a lista de conversas ocupam a largura do conteúdo */
+html body.dark:not(.e99-convo) #view .chat-wrap.chat-wrap,html body.dark #view .panel.cv-panel{padding:0!important;border:0!important;background:none!important;box-shadow:none!important;border-radius:0!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html body.dark #view .chat-wrap .chat-body{border:0!important;padding:0!important;background:none!important}
+html body.dark #view .chat-wrap #chat-list{padding:8px 4px 12px!important}
+/* cabeçalho: título e "Conectado · pessoas" em uma linha cada, com reticências */
+html body.dark #view .chat-wrap .chat-sub{display:flex!important;flex-wrap:nowrap!important;min-width:0;gap:0 4px!important}
+html body.dark #view .chat-wrap .chat-sub>*{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body.dark #view .chat-wrap .chat-sub #chat-status{flex:none}
+html body.dark #view .chat-wrap .chat-head{min-height:56px}
+/* balões: texto 17 px (como o Mensagens do iPhone) */
+html body.dark #view #chat-list .chat-msg .chat-txt,html body.dark #view .cv-msgs .cv-b .cv-t{font-size:17px!important;line-height:1.35!important}
+/* campo: ocupa o espaço que sobra, nada encolhe abaixo de 44 px */
+html body.dark #view #chat-form,html body.dark #view .cv-compose{min-width:0;width:100%}
+html body.dark #view #chat-form .chat-plus,html body.dark #view .cv-compose>button,html body.dark #view .cv-compose>label{flex:none!important}
+/* lista de conversas: linha inteira para nome e prévia */
+html body.dark #view .cv-list .cv-item{padding:8px 4px!important;gap:12px!important;min-height:68px}
+html body.dark #view .cv-list .cv-item .cv-mid{flex:1 1 auto!important;min-width:0!important}
+html body.dark #view .cv-list .cv-item .cv-mid>b,html body.dark #view .cv-list .cv-item .cv-last{display:block;min-width:0;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+html body.dark #view .cv-list .cv-item .cv-mid>b{font-size:17px!important}
+html body.dark #view .cv-list .cv-item .cv-last{font-size:15px!important}
+html body.dark #view .cv-list .cv-item .cv-end{flex:none}
+}
+}

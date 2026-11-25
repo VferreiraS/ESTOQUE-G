@@ -19,7 +19,7 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão:** 166 (`meta estoque99-version` + `CACHE` `estoque99-v166` no `sw.js` + `?v=166` nos arquivos `app/`), publicada em 25/11/2026 no GitHub Pages (Firebase Hosting ainda na versão anterior: deploy sem login neste ambiente; publicar com `firebase deploy --only hosting`). Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
+- **Versão:** 167 (`meta estoque99-version` + `CACHE` `estoque99-v167` no `sw.js` + `?v=167` nos arquivos `app/`), publicada em 25/11/2026 no GitHub Pages (Firebase Hosting ainda na versão anterior: deploy sem login neste ambiente; publicar com `firebase deploy --only hosting`). Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
@@ -29,7 +29,7 @@
 
 | Versão | O quê |
 |--------|--------|
-| v166 | **Nome StoK no lugar de "Lojas G"** (pedido do dono; grafia **StoK**, S e K maiúsculos): nenhum texto do app diz "Lojas G" e o nome aparece como StoK — abertura (`StoK` / `ESTOQUE 99`; rótulo "StoK, Estoque 99…"), tela de entrar e menu (`StoK` + `ESTOQUE 99`; com o tema do mês, só o mês), etiqueta do Início, `<title>`, description, Open Graph, `apple-mobile-web-app-title`, manifest (`StoK · Estoque 99` / `StoK`), rodapé do `e99Msg` (`StoK · Estoque 99`: WhatsApp, Outlook, folha impressa; banner `STOK · ESTOQUE 99`), e-mails (conta nova, relatório, resumo semanal e diário, convite), avisos e ajuda, Privacidade/Termos (controlador "StoK — Estoque 99"), `robo.html`, `apps-script/*.gs` (só valem depois de colar de novo no Apps Script), README e `push/`. **Ficam (técnicos):** chaves `lojasg.estoque99.*`, `stok-reset`, ids/classes/funções (`#stok-intro`, `playStokIntro`), caches `estoque99-*`, e-mail 99.estoque@lojasg.com.br, repositório ESTOQUE-G, arquivo do banner `stok-*.png`, `console.warn('Stok …')`, comentários e o nome do PDF dos cartazes. Teste `tests/v166_nome_test.js` (PC + iPhone 13: abertura, tela de entrar, 13 telas, mensagens, e-mails, Privacidade/Termos, chaves); `tests/v158_test.js` desliga a animação do mouse (v161), que mexia o botão do convite e travava o clique do Playwright. |
+| v167 | **Chat do celular sem compressão** (pedido do dono: "o chat do móbile está todo comprimido"). Causa: no chat da equipe sem teclado o `.chat-wrap` é grade com coluna `auto`; o cabeçalho (título `nowrap`) e "Sair da equipe" esticavam a coluna para 418 px numa caixa de 322 px — cabeçalho, balões e campo saíam pela direita (microfone cortado); e cartão dentro de cartão (conteúdo 18 px + painel 16 px + borda + lista) apertava os balões. Correção só no celular (≤900 px), em `app/css/v167-chat-movel.css` (camada `p164`, depois do `v165-e.css`): coluna `minmax(0,1fr)`, painéis do chat e da lista de conversas sem moldura, subtítulo do cabeçalho em uma linha, texto do balão 17 px, lista com avatar 52 px e prévia com reticências. PC igual à v166. Teste `tests/v167_chat_movel_test.js` (iPhone 13 + PC, 3 temas, com e sem teclado simulado). |
 
 Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o site); o que vale no ar é o `index.html` + `sw.js` publicados.
 
@@ -67,6 +67,7 @@ Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o sit
 - v164: visual novo (sistema de design) no PC da loja e no iPhone real nos 3 temas: textos legíveis, botões de 44 px, nada cortado; dizer o que ainda parece amador para a v165.
 - v165: visual novo tela por tela no iPhone e no PC da loja (3 temas); chat com balões no iPhone (cauda, "Lida por", teclado); cores da paleta nova (gráficos do Painel, banner do WhatsApp/Outlook).
 - v166: nome **StoK** no iPhone e no PC da loja (abertura, tela de entrar, menu, aba do navegador, WhatsApp/Outlook/impressão); no iPhone o nome do atalho da tela inicial só muda ao adicionar o atalho de novo; colar de novo os `apps-script/*.gs` no Apps Script para os e-mails e a planilha dizerem StoK.
+- v167: chat no iPhone real (lista de conversas, chat da equipe, conversa privada/grupo, com e sem teclado): nada cortado à direita, balões largos, texto 17 px; dizer se ainda parece apertado.
 
 ### Decisões pendentes do dono (v89 — não mudar sem perguntar)
 - **Chat (v106/v108):** desde a v108 a mensagem que falhou fica guardada (cifrada) no aparelho; no celular Enter continua enviando (não há Shift+Enter no teclado do celular); "Sair da equipe" foi para baixo do chat. Se o dono quiser guardar as não enviadas ou Enter = nova linha no celular, mudar no `chat-js`.

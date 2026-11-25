@@ -1,6 +1,6 @@
 /* Estoque 99 · service worker: abre sem internet e permite instalar como app. */
 const CACHE_PREFIX = 'estoque99-';
-const CACHE = 'estoque99-v166';
+const CACHE = 'estoque99-v167';
 const VERSION = (CACHE.match(/-v(\d+)$/) || [])[1] || '';
 /* v135: blocos do app (antes inline no index.html). A versão vai no endereço (?v=) para nunca misturar HTML novo com JS velho.
    Arquivo novo em app/ = acrescentar aqui e no index.html. */
@@ -159,7 +159,8 @@ const APP_FILES = [
   'app/css/v165-a.css',
   'app/css/v165-b.css',
   'app/css/v165-c.css',
-  'app/css/v165-e.css'
+  'app/css/v165-e.css',
+  'app/css/v167-chat-movel.css'
 ];
 const CORE = [
   './index.html',
