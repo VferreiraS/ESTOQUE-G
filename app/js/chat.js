@@ -154,7 +154,8 @@ var IC={re:svg('<path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v5"/>'),d
 function whoName(n){return cfg&&n===cfg.name?'Você':n}
 var opened={};
 function bubble(r,m,cont){var id=esc2(r.id),from=esc2(m.from),long=!!(m.text&&m.text.length>420);
-  return '<div class="chat-msg'+(r.mine?' mine':'')+(cont?' cont':'')+(long?' long':'')+(long&&opened[r.id]?' open':'')+(m.text&&window.e99IsMention&&window.e99IsMention(m.text)&&!r.mine?' mentioned':'')+'" data-id="'+id+'" data-at="'+esc2(m.at)+'" data-from="'+from+'" tabindex="-1">'
+  var hc=0,hs=String(m.from||'');for(var hi=0;hi<hs.length;hi++)hc=(hc*31+hs.charCodeAt(hi))>>>0;
+  return '<div class="chat-msg nc'+(hc%8+1)+(r.mine?' mine':'')+(cont?' cont':'')+(long?' long':'')+(long&&opened[r.id]?' open':'')+(m.text&&window.e99IsMention&&window.e99IsMention(m.text)&&!r.mine?' mentioned':'')+'" data-id="'+id+'" data-at="'+esc2(m.at)+'" data-from="'+from+'" tabindex="-1">'
    +(r.mine?'<span class="chat-sr">Você: </span>':cont?'<span class="chat-sr">'+from+': </span>':(window.profChip?window.profChip(m.from):'<span class="who"><span class="av av-s" aria-hidden="true">'+esc2((String(m.from||'?').trim()[0]||'?').toUpperCase())+'</span><span>'+from+'</span></span>'))
    +(m.re?'<button type="button" class="chat-quote" aria-label="Ver a mensagem respondida, de '+esc2(whoName(m.re.from))+'" onclick="chatJump(\''+esc2(m.re.id)+'\')"><b>'+esc2(whoName(m.re.from))+'</b><span>'+esc2(m.re.t||'Mensagem')+'</span></button>':'')
    +(m.img?(r.hasImg?'<img data-chat-img="'+id+'" alt="Foto enviada por '+from+'" decoding="async" width="260" height="195">':'<span class="img-wait">📷 Foto (baixando… fotos ficam no servidor só por 3 horas)</span>'):'')
@@ -200,6 +201,8 @@ async function paint(scroll){var box=document.getElementById('chat-list');if(!bo
     if(a.canPlayType&&a.canPlayType(mime)===''){a.parentNode.replaceWith(Object.assign(document.createElement('span'),{className:'img-wait',textContent:'🎤 Este aparelho não toca este formato de áudio ('+mime.replace('audio/','')+'). Abra no computador ou atualize o navegador.'}));return}
     if(audioURL[k]){a.src=audioURL[k];return}
     getImg(id).then(function(buf){if(!buf)throw Error('sem');return dec(buf).then(function(b){audioURL[k]=URL.createObjectURL(new Blob([b],{type:mime}));a.src=audioURL[k]})}).catch(function(){if(a.parentNode)a.parentNode.replaceWith(Object.assign(document.createElement('span'),{className:'img-wait',textContent:'🎤 Áudio indisponível'}))})});
+  /* v165: última bolha de cada sequência do mesmo remetente (rabinho do iMessage) */
+  var cm=box.querySelectorAll('.chat-msg');for(var q=0;q<cm.length;q++){var nx=cm[q].nextElementSibling;if(!(nx&&nx.classList.contains('chat-msg')&&nx.classList.contains('cont')))cm[q].classList.add('seq-end')}
   settle(box);jumpBtn(box)}
 /* ---------- v106: rolagem ---------- */
 /* stuck = a lista está no fim: mensagem nova rola junto. Se a pessoa subiu para ler, não pula: aparece "N novas mensagens". */

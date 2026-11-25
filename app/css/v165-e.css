@@ -1,0 +1,106 @@
+/* v165-e: Chat com estrutura de grupo do WhatsApp e balões do Mensagens do iPhone (iMessage).
+   Só tokens (nada de hex fixo). Bolhas sem desfoque e sem content-visibility. Carregado depois do v164-pro.css. */
+:root{
+  --p-bubble-out:var(--p-accent);
+  --p-bubble-out-text:var(--p-accent-ink);
+  --p-bubble-in:var(--p-s3);
+  --p-bubble-in-text:var(--p-t1);
+  --p-bubble-r:20px;
+  --p-bubble-r-in:6px;
+  --chat-name-1:color-mix(in oklch,var(--p-accent) 70%,oklch(78% .12 30));
+  --chat-name-2:color-mix(in oklch,var(--p-accent) 70%,oklch(78% .12 75));
+  --chat-name-3:color-mix(in oklch,var(--p-accent) 70%,oklch(78% .12 120));
+  --chat-name-4:color-mix(in oklch,var(--p-accent) 70%,oklch(78% .12 165));
+  --chat-name-5:color-mix(in oklch,var(--p-accent) 70%,oklch(78% .12 210));
+  --chat-name-6:color-mix(in oklch,var(--p-accent) 70%,oklch(78% .12 255));
+  --chat-name-7:color-mix(in oklch,var(--p-accent) 70%,oklch(78% .12 300));
+  --chat-name-8:color-mix(in oklch,var(--p-accent) 70%,oklch(78% .12 345));
+}
+@layer p164{
+/* fundo da conversa: superfície do tema */
+#chat-list,.cv-msgs{background:var(--p-bg)!important}
+/* chips de data fixos ao rolar */
+#chat-list .chat-day{position:sticky!important;top:6px;z-index:2;display:flex!important;justify-content:center!important;margin:12px 0 8px!important;background:none!important;border:0!important}
+#chat-list .chat-day::before,#chat-list .chat-day::after,#chat-list .chat-new::before,#chat-list .chat-new::after{display:none!important}
+#chat-list .chat-day span{background:var(--p-s2)!important;color:var(--p-t2)!important;font-size:var(--p-fs-cap)!important;font-weight:var(--p-w-medium)!important;border-radius:var(--p-r-pill)!important;padding:4px 12px!important;border:1px solid var(--p-line)!important}
+#chat-list .chat-new{display:flex!important;justify-content:center!important;margin:12px 0!important;background:none!important}
+#chat-list .chat-new span{background:var(--p-s2)!important;color:var(--p-t1)!important;font-size:var(--p-fs-cap)!important;border-radius:var(--p-r-pill)!important;padding:4px 12px!important}
+/* balões */
+#chat-list .chat-msg,.cv-msgs .cv-b{position:relative;max-width:75%!important;border-radius:var(--p-bubble-r)!important;background:var(--p-bubble-in)!important;color:var(--p-bubble-in-text)!important;box-shadow:none!important;border:0!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;font-size:var(--p-fs-body)!important;line-height:1.4!important;padding:8px 12px!important;margin-top:2px!important;overflow:visible!important}
+#chat-list .chat-msg.mine,.cv-msgs .cv-b.mine{background:var(--p-bubble-out)!important;color:var(--p-bubble-out-text)!important;margin-left:auto!important}
+#chat-list .chat-msg.mine .chat-txt,#chat-list .chat-msg.mine .chat-meta,#chat-list .chat-msg.mine .when,.cv-msgs .cv-b.mine .cv-t,.cv-msgs .cv-b.mine .cv-meta{color:var(--p-bubble-out-text)!important}
+#chat-list .chat-msg:not(.cont){margin-top:12px!important}
+/* cantos internos menores dentro da sequência */
+#chat-list .chat-msg.cont:not(.mine){border-top-left-radius:var(--p-bubble-r-in)!important}
+#chat-list .chat-msg.cont.mine{border-top-right-radius:var(--p-bubble-r-in)!important}
+#chat-list .chat-msg:not(.seq-end):not(.mine){border-bottom-left-radius:var(--p-bubble-r-in)!important}
+#chat-list .chat-msg.mine:not(.seq-end){border-bottom-right-radius:var(--p-bubble-r-in)!important}
+/* rabinho só na última bolha da sequência */
+#chat-list .chat-msg.seq-end::after,.cv-msgs .cv-b::after{content:"";position:absolute;bottom:0;width:14px;height:16px;background:inherit;pointer-events:none}
+#chat-list .chat-msg.seq-end:not(.mine)::after,.cv-msgs .cv-b:not(.mine)::after{left:-5px;-webkit-mask:radial-gradient(10px 12px at 0 0,transparent 98%,#000 100%);mask:radial-gradient(10px 12px at 0 0,transparent 98%,#000 100%);border-bottom-right-radius:4px}
+#chat-list .chat-msg.seq-end.mine::after,.cv-msgs .cv-b.mine::after{right:-5px;-webkit-mask:radial-gradient(10px 12px at 100% 0,transparent 98%,#000 100%);mask:radial-gradient(10px 12px at 100% 0,transparent 98%,#000 100%);border-bottom-left-radius:4px}
+/* horário: discreto, mais claro ao passar o mouse */
+#chat-list .chat-meta,.cv-msgs .cv-meta{font-size:var(--p-fs-cap)!important;opacity:.75}
+@media (hover:hover){#chat-list .chat-msg .chat-meta{opacity:0;transition:opacity var(--p-d-fast) var(--p-ease)}#chat-list .chat-msg:hover .chat-meta,#chat-list .chat-msg:focus-within .chat-meta{opacity:.8}}
+/* nome de quem enviou */
+#chat-list .chat-msg:not(.mine) .prof-chip span:last-child,.cv-msgs .cv-from{font-weight:var(--p-w-semibold)!important;font-size:var(--p-fs-sm)!important;color:var(--chat-name-5)!important}
+/* citação com barra de acento */
+#chat-list .chat-quote,.cv-msgs .cv-q{display:block;border-left:3px solid var(--p-accent)!important;background:color-mix(in srgb,var(--p-bg) 30%,transparent)!important;border-radius:8px!important;padding:4px 8px!important;margin-bottom:4px!important;color:inherit!important}
+/* imagens com cantos do balão */
+#chat-list .chat-msg img[data-chat-img],.cv-msgs .cv-img{max-width:240px!important;height:auto;border-radius:14px!important;display:block}
+/* reações (tapback): selo redondo no canto de cima */
+#chat-list .chat-msg .reacts{position:absolute!important;top:-14px;right:-6px;display:flex;gap:2px;margin:0!important}
+#chat-list .chat-msg.mine .reacts{right:auto;left:-6px}
+#chat-list .chat-msg:has(.reacts){margin-top:18px!important}
+#chat-list .chat-msg .reacts button{min-height:24px!important;height:24px;padding:0 6px!important;border-radius:var(--p-r-pill)!important;background:var(--p-s2)!important;border:2px solid var(--p-bg)!important;color:var(--p-t1)!important;font-size:var(--p-fs-cap)!important}
+/* "Visto por"/"Entregue" abaixo da última própria */
+#chat-list .chat-msg .seen-by{position:absolute;top:100%;right:4px;margin-top:2px;font-size:var(--p-fs-cap)!important;color:var(--p-t2)!important;white-space:nowrap}
+#chat-list .chat-msg:has(.seen-by){margin-bottom:20px!important}
+/* digitando: balão cinza com 3 pontos */
+#chat-typing:not(:empty){display:inline-flex;align-items:center;gap:8px;background:var(--p-bubble-in);color:var(--p-t2);border-radius:var(--p-bubble-r);padding:6px 12px;font-size:var(--p-fs-cap);margin:4px 0}
+/* menu da mensagem estilo iOS */
+#msg-menu .mm{border-radius:20px!important;background:var(--p-s2)!important;box-shadow:var(--p-shadow-pop)!important;overflow:hidden}
+#msg-menu .emo{display:flex;justify-content:space-between;padding:8px!important;border-bottom:1px solid var(--p-line)}
+#msg-menu .emo button{min-width:44px;min-height:44px;border-radius:var(--p-r-pill)!important;background:var(--p-s3)!important;font-size:22px!important}
+#msg-menu .act button{display:block;width:100%;text-align:left;min-height:44px;border-radius:0!important;background:none!important;border:0!important;border-bottom:1px solid var(--p-line)!important}
+#msg-menu .act button.danger{color:var(--p-danger)!important}
+#cv-menu.cv-sheet{border-radius:20px!important}
+#cv-menu .cv-rxrow button{min-width:44px;min-height:44px;border-radius:var(--p-r-pill)!important}
+/* campo em pílula */
+.chat-compose .chat-field textarea,.cv-compose textarea{border-radius:22px!important;min-height:44px;font-size:var(--p-fs-body)!important;background:var(--p-s1)!important;border:1px solid var(--p-line-2)!important}
+#chat-send,.cv-compose button.primary{border-radius:var(--p-r-pill)!important}
+/* lista de conversas */
+.cv-list .cv-item .cv-av{width:52px!important;height:52px!important;border-radius:50%!important}
+.cv-head .cv-av{width:40px!important;height:40px!important;border-radius:50%!important}
+.cv-list .cv-item .cv-last{color:var(--p-t2)!important}
+.cv-list .cv-badge{background:var(--p-accent)!important;color:var(--p-accent-ink)!important;border-radius:var(--p-r-pill)!important;min-width:20px;text-align:center}
+/* cor estável por pessoa (hash do remetente) */
+#chat-list .chat-msg.nc1 .prof-chip span:last-child,.cv-msgs .cv-b.nc1 .cv-from{color:var(--chat-name-1)!important}
+#chat-list .chat-msg.nc2 .prof-chip span:last-child,.cv-msgs .cv-b.nc2 .cv-from{color:var(--chat-name-2)!important}
+#chat-list .chat-msg.nc3 .prof-chip span:last-child,.cv-msgs .cv-b.nc3 .cv-from{color:var(--chat-name-3)!important}
+#chat-list .chat-msg.nc4 .prof-chip span:last-child,.cv-msgs .cv-b.nc4 .cv-from{color:var(--chat-name-4)!important}
+#chat-list .chat-msg.nc5 .prof-chip span:last-child,.cv-msgs .cv-b.nc5 .cv-from{color:var(--chat-name-5)!important}
+#chat-list .chat-msg.nc6 .prof-chip span:last-child,.cv-msgs .cv-b.nc6 .cv-from{color:var(--chat-name-6)!important}
+#chat-list .chat-msg.nc7 .prof-chip span:last-child,.cv-msgs .cv-b.nc7 .cv-from{color:var(--chat-name-7)!important}
+#chat-list .chat-msg.nc8 .prof-chip span:last-child,.cv-msgs .cv-b.nc8 .cv-from{color:var(--chat-name-8)!important}
+/* conversas: sequências, avatar de 28 px na última recebida, recibo abaixo */
+.cv-msgs .cv-b.cont{margin-top:2px!important}
+.cv-msgs .cv-b:not(.cont){margin-top:12px!important}
+.cv-msgs .cv-b:not(.seq-end)::after{display:none}
+.cv-msgs .cv-b.cont:not(.mine){border-top-left-radius:var(--p-bubble-r-in)!important}
+.cv-msgs .cv-b.cont.mine{border-top-right-radius:var(--p-bubble-r-in)!important}
+.cv-msgs .cv-b:not(.seq-end):not(.mine){border-bottom-left-radius:var(--p-bubble-r-in)!important}
+.cv-msgs .cv-b.mine:not(.seq-end){border-bottom-right-radius:var(--p-bubble-r-in)!important}
+.cv-msgs .cv-b:not(.mine):has(.cv-sav),.cv-msgs .cv-b.cont:not(.mine){margin-left:36px!important}
+.cv-msgs .cv-sav{position:absolute;left:-36px;bottom:0}
+.cv-msgs .cv-sav .cv-av{width:28px!important;height:28px!important;font-size:var(--p-fs-cap)!important}
+.cv-msgs .cv-rcpt{position:absolute;top:100%;right:4px;margin-top:2px;font-size:var(--p-fs-cap);color:var(--p-t2);white-space:nowrap}
+.cv-msgs .cv-b:has(.cv-rcpt){margin-bottom:20px!important}
+.cv-msgs .cv-rxs{position:absolute;top:-14px;right:-6px;display:flex;gap:2px}
+.cv-msgs .cv-b.mine .cv-rxs{right:auto;left:-6px}
+.cv-msgs .cv-b:has(.cv-rxs){margin-top:18px!important}
+.cv-msgs .cv-rx{background:var(--p-s2);border:2px solid var(--p-bg);border-radius:var(--p-r-pill);padding:0 6px;font-size:var(--p-fs-cap);color:var(--p-t1)}
+/* chat da equipe: avatar só na última recebida da sequência */
+#chat-list .chat-msg:not(.mine):not(.cont) .prof-chip .av{display:none}
+}
+@media (prefers-reduced-motion:reduce){#chat-list .chat-msg .chat-meta{transition:none!important}}

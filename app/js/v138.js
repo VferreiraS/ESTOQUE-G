@@ -91,10 +91,10 @@ function subtitle(cv){var now=Date.now(),ms=members(cv),ty=ms.filter(function(u)
   if(ty.length)return cv[0]==='d'?'digitando…':ty.map(nm).join(', ')+' digitando…';
   if(cv[0]==='d'){var p=pres(ms[0]);if(!prefP()||!p||!p.on)return '';return now-p.on<ONLINE?'online':'visto por último '+(when(p.on)===hm(p.on)?'hoje às '+hm(p.on):when(p.on)+' às '+hm(p.on))}
   var g=CV[cv];return g?g.m.map(nm).join(', '):''}
-function tick(m,cv){if(m.st==='env')return '<span class="cv-tk" title="Enviando">Enviando…</span>';if(m.st)return '';var os=members(cv);if(!os.length)return '<span class="cv-tk">✓</span>';
+function tick(m,cv){if(m.st==='env')return '<span class="cv-tk" title="Enviando">Enviando…</span>';if(m.st)return '';var os=members(cv);if(!os.length)return '<span class="cv-tk">Enviada</span>';
   var rc=os.map(function(u){var r=R['rcpt_'+cv+'~'+u];return r&&!r.del&&r.x?r.x:{}});
-  if(rc.every(function(x){return (+x.rd||0)>=m.at}))return '<span class="cv-tk rd" aria-label="Lida" data-tk="lido">✓✓</span>';
-  if(rc.every(function(x){return (+x.dl||0)>=m.at}))return '<span class="cv-tk" aria-label="Entregue" data-tk="entregue">✓✓</span>';return '<span class="cv-tk" aria-label="Enviada" data-tk="enviado">✓</span>'}
+  if(rc.every(function(x){return (+x.rd||0)>=m.at})){var ra=0;os.forEach(function(u){var r=R['rcpt_'+cv+'~'+u];if(r&&r.at>ra)ra=r.at});return '<span class="cv-tk rd" data-tk="lido">'+(os.length>1?'Lida por todos':'Lida'+(ra?' às '+hm(ra):''))+'</span>'};
+  if(rc.every(function(x){return (+x.dl||0)>=m.at}))return '<span class="cv-tk" data-tk="entregue">Entregue</span>';return '<span class="cv-tk" data-tk="enviado">Enviada</span>'}
 /* ---------- recibos e presença ---------- */
 var rcT=0;function receipts(){clearTimeout(rcT);rcT=setTimeout(async function(){if(!cx())return;var list=convs();for(var i=0;i<list.length;i++){var c=list[i],l=msgs(c.cv).filter(function(m){return m.u!==me()&&!m.st});if(!l.length)continue;var mx=l[l.length-1].at;
     var open=page==='chat'&&sub===c.cv&&!document.hidden;if(open)setLr(c.cv,mx);var r=R['rcpt_'+c.cv+'~'+me()],x=r&&r.x||{},dl=+x.dl||0,rd=+x.rd||0;
@@ -120,16 +120,16 @@ function convView(cv){var g=CV[cv],name=cv[0]==='d'?nm(dmMap[cv]):g?g.nm:'Grupo'
    +'<p class="small cv-e2e">'+(g&&g.m.indexOf(me())<0?'Você não participa mais deste grupo.':'Cifrada de ponta a ponta: só '+(g?'os membros':'vocês dois')+' leem.')+'</p><div id="cv-msgs" class="cv-msgs" role="log" aria-live="off" aria-label="Mensagens"></div><div id="cv-ann" class="chat-sr" role="status"></div>'
    +'<div id="cv-rp"></div><div id="cv-phprev"></div><div id="cv-fprev"></div><form class="cv-compose" onsubmit="e99Cv.send(event)"><button type="button" class="cv-clip" aria-label="Enviar arquivo (PDF, planilha, documento…), até 2 MB" title="Enviar arquivo" onclick="this.nextElementSibling.click()">'+e99Arq.clip+'</button><input type="file" hidden tabindex="-1" onchange="e99Cv.file(this)"><label class="as-file cv-phbtn" aria-label="Enviar foto">Foto<input type="file" accept="image/*" onchange="e99Cv.photo(this)"></label>'
    +'<textarea name="t" rows="1" maxlength="2000" placeholder="Mensagem" aria-label="Mensagem" enterkeyhint="send" oninput="e99Cv.typing(this)" onkeydown="e99Cv.key(event)"></textarea><button class="primary" type="submit">Enviar</button></form></div>'}
-function bubble(cv,m){var mine=m.u===me(),g=cv[0]!=='d',rq=m.rp?msgs(cv).filter(function(x){return x.id===m.rp})[0]:null;
+function bubble(cv,m,pv,nx,lastMine){var mine=m.u===me(),g=cv[0]!=='d',first=!pv||pv.u!==m.u||m.at-pv.at>3e5,end=!nx||nx.u!==m.u||nx.at-m.at>3e5,hc=0;for(var hi=0;hi<String(m.u).length;hi++)hc=(hc*31+String(m.u).charCodeAt(hi))>>>0;rq=m.rp?msgs(cv).filter(function(x){return x.id===m.rp})[0]:null;
   var rx=m.del||m.st?{}:reacts(cv,m.id),rs=Object.keys(rx).map(function(e){return '<span class="cv-rx">'+E(e)+(rx[e].length>1?rx[e].length:'')+'</span>'}).join('');
-  return '<div class="cv-b'+(mine?' mine':'')+'" data-mid="'+E(m.id)+'">'+(g&&!mine?'<span class="cv-from">'+E(nm(m.u))+'</span>':'')
+  return '<div class="cv-b nc'+(hc%8+1)+(mine?' mine':'')+(first?'':' cont')+(end?' seq-end':'')+'" data-mid="'+E(m.id)+'">'+(g&&!mine&&end?'<span class="cv-sav" aria-hidden="true">'+av(m.u,nm(m.u))+'</span>':'')+(g&&!mine&&first?'<span class="cv-from">'+E(nm(m.u))+'</span>':'')
    +(m.del?'<i class="small">Mensagem apagada</i>':(rq?'<span class="cv-q">'+E(nm(rq.u))+': '+E(String(rq.del?'Mensagem apagada':rq.t||(rq.f?'Arquivo':'Foto')).slice(0,80))+'</span>':'')+(m.ph?'<img class="cv-img" src="'+E(img(m.ph))+'" alt="Foto">':'')+(m.f?fileCard(m):m.lf?fileCard({f:{n:m.lf.name,s:m.lf.size}},true):'')+(m.t?'<span class="cv-t">'+E(m.t)+'</span>':''))
-   +'<span class="cv-meta">'+E(hm(m.at))+(mine&&!m.del?' '+tick(m,cv):'')+'</span>'+(rs?'<span class="cv-rxs">'+rs+'</span>':'')
+   +'<span class="cv-meta">'+E(hm(m.at))+'</span>'+(mine&&!m.del&&(m.st||m.id===lastMine)?'<span class="cv-rcpt">'+tick(m,cv)+'</span>':'')+(rs?'<span class="cv-rxs">'+rs+'</span>':'')
    +(m.st==='err'?'<span class="cv-fail">Não enviada. <button type="button" onclick="e99Cv.retry(\''+E(m.id)+'\')">Tentar de novo</button><button type="button" onclick="e99Cv.drop(\''+E(m.id)+'\')">Descartar</button></span>':'')
    +(!m.del&&!m.st?'<button type="button" class="cv-more" aria-label="Opções da mensagem" onclick="e99Cv.menu(\''+E(m.id)+'\')">⋯</button>':'')+'</div>'}
 function paintMsgs(){var box=document.getElementById('cv-msgs');if(!box||!sub)return;var l=msgs(sub),near=box.scrollHeight-box.scrollTop-box.clientHeight<80,first=!box.childElementCount;
   var last=box.getAttribute('data-last')||'',nl=l.length?l[l.length-1]:null;
-  box.innerHTML=l.length?l.map(function(m){return bubble(sub,m)}).join(''):'<p class="small cv-empty">Nenhuma mensagem ainda.</p>';
+  var lm='';l.forEach(function(x){if(x.u===me()&&!x.del&&!x.st)lm=x.id});box.innerHTML=l.length?l.map(function(m,i){return bubble(sub,m,l[i-1],l[i+1],lm)}).join(''):'<p class="small cv-empty">Nenhuma mensagem ainda.</p>';
   if(nl&&nl.id!==last){box.setAttribute('data-last',nl.id);if(!first&&nl.u!==me()){var a=document.getElementById('cv-ann');if(a)a.textContent=nm(nl.u)+': '+(nl.t||(nl.f?'arquivo '+nl.f.n:'Foto'))}}
   if(first||near)box.scrollTop=box.scrollHeight;receipts()}
 var rc0=window.renderChat;
