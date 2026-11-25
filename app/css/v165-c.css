@@ -99,6 +99,7 @@ body.dark #view .corridor-card .cardtop>button{grid-row:4;margin:var(--p-s-1) 0 
 body.dark #view .corridor-card .cardtop>button:not(.danger){grid-column:2}
 body.dark #view .corridor-card .cardtop>button.danger{grid-column:3;background:transparent!important;border-color:transparent!important}
 body.dark #view .corridor-card .sector-symbol{background:color-mix(in srgb,var(--sector-color,var(--p-s3)) 22%,var(--p-s2))!important;color:color-mix(in srgb,var(--sector-color,var(--p-t2)) 45%,var(--p-t1))!important;border:0!important}
+body.dark #view .corridor-card>.small b{white-space:nowrap}
 body.dark #view .corridor-card .fwd-btn{margin-left:auto!important;background:transparent!important;border:0!important;color:var(--p-t2)!important}
 body.dark #view .cor-dist{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:var(--p-s-4)!important}
 body.dark #view .cor-dist button.primary:disabled{background:var(--p-s2)!important;border-color:var(--p-line)!important;color:var(--p-t3)!important}
