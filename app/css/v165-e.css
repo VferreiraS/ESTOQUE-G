@@ -100,7 +100,5 @@
 .cv-msgs .cv-b.mine .cv-rxs{right:auto;left:-6px}
 .cv-msgs .cv-b:has(.cv-rxs){margin-top:18px!important}
 .cv-msgs .cv-rx{background:var(--p-s2);border:2px solid var(--p-bg);border-radius:var(--p-r-pill);padding:0 6px;font-size:var(--p-fs-cap);color:var(--p-t1)}
-/* chat da equipe: avatar só na última recebida da sequência */
-#chat-list .chat-msg:not(.mine):not(.cont) .prof-chip .av{display:none}
 }
 @media (prefers-reduced-motion:reduce){#chat-list .chat-msg .chat-meta{transition:none!important}}
