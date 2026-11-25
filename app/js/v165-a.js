@@ -26,7 +26,8 @@ function fix(){var v=D.getElementById('view');if(!v||typeof page==='undefined')r
     if(cen&&first&&cen!==first&&cen.compareDocumentPosition(first)&Node.DOCUMENT_POSITION_PRECEDING)first.before(cen);
     main('.alert-settings .primary',v);
     qa('.alert-item',v).forEach(function(a){if(!q('.p165-ic',a)){var i=D.createElement('span');i.className='p165-ic warn';i.setAttribute('aria-hidden','true');i.innerHTML=ic('warn');a.prepend(i)}trunc(qa('b',a))});
-    var em=cen&&q('.empty',cen);if(em)em.replaceWith(emptyBox('check','Tudo em dia','Nenhuma pendência dentro dos critérios configurados.','Ajustar avisos',function(){var f=q('.alert-settings select,.alert-settings input',v);if(f){f.scrollIntoView({block:'center'});f.focus()}}));
+    /* a Central vazia já tem a ilustração da v158 (vd-empty): só ganha a ação */
+    var em=cen&&q('.empty',cen);if(em&&!q('button',em)){var bt=D.createElement('button');bt.type='button';bt.textContent='Ajustar avisos';bt.addEventListener('click',function(){var f=q('.alert-settings select,.alert-settings input',v);if(f){f.scrollIntoView({block:'center'});f.focus()}});em.appendChild(bt)}
     altEmpty()}
   if(page==='account'){main('form[onsubmit^="authChangePassword"] .primary',v);
     var lone=qa(':scope>.grid2',v).filter(function(g){return g.children.length===1}),bk=q('#bk-panel',v);
