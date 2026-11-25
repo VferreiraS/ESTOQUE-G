@@ -38,7 +38,7 @@ const U='http://localhost:8000/index.html';const SH=process.env.SHOTS||'';
 
  /* 2) Outlook: HTML e texto simples */
  const h=await P.evaluate(()=>e99Msg.html(e99Msg.planPayload(state.plans[0])));
- ok((h.match(/<b style="color:#ffffff">Responsável:<\/b>/g)||[]).length===6&&(h.match(/<b style="color:#ffffff">Demanda:<\/b>/g)||[]).length===6,'HTML: rótulos Responsável/Demanda em negrito, um por atividade');
+ ok((h.match(/<b style="color:#[0-9a-fA-F]{6}">Responsável:<\/b>/g)||[]).length===6&&(h.match(/<b style="color:#[0-9a-fA-F]{6}">Demanda:<\/b>/g)||[]).length===6,'HTML: rótulos Responsável/Demanda em negrito (v165: cor do texto 1 do tema), um por atividade');
  ok(/Separar tudo do Natal<br>Levar para o corredor 3/.test(h)&&!/<img/.test(h)&&(h.match(/<tr><td valign="top"/g)||[]).length===6,'HTML: um bloco por atividade, quebra do usuário vira <br>, sem imagem');
  const x=await P.evaluate(()=>e99Msg.html({title:'t',sections:[{lines:[{b:'a',sub:['Orientações: <img src=x onerror=alert(1)>']}]}]}));
  ok(!/<img/.test(x)&&/&lt;img/.test(x),'HTML escapa o texto do usuário');
