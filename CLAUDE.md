@@ -19,7 +19,7 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão:** 167 (`meta estoque99-version` + `CACHE` `estoque99-v167` no `sw.js` + `?v=167` nos arquivos `app/`), publicada em 25/11/2026 no GitHub Pages (Firebase Hosting ainda na versão anterior: deploy sem login neste ambiente; publicar com `firebase deploy --only hosting`). Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
+- **Versão:** 168 (`meta estoque99-version` + `CACHE` `estoque99-v168` no `sw.js` + `?v=168` nos arquivos `app/`), publicada em 27/11/2026 no GitHub Pages (Firebase Hosting ainda na versão anterior: deploy sem login neste ambiente; publicar com `firebase deploy --only hosting`). Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
@@ -29,7 +29,7 @@
 
 | Versão | O quê |
 |--------|--------|
-| v167 | **Chat do celular sem compressão** (pedido do dono: "o chat do móbile está todo comprimido"). Causa: no chat da equipe sem teclado o `.chat-wrap` é grade com coluna `auto`; o cabeçalho (título `nowrap`) e "Sair da equipe" esticavam a coluna para 418 px numa caixa de 322 px — cabeçalho, balões e campo saíam pela direita (microfone cortado); e cartão dentro de cartão (conteúdo 18 px + painel 16 px + borda + lista) apertava os balões. Correção só no celular (≤900 px), em `app/css/v167-chat-movel.css` (camada `p164`, depois do `v165-e.css`): coluna `minmax(0,1fr)`, painéis do chat e da lista de conversas sem moldura, subtítulo do cabeçalho em uma linha, texto do balão 17 px, lista com avatar 52 px e prévia com reticências. PC igual à v166. Teste `tests/v167_chat_movel_test.js` (iPhone 13 + PC, 3 temas, com e sem teclado simulado). |
+| v168 | **Correção de erros e bugs** (pedido do dono: "concerte erros e bugs"). Auditoria: suíte completa, console/rede em todas as telas (iPhone 13 + PC, Lilás e Violeta: 0 erro, 0 404, nenhum undefined/NaN/Invalid Date), `node --check` nos 87 `app/js`, `APP_FILES`/`<script>`/manifesto/ícones conferidos. **Bug real:** quando o usuário da nuvem troca (link de acesso entra anônimo e depois a conta liga o e-mail), a escuta de `lojas/{loja}/dados` do usuário antigo dava `permission-denied` e o `v136.js` ficava em "erro" com o uid velho — sumia "Dados da loja na nuvem", chaves do chat e grupos não chegavam até a revisão de 60 s (era a falha do `v136_test` desde a v164 e do `v138_test`). Correção no erro da escuta: se o usuário atual não é o da ligação, religa na hora sem mostrar erro. Pequenos: plural certo na notificação do sistema (`emitDesktop`, `core.js`); `invitesList` do `social.js` só aceita lista. Testes novos `tests/v168_nuvem_uid_test.js` e `tests/v168_audit_test.js`; `cloud_test` espera até 20 s pela tela do e-mail (oscilava com carga). |
 
 Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o site); o que vale no ar é o `index.html` + `sw.js` publicados.
 
@@ -41,7 +41,8 @@ Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o sit
 9. **Não reintroduzir** — injeção de HTML pelo SW (`injectPatch` / `account-id-patch.js`); isso quebrou o app (SyntaxError).
 11. **Visual** — desde a v122 sem efeitos pesados (sem S de partículas, grade Tron, rastros, holograma, "Pausar animação", preferência Efeitos; música removida). Ficam vidro, cores do tema e transições simples; respeita "menos movimento" (exceto a abertura, v146).
 12. **Conferência / limpeza:** limpeza do IndexedDB `estoque99-conf` ainda não existe. Nova limpeza geral em todos os aparelhos = subir a época do `v126-reset-js` (`r127`). Não mexer nos stashes do git.
-14. **Ainda abertos:** campos de data/hora no formato do navegador; avisos só com o app aberto (sem Web Push); "(s)" em `notify` fora do DOM.
+14. **Ainda abertos:** campos de data/hora no formato do navegador; avisos só com o app aberto (sem Web Push). ("(s)" fora do DOM: notificação do sistema corrigida na v168.)
+15. **Testes que oscilam (v168):** `v162_test` mede CPU do vigia com poucos ciclos (3,5–4,2 ms contra o limite 3,5 ms na máquina de teste; passou na suíte); `v137_test` só com carga. Não são bug do app; se o vigia ficar acima de 3,5 ms no iPhone real, decidir com o dono se o limite muda.
 
 **Conferir em aparelho real** (detalhes em `docs/HISTORICO.md`):
 - v140/v141: abertura (quadradinhos → S) fluida no iPhone; "Entrar" com som; teclado/VoiceOver só alcançam o botão.
@@ -68,6 +69,7 @@ Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o sit
 - v165: visual novo tela por tela no iPhone e no PC da loja (3 temas); chat com balões no iPhone (cauda, "Lida por", teclado); cores da paleta nova (gráficos do Painel, banner do WhatsApp/Outlook).
 - v166: nome **StoK** no iPhone e no PC da loja (abertura, tela de entrar, menu, aba do navegador, WhatsApp/Outlook/impressão); no iPhone o nome do atalho da tela inicial só muda ao adicionar o atalho de novo; colar de novo os `apps-script/*.gs` no Apps Script para os e-mails e a planilha dizerem StoK.
 - v167: chat no iPhone real (lista de conversas, chat da equipe, conversa privada/grupo, com e sem teclado): nada cortado à direita, balões largos, texto 17 px; dizer se ainda parece apertado.
+- v168: ativar uma conta pelo link de acesso no iPhone real e ver no Início "Dados da loja na nuvem" logo depois (sem esperar 1 minuto); chat privado/grupo dessa conta chegando.
 
 ### Decisões pendentes do dono (v89 — não mudar sem perguntar)
 - **Chat (v106/v108):** desde a v108 a mensagem que falhou fica guardada (cifrada) no aparelho; no celular Enter continua enviando (não há Shift+Enter no teclado do celular); "Sair da equipe" foi para baixo do chat. Se o dono quiser guardar as não enviadas ou Enter = nova linha no celular, mudar no `chat-js`.

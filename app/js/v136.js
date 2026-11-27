@@ -54,7 +54,7 @@ async function seed(my){var q=await L().collection('dados').get();if(my!==gen)re
 function listen(my){var q=L().collection('dados').where('st','>',FS.Timestamp.fromMillis(cl().cursor||0)).orderBy('st');
   var warm=false;unsubD=q.onSnapshot(function(snap){if(my!==gen)return;var qq=!warm;if(!snap.metadata.fromCache)warm=true;var docs=[];snap.docChanges().forEach(function(x){if(x.type!=='removed'&&!x.doc.metadata.hasPendingWrites)docs.push(x.doc)});
     chain=chain.then(async function(){if(my!==gen)return;if(docs.length)await take(docs,qq);if(!snap.metadata.fromCache){lastAt=Date.now();status='ok'}paint()}).catch(function(){})},
-   function(e){if(my!==gen)return;status='erro';lastErr=e&&e.code||'';paint()})}
+   function(e){if(my!==gen)return;/* v168: a conta trocou de usuário na nuvem (anônimo → e-mail): liga de novo já, sem mostrar erro */var cu=user();if(cu&&cu.uid!==uid){runKey='';setTimeout(tick,200);return}status='erro';lastErr=e&&e.code||'';paint()})}
 /* ---------- receber ---------- */
 function auxCloud(op,x,who){if(op.d||AUXC.indexOf(op.c)<0)return null;if(op.c==='confs')return K.confOp(op,{r:'auxiliar',dev:op.x.dev});
   var cur=K.arr(op.c).find(function(y){return y&&y.id===op.i});

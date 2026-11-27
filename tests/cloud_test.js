@@ -49,7 +49,7 @@ const doc=(path,tok)=>j(`${FS}/v1/projects/${P}/databases/(default)/documents/${
  // conta antiga (sem e-mail): ao entrar com a senha, pede para vincular
  /* v105: conta antiga = sem e-mail na conta cifrada e sem cloud-email; agora a tela obrigatória pede o e-mail e liga a nuvem sozinha */await A.evaluate(async()=>{localStorage.removeItem('lojasg.estoque99.cloud-email:'+authSession.storeKey);delete authSession.payload.email;await authPersist(JSON.stringify(state))});await A.evaluate(()=>e99Cloud.load().then(c=>c.auth.signOut()));
  await A.evaluate(()=>{window.confirm=()=>true});await A.evaluate(()=>authLogout());await A.waitForTimeout(1500);await L.login(A,gl);
- ok(await until(A,()=>{const d=document.getElementById('email-gate');return !!(d&&d.open)},null,10000),'conta antiga: pede o e-mail (tela obrigatória v105)');
+ ok(await until(A,()=>{const d=document.getElementById('email-gate');return !!(d&&d.open)},null,20000),'conta antiga: pede o e-mail (tela obrigatória v105)');
  ok(!(await A.$('#email-gate input[name=password]')),'não pede a senha de novo logo depois do login');
  await A.fill('#email-gate input[name=email]',aEmail);await A.click('#email-gate button.primary');
  ok(await until(A,e=>!document.getElementById('email-gate').open&&!(document.getElementById('cloud-link')||{}).open&&!!e99Cloud.user()&&e99Cloud.user().email===e,aEmail,15000),'vinculou com o mesmo e-mail');

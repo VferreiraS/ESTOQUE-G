@@ -111,7 +111,7 @@ window.e99Forward=function(kind,id,aid){var txt='';
 
 /* ---------- contas confirmadas entram na Equipe e recebem corredores (só no aparelho do gestor) ---------- */
 var linkT=0;window.e99OnMembers=function(){clearTimeout(linkT);linkT=setTimeout(linkAccounts,1500)};setInterval(function(){if(authSession&&!document.hidden)linkAccounts()},60000);setTimeout(function(){if(authSession)linkAccounts()},12000);var goL=go;go=function(p){var r=goL.apply(this,arguments);if(p==='team'||p==='corridors'||p==='profile')setTimeout(linkAccounts,300);return r};
-function invitesList(){try{return JSON.parse(localStorage.getItem('lojasg.estoque99.aux-invites:'+authSession.storeKey)||'[]')||[]}catch(x){return []}}
+function invitesList(){try{var l=JSON.parse(localStorage.getItem('lojasg.estoque99.aux-invites:'+authSession.storeKey)||'[]');return Array.isArray(l)?l:[]}catch(x){return []}}
 function confirmed(){var out=[],seen={};function add(m){if(!m.login)return;var lg=authLoginName(m.login);if(lg===myLogin()||lg==='estoque 99'||seen[lg])return;seen[lg]=1;out.push(m)}
   (window.e99CloudMembers?window.e99CloudMembers():[]).forEach(add);
   try{var mem=window.syncMembers?window.syncMembers():{};Object.keys(mem).forEach(function(d){var m=mem[d];if(m&&m.login)add({login:m.login,nome:m.name,role:m.role,uid:'',verificado:false,inviteId:m.inviteId||''})})}catch(x){}return out}
