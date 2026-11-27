@@ -160,7 +160,13 @@ const APP_FILES = [
   'app/css/v165-b.css',
   'app/css/v165-c.css',
   'app/css/v165-e.css',
-  'app/css/v167-chat-movel.css'
+  'app/css/v167-chat-movel.css',
+  'app/js/v170-inicio.js',
+  'app/css/v170-inicio.css',
+  'app/img/stok-logo.png',
+  'app/img/inicio-s.png',
+  'app/img/inicio-galpao-icone.png',
+  'app/img/inicio-galpao.jpg'
 ];
 const CORE = [
   './index.html',
