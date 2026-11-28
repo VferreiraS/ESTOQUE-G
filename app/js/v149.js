@@ -11,7 +11,7 @@
   function toEnd(b){if(b)b.scrollTop=b.scrollHeight}
   function apply(){raf=0;var B=document.body;if(!B)return;
     var pg=typeof page!=='undefined'?page:'';var cv=document.querySelector('.cv-wrap[data-open]'),gw=document.querySelector('.chat-wrap');
-    var t=typing(),want=pg==='chat'&&mq.matches&&!!(cv||(gw&&t));
+    var t=typing(),want=pg==='chat'&&mq.matches&&!!(cv||gw); /* v170: chat da equipe em tela cheia sempre no celular (antes só com o campo focado) */
     if(want!==on){on=want;
       if(on){lockY=window.scrollY||0;document.documentElement.classList.add('e99-convo-lock')}
       else{document.documentElement.classList.remove('e99-convo-lock');B.style.removeProperty('--e99-vvh');B.style.removeProperty('--e99-vvt')}

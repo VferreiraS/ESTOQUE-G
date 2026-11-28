@@ -27,7 +27,7 @@ function ratio(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min
    const out=l.filter(m=>m.classList.contains('mine')),inn=l.filter(m=>!m.classList.contains('mine'));
    /* v169 (print do dono): todos os balões à esquerda, depois da foto; o próprio se distingue pela cor */const side=l.every(m=>{const x=m.getBoundingClientRect().left-box.left;return x>=56&&x<box.width/4});
    const probe=document.createElement('div');document.body.appendChild(probe);const col=v=>{probe.style.color=v;return getComputedStyle(probe).color};
-   const bgOk=out.every(m=>getComputedStyle(m).backgroundColor===col('var(--p-bubble-out)'))&&inn.every(m=>getComputedStyle(m).backgroundColor===col('var(--p-bubble-in)'));probe.remove();
+   /* v169: o chat tem paleta própria fixa (--c-balao-meu / --c-balao-outro, medidas no print); fora dela, --p-bubble-* */const v169=document.body.classList.contains('v169c'),kO=v169?'--c-balao-meu':'--p-bubble-out',kI=v169?'--c-balao-outro':'--p-bubble-in';const bgOk=out.every(m=>getComputedStyle(m).backgroundColor===col('var('+kO+')'))&&inn.every(m=>getComputedStyle(m).backgroundColor===col('var('+kI+')'));probe.remove();
    const last=out[out.length-1];
    return {tailOk,tailCss,nameOk,avOk,side,bgOk,day:!!document.querySelector('#chat-list .chat-day'),seen:!!(last&&last.querySelector('.seen-by')&&/Entregue|Lida/.test(last.querySelector('.seen-by').textContent)),
     plus:!!document.querySelector('#chat-form .chat-plus'),pill:parseFloat(getComputedStyle(document.getElementById('chat-text')).borderTopLeftRadius)>=18,

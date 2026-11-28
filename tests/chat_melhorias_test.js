@@ -92,7 +92,7 @@ const L=require('./lib.js');const {ok,until}=L;
  await B.click('#msg-menu [data-a=del]');ok(await until(B,()=>![...document.querySelectorAll('#chat-list .chat-msg')].some(m=>/Apagar pelo menu/.test(m.innerText))),'iPhone: apaga pela lista de opções');
  ok(await B.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&document.getElementById('chat-list').scrollWidth<=document.getElementById('chat-list').clientWidth+1),'iPhone: sem rolagem lateral (página e lista)');
  ok(await B.evaluate(()=>{const c=document.querySelector('.chat-compose').getBoundingClientRect(),n=document.querySelector('.mobile-bottom');return !n||getComputedStyle(n).display==='none'&&c.bottom<=innerHeight+1||c.bottom<=n.getBoundingClientRect().top+1||scrollY>0}),'iPhone: campo de escrever cabe acima da barra de baixo (v169: na conversa a barra de baixo sai)');
- ok(await B.evaluate(()=>{const w=document.querySelector('.chat-wrap').getBoundingClientRect();return w.left>=12&&innerWidth-w.right>=12}),'iPhone: margem lateral de ~16 px');
+ ok(await B.evaluate(()=>{const w=document.querySelector('.chat-wrap .chat-compose').getBoundingClientRect();return w.left>=10&&innerWidth-w.right>=10}),'iPhone: margem lateral de ~10–16 px (v170: chat em tela cheia, margem dentro do chat)');
  await B.locator('.chat-wrap').screenshot({path:require('os').tmpdir()+'/stok-chat-v106-iphone.png'});
 
  /* PC: coluna central legível, lista sem rolagem lateral, campo visível sem rolar a página */

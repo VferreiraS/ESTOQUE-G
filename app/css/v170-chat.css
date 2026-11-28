@@ -1,0 +1,21 @@
+/* v170 · chat em tela cheia no celular (app/js/v170-chat.js põe body.v170cf só no Chat e ≤900 px). PC não muda. */
+@layer p164{@media (max-width:900px){
+html body.dark.v170cf #main-content>header,html body.dark.v170cf #mobile-bottom,html body.dark.v170cf .mobile-bottom,html body.dark.v170cf footer{display:none!important}
+html body.dark.v170cf .content{padding-top:max(8px,env(safe-area-inset-top))!important;padding-bottom:max(16px,env(safe-area-inset-bottom))!important}
+/* conversa e chat da equipe: altura toda da área visível (v149 mede o teclado), sem descontar a barra do app */
+html:root body.dark.v170cf.e99-convo #view .cv-wrap[data-open],html:root body.dark.v170cf.e99-convo #view .chat-wrap.chat-wrap,
+html:root body.dark.v169c.v170cf.e99-convo:not(.e99-convo-kb) #view .cv-wrap[data-open],html:root body.dark.v169c.v170cf.e99-convo:not(.e99-convo-kb) #view .chat-wrap.chat-wrap{top:var(--e99-vvt,0px)!important;height:var(--e99-vvh,100dvh)!important;
+  padding-top:env(safe-area-inset-top)!important;padding-left:max(10px,env(safe-area-inset-left))!important;padding-right:max(10px,env(safe-area-inset-right))!important;box-sizing:border-box!important}
+html body.dark.v170cf.e99-convo #view .chat-wrap .chat-compose,html body.dark.v170cf.e99-convo #view .cv-compose{padding-bottom:max(8px,env(safe-area-inset-bottom))!important}
+html body.dark.v170cf.e99-convo-kb #view .chat-wrap .chat-compose,html body.dark.v170cf.e99-convo-kb #view .cv-compose{padding-bottom:6px!important}
+/* seta da lista de conversas */
+html body.dark.v170cf #view>.hero{display:flex!important;align-items:center!important;gap:6px!important}
+html body.dark.v170cf .v170-back,html body.dark.v170cf .v170-more{display:inline-grid!important;place-items:center!important;width:44px!important;height:44px!important;min-width:44px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;color:inherit!important;border-radius:12px!important;flex:0 0 auto!important}
+html body.dark.v170cf .v170-back{margin-left:-10px!important}
+/* "Mais" do chat da equipe: o que ficava abaixo do chat vira uma folha por cima do campo */
+html body.dark.v170cf.e99-convo.v170-x #view .chat-wrap>#chat-extras,html body.dark.v170cf.e99-convo.v170-x #view .chat-wrap>.chat-leave-row{display:block!important;position:fixed!important;left:10px!important;right:10px!important;z-index:120!important;
+  background:var(--c-fundo,#0b0d10)!important;border:1px solid rgba(255,255,255,.14)!important;border-radius:16px!important;padding:10px 12px!important;box-shadow:0 -10px 30px rgba(0,0,0,.6)!important;max-height:45vh!important;overflow:auto!important}
+html body.dark.v170cf.e99-convo.v170-x #view .chat-wrap>.chat-leave-row{bottom:calc(84px + env(safe-area-inset-bottom))!important;display:flex!important;flex-wrap:wrap!important;gap:8px!important;justify-content:center!important}
+html body.dark.v170cf.e99-convo.v170-x #view .chat-wrap>#chat-extras{bottom:calc(212px + env(safe-area-inset-bottom))!important}
+}
+@media (min-width:901px){.v170-back,.v170-more{display:none!important}}}

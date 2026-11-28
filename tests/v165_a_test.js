@@ -18,10 +18,12 @@ const MEASURE=(mob)=>{const SCALE=['12px','13px','15px','16px','22px','28px','40
   const fsz=new Set(),rad=new Set(),low=[],small=[],off=[];
   for(const e of [v,...v.querySelectorAll('*')]){if(e instanceof SVGElement||/^(BR|SCRIPT|STYLE|OPTION|IMG|CANVAS)$/.test(e.nodeName)||!vis(e)||e.closest('details:not([open])>:not(summary)'))continue;const s=getComputedStyle(e);
     const own=[...e.childNodes].some(n=>n.nodeType===3&&n.nodeValue.trim());
-    if(own||/^(INPUT|SELECT|BUTTON)$/.test(e.nodeName)){fsz.add(s.fontSize);if(!SCALE.includes(s.fontSize))off.push(e.nodeName+'.'+String(e.className).split(' ')[0]+' '+s.fontSize)}
+    /* v170: a 1ª dobra do Início segue a arte do dono (tamanhos e raios medidos na imagem), fora da escala --p-*; contraste e toque continuam valendo */
+    const art=document.body.classList.contains('ini170')&&!!e.closest('.hero-home,#vd-home,#ini-counts');
+    if(!art&&(own||/^(INPUT|SELECT|BUTTON)$/.test(e.nodeName))){fsz.add(s.fontSize);if(!SCALE.includes(s.fontSize))off.push(e.nodeName+'.'+String(e.className).split(' ')[0]+' '+s.fontSize)}
     if(own&&!e.closest('[disabled],.lic-text')&&s.textDecorationLine.indexOf('line-through')<0){const bg=bgOf(e);if(bg){const fg=P(s.color),a=fg.length>3?fg[3]:1,c=[0,1,2].map(i=>fg[i]*a+bg[i]*(1-a));const L1=lum(c),L2=lum(bg),cr=(Math.max(L1,L2)+.05)/(Math.min(L1,L2)+.05);
       const big=parseFloat(s.fontSize)>=24;if(cr<(big?3:4.5))low.push(e.nodeName+'.'+String(e.className).split(' ')[0]+' '+cr.toFixed(2)+' "'+e.textContent.trim().slice(0,20)+'"')}}
-    if(s.backgroundColor!=='rgba(0, 0, 0, 0)'||(parseFloat(s.borderTopWidth)>0&&s.borderTopStyle!=='none'))rad.add(s.borderTopLeftRadius);
+    if(!art&&(s.backgroundColor!=='rgba(0, 0, 0, 0)'||(parseFloat(s.borderTopWidth)>0&&s.borderTopStyle!=='none')))rad.add(s.borderTopLeftRadius);
     if(mob&&/^(BUTTON|INPUT|SELECT|SUMMARY)$/.test(e.nodeName)&&!/^(hidden|checkbox|radio)$/.test(e.type)&&!e.closest('th')){const r=e.getBoundingClientRect();if(Math.min(r.width,r.height)<43.5)small.push((e.getAttribute('aria-label')||e.textContent||e.nodeName).trim().slice(0,20)+' '+Math.round(r.width)+'×'+Math.round(r.height))}}
   const acc=getComputedStyle(document.documentElement).getPropertyValue('--p-accent').trim().replace('#','').match(/../g).map(h=>parseInt(h,16)).join(', ');
   const prim=[...v.querySelectorAll('button')].filter(b=>vis(b)&&getComputedStyle(b).backgroundColor==='rgb('+acc+')').map(b=>b.textContent.trim().slice(0,24));

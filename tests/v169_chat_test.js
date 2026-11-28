@@ -33,7 +33,7 @@ function ratio(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min
    ph:q('#chat-text').placeholder,mic:q('#chat-mic').parentNode.id,send:!!q('#chat-send').offsetParent,emo:!!q('.v169-emo'),nav:getComputedStyle(q('#mobile-bottom')).display,
    sw:document.documentElement.scrollWidth,vw:innerWidth,small,txt:[getComputedStyle(q('#chat-list .chat-msg .chat-txt')).color,getComputedStyle(q('#chat-list .chat-msg:not(.mine)')).backgroundColor],
    comp:q('.chat-compose').getBoundingClientRect().bottom<=innerHeight+1}});
- ok(r.brand&&r.menu&&r.me,'barra de cima: ☰, logo + StoK / ESTOQUE 99 e Minha conta');
+ ok(await B.evaluate(()=>getComputedStyle(document.querySelector('#main-content>header')).display==='none'&&document.body.classList.contains('v170cf')),'v170: no Chat do celular a barra de cima do app some (tela cheia)');
  ok(/^data:image\/svg/.test(r.logo),'barra de cima: logo vigente (SVG da prateleira)');
  ok(r.title==='Equipe do Estoque'&&/participantes? • \d+ online/.test(r.sub)&&r.calls===2,'cabeçalho: "Equipe do Estoque", "'+r.sub+'", telefone e vídeo');
  ok(r.who.length===3&&r.who.every(w=>w.next&&w.h>=40)&&r.who.filter(w=>w.cg).length>=2&&!!r.who[0].cg,'cada sequência com foto, nome e cargo ('+r.who.map(w=>w.n+'/'+w.cg).join(', ')+')');
@@ -56,8 +56,9 @@ function ratio(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min
  await B.click('#chat-form .chat-plus');ok(await B.evaluate(()=>!!document.getElementById('chat-mic').offsetParent),'botão de áudio no menu do "+"');await B.keyboard.press('Escape');
  /* outras telas: barra com logo, sem o verde do chat */
  await B.evaluate(()=>go('home'));await B.waitForTimeout(500);
- const h=await B.evaluate(()=>({b:!!document.querySelector('.v169-brand').offsetParent,c:document.body.classList.contains('v169c'),nav:getComputedStyle(document.getElementById('mobile-bottom')).display}));
- ok(h.b&&!h.c&&h.nav!=='none','Início: logo StoK na barra, paleta do chat desligada, barra de baixo de volta');
+ const h=await B.evaluate(()=>({b:!!document.getElementById('ini-logo')&&getComputedStyle(document.getElementById('ini-logo')).display!=='none',c:document.body.classList.contains('v169c'),nav:getComputedStyle(document.getElementById('mobile-bottom')).display}));
+ await B.evaluate(()=>go('nfs'));await B.waitForTimeout(400);ok(await B.evaluate(()=>{const b=document.querySelector('.v169-brand');return !!b&&!!b.offsetParent&&/StoK/.test(b.textContent)&&!!document.querySelector('#v169-menu').offsetParent&&!!document.querySelector('#v169-me').offsetParent}),'barra de cima nas outras telas: ☰, logo + StoK / ESTOQUE 99 e Minha conta');await B.evaluate(()=>go('home'));await B.waitForTimeout(400);
+ ok(h.b&&!h.c&&h.nav!=='none','Início: logo StoK da arte (v170) na barra, paleta do chat desligada, barra de baixo de volta');
  /* Demandas do estoque (celular): rótulo em cima, campo na largura toda, nada para fora */
  const d=await B.evaluate(()=>{const c=document.querySelector('.e99-demandas,#view .e99-dem-list');if(!c)return null;const card=c.closest('.panel,.card,.pn-card,section')||c;const cr=card.getBoundingClientRect();
    const f=[...document.querySelectorAll('.e99-dem-field')];return {n:f.length,out:[...card.querySelectorAll('*')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&(r.right>cr.right+1||r.left<cr.left-1)}).length,
