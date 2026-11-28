@@ -19,7 +19,7 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão:** 171 (`meta estoque99-version` + `CACHE` `estoque99-v171` no `sw.js` + `?v=171` nos arquivos `app/`), publicada em 28/11/2026 no GitHub Pages (Firebase Hosting ainda na versão anterior: deploy sem login neste ambiente; publicar com `firebase deploy --only hosting`). Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
+- **Versão:** 172 (`meta estoque99-version` + `CACHE` `estoque99-v172` no `sw.js` + `?v=172` nos arquivos `app/`), publicada em 28/11/2026 no GitHub Pages (Firebase Hosting ainda na versão anterior: deploy sem login neste ambiente; publicar com `firebase deploy --only hosting`). Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
@@ -29,7 +29,7 @@
 
 | Versão | O quê |
 |--------|--------|
-| v171 | **Início nunca fica preso no meio da animação** (print do dono no iPhone: só o S vermelho com um corte quadrado, o resto preto). Causa: o `#view` e a `.hero-home` ganham animações de entrada WAAPI que começam em opacidade 0 (v158-vida na troca de tela, `authEnter` do core/login-motion e `anim.js` no render, algumas mesmo com "menos movimento"); quando a linha do tempo de animação do iPhone para (volta do segundo plano/pouca energia), ficavam paradas no 1º quadro e o Início sumia; o S aparecia porque tinha `filter: drop-shadow` (camada própria, que o iPhone pintou e cortou em quadrado). Correção em `app/js/v170-inicio.js` + `app/css/v170-inicio.css`: 1,5 s depois de abrir o Início (e ao voltar para o app: `visibilitychange`/`pageshow`) as animações dentro de `#view` são terminadas (`finish`) e `body.ini-ok` força opacidade 1 e sem deslocamento no Início (a animação só enfeita); S sem filtro e com a borda do PNG esfumada. Teste novo `tests/v171_inicio_visivel_test.js` (animações paradas, com e sem "menos movimento", Plano → Início, voltar ao app): falhava na v170 e passa. **Otimização do chat (repintar a lista inteira em `paintMsgs` da v138 e no `chat.js`) continua pendente.** |
+| v172 | **Início de volta ao visual da v169** (dono: "não está aparecendo nada na tela de início"; no iPhone o Início da v170/v171 ficava vazio, só com o S). No navegador de teste (Chromium) o Início da v171 aparece e recebe toque normalmente; sem WebKit aqui não deu para achar a causa no prazo de 10 min, então a arte nova saiu do `index.html` (`app/js/v170-inicio.js` e `app/css/v170-inicio.css` continuam em `app/` e no `APP_FILES`, só não carregam). Chat em tela cheia (v170-chat) continua. Teste novo `tests/v172_inicio_basico_test.js` ("Tudo no seu lugar.", "Novo plano" visível e tocável, abas, com e sem "menos movimento"); `v170_inicio_test` e `v171_inicio_visivel_test` saíram do `run.sh` até a arte voltar. **Para voltar a arte:** testar no iPhone real (Safari) e suspeitar primeiro do `::before` com foto + `mask-image` + `z-index:-1` na `.hero-home`. |
 
 Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o site); o que vale no ar é o `index.html` + `sw.js` publicados.
 
@@ -73,6 +73,7 @@ Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o sit
 - v169: chat da equipe no iPhone real e no PC da loja comparado com o print (foto/nome/cargo/coroa, cartão "Aviso importante", PDF, campo); logo + StoK na barra de cima do celular; Demandas do estoque no iPhone (rótulo em cima, campo inteiro). Dizer o que ainda não ficou igual.
 - v170: Início no iPhone real comparado com a arte (logo, foto do galpão, S, cores em qualquer tema); chat em tela cheia no iPhone (Safari e app da tela inicial): cabeçalho no topo, campo acima do teclado, botão ⋯; dizer o que ainda difere.
 - v171: abrir o app no iPhone (também como app da tela inicial, com Pouca Energia) e voltar do segundo plano: o Início aparece inteiro em até 1,5 s, sem ficar só o S.
+- v172: Início voltou ao visual da v169 no iPhone (aparece inteiro e responde ao toque); a arte da v170 só volta depois de testada no iPhone.
 
 ### Decisões pendentes do dono (v89 — não mudar sem perguntar)
 - **Chat (v106/v108):** desde a v108 a mensagem que falhou fica guardada (cifrada) no aparelho; no celular Enter continua enviando (não há Shift+Enter no teclado do celular); "Sair da equipe" foi para baixo do chat. Se o dono quiser guardar as não enviadas ou Enter = nova linha no celular, mudar no `chat-js`.

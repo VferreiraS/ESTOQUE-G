@@ -56,9 +56,9 @@ function ratio(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min
  await B.click('#chat-form .chat-plus');ok(await B.evaluate(()=>!!document.getElementById('chat-mic').offsetParent),'botão de áudio no menu do "+"');await B.keyboard.press('Escape');
  /* outras telas: barra com logo, sem o verde do chat */
  await B.evaluate(()=>go('home'));await B.waitForTimeout(500);
- const h=await B.evaluate(()=>({b:!!document.getElementById('ini-logo')&&getComputedStyle(document.getElementById('ini-logo')).display!=='none',c:document.body.classList.contains('v169c'),nav:getComputedStyle(document.getElementById('mobile-bottom')).display}));
+ const h=await B.evaluate(()=>({b:!!document.querySelector('.v169-brand').offsetParent,c:document.body.classList.contains('v169c'),nav:getComputedStyle(document.getElementById('mobile-bottom')).display}));
  await B.evaluate(()=>go('nfs'));await B.waitForTimeout(400);ok(await B.evaluate(()=>{const b=document.querySelector('.v169-brand');return !!b&&!!b.offsetParent&&/StoK/.test(b.textContent)&&!!document.querySelector('#v169-menu').offsetParent&&!!document.querySelector('#v169-me').offsetParent}),'barra de cima nas outras telas: ☰, logo + StoK / ESTOQUE 99 e Minha conta');await B.evaluate(()=>go('home'));await B.waitForTimeout(400);
- ok(h.b&&!h.c&&h.nav!=='none','Início: logo StoK da arte (v170) na barra, paleta do chat desligada, barra de baixo de volta');
+ ok(h.b&&!h.c&&h.nav!=='none','Início: logo StoK na barra, paleta do chat desligada, barra de baixo de volta');
  /* Demandas do estoque (celular): rótulo em cima, campo na largura toda, nada para fora */
  const d=await B.evaluate(()=>{const c=document.querySelector('.e99-demandas,#view .e99-dem-list');if(!c)return null;const card=c.closest('.panel,.card,.pn-card,section')||c;const cr=card.getBoundingClientRect();
    const f=[...document.querySelectorAll('.e99-dem-field')];return {n:f.length,out:[...card.querySelectorAll('*')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&(r.right>cr.right+1||r.left<cr.left-1)}).length,
