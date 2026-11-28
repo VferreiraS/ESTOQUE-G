@@ -4,11 +4,11 @@
    No fim: conserto do cartão "Demandas do estoque" no celular (rótulo em cima, campo em largura total). */
 body.v169c{
   --c-fundo:#0b0c10;--c-topo:#0c0d12;--c-linha:#1d1f24;
-  --c-verde:#3ef04a;--c-verde-anel:#4bf754;--c-online:#18e02c;--c-verde-txt:#47f052;
-  --c-balao-meu:#124619;--c-balao-meu-borda:#2fa23b;--c-hora-meu:#c4e2cd;
+  --c-verde:#fa292b;--c-verde-anel:#fa292b;--c-online:#ff3b3b;--c-verde-txt:#ff5c5c;
+  --c-balao-meu:#124619;--c-balao-meu-borda:#b0161c;--c-hora-meu:#f0c9cb;
   --c-balao-outro:#2e3035;--c-balao-outro-borda:#4c4d52;--c-hora-outro:#a2a4ab;
-  --c-anexo:#1c1e23;--c-pdf:#dc3d3a;--c-baixar:#10f0c8;--c-baixar-borda:#369368;--c-baixar-fundo:#1c211a;
-  --c-dourado:#f8da6a;--c-dourado-borda:#e9cf6e;--c-aviso-fundo:#1a1712;--c-coroa:#fbbf3b;
+  --c-anexo:#1c1e23;--c-pdf:#dc3d3a;--c-baixar:#ff3b3b;--c-baixar-borda:#b0161c;--c-baixar-fundo:#1a0607;
+  --c-dourado:#ff5c5c;--c-dourado-borda:#b0161c;--c-aviso-fundo:#1a1712;--c-coroa:#ff3b3b;
   --c-pilula:#27282d;--c-pilula-borda:#45464a;--c-campo:#1d1f25;--c-campo-borda:#5f6167;
   --c-t1:#f4f5f7;--c-t2:#b0b1b6;
   /* o teste de cor dos balões (v165-e) lê estes dois */
@@ -30,7 +30,7 @@ html body.dark .layout main>header .v169-name.v169-name small{font-size:12px!imp
 /* busca geral: continua nas outras telas; no Chat a conversa tem a própria busca */
 html body.dark.v169c .layout main>header .e99-search-btn{display:none!important}
 /* barra no Chat: fundo do print e um filete verde (sem brilho animado) */
-html body.dark.v169c .layout main>header{background:var(--c-topo)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-bottom:2px solid #c8facc!important;box-shadow:0 1px 0 #0a6712,0 3px 10px -2px rgba(62,240,74,.55)!important}
+html body.dark.v169c .layout main>header{background:var(--c-topo)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-bottom:2px solid #ffd6d6!important;box-shadow:0 1px 0 #0a6712,0 3px 10px -2px rgba(245,0,1,.55)!important}
 html body.dark.v169c .layout main>header .bell-btn{background:none!important;border:0!important;box-shadow:none!important}
 html body.dark.v169c .layout main>header .bell-btn .alert-count:not([data-zero]){font-size:0!important;min-width:0!important;width:11px!important;height:11px!important;padding:0!important;border-radius:50%!important;background:var(--c-verde)!important;border:2px solid var(--c-topo)!important;top:6px!important;right:7px!important;box-sizing:content-box!important}
 /* a barra de baixo sai dentro de uma conversa (como no print); o ☰ abre o menu */
@@ -49,7 +49,7 @@ html:root body.dark.v169c.e99-convo #view .cv-wrap[data-open],html:root body.dar
 /* cabeçalho */
 html body.dark.v169c #main-content #view .chat-wrap .chat-head,html body.dark.v169c #main-content #view .cv-head{gap:4px!important;padding:6px 0 8px!important;border-bottom:1px solid var(--c-linha)!important;background:none!important;min-height:64px!important}
 html body.dark.v169c #main-content #view .chat-wrap .chat-back,html body.dark.v169c #main-content #view .cv-head .cv-back{color:var(--c-t1)!important;width:44px!important;min-width:44px!important;margin:0 -8px 0 -12px!important!important}
-html body.dark.v169c #main-content #view .chat-wrap .chat-gav,html body.dark.v169c #main-content #view .cv-head .cv-gav,html body.dark.v169c #main-content #view .cv-head .cv-av{width:46px!important;height:46px!important;border-radius:50%!important;background:#0f2a13!important;color:#e3b54a!important;box-shadow:0 0 0 2px var(--c-verde-anel),0 0 8px rgba(75,247,84,.35)!important;border:0!important;flex:none!important}
+html body.dark.v169c #main-content #view .chat-wrap .chat-gav,html body.dark.v169c #main-content #view .cv-head .cv-gav,html body.dark.v169c #main-content #view .cv-head .cv-av{width:46px!important;height:46px!important;border-radius:50%!important;background:#2a0a0c!important;color:#ff3b3b!important;box-shadow:0 0 0 2px var(--c-verde-anel),0 0 8px rgba(250,41,43,.35)!important;border:0!important;flex:none!important}
 html body.dark.v169c #main-content #view .chat-wrap .chat-title h2,html body.dark.v169c #main-content #view .cv-head .cv-mid>b{font-size:18px!important;font-weight:600!important;color:var(--c-t1)!important;letter-spacing:-.01em!important}
 html body.dark.v169c #main-content #view .chat-wrap .chat-sub{font-size:13px!important;letter-spacing:-.015em!important;color:var(--c-t2)!important;display:flex!important;align-items:center!important}
 html body.dark.v169c #main-content #view .chat-wrap .chat-sub #chat-status,html body.dark.v169c #main-content #view .chat-wrap .chat-sub #chat-people{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important}
@@ -67,13 +67,13 @@ html body.dark.v169c:not(.e99-convo) #main-content #view .chat-leave-row{display
 html body.dark.v169c #main-content #view .chat-leave-row .v169-more{display:inline-flex!important;align-items:center!important;min-height:44px!important}
 }
 /* aviso fixado: cartão dourado */
-html body.dark.v169c #chat-pin:not([hidden]){display:flex!important;align-items:center!important;gap:0!important;margin:10px 0 2px!important;padding:0!important;border-radius:12px!important;border:2px solid var(--c-dourado-borda)!important;background:linear-gradient(90deg,#3a2810 0%,#241c11 30%,var(--c-aviso-fundo) 70%)!important;box-shadow:0 0 0 1px rgba(233,207,110,.15),0 0 10px rgba(233,207,110,.12)!important;min-height:64px!important;overflow:hidden!important}
-html body.dark.v169c #chat-pin .pin-ic{flex:none!important;display:flex!important;align-items:center!important;justify-content:center!important;width:52px!important;align-self:stretch!important;color:var(--c-dourado)!important;border-right:1px solid rgba(233,207,110,.25)!important}
+html body.dark.v169c #chat-pin:not([hidden]){display:flex!important;align-items:center!important;gap:0!important;margin:10px 0 2px!important;padding:0!important;border-radius:12px!important;border:2px solid var(--c-dourado-borda)!important;background:linear-gradient(90deg,#2a0a0c 0%,#1a0607 30%,var(--c-aviso-fundo) 70%)!important;box-shadow:0 0 0 1px rgba(245,0,1,.15),0 0 10px rgba(245,0,1,.12)!important;min-height:64px!important;overflow:hidden!important}
+html body.dark.v169c #chat-pin .pin-ic{flex:none!important;display:flex!important;align-items:center!important;justify-content:center!important;width:52px!important;align-self:stretch!important;color:var(--c-dourado)!important;border-right:1px solid rgba(245,0,1,.25)!important}
 html body.dark.v169c #chat-pin .pin-go{flex:1 1 auto!important;min-width:0!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;column-gap:8px!important;text-align:left!important;background:none!important;border:0!important;box-shadow:none!important;padding:8px 6px 8px 12px!important;min-height:60px!important;color:var(--c-t1)!important;border-radius:0!important}
 html body.dark.v169c #chat-pin .pin-go b{grid-column:1!important;display:block!important;font-size:15px!important;font-weight:600!important;letter-spacing:.03em!important;text-transform:uppercase!important;color:var(--c-dourado)!important}
 html body.dark.v169c #chat-pin .pin-go>span{grid-column:1!important;display:block!important;font-size:16px!important;color:var(--c-t1)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 html body.dark.v169c #chat-pin .pin-go .pin-chev{grid-column:2!important;grid-row:1/span 2!important;color:var(--c-dourado)!important}
-html body.dark.v169c #chat-pin [data-unpin]{flex:none!important;width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;padding:0!important;background:none!important;border:0!important;color:#8d8a80!important;font-size:15px!important;box-shadow:none!important}
+html body.dark.v169c #chat-pin [data-unpin]{flex:none!important;width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;padding:0!important;background:none!important;border:0!important;color:#a6a5a6!important;font-size:15px!important;box-shadow:none!important}
 
 /* lista de mensagens: todas à esquerda, cada sequência com foto, nome e cargo */
 html body.dark.v169c #main-content #view #chat-list{padding:2px 2px 14px!important;border:0!important;border-radius:0!important;box-shadow:none!important}
@@ -83,7 +83,7 @@ html body.dark.v169c #main-content #view #chat-list .chat-day span{background:va
 html body.dark.v169c #main-content #view #chat-list .v169-who{display:block!important;flex:none!important;margin:12px 0 4px!important;padding-left:64px!important;min-height:0!important;position:relative!important;z-index:1!important}
 html body.dark.v169c #main-content #view #chat-list .v169-who .prof-chip{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;min-height:44px!important;color:inherit!important;text-align:left!important;border-radius:0!important}
 html body.dark.v169c #main-content #view #chat-list .v169-av{position:absolute!important;left:0!important;top:-4px!important;width:52px!important;height:52px!important;min-width:52px!important;border-radius:50%!important}
-html body.dark.v169c #main-content #view #chat-list .v169-av .av{width:48px!important;height:48px!important;margin:2px!important;border-radius:50%!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:16px!important;font-weight:600!important;background:#1f2a22!important;color:var(--c-t1)!important;object-fit:cover!important;box-shadow:0 0 0 2px var(--c-verde-anel),0 0 6px rgba(75,247,84,.3)!important}
+html body.dark.v169c #main-content #view #chat-list .v169-av .av{width:48px!important;height:48px!important;margin:2px!important;border-radius:50%!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:16px!important;font-weight:600!important;background:#1a1515!important;color:var(--c-t1)!important;object-fit:cover!important;box-shadow:0 0 0 2px var(--c-verde-anel),0 0 6px rgba(250,41,43,.3)!important}
 html body.dark.v169c #main-content #view #chat-list .v169-av.on::after{content:""!important;position:absolute!important;right:-1px!important;bottom:3px!important;width:12px!important;height:12px!important;border-radius:50%!important;background:var(--c-online)!important;border:2.5px solid var(--c-fundo)!important}
 html body.dark.v169c #main-content #view #chat-list .v169-nm{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;gap:0!important;min-height:44px!important;min-width:0!important;max-width:100%!important;line-height:1.25!important;width:auto!important}
 html body.dark.v169c #main-content #view #chat-list .v169-n{display:inline-flex!important;align-items:center!important;gap:8px!important;max-width:100%!important}
@@ -142,7 +142,7 @@ html body.dark.v169c #main-content #view .chat-compose .chat-field textarea::pla
 html body.dark.v169c #main-content #view #chat-form .chat-field{position:relative!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;gap:10px!important}
 html body.dark.v169c #main-content #view #chat-form .chat-field textarea{flex:1 1 auto!important;min-width:0!important}
 html body.dark.v169c #main-content #view #chat-form .chat-btns{position:static!important;flex:none!important}
-html body.dark.v169c #main-content #view #chat-form #chat-send,html body.dark.v169c #main-content #view .cv-compose button.primary{display:inline-flex!important;width:52px!important;height:52px!important;min-width:52px!important;border-radius:50%!important;background:radial-gradient(circle at 40% 35%,#5cff63,var(--c-verde) 55%,#25c931)!important;color:#08200b!important;border:0!important;box-shadow:0 2px 10px rgba(62,240,74,.35)!important}
+html body.dark.v169c #main-content #view #chat-form #chat-send,html body.dark.v169c #main-content #view .cv-compose button.primary{display:inline-flex!important;width:52px!important;height:52px!important;min-width:52px!important;border-radius:50%!important;background:radial-gradient(circle at 40% 35%,#ff5c5c,var(--c-verde) 55%,#d10201)!important;color:#08200b!important;border:0!important;box-shadow:0 2px 10px rgba(245,0,1,.35)!important}
 html body.dark.v169c #main-content #view #chat-form #chat-send::before,html body.dark.v169c #main-content #view .cv-compose button.primary::before{display:none!important}
 html body.dark.v169c #main-content #view #chat-form .chat-field{flex:1 1 auto!important}
 html body.dark.v169c #main-content #view #chat-form:not(.has-text) #chat-send{display:inline-flex!important}
@@ -176,3 +176,5 @@ html body.dark #main-content #view .e99-demandas .e99-dem-resp{white-space:norma
 @layer p164{@media (max-width:520px){html body.dark .layout #main-content>header .v169-brand{left:68px!important;transform:translateY(-50%)!important;max-width:calc(100% - 68px - 168px)!important;overflow:hidden!important}
 html body.dark .layout #main-content>header .v169-brand .v169-name{min-width:0!important;overflow:hidden!important}
 html body.dark .layout #main-content>header .v169-brand .v169-name>*{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}}}
+
+/* v174: verde e dourado do chat viraram vermelho/preto (ordem do dono: app todo vermelho e preto). */

@@ -19,7 +19,7 @@
 **Regra permanente:** sempre que Grok, um bot, Actions ou qualquer agente alterar o app, **atualizar esta seção** no mesmo ciclo de trabalho. O Claude deve ler isto no início de cada sessão.
 
 ### Estado atual do site
-- **Versão:** 173 (`meta estoque99-version` + `CACHE` `estoque99-v173` no `sw.js` + `?v=173` nos arquivos `app/`), publicada em 28/11/2026 no GitHub Pages (Firebase Hosting ainda na versão anterior: deploy sem login neste ambiente; publicar com `firebase deploy --only hosting`). Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
+- **Versão:** 174 (`meta estoque99-version` + `CACHE` `estoque99-v174` no `sw.js` + `?v=174` nos arquivos `app/`), publicada em 28/11/2026 no GitHub Pages (Firebase Hosting ainda na versão anterior: deploy sem login neste ambiente; publicar com `firebase deploy --only hosting`). Subir versão: `node scripts/bump-version.mjs <N>` (meta do index.html e robo.html, CACHE do sw.js e todos os `?v=`; confere que cada arquivo existe e está no pré-cache).
 - **Branch de deploy:** `claude/mobile-desktop-compatibility-tkbd2w` → GitHub Pages (`pages.yml`).
 - **URL:** https://vferreiras.github.io/ESTOQUE-G/
 - Contas são **locais** (localStorage cifrado AES-GCM + PBKDF2). Não há servidor central de estoque.
@@ -29,7 +29,7 @@
 
 | Versão | O quê |
 |--------|--------|
-| v173 | **Topo do celular sem sobreposição** (print do dono: "StoK / ESTOQUE 99" por cima da busca). Em telas até 520 px o bloco do logo (`.v169-brand`, centralizado desde a v169) encosta no ☰ (left 68 px) e tem largura máxima até antes dos 3 botões (busca, sino, perfil); textos com reticências se faltar espaço. Só CSS no fim de `app/css/v169-chat.css`. Teste novo `tests/v173_topo_test.js` (bounding boxes em 320/375/390/430 px no Início, Notas e Plano). Arte vermelha do Início (v170) continua desligada desde a v172, esperando o dono. |
+| v174 | **App todo preto e vermelho** (ordem do dono, no lugar dos temas Lilás/Violeta/Cinza; os seletores de tema continuam, mas todos usam estas cores). `app/css/v174-vermelho.css` (último no `index.html`, em `@layer p164` com !important) redefine os tokens (--p-*, --neon*, --area-*, --glass-*, --c-* do chat, nomes do chat) com as cores medidas na arte: fundo #000, cartões #090808, vermelho #F50001/#FA292B, botão #D10201 com texto branco (5,7:1), aro #302D2D, cinzas #A6A5A6/#C3C1C1; iniciais da equipe em tons de vermelho. Chat (v169): verde e dourado trocados por vermelho/preto direto no `app/css/v169-chat.css`. Teste novo `tests/v174_vermelho_test.js` (3 temas × Início, Notas, Plano, Chat, Mais: nenhum lilás/violeta/verde/azul; botão 4,5:1 e 44 px) passou. **Rodada de testes pendente para 02:20 (Brasília):** `v158_vida_test` (falhou "telas vazias" no PC, ver se é da cor), `v169_chat_test` (espera balão próprio verde: ajustar para vermelho), `v164_test`, `v165_c_test`, `v172_inicio_basico_test`, `v173_topo_test` e o resto da suíte. Arte vermelha da tela Início (v170) continua desligada. |
 
 Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o site); o que vale no ar é o `index.html` + `sw.js` publicados.
 
@@ -75,6 +75,7 @@ Os workflows one-shot `apply-*.yml` foram apagados na v89 (podiam regredir o sit
 - v171: abrir o app no iPhone (também como app da tela inicial, com Pouca Energia) e voltar do segundo plano: o Início aparece inteiro em até 1,5 s, sem ficar só o S.
 - v172: Início voltou ao visual da v169 no iPhone (aparece inteiro e responde ao toque); a arte da v170 só volta depois de testada no iPhone.
 - v173: topo do iPhone com logo, StoK / ESTOQUE 99, busca, sino e perfil sem nada por cima de nada.
+- v174: app todo preto e vermelho no iPhone e no PC (todas as telas e o chat); dizer onde ainda aparece outra cor ou texto difícil de ler.
 
 ### Decisões pendentes do dono (v89 — não mudar sem perguntar)
 - **Chat (v106/v108):** desde a v108 a mensagem que falhou fica guardada (cifrada) no aparelho; no celular Enter continua enviando (não há Shift+Enter no teclado do celular); "Sair da equipe" foi para baixo do chat. Se o dono quiser guardar as não enviadas ou Enter = nova linha no celular, mudar no `chat-js`.
