@@ -18,7 +18,7 @@
   --g75-red-h:linear-gradient(180deg,rgba(255,64,64,.86),rgba(224,8,6,.80));
   --g75-red-edge:rgba(255,150,150,.50);
   --g75-red-soft:linear-gradient(180deg,rgba(245,0,1,.30),rgba(245,0,1,.18));
-  --g75-r:22px;
+  --g75-r:var(--p-r-pill,999px);
   --g75-accent:#ff4d4d}
 
 /* ---------- vidro comum (secundário) ---------- */
@@ -78,7 +78,7 @@ html:not(#g75a):not(#g75b):not(#g75c) body.dark .e99-voltar{
   background:var(--g75-fill)!important;border:1px solid var(--g75-edge)!important;
   box-shadow:var(--g75-hi),0 4px 14px rgba(0,0,0,.32)!important;
   -webkit-backdrop-filter:var(--g75-blur)!important;backdrop-filter:var(--g75-blur)!important;
-  color:var(--g75-accent)!important;font-size:17px!important;font-weight:500!important;letter-spacing:-.01em!important;
+  color:var(--g75-accent)!important;font-size:16px!important;font-weight:500!important;letter-spacing:-.01em!important;
   line-height:1!important;text-align:left!important;white-space:nowrap!important;flex:0 0 auto!important}
 html:not(#g75a):not(#g75b):not(#g75c) body.dark .e99-voltar:hover{background:var(--g75-fill-h)!important}
 html:not(#g75a):not(#g75b):not(#g75c) body.dark .e99-voltar:focus-visible{outline:3px solid var(--g75-accent)!important;outline-offset:2px!important}
