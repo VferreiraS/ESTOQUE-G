@@ -171,3 +171,8 @@ html body.dark #main-content #view .e99-demandas .e99-dem-resp{white-space:norma
 @layer p164{@media (min-width:901px){html body.dark.v169c #main-content #view #chat-list .chat-msg.chat-msg{max-width:min(calc(100% - 64px - 130px),620px)!important}}}
 /* conversas: o botão "⋯" (canto de cima do balão) não cobre o Baixar do anexo */
 @layer p164{html body.dark.v169c #main-content #view .cv-msgs .cv-b .chat-file{margin-right:40px!important}}
+/* v173: no celular estreito o bloco "StoK / ESTOQUE 99" centralizado ficava por cima da busca (3 botões à direita somam ~148 px).
+   Até 520 px ele encosta no ☰ (à esquerda) e nunca passa do espaço livre antes dos botões. */
+@layer p164{@media (max-width:520px){html body.dark .layout #main-content>header .v169-brand{left:68px!important;transform:translateY(-50%)!important;max-width:calc(100% - 68px - 168px)!important;overflow:hidden!important}
+html body.dark .layout #main-content>header .v169-brand .v169-name{min-width:0!important;overflow:hidden!important}
+html body.dark .layout #main-content>header .v169-brand .v169-name>*{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}}}
