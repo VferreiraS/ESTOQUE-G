@@ -25,7 +25,7 @@ function ratio(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min
    const avOk=seqs.filter(s=>!s[0].classList.contains('mine')).every(s=>s.every((m,i)=>!!m.querySelector(':scope>.chat-sav')===(i===s.length-1)));
    const box=document.getElementById('chat-list').getBoundingClientRect(),cs=getComputedStyle(document.documentElement);
    const out=l.filter(m=>m.classList.contains('mine')),inn=l.filter(m=>!m.classList.contains('mine'));
-   const side=out.every(m=>box.right-m.getBoundingClientRect().right<box.width/4)&&inn.every(m=>m.getBoundingClientRect().left-box.left<box.width/4);
+   /* v169 (print do dono): todos os balões à esquerda, depois da foto; o próprio se distingue pela cor */const side=l.every(m=>{const x=m.getBoundingClientRect().left-box.left;return x>=56&&x<box.width/4});
    const probe=document.createElement('div');document.body.appendChild(probe);const col=v=>{probe.style.color=v;return getComputedStyle(probe).color};
    const bgOk=out.every(m=>getComputedStyle(m).backgroundColor===col('var(--p-bubble-out)'))&&inn.every(m=>getComputedStyle(m).backgroundColor===col('var(--p-bubble-in)'));probe.remove();
    const last=out[out.length-1];
@@ -33,12 +33,14 @@ function ratio(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min
     plus:!!document.querySelector('#chat-form .chat-plus'),pill:parseFloat(getComputedStyle(document.getElementById('chat-text')).borderTopLeftRadius)>=18,
     scroll:document.documentElement.scrollWidth>innerWidth||document.getElementById('chat-list').scrollWidth>document.getElementById('chat-list').clientWidth+1}});
   ok(r.tailOk&&r.tailCss,dev+': cauda só na última bolha de cada sequência');ok(r.nameOk,dev+': nome do remetente só na 1ª recebida da sequência');ok(r.avOk,dev+': avatar só na última recebida da sequência');
-  ok(r.side&&r.bgOk,dev+': próprias à direita com --p-bubble-out, recebidas à esquerda com --p-bubble-in');ok(r.day,dev+': chip de data');ok(r.seen,dev+': "Entregue/Lida" abaixo da última própria');
+  ok(r.side&&r.bgOk,dev+': balões à esquerda depois da foto (v169); próprias com --p-bubble-out, recebidas com --p-bubble-in');ok(r.day,dev+': chip de data');ok(r.seen,dev+': "Entregue/Lida" abaixo da última própria');
   ok(r.plus&&r.pill,dev+': campo com "+" e pílula');ok(!r.scroll,dev+': sem rolagem lateral');
   /* microfone ↔ enviar */
-  await P.fill('#chat-text','');const m1=await P.evaluate(()=>!!document.getElementById('chat-mic').offsetParent&&!document.getElementById('chat-send').offsetParent);
-  await P.fill('#chat-text','oi');const m2=await P.evaluate(()=>!document.getElementById('chat-mic').offsetParent&&!!document.getElementById('chat-send').offsetParent);await P.fill('#chat-text','');
-  ok(m1&&m2,dev+': microfone quando vazio, enviar quando há texto');
+  /* v169: enviar sempre à vista (como no print); o microfone foi para o menu do "+" */
+  await P.fill('#chat-text','');const m1=await P.evaluate(()=>!!document.getElementById('chat-mic').closest('#chat-attach')&&!!document.getElementById('chat-send').offsetParent);
+  await P.fill('#chat-text','oi');const m2=await P.evaluate(()=>!!document.getElementById('chat-send').offsetParent);await P.fill('#chat-text','');
+  await P.evaluate(()=>document.querySelector('#chat-form .chat-plus').click());const m3=await P.evaluate(()=>{const m=document.getElementById('chat-mic');const r=m.getBoundingClientRect();return !!m.offsetParent&&r.height>=44});await P.keyboard.press('Escape');
+  ok(m1&&m2&&m3,dev+': enviar sempre à vista; áudio no menu do "+" (≥44 px)');
   /* menu */
   await P.evaluate(()=>[...document.querySelectorAll('#chat-list .chat-msg[data-id]')].pop().querySelector('.chat-opt-btn').click());
   ok(await until(P,()=>{const m=document.getElementById('msg-menu');return !!m&&m.querySelectorAll('.emo button').length===6&&m.getAttribute('aria-modal')==='true'},null,3000),dev+': menu com linha de 6 emojis (aria-modal)');

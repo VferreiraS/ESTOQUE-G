@@ -62,7 +62,7 @@ const L=require('./lib.js');const {ok,until}=L;
  /* separador de mensagens novas + aviso para leitor de tela */
  await B.evaluate(()=>go('home'));await B.waitForTimeout(1600);await A.evaluate(async()=>{await chatSend('Não lida um');await chatSend('Não lida dois')});
  ok(await until(B,()=>!!document.querySelector('.nav-unread'),null,20000),'iPhone: contador de não lidas aparece');
- await B.evaluate(()=>go('chat'));ok(await until(B,()=>{const s=document.getElementById('chat-new');const n=s&&s.nextElementSibling;return !!(n&&/Não lida um/.test(n.innerText))},null,8000),'iPhone: separador "Mensagens novas" antes da primeira não lida');
+ await B.evaluate(()=>go('chat'));ok(await until(B,()=>{const s=document.getElementById('chat-new');let n=s&&s.nextElementSibling;/* v169: a linha de foto/nome/cargo vem antes do balão */if(n&&n.classList.contains('v169-who'))n=n.nextElementSibling;return !!(n&&/Não lida um/.test(n.innerText))},null,8000),'iPhone: separador "Mensagens novas" antes da primeira não lida');
  /* v149: espera a 2ª não lida chegar (senão as duas caem na mesma janela do aviso e viram "2 mensagens novas", que também é certo) */
  await until(B,()=>/Não lida dois/.test(document.getElementById('chat-list').innerText),null,20000);await B.waitForTimeout(900);
  await A.evaluate(()=>chatSend('Aviso para leitor de tela'));
@@ -91,7 +91,7 @@ const L=require('./lib.js');const {ok,until}=L;
  ok(await until(B,()=>!!document.querySelector('#msg-menu [data-a=del]'),null,3000),'iPhone: opções da mensagem têm "Apagar deste aparelho"');
  await B.click('#msg-menu [data-a=del]');ok(await until(B,()=>![...document.querySelectorAll('#chat-list .chat-msg')].some(m=>/Apagar pelo menu/.test(m.innerText))),'iPhone: apaga pela lista de opções');
  ok(await B.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&document.getElementById('chat-list').scrollWidth<=document.getElementById('chat-list').clientWidth+1),'iPhone: sem rolagem lateral (página e lista)');
- ok(await B.evaluate(()=>{const c=document.querySelector('.chat-compose').getBoundingClientRect(),n=document.querySelector('.mobile-bottom');return !n||c.bottom<=n.getBoundingClientRect().top+1||scrollY>0}),'iPhone: campo de escrever cabe acima da barra de baixo');
+ ok(await B.evaluate(()=>{const c=document.querySelector('.chat-compose').getBoundingClientRect(),n=document.querySelector('.mobile-bottom');return !n||getComputedStyle(n).display==='none'&&c.bottom<=innerHeight+1||c.bottom<=n.getBoundingClientRect().top+1||scrollY>0}),'iPhone: campo de escrever cabe acima da barra de baixo (v169: na conversa a barra de baixo sai)');
  ok(await B.evaluate(()=>{const w=document.querySelector('.chat-wrap').getBoundingClientRect();return w.left>=12&&innerWidth-w.right>=12}),'iPhone: margem lateral de ~16 px');
  await B.locator('.chat-wrap').screenshot({path:require('os').tmpdir()+'/stok-chat-v106-iphone.png'});
 
