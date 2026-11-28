@@ -51,11 +51,22 @@ function countsHTML(){var n=plansToday(),l=lateCount(),a=aux();
 function counts(v){var c=v.querySelector('#ini-counts');if(c)return;var anchor=v.querySelector('#vd-home')||v.querySelector('.hero-home');if(anchor)anchor.insertAdjacentHTML('afterend',countsHTML())}
 /* avisos da nuvem/aparelho ficam logo abaixo da primeira tela */
 function notes(v){var c=v.querySelector('#ini-counts');if(!c)return;var at=c;['#loja-note','#local-note'].forEach(function(s){var n=v.querySelector(s);if(n){if(at.nextElementSibling!==n)at.after(n);at=n}})}
-function decorate(){var home=typeof page==='string'&&page==='home'&&typeof authSession!=='undefined'&&!!authSession;D.body.classList.toggle('ini170',home);if(!home)return;
+/* v171: o Início nunca fica escondido. No iPhone uma animação de entrada pode parar no meio (linha do tempo parada ao voltar
+   do segundo plano, pouca energia...) e deixar #view com opacidade 0. 1,5 s depois de abrir o Início (e ao voltar para o app)
+   as animações do Início são terminadas (finish) e body.ini-ok força o visível. A animação só enfeita. */
+var safeT=0;
+function settle(){var B=D.body;if(!B||!B.classList.contains('ini170'))return;var v=D.getElementById('view');
+  try{(D.getAnimations?D.getAnimations():[]).forEach(function(a){var t=a.effect&&a.effect.target;if(!t||!v||!(t===v||v.contains(t)))return;
+    var tm=a.effect.getTiming?a.effect.getTiming():{};if(tm.iterations===Infinity){return}try{a.finish()}catch(x){try{a.cancel()}catch(y){}}})}catch(x){}
+  B.classList.add('ini-ok')}
+function arm(){clearTimeout(safeT);safeT=setTimeout(settle,1500)}
+D.addEventListener('visibilitychange',function(){if(!D.hidden)settle()});
+W.addEventListener('pageshow',function(){settle()});
+function decorate(){var home=typeof page==='string'&&page==='home'&&typeof authSession!=='undefined'&&!!authSession;var was=D.body.classList.contains('ini170');D.body.classList.toggle('ini170',home);if(!home){D.body.classList.remove('ini-ok');clearTimeout(safeT);return}if(!was)D.body.classList.remove('ini-ok');arm();
   var v=D.getElementById('view');if(!v)return;top();hero(v);greet(v);rings(v);counts(v);notes(v)}
 D.addEventListener('click',function(ev){var b=ev.target&&ev.target.closest&&ev.target.closest('#view .ini-count[data-ini-go]');if(!b)return;var g=b.getAttribute('data-ini-go');
   try{if(g==='plans'){if(typeof planFilter!=='undefined')planFilter=iso();go('plans')}else go(g)}catch(x){}});
 var r0=render;render=function(){var r=r0.apply(this,arguments);try{decorate()}catch(x){try{console.warn('v170',x)}catch(y){}}return r};
-W.e99Inicio170={decorate:decorate,plansToday:plansToday,lateCount:lateCount};
+W.e99Inicio170={decorate:decorate,settle:settle,plansToday:plansToday,lateCount:lateCount};
 try{decorate()}catch(x){}
 })();

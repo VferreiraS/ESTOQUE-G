@@ -43,7 +43,7 @@ body.ini170 #main-content #view .hero-home h1{font-size:36px!important;line-heig
 body.ini170 #main-content #view .hero-home h1 .accent-word{display:block!important;color:var(--ini-vermelho)!important;background:none!important;-webkit-text-fill-color:currentColor!important;text-shadow:0 0 14px rgba(245,0,1,.25)!important;filter:none!important;animation:none!important}
 body.ini170 #main-content #view .hero-home h1 .accent-word::before,body.ini170 #main-content #view .hero-home h1 .accent-word::after{display:none!important}
 body.ini170 #main-content #view .hero-home .subtitle{font-size:15px!important;line-height:20px!important;color:var(--ini-cinza)!important;margin:0!important}
-body.ini170 #main-content #view .hero-home .ini-s{position:absolute!important;z-index:0!important;left:calc(50% - 8px)!important;top:95px!important;width:64px!important;height:auto!important;pointer-events:none!important;filter:drop-shadow(0 0 10px rgba(255,0,0,.35))!important}
+body.ini170 #main-content #view .hero-home .ini-s{position:absolute!important;z-index:0!important;left:calc(50% - 8px)!important;top:95px!important;width:64px!important;height:auto!important;pointer-events:none!important;filter:none!important}
 body.ini170 #main-content #view .hero-home>.toolbar{width:100%!important;margin:0!important;display:block!important}
 body.ini170 #main-content #view .hero-home>.toolbar .primary{width:100%!important;height:44px!important;min-height:44px!important;border-radius:14px!important;border:1px solid #ff4a4a!important;
   background:linear-gradient(180deg,var(--ini-btn-1),var(--ini-btn-2))!important;color:#fff!important;font-size:17px!important;font-weight:600!important;letter-spacing:-.1px!important;
@@ -99,4 +99,7 @@ body.ini170 #main-content #view .ini-count span{grid-area:t!important;font-size:
   body.ini170 #main-content #view .hero-home .ini-s{left:auto!important;right:calc(52% - 90px)!important;top:110px!important}
   body.ini170 #main-content #view .vd-greet .ini-casa{width:120px!important;right:16px!important}
 }
+/* v171: rede de segurança — 1,5 s depois de abrir o Início tudo fica visível, mesmo se uma animação parar no meio (iPhone) */
+html body.ini170.ini-ok #main-content #view,html body.ini170.ini-ok #main-content #view>*,html body.ini170.ini-ok #main-content #view :is(.hero-home *,#vd-home *,#ini-counts *,.stat,.card,.panel,.cards>*):not(.vd-ripple){opacity:1!important;visibility:visible!important}
+html body.ini170.ini-ok #main-content #view,html body.ini170.ini-ok #main-content #view>*,html body.ini170.ini-ok #main-content #view :is(.vd-rings>*,.vd-ring-arc,.ini-count,.stat,.cards>*,.vd-art,.vd-greet){transform:none!important}
 }
