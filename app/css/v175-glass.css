@@ -1,0 +1,107 @@
+/* v175 · botões em vidro líquido (estilo iOS 26) e Voltar no padrão Apple (pedido do dono).
+   Uma camada só, carregada por último, em @layer p164 (mesma camada da v164–v174) e com 3 :not(#id) no começo
+   para vencer as regras antigas sem mexer nelas.
+   Vidro: fundo translúcido (branco 10–16 %), borda de luz de 1 px com brilho no topo, blur 16 px + saturate 160 %,
+   sombra suave e cantos grandes. Primário: vidro vermelho translúcido (texto branco ≥ 4,5:1 sobre o preto).
+   Leveza: blur só de 16 px (barra de baixo 20 px), nenhuma animação no vidro (só cor ao passar o mouse);
+   sem suporte a backdrop-filter ou com "reduzir transparência" o fundo fica mais forte e sem blur.
+   Alvos de 44 px e "menos movimento" respeitados. Não mexe em cartões, listas, balões do chat nem no logo. */
+@layer p164{
+:root{
+  --g75-fill:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.10));
+  --g75-fill-h:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.14));
+  --g75-edge:rgba(255,255,255,.20);
+  --g75-hi:inset 0 1px 0 rgba(255,255,255,.38),inset 0 -1px 0 rgba(255,255,255,.06);
+  --g75-shadow:0 6px 18px rgba(0,0,0,.38);
+  --g75-blur:blur(16px) saturate(160%);
+  --g75-red:linear-gradient(180deg,rgba(250,41,43,.80),rgba(209,2,1,.74));
+  --g75-red-h:linear-gradient(180deg,rgba(255,64,64,.86),rgba(224,8,6,.80));
+  --g75-red-edge:rgba(255,150,150,.50);
+  --g75-red-soft:linear-gradient(180deg,rgba(245,0,1,.30),rgba(245,0,1,.18));
+  --g75-r:22px;
+  --g75-accent:#ff4d4d}
+
+/* ---------- vidro comum (secundário) ---------- */
+html:not(#g75a):not(#g75b):not(#g75c) body.dark :is(#view,dialog,#auth-screen,.e99m-wrap,header,aside,.layout) :is(button,a.btn,.btn,summary.btn,.more-actions>summary,label.as-file):not(.nf-sum,.act-check,.sc-story,.cv-item,.chat-row,.stat,.e99-go,.link,.linklike,.e99-link,.auth-link,.vd-av,[role=switch],[role=tab],th button,.chat-msg button,.reacts button,.nav button,.nf-tabs button,.pn-period button,.e99-voltar,.x,.e99-x,.e99m-x,.cf-x,.ph-dl,.ph-rm,.e99-dem-x,[class*="lic-"],.p-icon-only,.cv-who,.chat-gav,.mobilemenu,.chat-opt-btn,.chat-re-btn,.chat-del-btn,.chat-jump){
+  background:var(--g75-fill)!important;
+  border:1px solid var(--g75-edge)!important;
+  box-shadow:var(--g75-hi),var(--g75-shadow)!important;
+  -webkit-backdrop-filter:var(--g75-blur)!important;backdrop-filter:var(--g75-blur)!important;
+  background-clip:padding-box!important}
+html:not(#g75a):not(#g75b):not(#g75c) body.dark :is(#view,dialog,#auth-screen,.e99m-wrap,header,aside,.layout) :is(button,a.btn,.btn,summary.btn,.more-actions>summary,label.as-file):not(.nf-sum,.act-check,.sc-story,.cv-item,.chat-row,.stat,.e99-go,.link,.linklike,.e99-link,.auth-link,.vd-av,[role=switch],[role=tab],th button,.chat-msg button,.reacts button,.nav button,.nf-tabs button,.pn-period button,.e99-voltar,.x,.e99-x,.e99m-x,.cf-x,.ph-dl,.ph-rm,.e99-dem-x,[class*="lic-"],.p-icon-only,.cv-who,.chat-gav,.mobilemenu,.chat-opt-btn,.chat-re-btn,.chat-del-btn,.chat-jump,.primary,.danger):hover{
+  background:var(--g75-fill-h)!important}
+
+/* cantos grandes (cápsula) nos botões de texto; ícones redondos ficam redondos; campo do chat mantém o formato */
+html:not(#g75a):not(#g75b):not(#g75c) body.dark :is(#view,dialog,#auth-screen,.e99m-wrap,header,aside,.layout) :is(button,a.btn,.btn,summary.btn,.more-actions>summary,label.as-file):not(.nf-sum,.act-check,.sc-story,.cv-item,.chat-row,.stat,.e99-go,.link,.linklike,.e99-link,.auth-link,.vd-av,[role=switch],[role=tab],th button,.chat-msg button,.reacts button,.nav button,.nf-tabs button,.pn-period button,.e99-voltar,.x,.e99-x,.e99m-x,.cf-x,.ph-dl,.ph-rm,.e99-dem-x,[class*="lic-"],.p-icon-only,.cv-who,.chat-gav,.mobilemenu,.chat-opt-btn,.chat-re-btn,.chat-del-btn,.chat-jump,.cv-compose *,.chat-compose *,.chat-ico,.chat-plus,.chat-hbtn,.cv-hbtn,.v170-more,.iv-b,.e99-search-btn,.bell-btn,#v169-menu,#v169-me){
+  border-radius:var(--g75-r)!important}
+html:not(#g75a):not(#g75b):not(#g75c) body.dark :is(.e99-search-btn,.bell-btn,#v169-menu,#v169-me,.chat-hbtn,.cv-hbtn,.v170-more,.chat-plus,.iv-b){
+  border-radius:999px!important}
+
+/* ---------- primário: vidro vermelho ---------- */
+html:not(#g75a):not(#g75b):not(#g75c) body.dark :is(#view,dialog,#auth-screen,.e99m-wrap,header,aside,.layout) :is(button,.btn,a.btn).primary:not(.nf-sum,.act-check,.chat-msg button,.reacts button,.e99-voltar){
+  background:var(--g75-red)!important;
+  border:1px solid var(--g75-red-edge)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.42),inset 0 -1px 0 rgba(0,0,0,.18),0 8px 22px rgba(209,2,1,.28)!important;
+  color:#fff!important;
+  -webkit-backdrop-filter:var(--g75-blur)!important;backdrop-filter:var(--g75-blur)!important}
+html:not(#g75a):not(#g75b):not(#g75c) body.dark :is(#view,dialog,#auth-screen,.e99m-wrap,header,aside,.layout) :is(button,.btn,a.btn).primary:not(.nf-sum,.act-check,.chat-msg button,.reacts button,.e99-voltar):hover{
+  background:var(--g75-red-h)!important}
+html:not(#g75a):not(#g75b):not(#g75c) body.dark :is(#view,dialog,#auth-screen,.e99m-wrap,header,aside,.layout) :is(button,.btn,a.btn).primary:not(.chat-msg button) *{color:#fff!important}
+
+/* pressionado / selecionado (pílulas, filtros, abas): vidro com tom vermelho */
+html:not(#g75a):not(#g75b):not(#g75c) body.dark :is(#view,dialog,.layout,aside) :is(button[aria-pressed="true"],.nf-tabs button.active,.nf-tabs button[aria-selected="true"],[role=tab][aria-selected="true"],.pn-period button.active,.pn-period button[aria-pressed="true"],.nav button.active){
+  background:var(--g75-red-soft)!important;
+  border:1px solid rgba(255,90,90,.40)!important;
+  box-shadow:var(--g75-hi),0 4px 12px rgba(0,0,0,.30)!important;
+  -webkit-backdrop-filter:var(--g75-blur)!important;backdrop-filter:var(--g75-blur)!important;
+  color:#fff!important;border-radius:var(--g75-r)!important}
+html:not(#g75a):not(#g75b):not(#g75c) body.dark :is(.nf-tabs button,.nav button,.pn-period button){border-radius:var(--g75-r)!important}
+
+/* ---------- barra de baixo do celular: vidro ---------- */
+html:not(#g75a):not(#g75b):not(#g75c) body.dark #mobile-bottom{
+  background:linear-gradient(180deg,rgba(28,24,24,.72),rgba(10,8,8,.80))!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 10px 30px rgba(0,0,0,.55)!important;
+  -webkit-backdrop-filter:blur(20px) saturate(160%)!important;backdrop-filter:blur(20px) saturate(160%)!important}
+html:not(#g75a):not(#g75b):not(#g75c) body.dark #mobile-bottom button{background:transparent!important;border:1px solid transparent!important;box-shadow:none!important;border-radius:var(--g75-r)!important;animation:none!important}
+html:not(#g75a):not(#g75b):not(#g75c) body.dark #mobile-bottom :is(button.active,button[aria-current="page"]){
+  background:var(--g75-red-soft)!important;border:1px solid rgba(255,90,90,.40)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.30)!important;color:#fff!important}
+html:not(#g75a):not(#g75b):not(#g75c) body.dark .nav button.active{animation:none!important}
+
+/* ---------- Voltar no padrão Apple (classe única .e99-voltar, v175-voltar.js) ---------- */
+html:not(#g75a):not(#g75b):not(#g75c) body.dark .e99-voltar{
+  display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;gap:5px!important;
+  min-height:44px!important;min-width:44px!important;width:auto!important;height:auto!important;
+  padding:0 14px 0 10px!important;margin:0!important;
+  border-radius:999px!important;
+  background:var(--g75-fill)!important;border:1px solid var(--g75-edge)!important;
+  box-shadow:var(--g75-hi),0 4px 14px rgba(0,0,0,.32)!important;
+  -webkit-backdrop-filter:var(--g75-blur)!important;backdrop-filter:var(--g75-blur)!important;
+  color:var(--g75-accent)!important;font-size:17px!important;font-weight:500!important;letter-spacing:-.01em!important;
+  line-height:1!important;text-align:left!important;white-space:nowrap!important;flex:0 0 auto!important}
+html:not(#g75a):not(#g75b):not(#g75c) body.dark .e99-voltar:hover{background:var(--g75-fill-h)!important}
+html:not(#g75a):not(#g75b):not(#g75c) body.dark .e99-voltar:focus-visible{outline:3px solid var(--g75-accent)!important;outline-offset:2px!important}
+html:not(#g75a):not(#g75b):not(#g75c) body.dark .e99-voltar .e99-voltar-ic{width:12px!important;height:21px!important;flex:0 0 12px!important;color:var(--g75-accent)!important;stroke:currentColor!important;fill:none!important}
+html:not(#g75a):not(#g75b):not(#g75c) body.dark .e99-voltar .e99-voltar-t{color:var(--g75-accent)!important;font:inherit!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:12ch!important}
+html:not(#g75a):not(#g75b):not(#g75c) body.dark .e99-backbar{justify-content:flex-start!important}
+/* no cabeçalho das conversas o espaço é curto: rótulo menor (como o app Mensagens) */
+@media (max-width:430px){
+  html:not(#g75a):not(#g75b):not(#g75c) body.dark :is(.cv-head,.chat-head) .e99-voltar{padding:0 10px 0 9px!important;font-size:15px!important}
+  html:not(#g75a):not(#g75b):not(#g75c) body.dark :is(.cv-head,.chat-head) .e99-voltar .e99-voltar-t{max-width:9ch!important}}
+
+/* ---------- leveza e acessibilidade ---------- */
+/* sem animação no vidro: só cor muda ao passar o mouse */
+html:not(#g75a):not(#g75b):not(#g75c) body.dark :is(#view,dialog,#auth-screen,header,aside,.layout,#mobile-bottom) button{transition-property:background-color,border-color,color!important}
+@media (prefers-reduced-motion:reduce){
+  html:not(#g75a):not(#g75b):not(#g75c) body.dark :is(#view,dialog,#auth-screen,header,aside,.layout,#mobile-bottom) button{transition:none!important;animation:none!important}}
+/* "reduzir transparência" ou navegador sem backdrop-filter: fundo mais forte, sem blur */
+@media (prefers-reduced-transparency:reduce){
+  html:not(#g75a):not(#g75b):not(#g75c) body.dark :is(#view,dialog,#auth-screen,header,aside,.layout,#mobile-bottom) :is(button,.btn,.more-actions>summary,label.as-file),
+  html:not(#g75a):not(#g75b):not(#g75c) body.dark #mobile-bottom{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  :root{--g75-fill:linear-gradient(180deg,#2e2a2a,#1f1c1c);--g75-fill-h:linear-gradient(180deg,#3a3535,#2a2626)}}
+@media print{.e99-voltar{display:none!important}}
+}
+/* lista de conversas (v170, celular): Voltar à esquerda, como no iOS */
+@layer p164{html:not(#g75a):not(#g75b):not(#g75c) body.dark #view>.hero>.v170-back.e99-voltar{align-self:flex-start!important;margin-left:0!important;margin-right:auto!important}}

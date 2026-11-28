@@ -40,7 +40,7 @@ function ratio(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min
  ok(r.who[0].g&&r.who[0].crown&&r.who.filter(w=>w.crown).length===1,'coroa só no gestor');
  ok(r.who[0].on&&r.who.some((w,i)=>i&&w.on),'bolinha de online (eu e quem está com o app aberto, pela presença da nuvem)');
  ok(r.left&&r.tk,'balões à esquerda (depois da foto) e dois tiques na própria');
- ok(/rgb\(1[0-9], (6[0-9]|7[0-9]), 2[0-9]\)/.test(r.mineBg)&&r.inBg==='rgb(46, 48, 53)','cores do print: próprio verde escuro, dos outros cinza ('+r.inBg+')');
+ /* v174: verde virou vermelho/preto (ordem do dono) */{const c=s=>(String(s).match(/[\d.]+/g)||[]).map(Number);const m=c(r.mineBg),n=c(r.inBg);ok(m[0]>m[1]+40&&m[0]>m[2]+40&&n.length>=3&&Math.max(n[0],n[1],n[2])<80&&Math.max(n[0],n[1],n[2])-Math.min(n[0],n[1],n[2])<20,'cores v174: próprio vermelho, dos outros cinza escuro ('+r.mineBg+' / '+r.inBg+')')}
  ok(ratio(...r.txt)>=7,'contraste do texto do balão '+ratio(...r.txt).toFixed(1));
  ok(r.pdf&&r.dl==='Baixar','anexo: ícone vermelho de PDF e botão quadrado "Baixar"');
  ok(r.ph==='Mensagem...'&&r.mic==='chat-attach'&&r.send&&r.emo,'campo: "Mensagem...", emoji, enviar sempre à vista, áudio no "+"');

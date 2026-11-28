@@ -4,14 +4,14 @@ const L=require('./lib.js');const {ok,until}=L;
 const STAND=()=>{try{Object.defineProperty(navigator,'standalone',{get:()=>true});const mm=window.matchMedia.bind(window);
   window.matchMedia=q=>/display-mode:\s*standalone/.test(q)?{matches:true,media:q,onchange:null,addListener(){},removeListener(){},addEventListener(){},removeEventListener(){},dispatchEvent(){return false}}:mm(q)}catch(e){}};
 const BAR=()=>{const b=document.querySelector('#e99-backbar .e99-back');if(!b)return null;const r=b.getBoundingClientRect();
-  return {h:r.height,w:r.width,top:r.top,lbl:b.getAttribute('aria-label')||'',txt:b.textContent.trim(),vis:r.width>0&&r.height>0&&getComputedStyle(b).visibility!=='hidden'}};
+  return {h:r.height,w:r.width,top:r.top,lbl:b.getAttribute('aria-label')||'',txt:b.textContent.trim(),v175:b.classList.contains('e99-voltar')&&!!b.querySelector('svg.e99-voltar-ic'),vis:r.width>0&&r.height>0&&getComputedStyle(b).visibility!=='hidden'}};
 const HS=()=>document.documentElement.scrollWidth>innerWidth+1;
 async function back(p){await p.evaluate(()=>history.back());await p.waitForTimeout(450)}
 async function suite(p,who,pages){
  /* (A) cada tela de segundo nível: Voltar visível, 44 px, rótulo, e volta para a origem (Início) */
  for(const pg of pages){await p.evaluate(()=>go('home'));await p.waitForTimeout(150);await p.evaluate(x=>go(x),pg);await p.waitForTimeout(350);
   const b=await p.evaluate(BAR),cur=await p.evaluate(()=>page);
-  ok(b&&b.vis&&b.h>=43.5&&/^Voltar para Início$/.test(b.lbl)&&/Voltar/.test(b.txt)&&/‹/.test(b.txt),who+': '+pg+' tem "‹ Voltar" ('+(b?Math.round(b.h)+'px, '+b.lbl:'sem botão')+')'+(cur!==pg?' [abriu '+cur+']':''));
+  ok(b&&b.vis&&b.h>=43.5&&/^Voltar para Início$/.test(b.lbl)&&(b.v175?b.txt.length>0:/Voltar/.test(b.txt)&&/‹/.test(b.txt))/* v175: chevron SVG + nome da tela anterior */,who+': '+pg+' tem "‹ Voltar" ('+(b?Math.round(b.h)+'px, '+b.lbl:'sem botão')+')'+(cur!==pg?' [abriu '+cur+']':''));
   ok(!(await p.evaluate(HS)),who+': '+pg+' sem rolagem lateral');
   if(b){await p.click('#e99-backbar .e99-back');await p.waitForTimeout(350);ok(await p.evaluate(()=>page==='home'),who+': Voltar em '+pg+' volta ao Início')}}
  /* raiz sem botão */
