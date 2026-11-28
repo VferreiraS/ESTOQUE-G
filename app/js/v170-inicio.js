@@ -23,7 +23,8 @@ function plansToday(){var t=today();return (state.plans||[]).filter(function(p){
 function lateCount(){try{return collectAlerts().filter(function(x){return x.kind==='act'}).length}catch(x){return 0}}
 /* topo do Início (celular): ☰ à esquerda e o logo no centro; busca e sino já existem (v132/v164) */
 function top(){var h=D.querySelector('main > header');if(!h)return;var left=h.firstElementChild;if(!left)return;
-  if(!D.getElementById('ini-menu')){var b=D.createElement('button');b.type='button';b.id='ini-menu';b.className='ini-menu';b.setAttribute('aria-label','Mais opções');b.innerHTML=IC.menu;
+  /* v169 já põe o ☰ no topo do celular (#v169-menu): usa esse e não cria outro */
+  if(!D.getElementById('ini-menu')&&!D.getElementById('v169-menu')){var b=D.createElement('button');b.type='button';b.id='ini-menu';b.className='ini-menu';b.setAttribute('aria-label','Mais opções');b.innerHTML=IC.menu;
     b.addEventListener('click',function(){try{go('mobile-menu')}catch(x){}});left.insertBefore(b,left.firstChild)}
   if(!D.getElementById('ini-logo')){var l=D.createElement('img');l.id='ini-logo';l.className='ini-logo';l.src=IMG.logo;l.alt='StoK';l.width=305;l.height=93;l.decoding='async';
     l.addEventListener('error',function(){l.remove()});h.appendChild(l)}}

@@ -17,6 +17,8 @@ body.ini170 main>header .alert-count:not([data-zero]){background:#ef1820!importa
 @media (max-width:900px){
   body.ini170 main>header{min-height:56px!important}
   body.ini170 main>header #breadcrumb{display:none!important}
+  body.ini170 main>header :is(.v169-brand,.v169-me){display:none!important}
+  body.ini170 main>header #v169-menu{margin-left:-8px!important;color:#fff!important;background:transparent!important;border:0!important;box-shadow:none!important}
   body.ini170 .ini-menu{display:inline-grid!important;place-items:center!important;width:44px!important;height:44px!important;margin-left:-8px!important;padding:0!important;border:0!important;background:transparent!important;color:#fff!important;box-shadow:none!important;border-radius:12px!important}
   body.ini170 .ini-menu svg{width:28px!important;height:28px!important;stroke-width:2.1!important}
   body.ini170 .ini-logo{display:block!important;position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;height:40px!important;width:auto!important;pointer-events:none!important;user-select:none!important}

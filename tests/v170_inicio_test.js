@@ -18,7 +18,7 @@ const BASE=process.env.BASE||'http://localhost:8000',U=BASE+'/index.html';
   await p.evaluate(()=>{go('nfs');go('home');scrollTo(0,0)});await p.waitForTimeout(1500);
   const h=await p.evaluate(()=>{const q=s=>document.querySelector(s),cs=(s,k)=>q(s)?getComputedStyle(q(s))[k]:'';const r=s=>q(s)?q(s).getBoundingClientRect():{width:0,height:0};
     const acc=q('.hero-home h1 .accent-word');const lg=q('#ini-logo');const bf=getComputedStyle(q('.hero-home'),'::before');
-    return {cls:document.body.classList.contains('ini170'),logo:!!lg&&lg.complete&&lg.naturalWidth>0,logoVis:!!lg&&getComputedStyle(lg).display!=='none',menu:cs('#ini-menu','display'),menuH:r('#ini-menu').height,
+    return {cls:document.body.classList.contains('ini170'),logo:!!lg&&lg.complete&&lg.naturalWidth>0,logoVis:!!lg&&getComputedStyle(lg).display!=='none',menus:[...document.querySelectorAll('#v169-menu,#ini-menu,main>header .mobilemenu')].filter(x=>getComputedStyle(x).display!=='none'&&x.getBoundingClientRect().width>0).map(x=>Math.round(x.getBoundingClientRect().height)),brand:[...document.querySelectorAll('main>header .v169-brand,main>header .v169-me')].filter(x=>getComputedStyle(x).display!=='none').length,
       kicker:(q('.hero-home .ini-kicker')||{}).textContent,pill:(q('.hero-home .hero-pill')||{}).textContent,h1:(q('.hero-home h1')||{}).textContent,acc:acc&&acc.textContent,accC:acc&&getComputedStyle(acc).color,
       foto:/inicio-galpao\.jpg/.test(bf.backgroundImage)&&bf.display!=='none',s:!!q('.hero-home .ini-s')&&q('.hero-home .ini-s').naturalWidth>0,date:(q('.hero-home .subtitle')||{}).textContent,
       btn:{w:r('.hero-home .primary').width,h:r('.hero-home .primary').height,bg:cs('.hero-home .primary','backgroundImage'),on:(q('.hero-home .primary')||{getAttribute(){return ''}}).getAttribute('onclick')},
@@ -31,7 +31,7 @@ const BASE=process.env.BASE||'http://localhost:8000',U=BASE+'/index.html';
       stats:!!q('#view .stats .stat.e99-go'),navBg:cs('#mobile-bottom button.active>span:first-child','backgroundImage'),bg:getComputedStyle(document.body).backgroundColor,
       sw:document.documentElement.scrollWidth,iw:innerWidth}});
   ok(h.cls,dev+': body.ini170 no Início');
-  if(dev==='iPhone'){ok(h.logo&&h.logoVis&&h.menu!=='none'&&h.menuH>=44,dev+': topo com ☰ (44 px) e logo StoK');
+  if(dev==='iPhone'){ok(h.logo&&h.logoVis&&h.menus.length===1&&h.menus[0]>=44&&!h.brand,dev+': topo com um só ☰ (≥44 px) e o logo StoK da arte ('+h.menus.join(',')+')');
     ok(/gradient/.test(h.navBg),dev+': aba Início com pílula vermelha')}
   else ok(h.logo&&!h.logoVis,dev+': logo do topo só no celular (PC usa o menu lateral)');
   ok(h.kicker==='Visão geral'&&/StoK/.test(h.pill)&&/^Tudo no\s*seu lugar\.$/.test(h.h1.trim())&&h.acc==='seu lugar.',dev+': textos da arte ('+h.kicker+' · '+h.pill+' · '+h.h1+')');
