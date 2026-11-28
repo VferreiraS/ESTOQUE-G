@@ -224,6 +224,8 @@ window.e99Cv={
   pref:function(k,on){ls('lojasg.estoque99.chat-'+k,on?null:'off');if(k==='presence')presence(true)},
   state:function(){return {ctx:!!cx(),started:started,pk:window.e99CvPk(),sub:sub,convs:convs().map(function(c){return {cv:c.cv,name:c.name,unread:c.unread,last:c.last&&(c.last.del?'':c.last.t)}}),err:window.__e99CvErr||''}},
   msgs:function(cv){return msgs(cv||sub).map(function(m){return {id:m.id,u:m.u,t:m.t,del:m.del,st:m.st||'',f:m.f?{n:m.f.n,s:m.f.s,k:m.f.k}:null}})},
-  group:function(id){var g=CV[id];return g?{nm:g.nm,m:g.m.slice(),kv:g.kv,ow:g.ow}:null}
+  group:function(id){var g=CV[id];return g?{nm:g.nm,m:g.m.slice(),kv:g.kv,ow:g.ow}:null},
+  /* v169: quem está online agora (presença dos últimos 75 s; eu conto se estou com o app aberto) */
+  online:function(){var n=Date.now(),o=[];for(var k in R){var r=R[k];if(r&&r.c==='pres'&&!r.del&&r.x&&n-(+r.x.on||0)<ONLINE)o.push(k.slice(5))}var m=me();if(m&&o.indexOf(m)<0&&!document.hidden)o.push(m);return o}
 };
 })();

@@ -13,7 +13,7 @@ const FAKE=()=>{const vv=new EventTarget();let h=innerHeight,t=0;Object.definePr
  for(let i=1;i<=30;i++)await B.evaluate(t=>chatSend(t),'Mensagem '+i+' para encher a conversa');
  await B.evaluate(()=>{go('chat');if(!document.getElementById('chat-list')&&window.e99Cv)e99Cv.open('geral');scrollTo(0,0)});await B.waitForSelector('#chat-text');
  ok(await until(B,()=>document.querySelectorAll('#chat-list .chat-msg[data-id]').length>=30,null,30000),'iPhone: 30 mensagens na lista');
- ok(await B.evaluate(()=>!document.body.classList.contains('e99-convo')&&getComputedStyle(document.querySelector('.mobile-bottom')).display!=='none'),'Chat da equipe sem foco: layout normal com a barra de baixo');
+ ok(await B.evaluate(()=>!document.body.classList.contains('e99-convo')&&(getComputedStyle(document.querySelector('.mobile-bottom')).display!=='none'||document.body.classList.contains('v169-conv'))),'Chat da equipe sem foco: layout normal (v169: dentro da conversa a barra de baixo sai, como no print)');
  const geo=sel=>B.evaluate(sel=>{const f=document.querySelector(sel).getBoundingClientRect(),n=document.querySelector('.mobile-bottom'),nv=n&&getComputedStyle(n).display!=='none'?n.getBoundingClientRect():null,v=visualViewport,l=document.getElementById('cv-msgs')||document.getElementById('chat-list');
    return {top:Math.round(f.top),bot:Math.round(f.bottom),vh:v.height,vt:v.offsetTop,navCover:!!(nv&&nv.top<f.bottom&&nv.bottom>f.top),sy:scrollY,
     lst:l.scrollHeight-l.scrollTop-l.clientHeight,lov:getComputedStyle(l).overflowY,los:getComputedStyle(l).overscrollBehaviorY,lh:l.clientHeight,lsh:l.scrollHeight,
@@ -43,7 +43,7 @@ const FAKE=()=>{const vv=new EventTarget();let h=innerHeight,t=0;Object.definePr
  await B.screenshot({path:process.env.SHOT||'/tmp/v149-teclado-equipe.png'}).catch(()=>{});
  /* sai do campo: volta ao normal */
  await B.evaluate(()=>{document.activeElement.blur();__kb(false)});await B.waitForTimeout(500);
- ok(await B.evaluate(()=>!document.body.classList.contains('e99-convo')&&getComputedStyle(document.querySelector('.mobile-bottom')).display!=='none'),'Chat da equipe: sem foco volta a barra de baixo');
+ ok(await B.evaluate(()=>!document.body.classList.contains('e99-convo')&&(getComputedStyle(document.querySelector('.mobile-bottom')).display!=='none'||document.body.classList.contains('v169-conv'))),'Chat da equipe: sem foco volta o layout normal');
 
  /* conversa privada (v138): fixa enquanto aberta */
  await B.evaluate(()=>e99Cv.open('dTeste12345'));await B.waitForSelector('.cv-compose textarea');

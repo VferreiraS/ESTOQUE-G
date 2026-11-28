@@ -50,9 +50,9 @@ const MEAS=()=>{const R=s=>{const e=typeof s==='string'?document.querySelector(s
   await team();let m=await B.evaluate(MEAS);await shot('depois-equipe-'+th);
   ok(m.sw<=m.vw&&!m.out.length,th+' equipe: sem rolagem lateral e nada fora da tela'+(m.out.length?' ('+m.out.join(',')+')':''));
   ok(m.listW>=340&&m.inner>=330,th+' equipe: área das mensagens larga ('+Math.round(m.listW)+' px)');
-  ok(m.bw.every(w=>w<=m.inner*0.75+1)&&m.maxBW>=m.inner*0.7,th+' equipe: balão até 75 % ('+Math.round(m.maxBW)+' de '+Math.round(m.inner)+' px)');
+  /* v169: balões depois da coluna da foto (64 px), largos como no print */ok(m.bw.every(w=>w<=m.inner-60)&&m.maxBW>=m.inner*0.7,th+' equipe: balão largo depois da foto ('+Math.round(m.maxBW)+' de '+Math.round(m.inner)+' px)');
   ok(m.tfs.length&&m.tfs.every(f=>f>=16&&f<=17),th+' equipe: texto do balão 16–17 px ('+m.tfs[0]+')');
-  ok(m.head&&m.head.h>=56&&m.head.h<=64&&m.field&&m.field.h>=44&&m.field.h<=48,th+' equipe: cabeçalho '+(m.head&&m.head.h)+' px, campo '+(m.field&&m.field.h)+' px');
+  /* v169: campo de 52 px como no print */ok(m.head&&m.head.h>=56&&m.head.h<=64&&m.field&&m.field.h>=44&&m.field.h<=52,th+' equipe: cabeçalho '+(m.head&&m.head.h)+' px, campo '+(m.field&&m.field.h)+' px');
   ok(!m.small.length,th+' equipe: botões ≥44 px'+(m.small.length?' ('+m.small.join('|')+')':''));
   /* com teclado */
   await B.focus('#chat-text');await B.evaluate(()=>__kb(true));await B.waitForTimeout(450);m=await B.evaluate(MEAS);await shot('depois-equipe-teclado-'+th);

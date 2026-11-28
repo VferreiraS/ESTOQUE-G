@@ -1,0 +1,173 @@
+/* v169: chat no padrão do print do dono (verde no escuro) + barra de cima do celular com o logo atual e StoK.
+   A paleta do chat é fixa (não segue Lilás/Violeta/Cinza) e só vale na tela do Chat (body.v169c). Cores medidas no print.
+   Sem efeitos pesados: só um filete verde sob a barra. Respeita "menos movimento". Camada p164 (as regras !important da v165-e também estão nela).
+   No fim: conserto do cartão "Demandas do estoque" no celular (rótulo em cima, campo em largura total). */
+body.v169c{
+  --c-fundo:#0b0c10;--c-topo:#0c0d12;--c-linha:#1d1f24;
+  --c-verde:#3ef04a;--c-verde-anel:#4bf754;--c-online:#18e02c;--c-verde-txt:#47f052;
+  --c-balao-meu:#124619;--c-balao-meu-borda:#2fa23b;--c-hora-meu:#c4e2cd;
+  --c-balao-outro:#2e3035;--c-balao-outro-borda:#4c4d52;--c-hora-outro:#a2a4ab;
+  --c-anexo:#1c1e23;--c-pdf:#dc3d3a;--c-baixar:#10f0c8;--c-baixar-borda:#369368;--c-baixar-fundo:#1c211a;
+  --c-dourado:#f8da6a;--c-dourado-borda:#e9cf6e;--c-aviso-fundo:#1a1712;--c-coroa:#fbbf3b;
+  --c-pilula:#27282d;--c-pilula-borda:#45464a;--c-campo:#1d1f25;--c-campo-borda:#5f6167;
+  --c-t1:#f4f5f7;--c-t2:#b0b1b6;
+  /* o teste de cor dos balões (v165-e) lê estes dois */
+  --p-bubble-out:var(--c-balao-meu);--p-bubble-in:var(--c-balao-outro);--p-bubble-out-text:var(--c-t1);--p-bubble-in-text:var(--c-t1)}
+/* peças novas da barra de cima ficam escondidas no PC */
+.v169-menu,.v169-brand,.v169-me{display:none}
+.v169-more{display:none}
+@layer p164{
+/* ================= barra de cima do celular (todas as telas) ================= */
+@media (max-width:900px){
+html body.dark .layout main>header{position:relative!important}
+html body.dark .layout main>header #breadcrumb,html body.dark .layout main>header .mobilemenu{display:none!important}
+html body.dark #main-content>header #v169-menu,html body.dark #main-content>header #v169-me{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;border:0!important;background:none!important;box-shadow:none!important;border-radius:12px!important;color:var(--p-t1,#f4f5f7)!important;flex:none!important}
+html body.dark .layout main>header .v169-brand{display:flex!important;align-items:center!important;gap:8px!important;position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;pointer-events:none!important;white-space:nowrap!important}
+html body.dark .layout main>header .v169-logo{width:30px!important;height:30px!important;display:block!important;flex:none!important}
+html body.dark .layout main>header .v169-name{display:flex!important;flex-direction:column!important;line-height:1!important}
+html body.dark .layout main>header .v169-name.v169-name b{font-size:22px!important;font-weight:600!important;letter-spacing:-.01em!important;color:var(--p-t1,#f4f5f7)!important}
+html body.dark .layout main>header .v169-name.v169-name small{font-size:12px!important;font-weight:500!important;letter-spacing:.14em!important;color:var(--p-t2,#b0b1b6)!important;margin-top:3px!important}
+/* busca geral: continua nas outras telas; no Chat a conversa tem a própria busca */
+html body.dark.v169c .layout main>header .e99-search-btn{display:none!important}
+/* barra no Chat: fundo do print e um filete verde (sem brilho animado) */
+html body.dark.v169c .layout main>header{background:var(--c-topo)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-bottom:2px solid #c8facc!important;box-shadow:0 1px 0 #0a6712,0 3px 10px -2px rgba(62,240,74,.55)!important}
+html body.dark.v169c .layout main>header .bell-btn{background:none!important;border:0!important;box-shadow:none!important}
+html body.dark.v169c .layout main>header .bell-btn .alert-count:not([data-zero]){font-size:0!important;min-width:0!important;width:11px!important;height:11px!important;padding:0!important;border-radius:50%!important;background:var(--c-verde)!important;border:2px solid var(--c-topo)!important;top:6px!important;right:7px!important;box-sizing:content-box!important}
+/* a barra de baixo sai dentro de uma conversa (como no print); o ☰ abre o menu */
+html body.dark.v169-conv #mobile-bottom,html body.dark.v169-conv .mobile-bottom{display:none!important}
+html body.dark.v169c{background:var(--c-fundo)!important}
+html body.dark.v169-conv .content{padding-top:0!important;padding-left:12px!important;padding-right:12px!important}
+html body.dark.v169-conv #view .chat-wrap.chat-wrap{margin-top:0!important}
+html body.dark.v169-conv #view{padding-top:0!important;margin-top:0!important}
+/* conversa fixa (v149) começa abaixo da barra de cima enquanto o teclado está fechado */
+html:root body.dark.v169c.e99-convo:not(.e99-convo-kb) #view .cv-wrap[data-open],html:root body.dark.v169c.e99-convo:not(.e99-convo-kb) #view .chat-wrap.chat-wrap{top:calc(var(--e99-vvt,0px) + var(--v169-hh,56px))!important;height:calc(var(--e99-vvh,100dvh) - var(--v169-hh,56px))!important;padding-top:0!important}
+}
+
+/* ================= chat (equipe e conversas): paleta fixa ================= */
+html body.dark.v169c #main-content #view .chat-wrap.chat-wrap,html body.dark.v169c #main-content #view .cv-wrap,html body.dark.v169c #main-content #view #chat-list,html body.dark.v169c #main-content #view .cv-msgs,html body.dark.v169c #main-content #view .chat-wrap .chat-body{background:var(--c-fundo)!important;color:var(--c-t1)!important}
+html:root body.dark.v169c.e99-convo #view .cv-wrap[data-open],html:root body.dark.v169c.e99-convo #view .chat-wrap.chat-wrap{background:var(--c-fundo)!important}
+/* cabeçalho */
+html body.dark.v169c #main-content #view .chat-wrap .chat-head,html body.dark.v169c #main-content #view .cv-head{gap:4px!important;padding:6px 0 8px!important;border-bottom:1px solid var(--c-linha)!important;background:none!important;min-height:64px!important}
+html body.dark.v169c #main-content #view .chat-wrap .chat-back,html body.dark.v169c #main-content #view .cv-head .cv-back{color:var(--c-t1)!important;width:44px!important;min-width:44px!important;margin:0 -8px 0 -12px!important!important}
+html body.dark.v169c #main-content #view .chat-wrap .chat-gav,html body.dark.v169c #main-content #view .cv-head .cv-gav,html body.dark.v169c #main-content #view .cv-head .cv-av{width:46px!important;height:46px!important;border-radius:50%!important;background:#0f2a13!important;color:#e3b54a!important;box-shadow:0 0 0 2px var(--c-verde-anel),0 0 8px rgba(75,247,84,.35)!important;border:0!important;flex:none!important}
+html body.dark.v169c #main-content #view .chat-wrap .chat-title h2,html body.dark.v169c #main-content #view .cv-head .cv-mid>b{font-size:18px!important;font-weight:600!important;color:var(--c-t1)!important;letter-spacing:-.01em!important}
+html body.dark.v169c #main-content #view .chat-wrap .chat-sub{font-size:13px!important;letter-spacing:-.015em!important;color:var(--c-t2)!important;display:flex!important;align-items:center!important}
+html body.dark.v169c #main-content #view .chat-wrap .chat-sub #chat-status,html body.dark.v169c #main-content #view .chat-wrap .chat-sub #chat-people{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important}
+html body.dark.v169c #main-content #view .chat-wrap .chat-sub .v169-sub{display:inline-flex!important;align-items:center!important;gap:5px!important;font-size:13px!important;letter-spacing:-.01em!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+html body.dark.v169c #main-content #view .chat-wrap .chat-sub .v169-sub::before{content:""!important;flex:none!important;width:9px!important;height:9px!important;border-radius:50%!important;background:#6b6d72!important}
+html body.dark.v169c #main-content #view .chat-wrap .chat-sub .v169-sub.on::before{background:var(--c-online)!important}
+html body.dark.v169c #main-content #view .cv-head #cv-sub{color:var(--c-t2)!important;font-size:13px!important}
+html body.dark.v169c #main-content #view .v169-sep{display:block!important;width:1px!important;height:40px!important;background:#3a3b40!important;margin:0 1px!important;flex:none!important}
+html body.dark.v169c #main-content #view .chat-head-acts .chat-hbtn,html body.dark.v169c #main-content #view .cv-head .cv-hbtn{color:var(--c-verde)!important;background:none!important;border:0!important;box-shadow:none!important}
+html body.dark.v169c #main-content #view .chat-wrap .chat-title{min-width:0!important;margin-left:4px!important}
+html body.dark.v169c #main-content #view .chat-wrap .chat-head-acts{margin-right:-10px!important;gap:0!important;align-items:center!important}
+@media (max-width:900px){
+html body.dark.v169c #main-content #view .chat-head-acts #chat-search-btn,html body.dark.v169c #main-content #view .chat-head-acts .chat-invite{display:none!important}
+html body.dark.v169c:not(.e99-convo) #main-content #view .chat-leave-row{display:flex!important;flex-wrap:wrap!important;gap:8px!important;justify-content:center!important}
+html body.dark.v169c #main-content #view .chat-leave-row .v169-more{display:inline-flex!important;align-items:center!important;min-height:44px!important}
+}
+/* aviso fixado: cartão dourado */
+html body.dark.v169c #chat-pin:not([hidden]){display:flex!important;align-items:center!important;gap:0!important;margin:10px 0 2px!important;padding:0!important;border-radius:12px!important;border:2px solid var(--c-dourado-borda)!important;background:linear-gradient(90deg,#3a2810 0%,#241c11 30%,var(--c-aviso-fundo) 70%)!important;box-shadow:0 0 0 1px rgba(233,207,110,.15),0 0 10px rgba(233,207,110,.12)!important;min-height:64px!important;overflow:hidden!important}
+html body.dark.v169c #chat-pin .pin-ic{flex:none!important;display:flex!important;align-items:center!important;justify-content:center!important;width:52px!important;align-self:stretch!important;color:var(--c-dourado)!important;border-right:1px solid rgba(233,207,110,.25)!important}
+html body.dark.v169c #chat-pin .pin-go{flex:1 1 auto!important;min-width:0!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;column-gap:8px!important;text-align:left!important;background:none!important;border:0!important;box-shadow:none!important;padding:8px 6px 8px 12px!important;min-height:60px!important;color:var(--c-t1)!important;border-radius:0!important}
+html body.dark.v169c #chat-pin .pin-go b{grid-column:1!important;display:block!important;font-size:15px!important;font-weight:600!important;letter-spacing:.03em!important;text-transform:uppercase!important;color:var(--c-dourado)!important}
+html body.dark.v169c #chat-pin .pin-go>span{grid-column:1!important;display:block!important;font-size:16px!important;color:var(--c-t1)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+html body.dark.v169c #chat-pin .pin-go .pin-chev{grid-column:2!important;grid-row:1/span 2!important;color:var(--c-dourado)!important}
+html body.dark.v169c #chat-pin [data-unpin]{flex:none!important;width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;padding:0!important;background:none!important;border:0!important;color:#8d8a80!important;font-size:15px!important;box-shadow:none!important}
+
+/* lista de mensagens: todas à esquerda, cada sequência com foto, nome e cargo */
+html body.dark.v169c #main-content #view #chat-list{padding:2px 2px 14px!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+html body.dark.v169c #main-content #view #chat-list .chat-day{display:flex!important;align-items:center!important;gap:14px!important;margin:6px 0 4px!important;position:static!important}
+html body.dark.v169c #main-content #view #chat-list .chat-day::before,html body.dark.v169c #main-content #view #chat-list .chat-day::after{content:""!important;display:block!important;flex:1!important;height:1px!important;background:#2b2d32!important;border:0!important;position:static!important;margin:0!important;width:auto!important}
+html body.dark.v169c #main-content #view #chat-list .chat-day span{background:var(--c-pilula)!important;border:1.5px solid var(--c-pilula-borda)!important;color:var(--c-t1)!important;font-size:15px!important;font-weight:500!important;padding:4px 16px!important;border-radius:999px!important}
+html body.dark.v169c #main-content #view #chat-list .v169-who{display:block!important;flex:none!important;margin:12px 0 4px!important;padding-left:64px!important;min-height:0!important;position:relative!important;z-index:1!important}
+html body.dark.v169c #main-content #view #chat-list .v169-who .prof-chip{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;min-height:44px!important;color:inherit!important;text-align:left!important;border-radius:0!important}
+html body.dark.v169c #main-content #view #chat-list .v169-av{position:absolute!important;left:0!important;top:-4px!important;width:52px!important;height:52px!important;min-width:52px!important;border-radius:50%!important}
+html body.dark.v169c #main-content #view #chat-list .v169-av .av{width:48px!important;height:48px!important;margin:2px!important;border-radius:50%!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:16px!important;font-weight:600!important;background:#1f2a22!important;color:var(--c-t1)!important;object-fit:cover!important;box-shadow:0 0 0 2px var(--c-verde-anel),0 0 6px rgba(75,247,84,.3)!important}
+html body.dark.v169c #main-content #view #chat-list .v169-av.on::after{content:""!important;position:absolute!important;right:-1px!important;bottom:3px!important;width:12px!important;height:12px!important;border-radius:50%!important;background:var(--c-online)!important;border:2.5px solid var(--c-fundo)!important}
+html body.dark.v169c #main-content #view #chat-list .v169-nm{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;gap:0!important;min-height:44px!important;min-width:0!important;max-width:100%!important;line-height:1.25!important;width:auto!important}
+html body.dark.v169c #main-content #view #chat-list .v169-n{display:inline-flex!important;align-items:center!important;gap:8px!important;max-width:100%!important}
+html body.dark.v169c #main-content #view #chat-list .v169-n b{font-size:16px!important;font-weight:600!important;color:var(--c-t1)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+html body.dark.v169c #main-content #view #chat-list .v169-who.g .v169-n b{color:var(--c-verde-txt)!important}
+html body.dark.v169c #main-content #view #chat-list .v169-crown{color:var(--c-coroa)!important;flex:none!important}
+html body.dark.v169c #main-content #view #chat-list .v169-cg{font-size:15px!important;color:var(--c-t2)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important}
+/* balões */
+html body.dark.v169c #main-content #view #chat-list .chat-msg{display:flow-root!important;align-self:flex-start!important;margin:0 0 0 64px!important;width:fit-content!important;max-width:min(calc(100% - 64px - 8px),620px)!important;min-width:150px!important;padding:9px 14px 7px 16px!important;border-radius:12px!important;background:var(--c-balao-outro)!important;border:1.5px solid var(--c-balao-outro-borda)!important;color:var(--c-t1)!important;box-shadow:none!important;font-size:16px!important}
+html body.dark.v169c #main-content #view #chat-list .chat-msg.cont,html body.dark.v169c #main-content #view #chat-list .chat-msg.pending,html body.dark.v169c #main-content #view #chat-list .chat-msg.failed{margin-top:6px!important}
+html body.dark.v169c #main-content #view #chat-list .chat-msg.mine{background:var(--c-balao-meu)!important;border-color:var(--c-balao-meu-borda)!important;max-width:min(calc(100% - 64px),620px)!important}
+html body.dark.v169c #main-content #view #chat-list .chat-msg::after{display:none!important}
+html body.dark.v169c #main-content #view #chat-list .chat-msg .chat-txt{display:inline!important;font-size:16px!important;line-height:1.38!important;color:var(--c-t1)!important}
+html body.dark.v169c #main-content #view #chat-list .chat-msg.chat-msg.chat-msg>.chat-meta{display:inline-flex!important;align-items:center!important;gap:6px!important;float:right!important;position:static!important;transform:none!important;opacity:1!important;pointer-events:auto!important;background:none!important;padding:0!important;margin:10px -4px -3px 16px!important;font-size:13px!important;color:var(--c-hora-outro)!important;white-space:nowrap!important}
+html body.dark.v169c #main-content #view #chat-list .chat-msg>.chat-meta .when{color:inherit!important}
+html body.dark.v169c #main-content #view #chat-list .chat-msg.chat-msg.mine>.chat-meta{color:var(--c-hora-meu)!important}
+html body.dark.v169c #main-content #view #chat-list .chat-msg .v169-tk{color:var(--c-verde)!important}
+/* o nome/foto que estavam dentro do balão ficam só para leitor de tela (a linha de cima mostra) */
+html body.dark.v169c #main-content #view #chat-list .chat-msg>.prof-chip,html body.dark.v169c #main-content #view #chat-list .chat-msg>.who{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;margin:0!important;padding:0!important}
+html body.dark.v169c #main-content #view #chat-list .chat-sav{display:none!important}
+/* opções da mensagem: à direita do balão; no toque fica transparente (toque longo abre o menu; continua alcançável) */
+html body.dark.v169c #main-content #view #chat-list .chat-msg .chat-acts,html body.dark.v169c #main-content #view #chat-list .chat-msg.mine .chat-acts{left:100%!important;right:auto!important;top:auto!important;bottom:0!important;flex-direction:row!important;padding:0 0 0 6px!important;transform:none!important;z-index:3!important}
+@media (max-width:900px){html body.dark.v169c #main-content #view #chat-list .chat-msg .chat-acts,html body.dark.v169c #main-content #view #chat-list .chat-msg.mine .chat-acts{left:auto!important;right:-2px!important;top:-42px!important;bottom:auto!important;padding:0!important}}
+@media (hover:none){html body.dark.v169c #main-content #view #chat-list .chat-msg .chat-acts{opacity:0!important;pointer-events:none!important}html body.dark.v169c #main-content #view #chat-list .chat-msg .chat-acts:focus-within{opacity:1!important;pointer-events:auto!important}}
+html body.dark.v169c #main-content #view #chat-list .chat-msg.chat-msg:has(.seen-by){margin-bottom:26px!important}
+html body.dark.v169c #main-content #view #chat-list .chat-msg.chat-msg .seen-by{left:auto!important;right:4px!important;background:none!important;color:var(--c-t2)!important}
+html body.dark.v169c #main-content #view #chat-list .chat-msg .chat-quote{border-left-color:var(--c-verde)!important}
+html body.dark.v169c #main-content #view #chat-list .chat-new span{background:var(--c-pilula)!important;color:var(--c-verde-txt)!important}
+/* anexo: cartão com PDF vermelho e botão quadrado verde */
+html body.dark.v169c #main-content #view .chat-msg.v169-hasfile,html body.dark.v169c #main-content #view .cv-b.v169-hasfile{background:var(--c-anexo)!important;border-color:var(--c-balao-outro-borda)!important;min-width:min(240px,100%)!important}
+html body.dark.v169c #main-content #view .chat-msg.mine.v169-hasfile{background:var(--c-balao-meu)!important;border-color:var(--c-balao-meu-borda)!important}
+html body.dark.v169c #main-content #view .chat-file{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;align-items:center!important;gap:14px!important;background:none!important;border:0!important;padding:6px 0 0!important;box-shadow:none!important}
+html body.dark.v169c #main-content #view .chat-file .cf-ic{background:none!important;width:auto!important;height:auto!important;color:var(--c-t1)!important}
+html body.dark.v169c #main-content #view .chat-file[data-ext=pdf] .cf-ic{color:var(--c-pdf)!important}
+html body.dark.v169c #main-content #view .chat-file .cf-mid b{display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important;white-space:normal!important;font-size:16px!important;font-weight:600!important;color:var(--c-t1)!important;line-height:1.25!important}
+html body.dark.v169c #main-content #view .chat-file .cf-mid .small{font-size:13px!important;color:var(--c-t2)!important}
+html body.dark.v169c #main-content #view .chat-file .cf-dl{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:8px!important;background:var(--c-baixar-fundo)!important;border:1.5px solid var(--c-baixar-borda)!important;color:var(--c-baixar)!important;box-shadow:none!important;align-self:start!important}
+/* conversas privadas e grupos: mesmas cores */
+html body.dark.v169c #main-content #view .cv-msgs .cv-b{background:var(--c-balao-outro)!important;border:1.5px solid var(--c-balao-outro-borda)!important;border-radius:12px!important;color:var(--c-t1)!important}
+html body.dark.v169c #main-content #view .cv-msgs .cv-b.mine{background:var(--c-balao-meu)!important;border-color:var(--c-balao-meu-borda)!important}
+html body.dark.v169c #main-content #view .cv-msgs .cv-b::after{display:none!important}
+html body.dark.v169c #main-content #view .cv-msgs .cv-b .cv-t,html body.dark.v169c #main-content #view .cv-msgs .cv-b.mine .cv-t{color:var(--c-t1)!important}
+html body.dark.v169c #main-content #view .cv-msgs .cv-b .cv-meta{color:var(--c-hora-outro)!important;opacity:1!important}
+html body.dark.v169c #main-content #view .cv-msgs .cv-b.mine .cv-meta{color:var(--c-hora-meu)!important}
+html body.dark.v169c #main-content #view .cv-msgs .cv-from{color:var(--c-verde-txt)!important}
+html body.dark.v169c #main-content #view .cv-e2e{color:var(--c-t2)!important}
+
+/* campo de escrever */
+html body.dark.v169c #main-content #view .chat-wrap .chat-compose{background:var(--c-fundo)!important;border-top:1px solid var(--c-linha)!important;padding-top:10px!important}
+html body.dark.v169c #main-content #view #chat-form,html body.dark.v169c #main-content #view .cv-compose{align-items:center!important;gap:10px!important}
+html body.dark.v169c #main-content #view .chat-plus.chat-plus.chat-plus{width:48px!important;height:48px!important;min-width:48px!important;border-radius:50%!important;background:transparent!important;border:2px solid var(--c-verde)!important;color:var(--c-verde)!important}
+html body.dark.v169c #main-content #view .chat-plus[aria-expanded=true]{background:var(--c-verde)!important;color:#07210b!important}
+html body.dark.v169c #main-content #view .chat-compose .chat-field textarea,html body.dark.v169c #main-content #view .cv-compose textarea{min-height:52px!important;border-radius:28px!important;background:var(--c-campo)!important;border:1.5px solid var(--c-campo-borda)!important;color:var(--c-t1)!important;font-size:16px!important;padding:13px 54px 13px 18px!important}
+html body.dark.v169c #main-content #view .cv-compose textarea{padding-right:18px!important}
+html body.dark.v169c #main-content #view .chat-compose .chat-field textarea::placeholder,html body.dark.v169c #main-content #view .cv-compose textarea::placeholder{color:#9a9ca2!important;opacity:1!important}
+html body.dark.v169c #main-content #view #chat-form .chat-field{position:relative!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;gap:10px!important}
+html body.dark.v169c #main-content #view #chat-form .chat-field textarea{flex:1 1 auto!important;min-width:0!important}
+html body.dark.v169c #main-content #view #chat-form .chat-btns{position:static!important;flex:none!important}
+html body.dark.v169c #main-content #view #chat-form #chat-send,html body.dark.v169c #main-content #view .cv-compose button.primary{display:inline-flex!important;width:52px!important;height:52px!important;min-width:52px!important;border-radius:50%!important;background:radial-gradient(circle at 40% 35%,#5cff63,var(--c-verde) 55%,#25c931)!important;color:#08200b!important;border:0!important;box-shadow:0 2px 10px rgba(62,240,74,.35)!important}
+html body.dark.v169c #main-content #view #chat-form #chat-send::before,html body.dark.v169c #main-content #view .cv-compose button.primary::before{display:none!important}
+html body.dark.v169c #main-content #view #chat-form .chat-field{flex:1 1 auto!important}
+html body.dark.v169c #main-content #view #chat-form:not(.has-text) #chat-send{display:inline-flex!important}
+html body.dark.v169c #main-content #view .chat-attach #chat-mic{display:flex!important;width:100%!important;height:auto!important;color:var(--c-t1)!important}
+html body.dark.v169c #main-content #view .v169-emo{position:absolute!important;right:66px!important;top:50%!important;transform:translateY(-50%)!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important;color:#e9eaee!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:50%!important}
+html body.dark.v169c #main-content #view .v169-emo-box:not([hidden]){position:absolute!important;right:0!important;bottom:calc(100% + 8px)!important;z-index:30!important;display:grid!important;grid-template-columns:repeat(6,44px)!important;gap:2px!important;padding:6px!important;border-radius:12px!important;background:#1d1f25!important;border:1px solid var(--c-campo-borda)!important;box-shadow:0 10px 30px rgba(0,0,0,.5)!important}
+html body.dark.v169c #main-content #view .v169-emo-box button{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;font-size:22px!important;background:none!important;border:0!important;box-shadow:none!important;border-radius:8px!important}
+html body.dark.v169c #main-content #view .chat-attach:not([hidden]){background:#1d1f25!important;border-color:var(--c-campo-borda)!important}
+}
+
+/* ================= Demandas do estoque no celular =================
+   O <label> do responsável tinha flex-basis 280px; com a linha em coluna isso virava 280 px de ALTURA (vão vazio) e o rótulo
+   longo + "Responsável" brigavam na mesma linha. Aqui: rótulo da demanda em cima (quebra palavra), "Responsável" em cima do campo, campo na largura toda. */
+@layer p164{
+@media (max-width:650px){
+html body.dark #main-content #view .e99-demandas .e99-dem-list>li{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:6px!important;min-width:0!important}
+html body.dark #main-content #view .e99-demandas .e99-dem-name{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important;word-break:break-word!important;min-width:0!important;flex:none!important}
+html body.dark #main-content #view .e99-demandas .e99-dem-field{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:4px!important;flex:none!important;width:100%!important;min-width:0!important;max-width:100%!important}
+html body.dark #main-content #view .e99-demandas .e99-dem-field>span{white-space:normal!important;text-align:left!important}
+html body.dark #main-content #view .e99-demandas .e99-dem-field input,html body.dark #main-content #view .e99-demandas .e99-dem-field select{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important}
+html body.dark #main-content #view .e99-demandas .e99-dem-resp{white-space:normal!important;overflow-wrap:anywhere!important}
+}
+}
+@media (prefers-reduced-motion:reduce){body.v169c .chat-msg,body.v169c .chat-acts{transition:none!important}}
+/* PC: sobra espaço à direita do balão para os botões responder/apagar/mais (aparecem ao passar o mouse) */
+@layer p164{@media (min-width:901px){html body.dark.v169c #main-content #view #chat-list .chat-msg.chat-msg{max-width:min(calc(100% - 64px - 130px),620px)!important}}}
+/* conversas: o botão "⋯" (canto de cima do balão) não cobre o Baixar do anexo */
+@layer p164{html body.dark.v169c #main-content #view .cv-msgs .cv-b .chat-file{margin-right:40px!important}}
